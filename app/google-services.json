@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "500101128305",
+    "project_id": "classifi-3ee05",
+    "storage_bucket": "classifi-3ee05.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:500101128305:android:c499070e002bef445cfbd0",
+        "android_client_info": {
+          "package_name": "com.vanguard.classifiadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "500101128305-e0aa7o947k8lli4pthjbl2d7ujc3flsh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vanguard.classifiadmin",
+            "certificate_hash": "661858350ab216a55db145eacacad1321d32ed6f"
+          }
+        },
+        {
+          "client_id": "500101128305-f2jnrm3npd8cea2mlsa1c34glgu9f81b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4xOgHvb2CafPRvwv4WumyIH73nzeskD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "500101128305-f2jnrm3npd8cea2mlsa1c34glgu9f81b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
