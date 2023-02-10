@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.ClassifiAdmin" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/purple_200</item>
+        <item name="android:windowBackground">@color/purple_200</item>
+        <item name="colorPrimary">@color/purple_200</item>
+    </style>
 
-    <style name="Theme.ClassifiAdmin" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="SplashScreenTheme" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.ClassifiAdmin</item>
+        <item name="windowSplashScreenBackground">@color/purple_200</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/icon_brand</item>
+
+
+    </style>
 </resources>
