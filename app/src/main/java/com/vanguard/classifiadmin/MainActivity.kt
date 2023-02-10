@@ -11,22 +11,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.vanguard.classifiadmin.router.ClassifiApp
 import com.vanguard.classifiadmin.ui.theme.ClassifiAdminTheme
+import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private lateinit var viewModel: MainViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         setContent {
-            ClassifiAdminTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                  Text(text = "Gibberish")
-                }
-            }
+            viewModel = hiltViewModel<MainViewModel>()
+            ClassifiApp(viewModel = viewModel, finishActivity = { finish() })
         }
     }
 }
