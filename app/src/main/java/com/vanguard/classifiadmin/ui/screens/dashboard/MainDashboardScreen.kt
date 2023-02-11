@@ -1,5 +1,11 @@
 package com.vanguard.classifiadmin.ui.screens.dashboard
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,11 +37,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.router.BottomDestination
 import com.vanguard.classifiadmin.ui.components.ClassifiFeature
+import com.vanguard.classifiadmin.ui.components.DashboardMenu
+import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.FeatureListItem
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -44,12 +55,14 @@ import kotlinx.coroutines.launch
 
 const val MAIN_DASHBOARD_SCREEN = "main_dashboard_screen"
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun MainDashboardScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     goToFeature: (ClassifiFeature) -> Unit,
+    onSelectMenu: (DashboardMenu) -> Unit,
+    onSelectProfile: () -> Unit,
 ) {
     val navController = rememberNavController()
     var filterActivated by remember { mutableStateOf(false) }
@@ -60,6 +73,7 @@ fun MainDashboardScreen(
         mutableStateOf(false)
     }
     val coroutineScope = rememberCoroutineScope()
+    var menuState by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = modifier) {
         ModalBottomSheetLayout(
@@ -90,7 +104,7 @@ fun MainDashboardScreen(
                         onFilter = {
                             filterActivated = !filterActivated
                         },
-                        openProfile = {},
+                        openProfile = { menuState = !menuState },
                         openSheet = {
                             coroutineScope.launch {
                                 showModalSheet.value = true
@@ -114,6 +128,33 @@ fun MainDashboardScreen(
                     )
                 }
             )
+        }
+
+        AnimatedVisibility(
+            visible = menuState,
+            enter = scaleIn(
+                initialScale = 0.8f, animationSpec = tween(
+                    durationMillis = 50, easing = FastOutLinearInEasing
+                )
+            ),
+            exit = scaleOut(
+                targetScale = 0.8f,
+                animationSpec = tween(
+                    durationMillis = 50, easing = FastOutLinearInEasing
+                ),
+            ),
+        ) {
+            Popup(alignment = Alignment.TopEnd,
+                offset = IntOffset(0, 100),
+                onDismissRequest = { menuState = false }) {
+                DashboardMenuScreen(
+                    username = "Hamza Jesim",
+                    email = "hamzajesim@gmail.com",
+                    status = "Update your profile",
+                    onSelectProfile = onSelectProfile,
+                    onSelectMenu = onSelectMenu,
+                )
+            }
         }
     }
 }

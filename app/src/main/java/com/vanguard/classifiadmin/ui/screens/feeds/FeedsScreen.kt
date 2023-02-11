@@ -14,7 +14,4 @@ fun FeedsScreen(
     viewModel: MainViewModel,
 ) {
     UpcomingActivities(username = "Hamza Jesim")
-    Popup {
-        Text("This is a popup widget")
-    }
 }

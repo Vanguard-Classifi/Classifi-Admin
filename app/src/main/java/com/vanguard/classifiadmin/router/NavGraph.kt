@@ -42,7 +42,9 @@ fun NavGraph(
         composable(Destinations.dashboard) {
             MainDashboardScreen(
                 viewModel = viewModel,
-                goToFeature = { navController.navigate(it.screen) }
+                goToFeature = { navController.navigate(it.screen) },
+                onSelectMenu = { navController.navigate(it.screen) },
+                onSelectProfile = { navController.navigate(Destinations.account) }
             )
         }
 

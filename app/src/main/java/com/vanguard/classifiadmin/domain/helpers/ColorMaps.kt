@@ -37,3 +37,34 @@ fun generateColorFromUserName(username: String): Long {
     val first = split.first()[0].toString()
     return AvatarColorMap[split.first()[0]] ?: 0xff000000
 }
+
+val ClassColorMap: Map<Int, Long> = mapOf(
+    0 to 0xff000000,
+    1 to 0xff421d05,
+    2 to 0xff242423,
+    3 to 0xffb87b53,
+    4 to 0xff5c5c05,
+    5 to 0xff10210a,
+    6 to 0xff164205,
+    7 to 0xff0f7319,
+    8 to 0xff093322,
+    9 to 0xff044a2d,
+    10 to 0xff053b34,
+    12 to 0xff122640,
+    13 to 0xff124039,
+    14 to 0xff0c23a6,
+    15 to 0xff0c4ea6,
+    16 to 0xff0a0342,
+    17 to 0xff0c0b12,
+    18 to 0xff030c42,
+    19 to 0xff6b0d75,
+    20 to 0xff1f0d21,
+    21 to 0xff661635,
+    21 to 0xff260311,
+)
+
+fun generateColorFromClassName(className: String): Long {
+    val split = className.splitWithSpace()
+    val second = if(split.size > 1) split[1].toIntOrNull() else 0
+    return ClassColorMap[second ?: 0] ?: 0xff000000
+}

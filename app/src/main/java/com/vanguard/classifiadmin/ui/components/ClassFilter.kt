@@ -1,0 +1,392 @@
+package com.vanguard.classifiadmin.ui.components
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.layoutId
+import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
+import com.vanguard.classifiadmin.domain.helpers.generateColorFromUserName
+import com.vanguard.classifiadmin.ui.theme.Black100
+
+@Composable
+fun ClassFilterScreen(
+    modifier: Modifier = Modifier,
+) {
+    val constraints = classFilterScreenConstraints(16.dp)
+    val innerModifier = Modifier
+
+    Card(modifier = modifier, elevation = 8.dp, shape = RoundedCornerShape(16.dp)) {
+        ConstraintLayout(
+            modifier = modifier,
+            constraintSet = constraints,
+        ) {
+            Text(
+                text = stringResource(id = R.string.my_classes),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary,
+            )
+        }
+    }
+}
+
+private fun classFilterScreenConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val title = createRefFor("title")
+        val subtitle = createRefFor("subtitle")
+        val classesColumn = createRefFor("classesColumn")
+        val addClass = createRefFor("addClass")
+        val close = createRefFor("close")
+
+        constrain(title) {
+            top.linkTo(parent.top, margin = margin)
+            start.linkTo(parent.start, margin = margin)
+        }
+
+        constrain(subtitle) {
+            start.linkTo(title.start, margin = 0.dp)
+            top.linkTo(title.bottom, margin = 8.dp)
+        }
+
+        constrain(close) {
+            top.linkTo(parent.top, margin = 8.dp)
+            end.linkTo(parent.end, margin = 8.dp)
+        }
+
+        constrain(classesColumn) {
+            top.linkTo(subtitle.bottom, margin = 8.dp)
+            start.linkTo(parent.start, margin = 8.dp)
+            end.linkTo(parent.end, margin = 8.dp)
+            width = Dimension.fillToConstraints
+        }
+
+        constrain(addClass) {
+            top.linkTo(classesColumn.bottom, margin = 16.dp)
+            start.linkTo(classesColumn.start, margin = 0.dp)
+            end.linkTo(classesColumn.end, margin = 0.dp)
+            width = Dimension.fillToConstraints
+        }
+    }
+}
+
+
+@Composable
+fun AddClassButton(
+    modifier: Modifier = Modifier,
+    onAddClass: () -> Unit,
+) {
+    val constraints = addClassButtonConstraints(8.dp)
+    val innerModifier = Modifier
+
+    Surface(
+        modifier = modifier.clickable { onAddClass() },
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary.copy(0.1f)
+        )
+    ) {
+        ConstraintLayout(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            constraintSet = constraints
+        ) {
+            RoundedIconButton(onClick = onAddClass, modifier = innerModifier.layoutId("icon"))
+
+            Text(
+                modifier = innerModifier.layoutId("className"),
+                text = stringResource(id = R.string.add_another_class),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary,
+            )
+
+            Text(
+                modifier = innerModifier.layoutId("code"),
+                text = stringResource(id = R.string.create_join_class),
+                fontSize = 12.sp,
+                color = Black100.copy(0.8f)
+            )
+        }
+    }
+}
+
+
+private fun addClassButtonConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val className = createRefFor("className")
+        val code = createRefFor("code")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin = margin)
+            top.linkTo(className.top, margin = 0.dp)
+        }
+
+        constrain(className) {
+            top.linkTo(parent.top, margin = margin)
+            start.linkTo(icon.end, margin = 8.dp)
+        }
+
+        constrain(code) {
+            top.linkTo(className.bottom, margin = 4.dp)
+            start.linkTo(className.start, margin = 0.dp)
+        }
+
+    }
+}
+
+
+@Composable
+fun ClassFilterItem(
+    modifier: Modifier = Modifier,
+    className: String,
+    classCode: String,
+    selected: Boolean = false,
+    selectedClass: String,
+    onManageClass: (String) -> Unit,
+    onSelectClass: (String) -> Unit,
+) {
+    val constraints = classFilterItemConstraints(8.dp)
+    val innerModifier = Modifier
+
+    Surface(
+        modifier = modifier.clickable { onSelectClass(selectedClass) },
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = if (selected) 2.dp else 1.dp,
+            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
+                0.1f
+            )
+        )
+    ) {
+        ConstraintLayout(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            constraintSet = constraints
+        ) {
+            ClassIcon(
+                modifier = innerModifier.layoutId("icon"),
+                className = "Grade 3"
+            )
+
+            Text(
+                modifier = innerModifier.layoutId("className"),
+                text = className,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(generateColorFromClassName(className))
+            )
+
+            Text(
+                modifier = innerModifier.layoutId("code"),
+                text = classCode,
+                fontSize = 12.sp,
+                color = Black100.copy(0.8f)
+            )
+
+
+            ClassFilterManageButton(
+                modifier = innerModifier.layoutId("manage"),
+                icon = R.drawable.icon_settings,
+                label = stringResource(id = R.string.manage),
+                selectedItem = selectedClass,
+                onSelect = onManageClass,
+            )
+
+        }
+    }
+}
+
+private fun classFilterItemConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val className = createRefFor("className")
+        val code = createRefFor("code")
+        val manage = createRefFor("manage")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin = margin)
+            top.linkTo(className.top, margin = 0.dp)
+        }
+
+        constrain(className) {
+            top.linkTo(parent.top, margin = margin)
+            start.linkTo(icon.end, margin = 8.dp)
+        }
+
+        constrain(code) {
+            top.linkTo(className.bottom, margin = 4.dp)
+            start.linkTo(className.start, margin = 0.dp)
+        }
+
+        constrain(manage) {
+            top.linkTo(className.top, margin = 0.dp)
+            bottom.linkTo(code.bottom, margin = 0.dp)
+            end.linkTo(parent.end, margin = margin)
+        }
+    }
+}
+
+
+@Composable
+fun ClassFilterManageButton(
+    modifier: Modifier = Modifier,
+    icon: Int,
+    label: String,
+    selectedItem: String,
+    onSelect: (String) -> Unit,
+) {
+    Surface(
+        modifier = modifier.clip(RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colors.primary.copy(0.1f)
+    ) {
+        TextButton(
+            onClick = { onSelect(selectedItem) },
+            modifier = modifier
+                .padding(0.dp)
+                .clip(RoundedCornerShape(16.dp))
+        ) {
+            Icon(
+                modifier = modifier
+                    .size(24.dp)
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                painter = painterResource(id = icon),
+                contentDescription = label,
+                tint = MaterialTheme.colors.primary,
+            )
+
+            Text(
+                text = label,
+                modifier = modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
+
+@Composable
+fun ClassIcon(
+    modifier: Modifier = Modifier,
+    className: String,
+) {
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
+        color = Color(generateColorFromUserName(className))
+    ) {
+        Box(
+            modifier = modifier
+                .padding(0.dp)
+                .height(38.dp)
+                .width(38.dp), contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                modifier = modifier
+                    .size(24.dp)
+                    .padding(4.dp),
+                painter = painterResource(id = R.drawable.icon_cap),
+                contentDescription = className,
+                tint = MaterialTheme.colors.onPrimary,
+            )
+        }
+    }
+}
+
+@Composable
+fun RoundedIconButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    size: Dp = 24.dp,
+) {
+    Surface(
+        modifier = modifier.clip(CircleShape),
+        shape = CircleShape,
+        color = MaterialTheme.colors.primary.copy(0.1f)
+    ) {
+        IconButton(onClick = onClick, modifier = modifier.clip(CircleShape)) {
+            Icon(
+                painter = painterResource(id = R.drawable.icon_add),
+                contentDescription = stringResource(id = R.string.add),
+                modifier = modifier.size(size),
+                tint = MaterialTheme.colors.primary,
+            )
+        }
+    }
+}
+
+
+@Preview
+@Composable
+private fun ClassFilterManageButtonPreview() {
+    ClassFilterManageButton(
+        icon = R.drawable.icon_settings,
+        label = "Manage",
+        selectedItem = "",
+        onSelect = {}
+    )
+}
+
+@Composable
+@Preview
+private fun ClassIconPreview() {
+    ClassIcon(
+        className = "Grade 6"
+    )
+}
+
+@Preview
+@Composable
+private fun ClassFilterItemPreview() {
+    ClassFilterItem(
+        className = "Grade 3",
+        classCode = "CLass/24232",
+        selectedClass = "Grade 3",
+        onManageClass = {},
+        selected = true,
+        onSelectClass = {}
+    )
+}
+
+@Preview
+@Composable
+private fun RoundedIconButtonPreview() {
+    RoundedIconButton(
+        onClick = {},
+    )
+}
