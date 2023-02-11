@@ -21,7 +21,9 @@ fun MainDashboardScreen(
 
     BoxWithConstraints(modifier = modifier) {
         Scaffold(modifier = modifier,
-            topBar = {},
+            topBar = {
+                     TopBar()
+            },
             bottomBar = {
                 BottomBar(
                     navController = navController,
