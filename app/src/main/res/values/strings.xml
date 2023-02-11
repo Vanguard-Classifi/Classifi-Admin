@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ClassifiAdmin</string>
+    <string name="app_name">Classifi Admin</string>
     <string name="open_sheet">Open Sheet</string>
     <string name="icon_brand">Branding Icon</string>
     <string name="dropdown">Dropdown list</string>

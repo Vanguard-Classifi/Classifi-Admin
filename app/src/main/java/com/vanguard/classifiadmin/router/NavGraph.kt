@@ -8,14 +8,22 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
+import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN
+import com.vanguard.classifiadmin.ui.screens.calendar.MyCalendarScreen
 import com.vanguard.classifiadmin.ui.screens.dashboard.MAIN_DASHBOARD_SCREEN
 import com.vanguard.classifiadmin.ui.screens.dashboard.MainDashboardScreen
 import com.vanguard.classifiadmin.ui.screens.feeds.FEEDS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedsScreen
+import com.vanguard.classifiadmin.ui.screens.profile.ACCOUNT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.profile.MyAccountScreen
 import com.vanguard.classifiadmin.ui.screens.reports.REPORTS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.reports.ReportsScreen
+import com.vanguard.classifiadmin.ui.screens.results.STUDENT_RESULTS_SCREEN
+import com.vanguard.classifiadmin.ui.screens.results.StudentResultsScreen
 import com.vanguard.classifiadmin.ui.screens.students.STUDENTS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.students.StudentsScreen
+import com.vanguard.classifiadmin.ui.screens.support.SUPPORT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.support.SupportScreen
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 @Composable
@@ -34,7 +42,26 @@ fun NavGraph(
         composable(Destinations.dashboard) {
             MainDashboardScreen(
                 viewModel = viewModel,
+                goToFeature = { navController.navigate(it.screen) }
             )
+        }
+
+        composable(Destinations.studentResults) {
+            StudentResultsScreen(
+                viewModel = viewModel
+            )
+        }
+
+        composable(Destinations.support) {
+            SupportScreen()
+        }
+
+        composable(Destinations.calendar) {
+            MyCalendarScreen()
+        }
+
+        composable(Destinations.account) {
+            MyAccountScreen()
         }
     }
 
@@ -90,6 +117,10 @@ fun BottomNavGraph(
 
 object Destinations {
     const val dashboard = MAIN_DASHBOARD_SCREEN
+    const val studentResults = STUDENT_RESULTS_SCREEN
+    const val support = SUPPORT_SCREEN
+    const val calendar = CALENDAR_SCREEN
+    const val account = ACCOUNT_SCREEN
 }
 
 object BottomDestination {
