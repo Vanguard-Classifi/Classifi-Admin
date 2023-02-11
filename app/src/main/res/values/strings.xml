@@ -10,4 +10,6 @@
     <string name="create_join_class">Create or join an existing class</string>
     <string name="add">Add</string>
     <string name="my_classes">My Classes</string>
+    <string name="add_remove_switch_classes">Add, remove and switch your classes</string>
+    <string name="class_icon">Class icon</string>
 </resources>

@@ -44,10 +44,12 @@ import androidx.compose.ui.window.Popup
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.router.BottomDestination
+import com.vanguard.classifiadmin.ui.components.ClassFilterScreen
 import com.vanguard.classifiadmin.ui.components.ClassifiFeature
 import com.vanguard.classifiadmin.ui.components.DashboardMenu
 import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.FeatureListItem
+import com.vanguard.classifiadmin.ui.components.Level
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -74,6 +76,7 @@ fun MainDashboardScreen(
     }
     val coroutineScope = rememberCoroutineScope()
     var menuState by remember { mutableStateOf(false) }
+    var filterState by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = modifier) {
         ModalBottomSheetLayout(
@@ -100,9 +103,9 @@ fun MainDashboardScreen(
             Scaffold(modifier = modifier,
                 topBar = {
                     TopBar(
-                        filterActivated = filterActivated,
+                        filterActivated = filterState,
                         onFilter = {
-                            filterActivated = !filterActivated
+                            filterState = !filterState
                         },
                         openProfile = { menuState = !menuState },
                         openSheet = {
@@ -154,6 +157,67 @@ fun MainDashboardScreen(
                     onSelectProfile = onSelectProfile,
                     onSelectMenu = onSelectMenu,
                 )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = filterState,
+            enter = scaleIn(
+                initialScale = 0.8f, animationSpec = tween(
+                    durationMillis = 50, easing = FastOutLinearInEasing
+                )
+            ),
+            exit = scaleOut(
+                targetScale = 0.8f,
+                animationSpec = tween(
+                    durationMillis = 50, easing = FastOutLinearInEasing
+                ),
+            ),
+        ) {
+            Popup(alignment = Alignment.TopEnd,
+                offset = IntOffset(0, 200),
+                onDismissRequest = { filterState = false }) {
+              ClassFilterScreen(
+                  onClose = { filterState = false },
+                  assignedClasses = listOf(
+                      Level(
+                          name = "Grade 1",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 9",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 8",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 7",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 2",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 3",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 4",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 5",
+                          code = "GRD1/FLIS"
+                      ),
+                      Level(
+                          name = "Grade 6",
+                          code = "GRD1/FLIS"
+                      ),
+                  ),
+              )
             }
         }
     }
