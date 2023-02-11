@@ -11,4 +11,5 @@ fun FeedsScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
 ) {
+    UpcomingActivities(username = "Hamza Jesim")
 }

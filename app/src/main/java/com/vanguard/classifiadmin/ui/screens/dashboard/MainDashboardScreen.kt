@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
@@ -18,11 +22,21 @@ fun MainDashboardScreen(
     viewModel: MainViewModel,
 ) {
     val navController = rememberNavController()
+    var filterActivated by remember { mutableStateOf(false)}
 
     BoxWithConstraints(modifier = modifier) {
         Scaffold(modifier = modifier,
             topBar = {
-                     TopBar()
+                     TopBar(
+                         filterActivated = filterActivated,
+                         onFilter = {
+                             filterActivated = !filterActivated
+                         },
+                         openProfile = {},
+                         openSheet = {},
+                         username = "Hamza Jesim",
+                         filterLabel = "Grade 1",
+                     )
             },
             bottomBar = {
                 BottomBar(

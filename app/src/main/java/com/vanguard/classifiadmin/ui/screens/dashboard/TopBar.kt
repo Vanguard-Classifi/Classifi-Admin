@@ -38,12 +38,22 @@ import androidx.compose.ui.unit.sp
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.extensions.splitWithSpace
 import com.vanguard.classifiadmin.domain.helpers.AvatarColorMap
+import com.vanguard.classifiadmin.domain.helpers.generateColorFromUserName
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.ui.theme.White100
 
 @Composable
 fun TopBar(
     modifier: Modifier = Modifier,
+    filterActivated: Boolean = false,
+    filterEnabled: Boolean = true,
+    filterLabel: String,
+    onFilter: (String) -> Unit,
+    sheetEnabled: Boolean = true,
+    openSheet: () -> Unit,
+    openProfile: () -> Unit,
+    username: String,
+    profileEnabled: Boolean = true,
 ) {
     Card(modifier = modifier, elevation = 2.dp) {
         Row(
@@ -58,11 +68,16 @@ fun TopBar(
                 tint = MaterialTheme.colors.primary,
             )
 
-            SelectionButton(label = "Year 11 Benin", onClick = {})
+            SelectionButton(
+                label = filterLabel,
+                onClick = onFilter,
+                enabled = filterEnabled,
+                activated = filterActivated
+            )
 
             Spacer(modifier = modifier.weight(1f))
-            SheetsButton(onClick = {})
-            DefaultAvatar(label = "Muhammad Yusuf", onClick = {})
+            SheetsButton(onClick = openSheet, enabled = sheetEnabled)
+            DefaultAvatar(label = username, onClick = openProfile, enabled = profileEnabled)
         }
     }
 }
@@ -73,6 +88,7 @@ fun SelectionButton(
     label: String,
     onClick: (String) -> Unit,
     enabled: Boolean = true,
+    activated: Boolean = false,
 ) {
     TextButton(
         onClick = { onClick(label) }, enabled = enabled, shape = RoundedCornerShape(12.dp),
@@ -93,7 +109,7 @@ fun SelectionButton(
         )
 
         Icon(
-            painter = painterResource(id = R.drawable.icon_dropdown),
+            painter = painterResource(id = if (activated) R.drawable.icon_dropdown_close else R.drawable.icon_dropdown),
             contentDescription = stringResource(id = R.string.dropdown),
             tint = MaterialTheme.colors.primary,
             modifier = modifier
@@ -148,7 +164,7 @@ fun DefaultAvatarBig(
     val first = labelSplit.first()[0].toString()
     val second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
     val avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
-    val colorHex = AvatarColorMap[labelSplit.first()[0]] ?: 0xff000000
+    val colorHex = generateColorFromUserName(label)
 
     Surface(
         modifier = modifier
@@ -185,7 +201,7 @@ fun DefaultAvatar(
     val first = labelSplit.first()[0].toString()
     val second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
     val avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
-    val colorHex = AvatarColorMap[labelSplit.first()[0]] ?: 0xff000000
+    val colorHex = generateColorFromUserName(label)
 
     Surface(
         modifier = modifier

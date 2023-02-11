@@ -1,5 +1,7 @@
 package com.vanguard.classifiadmin.domain.helpers
 
+import com.vanguard.classifiadmin.domain.extensions.splitWithSpace
+
 val AvatarColorMap: Map<Char, Long> = mapOf(
     'a' to 0xffe31809,
     'b' to 0xff4d4d24,
@@ -28,3 +30,10 @@ val AvatarColorMap: Map<Char, Long> = mapOf(
     'y' to 0xff260311,
     'z' to 0xffd90909
 )
+
+
+fun generateColorFromUserName(username: String): Long {
+    val split = username.lowercase().splitWithSpace()
+    val first = split.first()[0].toString()
+    return AvatarColorMap[split.first()[0]] ?: 0xff000000
+}

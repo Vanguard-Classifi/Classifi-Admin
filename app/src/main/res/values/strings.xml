@@ -3,4 +3,6 @@
     <string name="open_sheet">Open Sheet</string>
     <string name="icon_brand">Branding Icon</string>
     <string name="dropdown">Dropdown list</string>
+    <string name="show_activities">Show Upcoming Activities</string>
+    <string name="no_upcoming_activities">There are no upcoming activities for this class</string>
 </resources>
