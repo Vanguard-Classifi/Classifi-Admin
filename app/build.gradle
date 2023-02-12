@@ -91,6 +91,7 @@ dependencies {
     implementation("androidx.paging:paging-compose:$paging_version")
     implementation 'androidx.test.ext:junit-ktx:1.1.4'
     implementation 'androidx.room:room-runtime:2.5.0'
+    implementation "androidx.compose.foundation:foundation:$compose_version"
     testImplementation 'androidx.room:room-testing:2.5.0'
     implementation 'androidx.room:room-ktx:2.5.0'
     kapt 'androidx.room:room-compiler:2.5.0'

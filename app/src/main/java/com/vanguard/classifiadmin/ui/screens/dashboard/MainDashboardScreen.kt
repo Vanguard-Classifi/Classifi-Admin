@@ -90,7 +90,7 @@ fun MainDashboardScreen(
             scrimColor = MaterialTheme.colors.primary.copy(0.1f),
             sheetElevation = 8.dp,
             sheetBackgroundColor = MaterialTheme.colors.onPrimary,
-            sheetShape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp),
+            sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             sheetContent = {
                 DashboardBottomSheetContent(
                     modifier = modifier,

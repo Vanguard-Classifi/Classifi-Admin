@@ -70,7 +70,10 @@ fun NavGraph(
         }
 
         composable(Destinations.manageClass) {
-            ManageClassScreen(viewModel = viewModel)
+            ManageClassScreen(
+                viewModel = viewModel,
+                onBack = {navController.navigate(Destinations.dashboard)}
+            )
         }
     }
 

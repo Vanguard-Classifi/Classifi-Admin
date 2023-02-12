@@ -19,4 +19,6 @@
     <string name="placeholder_class_name">Class Name</string>
     <string name="create_class">CREATE CLASS</string>
     <string name="placeholder_academic_level">Select academic level</string>
+    <string name="manage_class">Manage Class</string>
+    <string name="manage_class_item_icon">Manage Class Item Icon</string>
 </resources>
