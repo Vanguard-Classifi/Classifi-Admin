@@ -82,6 +82,9 @@ fun MainDashboardScreen(
     var joinClassState by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = modifier) {
+        val maxWidth = maxWidth
+        val maxHeight = maxHeight
+
         ModalBottomSheetLayout(
             sheetState = sheetState,
             scrimColor = MaterialTheme.colors.primary.copy(0.1f),
@@ -154,7 +157,7 @@ fun MainDashboardScreen(
                 offset = IntOffset(0, 100),
                 onDismissRequest = { menuState = false }) {
                 DashboardMenuScreen(
-                    username = "Hamza Jesim",
+                    username = "Genju Wuhabby",
                     email = "hamzajesim@gmail.com",
                     status = "Update your profile",
                     onSelectProfile = onSelectProfile,
@@ -233,33 +236,27 @@ fun MainDashboardScreen(
         }
 
 
-        AnimatedVisibility(
-            visible = joinClassState,
-            enter = scaleIn(
-                initialScale = 0.8f, animationSpec = tween(
-                    durationMillis = 50, easing = FastOutLinearInEasing
-                )
-            ),
-            exit = scaleOut(
-                targetScale = 0.8f,
-                animationSpec = tween(
-                    durationMillis = 50, easing = FastOutLinearInEasing
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+            AnimatedVisibility(
+              modifier = modifier.padding(top = maxHeight / 4),
+                visible = joinClassState,
+                enter = scaleIn(
+                    initialScale = 0.8f, animationSpec = tween(
+                        durationMillis = 50, easing = FastOutLinearInEasing
+                    )
                 ),
-            ),
-        ) {
-            Popup(
-                alignment = Alignment.TopEnd,
-                offset = IntOffset(0, 200),
-                onDismissRequest = { joinClassState = false },
-                properties = PopupProperties(
-                    focusable = true,
-                    dismissOnBackPress = false,
-                    dismissOnClickOutside = false,
-                )
+                exit = scaleOut(
+                    targetScale = 0.8f,
+                    animationSpec = tween(
+                        durationMillis = 50, easing = FastOutLinearInEasing
+                    ),
+                ),
             ) {
-                JoinClassScreen(viewModel = viewModel, onClose = {
+                JoinClassScreen(
+                    viewModel = viewModel, onClose = {
                     joinClassState = false
-                })
+                },
+                )
             }
         }
     }

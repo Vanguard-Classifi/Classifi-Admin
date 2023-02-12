@@ -16,4 +16,7 @@
     <string name="verify">Verify</string>
     <string name="continue_text">CONTINUE</string>
     <string name="add_class">Add a Class</string>
+    <string name="placeholder_class_name">Class Name</string>
+    <string name="create_class">CREATE CLASS</string>
+    <string name="placeholder_academic_level">Select academic level</string>
 </resources>

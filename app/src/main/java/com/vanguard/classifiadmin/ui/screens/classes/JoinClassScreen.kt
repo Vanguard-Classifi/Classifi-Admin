@@ -6,16 +6,18 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
@@ -37,10 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
@@ -100,7 +102,12 @@ fun JoinClassScreen(
                     }
 
                     JoinClassOption.CreateClass -> {
-
+                        CreateClassScreen(
+                            viewModel = viewModel,
+                            modifier = innerModifier
+                                .layoutId("content")
+                                .wrapContentHeight()
+                        )
                     }
 
                     else -> {
@@ -158,7 +165,7 @@ fun EnterClassCodeScreen(
     viewModel: MainViewModel,
 ) {
 
-    val classCode by viewModel.classCode.collectAsState()
+    val classCode by viewModel.classCodeAddClass.collectAsState()
     var isVerifying by remember { mutableStateOf(false) }
     var codeVerified by remember { mutableStateOf(false) }
 
@@ -183,7 +190,7 @@ fun EnterClassCodeScreen(
             onValueChange = viewModel::onClassCodeChanged,
             modifier = modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(vertical = 12.dp, horizontal = 8.dp),
             placeholder = {
             },
             label = {
@@ -250,11 +257,144 @@ fun EnterClassCodeScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CreateClassScreen(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
 ) {
 
+    val levels = listOf(
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+        AcademicLevel("Level 1"),
+    )
+
+    val classNameAddClass by viewModel.classNameAddClass.collectAsState()
+    val selectedAcademicLevel by viewModel.selectedAcademicLevelAddClass.collectAsState()
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        OutlinedTextField(
+            maxLines = 1,
+            singleLine = true,
+            value = classNameAddClass ?: "",
+            onValueChange = viewModel::onClassNameAddClassChanged,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            placeholder = {
+            },
+            label = {
+                Text(
+                    text = stringResource(id = R.string.placeholder_class_name),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colors.primary.copy(0.5f)
+                )
+            },
+            shape = RoundedCornerShape(12.dp),
+            keyboardOptions = KeyboardOptions(
+                autoCorrect = true,
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+            )
+        )
+
+        var academicLevelMenuState by remember { mutableStateOf(false) }
+
+        ExposedDropdownMenuBox(
+            expanded = academicLevelMenuState,
+            modifier = modifier.zIndex(100f),
+            onExpandedChange = {
+                academicLevelMenuState = !academicLevelMenuState
+            },
+        ) {
+            OutlinedTextField(
+                maxLines = 1,
+                singleLine = true,
+                value = selectedAcademicLevel?.name ?: "",
+                onValueChange = viewModel::onClassNameAddClassChanged,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                trailingIcon = {
+                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = academicLevelMenuState)
+                },
+                label = {
+                    Text(
+                        text = stringResource(id = R.string.placeholder_academic_level),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colors.primary.copy(0.5f)
+                    )
+                },
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(
+                    autoCorrect = true,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next,
+                ),
+                readOnly = true,
+            )
+
+            ExposedDropdownMenu(
+                expanded = academicLevelMenuState,
+                onDismissRequest = { academicLevelMenuState = false }
+            ) {
+                levels.forEach { each ->
+                    DropdownMenuItem(
+                        onClick = {
+                            viewModel.onSelectedAcademicLevelAddClassChanged(each)
+                            academicLevelMenuState = false
+                        }
+                    ) {
+                        Text(
+                            text = each.name,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colors.primary.copy(0.5f)
+                        )
+                    }
+                }
+            }
+        }
+
+
+        TextButton(
+            onClick = { /*TODO* create class */ }, enabled = true,
+            shape = RoundedCornerShape(22.dp),
+            modifier = modifier
+                .clip(RoundedCornerShape(22.dp))
+                .fillMaxWidth()
+                .padding(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.primary.copy(0.3f),
+                contentColor = MaterialTheme.colors.primary,
+                disabledBackgroundColor = Black100.copy(0.1f)
+            )
+        ) {
+            Text(
+                text = stringResource(id = R.string.create_class),
+                fontSize = 14.sp,
+                color = MaterialTheme.colors.primary,
+                modifier = modifier.padding(vertical = 8.dp)
+            )
+        }
+    }
 }
 
 
@@ -320,7 +460,11 @@ fun JoinClassButton(
 
 
 enum class JoinClassOption(val option: String) {
-    CreateClass("Create a Class"),
-    UseClassCode("Use Class Code")
+    UseClassCode("Use Class Code"),
+    CreateClass("Create a Class")
 }
+
+data class AcademicLevel(
+    val name: String,
+)
 
