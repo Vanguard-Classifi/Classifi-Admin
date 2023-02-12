@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Classifi Admin</string>
+    <string name="app_name">Admin</string>
     <string name="open_sheet">Open Sheet</string>
     <string name="icon_brand">Branding Icon</string>
     <string name="dropdown">Dropdown list</string>
@@ -12,4 +12,8 @@
     <string name="my_classes">My Classes</string>
     <string name="add_remove_switch_classes">Add, remove and switch your classes</string>
     <string name="class_icon">Class icon</string>
+    <string name="placeholder_class_code">Class Code</string>
+    <string name="verify">Verify</string>
+    <string name="continue_text">CONTINUE</string>
+    <string name="add_class">Add a Class</string>
 </resources>

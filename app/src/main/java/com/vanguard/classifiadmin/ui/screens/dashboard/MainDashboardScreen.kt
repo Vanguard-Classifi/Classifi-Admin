@@ -41,6 +41,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.router.BottomDestination
@@ -50,6 +51,7 @@ import com.vanguard.classifiadmin.ui.components.DashboardMenu
 import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.FeatureListItem
 import com.vanguard.classifiadmin.ui.components.Level
+import com.vanguard.classifiadmin.ui.screens.classes.JoinClassScreen
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -65,9 +67,9 @@ fun MainDashboardScreen(
     goToFeature: (ClassifiFeature) -> Unit,
     onSelectMenu: (DashboardMenu) -> Unit,
     onSelectProfile: () -> Unit,
+    onManageClass: (String) -> Unit,
 ) {
     val navController = rememberNavController()
-    var filterActivated by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
@@ -77,6 +79,7 @@ fun MainDashboardScreen(
     val coroutineScope = rememberCoroutineScope()
     var menuState by remember { mutableStateOf(false) }
     var filterState by remember { mutableStateOf(false) }
+    var joinClassState by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = modifier) {
         ModalBottomSheetLayout(
@@ -177,47 +180,86 @@ fun MainDashboardScreen(
             Popup(alignment = Alignment.TopEnd,
                 offset = IntOffset(0, 200),
                 onDismissRequest = { filterState = false }) {
-              ClassFilterScreen(
-                  onClose = { filterState = false },
-                  assignedClasses = listOf(
-                      Level(
-                          name = "Grade 1",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 9",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 8",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 7",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 2",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 3",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 4",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 5",
-                          code = "GRD1/FLIS"
-                      ),
-                      Level(
-                          name = "Grade 6",
-                          code = "GRD1/FLIS"
-                      ),
-                  ),
-              )
+                ClassFilterScreen(
+                    onClose = { filterState = false },
+                    assignedClasses = listOf(
+                        Level(
+                            name = "Grade 1",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 9",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 8",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 7",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 2",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 3",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 4",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 5",
+                            code = "GRD1/FLIS"
+                        ),
+                        Level(
+                            name = "Grade 6",
+                            code = "GRD1/FLIS"
+                        ),
+                    ),
+                    onManageClass = onManageClass,
+                    onAddClass = {
+                        /*todo*/
+                        //close current dialog
+                        filterState = false
+                        joinClassState = true
+                        //open add class dialog
+                    }
+                )
+            }
+        }
+
+
+        AnimatedVisibility(
+            visible = joinClassState,
+            enter = scaleIn(
+                initialScale = 0.8f, animationSpec = tween(
+                    durationMillis = 50, easing = FastOutLinearInEasing
+                )
+            ),
+            exit = scaleOut(
+                targetScale = 0.8f,
+                animationSpec = tween(
+                    durationMillis = 50, easing = FastOutLinearInEasing
+                ),
+            ),
+        ) {
+            Popup(
+                alignment = Alignment.TopEnd,
+                offset = IntOffset(0, 200),
+                onDismissRequest = { joinClassState = false },
+                properties = PopupProperties(
+                    focusable = true,
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false,
+                )
+            ) {
+                JoinClassScreen(viewModel = viewModel, onClose = {
+                    joinClassState = false
+                })
             }
         }
     }

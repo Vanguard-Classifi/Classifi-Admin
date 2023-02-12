@@ -10,6 +10,8 @@ import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
 import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN
 import com.vanguard.classifiadmin.ui.screens.calendar.MyCalendarScreen
+import com.vanguard.classifiadmin.ui.screens.classes.MANAGE_CLASS_SCREEN
+import com.vanguard.classifiadmin.ui.screens.classes.ManageClassScreen
 import com.vanguard.classifiadmin.ui.screens.dashboard.MAIN_DASHBOARD_SCREEN
 import com.vanguard.classifiadmin.ui.screens.dashboard.MainDashboardScreen
 import com.vanguard.classifiadmin.ui.screens.feeds.FEEDS_SCREEN
@@ -44,7 +46,8 @@ fun NavGraph(
                 viewModel = viewModel,
                 goToFeature = { navController.navigate(it.screen) },
                 onSelectMenu = { navController.navigate(it.screen) },
-                onSelectProfile = { navController.navigate(Destinations.account) }
+                onSelectProfile = { navController.navigate(Destinations.account) },
+                onManageClass = { navController.navigate(Destinations.manageClass) }
             )
         }
 
@@ -64,6 +67,10 @@ fun NavGraph(
 
         composable(Destinations.account) {
             MyAccountScreen()
+        }
+
+        composable(Destinations.manageClass) {
+            ManageClassScreen(viewModel = viewModel)
         }
     }
 
@@ -123,6 +130,7 @@ object Destinations {
     const val support = SUPPORT_SCREEN
     const val calendar = CALENDAR_SCREEN
     const val account = ACCOUNT_SCREEN
+    const val manageClass = MANAGE_CLASS_SCREEN
 }
 
 object BottomDestination {

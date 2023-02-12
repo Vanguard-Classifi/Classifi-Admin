@@ -49,6 +49,8 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 fun ClassFilterScreen(
     modifier: Modifier = Modifier,
     onClose: () -> Unit,
+    onManageClass: (String) -> Unit,
+    onAddClass: () -> Unit,
     assignedClasses: List<Level>,
 ) {
     val constraints = classFilterScreenConstraints(16.dp)
@@ -102,14 +104,14 @@ fun ClassFilterScreen(
                             onSelectClass = {
                                 selectedClass.value = each
                             },
-                            onManageClass = {}
+                            onManageClass = onManageClass,
                         )
                     }
                 }
 
                 AddClassButton(
                     modifier = innerModifier.layoutId("addClass"),
-                    onAddClass = {}
+                    onAddClass = onAddClass,
                 )
             }
         }
