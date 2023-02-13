@@ -21,4 +21,7 @@
     <string name="placeholder_academic_level">Select academic level</string>
     <string name="manage_class">Manage Class</string>
     <string name="manage_class_item_icon">Manage Class Item Icon</string>
+    <string name="manage_subjects">Manage Subjects</string>
+    <string name="class_subjects">Class Subjects</string>
+    <string name="class_information">Class Information</string>
 </resources>

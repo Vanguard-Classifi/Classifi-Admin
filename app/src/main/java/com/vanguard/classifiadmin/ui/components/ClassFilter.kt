@@ -44,10 +44,12 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromUserName
 import com.vanguard.classifiadmin.ui.theme.Black100
+import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 @Composable
 fun ClassFilterScreen(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     onClose: () -> Unit,
     onManageClass: (String) -> Unit,
     onAddClass: () -> Unit,
@@ -58,7 +60,11 @@ fun ClassFilterScreen(
     val selectedClass: MutableState<Level?> = remember { mutableStateOf(null) }
 
 
-    Card(modifier = modifier.padding(horizontal = 16.dp), elevation = 8.dp, shape = RoundedCornerShape(16.dp)) {
+    Card(
+        modifier = modifier.padding(horizontal = 16.dp),
+        elevation = 8.dp,
+        shape = RoundedCornerShape(16.dp)
+    ) {
         BoxWithConstraints(modifier = modifier) {
             ConstraintLayout(
                 modifier = modifier
@@ -104,7 +110,10 @@ fun ClassFilterScreen(
                             onSelectClass = {
                                 selectedClass.value = each
                             },
-                            onManageClass = onManageClass,
+                            onManageClass = {
+                                viewModel.onSelectedClassManageClassChanged(it)
+                                onManageClass(it)
+                            },
                         )
                     }
                 }
@@ -267,7 +276,7 @@ fun ClassFilterItem(
         ) {
             ClassIcon(
                 modifier = innerModifier.layoutId("icon"),
-                color  = Color(generateColorFromClassName(className)),
+                color = Color(generateColorFromClassName(className)),
             )
 
             Text(
@@ -371,6 +380,8 @@ fun ClassFilterManageButton(
 fun ClassIcon(
     modifier: Modifier = Modifier,
     color: Color,
+    iconSize: Dp = 24.dp,
+    surfaceSize: Dp = 38.dp,
 ) {
     Surface(
         modifier = modifier
@@ -381,12 +392,12 @@ fun ClassIcon(
         Box(
             modifier = modifier
                 .padding(0.dp)
-                .height(38.dp)
-                .width(38.dp), contentAlignment = Alignment.Center
+                .height(surfaceSize)
+                .width(surfaceSize), contentAlignment = Alignment.Center
         ) {
             Icon(
                 modifier = modifier
-                    .size(24.dp)
+                    .size(iconSize)
                     .padding(4.dp),
                 painter = painterResource(id = R.drawable.icon_cap),
                 contentDescription = stringResource(id = R.string.class_icon),
@@ -435,7 +446,7 @@ private fun ClassFilterManageButtonPreview() {
 @Preview
 private fun ClassIconPreview() {
     ClassIcon(
-        color  = Color(0xff000000)
+        color = Color(0xff000000)
     )
 }
 

@@ -25,6 +25,14 @@ class MainViewModel @Inject constructor() : ViewModel() {
     private var _selectedAcademicLevelAddClass = MutableStateFlow(null as AcademicLevel?)
     val selectedAcademicLevelAddClass: StateFlow<AcademicLevel?> = _selectedAcademicLevelAddClass
 
+    private var _selectedClassManageClass = MutableStateFlow(null as String?)
+    val selectedClassManageClass: StateFlow<String?> = _selectedClassManageClass
+
+    fun onSelectedClassManageClassChanged(item: String?) = effect {
+        _selectedClassManageClass.value = item
+    }
+
+
     fun onClassNameAddClassChanged(name: String?) = effect {
         _classNameAddClass.value = name
     }

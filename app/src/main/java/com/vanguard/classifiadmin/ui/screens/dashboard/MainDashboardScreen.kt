@@ -184,6 +184,7 @@ fun MainDashboardScreen(
                 offset = IntOffset(0, 200),
                 onDismissRequest = { filterState = false }) {
                 ClassFilterScreen(
+                    viewModel = viewModel,
                     onClose = { filterState = false },
                     assignedClasses = listOf(
                         Level(
