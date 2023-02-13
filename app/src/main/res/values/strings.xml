@@ -24,4 +24,9 @@
     <string name="manage_subjects">Manage Subjects</string>
     <string name="class_subjects">Class Subjects</string>
     <string name="class_information">Class Information</string>
+    <string name="leave_class">leave class</string>
+    <string name="leave_school">leave school</string>
+    <string name="future_leaders">Future Leaders International School</string>
+    <string name="current_school">Current School</string>
+    <string name="current_class">Current Class</string>
 </resources>

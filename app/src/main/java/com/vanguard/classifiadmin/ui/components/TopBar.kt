@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,10 +34,10 @@ fun ChildTopBar(
     heading: String,
 ) {
     Card(modifier = modifier, elevation = 2.dp) {
-        Row(
+        Box(
             modifier = modifier
-                .fillMaxWidth()
-                .padding(8.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(12.dp)
+                .fillMaxWidth(), contentAlignment = Alignment.CenterStart
         ) {
             RoundedIconButtonTopBar(
                 icon = R.drawable.icon_back,
@@ -44,14 +45,19 @@ fun ChildTopBar(
                 size = 20.dp,
             )
 
-            Text(
-                text = heading,
-                color = MaterialTheme.colors.primary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = modifier.weight(1f),
-                textAlign = TextAlign.Center,
-            )
+            Box(
+                modifier = modifier
+                    .fillMaxWidth(), contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = heading,
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = modifier,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }
@@ -66,7 +72,9 @@ fun RoundedIconButtonTopBar(
     icon: Int,
 ) {
     Surface(
-        modifier = modifier.clip(CircleShape).size(surfaceSize),
+        modifier = modifier
+            .clip(CircleShape)
+            .size(surfaceSize),
         shape = CircleShape,
         color = MaterialTheme.colors.primary.copy(0.1f)
     ) {

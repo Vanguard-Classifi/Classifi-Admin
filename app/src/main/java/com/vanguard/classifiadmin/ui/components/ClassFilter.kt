@@ -42,7 +42,6 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
-import com.vanguard.classifiadmin.domain.helpers.generateColorFromUserName
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
@@ -105,7 +104,6 @@ fun ClassFilterScreen(
                         ClassFilterItem(
                             className = each.name,
                             classCode = each.code,
-                            selectedClass = selectedClass.value?.name ?: "",
                             selected = each.name == selectedClass.value?.name,
                             onSelectClass = {
                                 selectedClass.value = each
@@ -248,7 +246,6 @@ fun ClassFilterItem(
     className: String,
     classCode: String,
     selected: Boolean = false,
-    selectedClass: String,
     onManageClass: (String) -> Unit,
     onSelectClass: (String) -> Unit,
 ) {
@@ -259,7 +256,7 @@ fun ClassFilterItem(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .padding(vertical = 8.dp)
-            .clickable { onSelectClass(selectedClass) },
+            .clickable { onSelectClass(className) },
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = if (selected) 2.dp else 1.dp,
@@ -299,7 +296,7 @@ fun ClassFilterItem(
                 modifier = innerModifier.layoutId("manage"),
                 icon = R.drawable.icon_settings,
                 label = stringResource(id = R.string.manage),
-                selectedItem = selectedClass,
+                className = className,
                 onSelect = onManageClass,
             )
 
@@ -343,7 +340,7 @@ fun ClassFilterManageButton(
     modifier: Modifier = Modifier,
     icon: Int,
     label: String,
-    selectedItem: String,
+    className: String,
     onSelect: (String) -> Unit,
 ) {
     Surface(
@@ -352,7 +349,7 @@ fun ClassFilterManageButton(
         color = MaterialTheme.colors.primary.copy(0.1f)
     ) {
         TextButton(
-            onClick = { onSelect(selectedItem) },
+            onClick = { onSelect(className) },
             modifier = modifier
                 .padding(0.dp)
                 .clip(RoundedCornerShape(16.dp))
@@ -437,7 +434,7 @@ private fun ClassFilterManageButtonPreview() {
     ClassFilterManageButton(
         icon = R.drawable.icon_settings,
         label = "Manage",
-        selectedItem = "",
+        className = "",
         onSelect = {}
     )
 }
@@ -456,7 +453,6 @@ private fun ClassFilterItemPreview() {
     ClassFilterItem(
         className = "Grade 3",
         classCode = "CLass/24232",
-        selectedClass = "Grade 3",
         onManageClass = {},
         selected = true,
         onSelectClass = {}

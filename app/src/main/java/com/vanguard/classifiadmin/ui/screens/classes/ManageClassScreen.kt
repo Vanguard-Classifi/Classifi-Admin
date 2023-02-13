@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -37,6 +40,7 @@ import androidx.compose.ui.layout.ParentDataModifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -77,6 +81,7 @@ fun ManageClassScreen(
                     viewModel = viewModel,
                     modifier = modifier.padding(padding),
                     maxHeight = maxHeight,
+                    onManageSubjects = {/*TODO: */ }
                 )
             })
     }
@@ -92,96 +97,119 @@ fun ManageClassScreenContent(
 ) {
     val constraints = manageClassScreenContentConstraints(16.dp)
     val innerModifier = Modifier
+    val verticalScroll = rememberScrollState()
     val selectedClassManageClass by viewModel.selectedClassManageClass.collectAsState()
 
-    Card(
+    Column(
         modifier = modifier
-            .height(maxHeight.times(0.67f))
-            .padding(horizontal = 8.dp, vertical = 32.dp),
-        elevation = 2.dp, shape = RoundedCornerShape(16.dp)
+            .verticalScroll(verticalScroll)
     ) {
-        BoxWithConstraints(modifier = modifier) {
-            ConstraintLayout(
-                modifier = modifier.fillMaxWidth(),
-                constraintSet = constraints,
-            ) {
-                ClassIcon(
-                    modifier = innerModifier.layoutId("classIcon"),
-                    iconSize = 52.dp,
-                    surfaceSize = 60.dp,
-                    color = Color(generateColorFromClassName(selectedClassManageClass ?: ""))
-                )
-
-                Text(
-                    modifier = innerModifier.layoutId("className"),
-                    text = selectedClassManageClass ?: "",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(generateColorFromClassName(selectedClassManageClass ?: ""))
-                )
-
-                Text(
-                    modifier = innerModifier.layoutId("classCode"),
-                    text = selectedClassManageClass ?: "",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100.copy(0.3f)
-                )
-
-                Text(
-                    modifier = innerModifier.layoutId("classSubjects"),
-                    text = stringResource(id = R.string.class_subjects).uppercase(),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary
-                )
-
-                ManageSubjectBox(
-                    modifier = innerModifier.layoutId("manageSubjectBox"),
-                    onManageSubjects = onManageSubjects,
-                    subjects = listOf(
-                        "English",
-                        "Science",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics Education",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics",
-                        "Physics Education Science",
-                        "Physics",
-                        "Physics",
+        Card(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 2.dp, vertical = 32.dp),
+            elevation = 2.dp, shape = RoundedCornerShape(16.dp)
+        ) {
+            BoxWithConstraints(modifier = modifier) {
+                ConstraintLayout(
+                    modifier = modifier.fillMaxWidth(),
+                    constraintSet = constraints,
+                ) {
+                    ClassIcon(
+                        modifier = innerModifier.layoutId("classIcon"),
+                        iconSize = 52.dp,
+                        surfaceSize = 60.dp,
+                        color = Color(generateColorFromClassName(selectedClassManageClass ?: ""))
                     )
-                )
 
-                Text(
-                    modifier = innerModifier.layoutId("classInfo"),
-                    text = stringResource(id = R.string.class_information).uppercase(),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary
-                )
+                    Text(
+                        modifier = innerModifier.layoutId("className"),
+                        text = selectedClassManageClass ?: "",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(generateColorFromClassName(selectedClassManageClass ?: ""))
+                    )
 
-                ManageClassItem(
-                    modifier = innerModifier.layoutId("")
-                )
+                    Text(
+                        modifier = innerModifier.layoutId("classCode"),
+                        text = selectedClassManageClass ?: "",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Black100.copy(0.3f)
+                    )
 
+                    Text(
+                        modifier = innerModifier.layoutId("classSubjects"),
+                        text = stringResource(id = R.string.class_subjects).uppercase(),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary
+                    )
+
+                    ManageSubjectBox(
+                        modifier = innerModifier
+                            .padding(16.dp)
+                            .layoutId("manageSubjectBox"),
+                        onManageSubjects = onManageSubjects,
+                        subjects = listOf(
+                            "English",
+                            "Science",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics Education",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics",
+                            "Physics Education Science",
+                            "Physics",
+                            "Physics",
+                        )
+                    )
+
+                    Text(
+                        modifier = innerModifier.layoutId("classInfo"),
+                        text = stringResource(id = R.string.class_information).uppercase(),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary
+                    )
+
+                    ManageClassItem(
+                        modifier = innerModifier.layoutId("classExtra"),
+                        title = selectedClassManageClass ?: "",
+                        subtitle = stringResource(id = R.string.current_class),
+                        extra = stringResource(id = R.string.leave_class),
+                        onExtra = {},
+                        icon = R.drawable.icon_cap
+                    )
+
+                    ManageClassItem(
+                        modifier = innerModifier.layoutId("schoolExtra"),
+                        title = stringResource(id = R.string.future_leaders),
+                        subtitle = stringResource(id = R.string.current_school),
+                        extra = stringResource(id = R.string.leave_school),
+                        onExtra = {},
+                        icon = R.drawable.icon_school
+                    )
+
+
+                }
             }
         }
     }
@@ -282,7 +310,11 @@ fun ManageClassItem(
             ManageClassItemIcon(icon = icon, modifier = innerModifier.layoutId("icon"))
 
             Text(
-                modifier = innerModifier.layoutId("className"),
+                modifier = innerModifier
+                    .widthIn(max = 120.dp)
+                    .layoutId("className"),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
@@ -290,8 +322,12 @@ fun ManageClassItem(
             )
 
             Text(
-                modifier = innerModifier.layoutId("code"),
+                modifier = innerModifier
+                    .widthIn(max = 120.dp)
+                    .layoutId("code"),
                 text = subtitle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 fontSize = 12.sp,
                 color = Black100.copy(0.8f)
             )
@@ -299,7 +335,7 @@ fun ManageClassItem(
             TextButton(onClick = onExtra, modifier = innerModifier.layoutId("manage")) {
                 Text(
                     text = extra.uppercase(),
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.error,
                 )
@@ -335,7 +371,7 @@ private fun manageClassItemConstraints(margin: Dp): ConstraintSet {
         constrain(manage) {
             top.linkTo(className.top, margin = 0.dp)
             bottom.linkTo(code.bottom, margin = 0.dp)
-            end.linkTo(parent.end, margin = margin)
+            end.linkTo(parent.end, margin = 8.dp)
         }
     }
 }
@@ -415,9 +451,13 @@ fun ManageSubjectBox(
             modifier = modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            Column(modifier = modifier) {
+            Column(
+                modifier = modifier,
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 ManageSubjectBoxContent(
-                    modifier = modifier.padding(bottom = 32.dp),
+                    modifier = modifier.fillMaxWidth(),
                     padding = 22,
                     subjects = subjects,
                 )
@@ -427,10 +467,15 @@ fun ManageSubjectBox(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    TextButton(onClick = onManageSubjects, modifier = modifier.padding(8.dp)) {
+                    TextButton(
+                        onClick = onManageSubjects,
+                        modifier = modifier
+                            .clip(RoundedCornerShape(18.dp))
+                            .padding(4.dp)
+                    ) {
                         Text(
                             text = stringResource(id = R.string.manage_subjects).uppercase(),
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colors.primary,
                         )
@@ -455,7 +500,7 @@ fun ManageSubjectBoxContent(
     var offsetY = padding
 
     Layout(
-        modifier = modifier,
+        modifier = Modifier.size(100.dp),
         content = {
             subjects.forEach { subject ->
                 Box(modifier = Modifier.subjectData(subject), contentAlignment = Alignment.Center) {
@@ -469,14 +514,19 @@ fun ManageSubjectBoxContent(
             measurable.measure(constraints)
         }
 
-        layout(constraints.maxWidth, constraints.maxHeight) {
+        var containerWidth = 0
+        var containerHeight = 0
+
+        layout(containerWidth, containerHeight) {
             placeablesWithSubjects.forEach { placeable ->
-                if(constraints.maxWidth - offsetX <= (placeable.width +  2 * padding)) {
+                if (constraints.maxWidth - offsetX <= (placeable.width + 2 * padding)) {
                     offsetY += padding + placeable.height
                     offsetX = padding
                 }
                 placeable.placeRelative(x = offsetX, y = offsetY)
                 offsetX += padding + placeable.width
+                containerWidth += (2 * padding) + offsetX
+                containerHeight += (2 * padding) + offsetY
             }
         }
     }
@@ -514,6 +564,7 @@ private fun SubjectChipPreview() {
 private fun ManageSubjectBoxPreview() {
     ManageSubjectBox(
         onManageSubjects = {},
+        subjects = listOf()
     )
 }
 
