@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -100,19 +101,36 @@ fun ClassFilterScreen(
                         .layoutId("classesColumn"),
                     state = rememberLazyListState()
                 ) {
-                    items(assignedClasses) { each ->
-                        ClassFilterItem(
-                            className = each.name,
-                            classCode = each.code,
-                            selected = each.name == selectedClass.value?.name,
-                            onSelectClass = {
-                                selectedClass.value = each
-                            },
-                            onManageClass = {
-                                viewModel.onSelectedClassManageClassChanged(it)
-                                onManageClass(it)
-                            },
-                        )
+                    if(assignedClasses.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = modifier.padding(8.dp)
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.no_classes_assigned_yet),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colors.primary,
+                                )
+                            }
+                        }
+                    } else {
+                        items(assignedClasses) { each ->
+                            ClassFilterItem(
+                                className = each.name,
+                                classCode = each.code,
+                                selected = each.name == selectedClass.value?.name,
+                                onSelectClass = {
+                                    selectedClass.value = each
+                                },
+                                onManageClass = {
+                                    viewModel.onSelectedClassManageClassChanged(it)
+                                    onManageClass(it)
+                                },
+                            )
+                        }
                     }
                 }
 

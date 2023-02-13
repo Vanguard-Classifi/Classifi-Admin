@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -45,6 +47,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.router.BottomDestination
+import com.vanguard.classifiadmin.router.BottomNavGraph
 import com.vanguard.classifiadmin.ui.components.ClassFilterScreen
 import com.vanguard.classifiadmin.ui.components.ClassifiFeature
 import com.vanguard.classifiadmin.ui.components.DashboardMenu
@@ -86,6 +89,7 @@ fun MainDashboardScreen(
         val maxHeight = maxHeight
 
         ModalBottomSheetLayout(
+            modifier = modifier.width(maxWidth).height(maxHeight),
             sheetState = sheetState,
             scrimColor = MaterialTheme.colors.primary.copy(0.1f),
             sheetElevation = 8.dp,
@@ -106,37 +110,7 @@ fun MainDashboardScreen(
                 )
             }
         ) {
-            Scaffold(modifier = modifier,
-                topBar = {
-                    TopBar(
-                        filterActivated = filterState,
-                        onFilter = {
-                            filterState = !filterState
-                        },
-                        openProfile = { menuState = !menuState },
-                        openSheet = {
-                            coroutineScope.launch {
-                                showModalSheet.value = true
-                                sheetState.show()
-                            }
-                        },
-                        username = "Hamza Jesim",
-                        filterLabel = "Grade 1",
-                    )
-                },
-                bottomBar = {
-                    BottomBar(
-                        navController = navController,
-                    )
-                },
-                content = { padding ->
-                    BottomContainer(
-                        viewModel = viewModel,
-                        modifier = modifier.padding(padding),
-                        navController = navController,
-                    )
-                }
-            )
+
         }
 
         AnimatedVisibility(
@@ -166,6 +140,45 @@ fun MainDashboardScreen(
             }
         }
 
+        val classes = listOf(
+            Level(
+                name = "Grade 1",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 9",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 8",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 7",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 2",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 3",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 4",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 5",
+                code = "GRD1/FLIS"
+            ),
+            Level(
+                name = "Grade 6",
+                code = "GRD1/FLIS"
+            ),
+        )
+
         AnimatedVisibility(
             visible = filterState,
             enter = scaleIn(
@@ -186,44 +199,7 @@ fun MainDashboardScreen(
                 ClassFilterScreen(
                     viewModel = viewModel,
                     onClose = { filterState = false },
-                    assignedClasses = listOf(
-                        Level(
-                            name = "Grade 1",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 9",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 8",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 7",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 2",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 3",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 4",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 5",
-                            code = "GRD1/FLIS"
-                        ),
-                        Level(
-                            name = "Grade 6",
-                            code = "GRD1/FLIS"
-                        ),
-                    ),
+                    assignedClasses = classes,
                     onManageClass = onManageClass,
                     onAddClass = {
                         /*todo*/
@@ -239,7 +215,7 @@ fun MainDashboardScreen(
 
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
             AnimatedVisibility(
-              modifier = modifier.padding(top = maxHeight / 4),
+                modifier = modifier.padding(top = 100.dp),
                 visible = joinClassState,
                 enter = scaleIn(
                     initialScale = 0.8f, animationSpec = tween(
@@ -254,15 +230,15 @@ fun MainDashboardScreen(
                 ),
             ) {
                 JoinClassScreen(
-                    viewModel = viewModel, onClose = {
-                    joinClassState = false
-                },
+                    viewModel = viewModel,
+                    onClose = {
+                        joinClassState = false
+                    },
                 )
             }
         }
     }
 }
-
 
 @Composable
 fun DashboardBottomSheetContent(

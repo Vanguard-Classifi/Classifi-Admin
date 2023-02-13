@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.dashboard
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -15,7 +16,7 @@ fun BottomContainer(
 ) {
     BottomNavGraph(
         viewModel = viewModel,
-        modifier = modifier,
+        modifier = Modifier.fillMaxSize(),
         navController = navController,
     )
 }

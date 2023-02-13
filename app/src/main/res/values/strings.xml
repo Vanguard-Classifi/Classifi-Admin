@@ -29,4 +29,6 @@
     <string name="future_leaders">Future Leaders International School</string>
     <string name="current_school">Current School</string>
     <string name="current_class">Current Class</string>
+    <string name="no_classes_assigned_yet">No Classes Assigned Yet</string>
+    <string name="members">Members</string>
 </resources>
