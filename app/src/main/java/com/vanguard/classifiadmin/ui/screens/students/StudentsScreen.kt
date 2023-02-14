@@ -156,16 +156,10 @@ fun StudentsScreen(
         ),
     )
 
-    BoxWithConstraints(modifier = modifier) {
-        Scaffold(
-            modifier = modifier.height(1000.dp),
-            content = { padding ->
-                StudentsScreenContent(
-                    modifier = modifier.padding(padding),
-                    students = students,
-                )
-            }
-        )
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Wake up Students  screen")
+        }
     }
 }
 

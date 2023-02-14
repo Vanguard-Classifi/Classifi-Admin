@@ -37,7 +37,7 @@ fun NavGraph(
     viewModel: MainViewModel,
     finishActivity: () -> Unit,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Destinations.dashboard,
+    startDestination: String = Destinations.manageClass,
 ) {
     NavHost(
         modifier = modifier,

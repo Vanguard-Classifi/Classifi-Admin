@@ -1,8 +1,11 @@
 package com.vanguard.classifiadmin.ui.screens.feeds
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,7 +21,9 @@ fun FeedsScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
 ) {
-   BoxWithConstraints(modifier = modifier.fillMaxWidth().padding(0.dp), contentAlignment = Alignment.BottomCenter) {
-       Text("News Feeds")
-   }
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Wake up Feeds  screen")
+        }
+    }
 }

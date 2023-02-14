@@ -19,13 +19,10 @@ fun AssessmentsScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel
 ) {
-    BoxWithConstraints(modifier = modifier) {
-        Scaffold(modifier = modifier,
-            content = { padding ->
-                AssessmentsScreenContent(
-                    modifier = modifier.padding(padding)
-                )
-            })
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Wake up Assessment screen")
+        }
     }
 }
 

@@ -28,6 +28,7 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +45,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.router.BottomDestination
@@ -89,7 +92,9 @@ fun MainDashboardScreen(
         val maxHeight = maxHeight
 
         ModalBottomSheetLayout(
-            modifier = modifier.width(maxWidth).height(maxHeight),
+            modifier = modifier
+                .width(maxWidth)
+                .height(maxHeight),
             sheetState = sheetState,
             scrimColor = MaterialTheme.colors.primary.copy(0.1f),
             sheetElevation = 8.dp,
@@ -110,7 +115,22 @@ fun MainDashboardScreen(
                 )
             }
         ) {
-
+            MainDashboardScreenContent(
+                modifier = modifier,
+                viewModel = viewModel,
+                navController = navController,
+                filterLabel = "KG 2",
+                filterState = filterState,
+                onFilter = { filterState = !filterState },
+                openProfile = { menuState = !menuState },
+                openSheet = {
+                    coroutineScope.launch {
+                        showModalSheet.value = true
+                        sheetState.show()
+                    }
+                },
+                username = "Christopher Adams"
+            )
         }
 
         AnimatedVisibility(
@@ -237,6 +257,46 @@ fun MainDashboardScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun MainDashboardScreenContent(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    navController: NavHostController,
+    filterLabel: String,
+    filterState: Boolean,
+    onFilter: (String) -> Unit,
+    openSheet: () -> Unit,
+    openProfile: () -> Unit,
+    username: String,
+) {
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                TopBar(
+                    filterLabel = filterLabel,
+                    onFilter = onFilter,
+                    openSheet = openSheet,
+                    openProfile = openProfile,
+                    username = username,
+                    filterActivated = filterState,
+                )
+            },
+            bottomBar = {
+                BottomBar(navController = navController)
+            },
+            content = { padding ->
+                BottomContainer(
+                    viewModel = viewModel,
+                    navController = navController,
+                    modifier = Modifier.padding(padding)
+                )
+            }
+        )
     }
 }
 
