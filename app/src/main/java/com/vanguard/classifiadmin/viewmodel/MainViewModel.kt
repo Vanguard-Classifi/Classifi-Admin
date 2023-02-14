@@ -2,6 +2,7 @@ package com.vanguard.classifiadmin.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
@@ -31,6 +32,14 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
     private var _currentDashboardBottomSheetFlavor = MutableStateFlow(null as DashboardBottomSheetFlavor?)
     val currentDashboardBottomSheetFlavor: StateFlow<DashboardBottomSheetFlavor?> = _currentDashboardBottomSheetFlavor
+
+
+    private var _currentAssessmentOption = MutableStateFlow(null as AssessmentOption?)
+    val currentAssessmentOption: StateFlow<AssessmentOption?> = _currentAssessmentOption
+
+    fun onCurrentAssessmentOptionChanged(option: AssessmentOption?) = effect {
+        _currentAssessmentOption.value = option
+    }
 
     fun onCurrentDashboardBottomSheetFlavorChanged(flavor: DashboardBottomSheetFlavor?) = effect {
         _currentDashboardBottomSheetFlavor.value = flavor

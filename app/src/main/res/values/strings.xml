@@ -31,4 +31,6 @@
     <string name="current_class">Current Class</string>
     <string name="no_classes_assigned_yet">No Classes Assigned Yet</string>
     <string name="members">Members</string>
+    <string name="assessments">Assessments</string>
+    <string name="closed">Closed</string>
 </resources>

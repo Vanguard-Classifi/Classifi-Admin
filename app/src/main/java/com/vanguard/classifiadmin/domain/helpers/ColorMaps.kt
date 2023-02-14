@@ -1,6 +1,8 @@
 package com.vanguard.classifiadmin.domain.helpers
 
 import com.vanguard.classifiadmin.domain.extensions.splitWithSpace
+import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 
 val AvatarColorMap: Map<Char, Long> = mapOf(
     'a' to 0xffe31809,
@@ -65,6 +67,16 @@ val ClassColorMap: Map<Int, Long> = mapOf(
 
 fun generateColorFromClassName(className: String): Long {
     val split = className.splitWithSpace()
-    val second = if(split.size > 1) split[1].toIntOrNull() else 0
+    val second = if (split.size > 1) split[1].toIntOrNull() else 0
     return ClassColorMap[second ?: 0] ?: 0xff000000
+}
+
+val AssessmentTypeColorMap: Map<String, Long> = mapOf(
+    AssessmentState.Quiz.name to 0xfffc3d03,
+    AssessmentState.Test.name to 0xfffcf403,
+    AssessmentState.Exam.name to 0xff03fcf0,
+)
+
+fun generateColorFromAssessment(assessment: Assessment): Long {
+    return AssessmentTypeColorMap[assessment.type] ?: 0xff000000
 }
