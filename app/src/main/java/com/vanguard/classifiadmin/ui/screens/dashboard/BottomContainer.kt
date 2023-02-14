@@ -16,11 +16,13 @@ import com.vanguard.classifiadmin.viewmodel.MainViewModel
 fun BottomContainer(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    onStudentOptions: () -> Unit,
 ) {
     BottomNavGraph(
         viewModel = viewModel,
         modifier = Modifier.fillMaxSize(),
         navController = navController,
+        onStudentOptions = onStudentOptions,
     )
 }

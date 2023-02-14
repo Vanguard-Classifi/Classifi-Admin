@@ -31,6 +31,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +58,8 @@ import com.vanguard.classifiadmin.ui.components.DashboardMenu
 import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.FeatureListItem
 import com.vanguard.classifiadmin.ui.components.Level
+import com.vanguard.classifiadmin.ui.components.StudentOption
+import com.vanguard.classifiadmin.ui.components.StudentOptionsListItem
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassScreen
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -76,6 +79,7 @@ fun MainDashboardScreen(
     onManageClass: (String) -> Unit,
 ) {
     val navController = rememberNavController()
+    val currentBottomSheetFlavor by viewModel.currentDashboardBottomSheetFlavor.collectAsState()
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
@@ -96,13 +100,15 @@ fun MainDashboardScreen(
                 .width(maxWidth)
                 .height(maxHeight),
             sheetState = sheetState,
-            scrimColor = MaterialTheme.colors.primary.copy(0.1f),
+            scrimColor = MaterialTheme.colors.primary.copy(0.3f),
             sheetElevation = 8.dp,
             sheetBackgroundColor = MaterialTheme.colors.onPrimary,
             sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             sheetContent = {
                 DashboardBottomSheetContent(
                     modifier = modifier,
+                    currentBottomSheetFlavor = currentBottomSheetFlavor
+                        ?: DashboardBottomSheetFlavor.Features,
                     onSelectFeature = {
                         goToFeature(it)          //go to feature destination
                         //hide bottom sheet
@@ -112,6 +118,15 @@ fun MainDashboardScreen(
                             sheetState.hide()
                         }
                     },
+                    onSelectOption = {
+                        /*TODO -> on student option pressed */
+                        //hide bottom sheet
+                        coroutineScope.launch {
+                            showModalSheet.value = false
+                            delay(500)
+                            sheetState.hide()
+                        }
+                    }
                 )
             }
         ) {
@@ -124,12 +139,24 @@ fun MainDashboardScreen(
                 onFilter = { filterState = !filterState },
                 openProfile = { menuState = !menuState },
                 openSheet = {
+                    viewModel.onCurrentDashboardBottomSheetFlavorChanged(
+                        DashboardBottomSheetFlavor.Features
+                    )
                     coroutineScope.launch {
                         showModalSheet.value = true
                         sheetState.show()
                     }
                 },
-                username = "Christopher Adams"
+                username = "Christopher Adams",
+                onStudentOptions = {
+                    viewModel.onCurrentDashboardBottomSheetFlavorChanged(
+                        DashboardBottomSheetFlavor.StudentOptions
+                    )
+                    coroutineScope.launch {
+                        showModalSheet.value = true
+                        sheetState.show()
+                    }
+                }
             )
         }
 
@@ -271,6 +298,7 @@ fun MainDashboardScreenContent(
     openSheet: () -> Unit,
     openProfile: () -> Unit,
     username: String,
+    onStudentOptions: () -> Unit,
 ) {
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -293,7 +321,8 @@ fun MainDashboardScreenContent(
                 BottomContainer(
                     viewModel = viewModel,
                     navController = navController,
-                    modifier = Modifier.padding(padding)
+                    modifier = Modifier.padding(padding),
+                    onStudentOptions = onStudentOptions,
                 )
             }
         )
@@ -303,9 +332,13 @@ fun MainDashboardScreenContent(
 @Composable
 fun DashboardBottomSheetContent(
     modifier: Modifier = Modifier,
+    currentBottomSheetFlavor: DashboardBottomSheetFlavor,
     onSelectFeature: (ClassifiFeature) -> Unit,
     features: List<ClassifiFeature> = ClassifiFeature.values().toList(),
+    studentOptions: List<StudentOption> = StudentOption.values().toList(),
+    onSelectOption: (StudentOption) -> Unit,
 ) {
+
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = modifier
@@ -327,10 +360,58 @@ fun DashboardBottomSheetContent(
             }
         }
 
-        LazyColumn(modifier = modifier.padding(bottom = 16.dp), state = rememberLazyListState()) {
-            items(features) { each ->
-                FeatureListItem(feature = each, onSelect = onSelectFeature)
+        //swap content
+        when (currentBottomSheetFlavor) {
+            DashboardBottomSheetFlavor.Features -> {
+                FeaturesBottomSheetContent(
+                    modifier = modifier,
+                    features = features,
+                    onSelectFeature = onSelectFeature,
+                )
             }
+
+            DashboardBottomSheetFlavor.StudentOptions -> {
+                StudentOptionsBottomSheetContent(
+                    modifier = modifier,
+                    studentOptions = studentOptions,
+                    onSelectOption = onSelectOption,
+                )
+            }
+
+            else -> {
+                FeaturesBottomSheetContent(
+                    modifier = modifier,
+                    features = features,
+                    onSelectFeature = onSelectFeature,
+                )
+            }
+        }
+
+    }
+}
+
+@Composable
+fun StudentOptionsBottomSheetContent(
+    modifier: Modifier = Modifier,
+    studentOptions: List<StudentOption>,
+    onSelectOption: (StudentOption) -> Unit,
+) {
+    LazyColumn(modifier = modifier.padding(bottom = 16.dp), state = rememberLazyListState()) {
+        items(studentOptions) { each ->
+            StudentOptionsListItem(studentOption = each, onSelect = onSelectOption)
+        }
+    }
+}
+
+@Composable
+fun FeaturesBottomSheetContent(
+    modifier: Modifier = Modifier,
+    features: List<ClassifiFeature>,
+    onSelectFeature: (ClassifiFeature) -> Unit,
+) {
+    LazyColumn(modifier = modifier.padding(bottom = 16.dp), state = rememberLazyListState()) {
+        items(features) { each ->
+            FeatureListItem(feature = each, onSelect = onSelectFeature)
         }
     }
 }
@@ -341,4 +422,9 @@ enum class DestinationItem(val label: String, val icon: Int, val screen: String)
     Students("Students", R.drawable.icon_students, BottomDestination.students),
     Assessments("Assessments", R.drawable.icon_assessment, BottomDestination.assessments),
     Reports("Reports", R.drawable.icon_reports, BottomDestination.reports)
+}
+
+sealed class DashboardBottomSheetFlavor {
+    object Features : DashboardBottomSheetFlavor()
+    object StudentOptions : DashboardBottomSheetFlavor()
 }

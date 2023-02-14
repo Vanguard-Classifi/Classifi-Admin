@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
+import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +28,13 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
     private var _selectedClassManageClass = MutableStateFlow(null as String?)
     val selectedClassManageClass: StateFlow<String?> = _selectedClassManageClass
+
+    private var _currentDashboardBottomSheetFlavor = MutableStateFlow(null as DashboardBottomSheetFlavor?)
+    val currentDashboardBottomSheetFlavor: StateFlow<DashboardBottomSheetFlavor?> = _currentDashboardBottomSheetFlavor
+
+    fun onCurrentDashboardBottomSheetFlavorChanged(flavor: DashboardBottomSheetFlavor?) = effect {
+        _currentDashboardBottomSheetFlavor.value = flavor
+    }
 
     fun onSelectedClassManageClassChanged(item: String?) = effect {
         _selectedClassManageClass.value = item

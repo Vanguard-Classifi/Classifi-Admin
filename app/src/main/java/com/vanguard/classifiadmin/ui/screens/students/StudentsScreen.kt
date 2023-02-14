@@ -52,6 +52,7 @@ const val STUDENTS_SCREEN = "students_screen"
 fun StudentsScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onStudentOptions: () -> Unit,
 ) {
     val students = listOf(
         Student(
@@ -159,6 +160,7 @@ fun StudentsScreen(
     StudentsScreenContent(
         modifier = modifier,
         students = students,
+        onStudentOptions = onStudentOptions,
     )
 }
 
@@ -167,51 +169,55 @@ fun StudentsScreen(
 fun StudentsScreenContent(
     modifier: Modifier = Modifier,
     students: List<Student>,
+    onStudentOptions: () -> Unit,
 ) {
     val verticalScroll = rememberLazyListState()
     val innerModifier = Modifier
 
     Surface(modifier = Modifier.fillMaxSize()) {
-         Column(
-             modifier = Modifier.fillMaxSize(),
-             verticalArrangement = Arrangement.Top,
-             horizontalAlignment = Alignment.CenterHorizontally,
-         ) {
-             Row(
-                 modifier = innerModifier
-                     .fillMaxWidth()
-                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                 verticalAlignment = Alignment.CenterVertically,
-                 horizontalArrangement = Arrangement.SpaceBetween,
-             ) {
-                 Text(
-                     text = stringResource(id = R.string.members),
-                     fontSize = 16.sp,
-                     fontWeight = FontWeight.Bold,
-                     color = MaterialTheme.colors.primary,
-                 )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(
+                modifier = innerModifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = stringResource(id = R.string.members),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.primary,
+                )
 
-                 RoundedIconButton(
-                     onClick = { /*TODO*/ },
-                     icon = R.drawable.icon_add,
-                 )
-             }
+                RoundedIconButton(
+                    onClick = { /*TODO*/ },
+                    icon = R.drawable.icon_add,
+                )
+            }
 
-             LazyColumn(
-                 modifier = Modifier
-                     .padding(bottom = 72.dp),
-                 state = verticalScroll,
-             ) {
-                 items(students) { each ->
-                     StudentItem(
-                         studentName = each.name,
-                         studentCode = each.code,
-                         onOptions = {},
-                         onSelectStudent = {}
-                     )
-                 }
-             }
-         }
+            LazyColumn(
+                modifier = Modifier
+                    .padding(bottom = 72.dp),
+                state = verticalScroll,
+            ) {
+                items(students) { each ->
+                    StudentItem(
+                        studentName = each.name,
+                        studentCode = each.code,
+                        onOptions = {
+                            //indicate selected student
+                            onStudentOptions()
+                        },
+                        onSelectStudent = {}
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -21,6 +21,8 @@ import com.vanguard.classifiadmin.ui.screens.feeds.FEEDS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedsScreen
 import com.vanguard.classifiadmin.ui.screens.profile.ACCOUNT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.profile.MyAccountScreen
+import com.vanguard.classifiadmin.ui.screens.profile.STUDENT_PROFILE_SCREEN
+import com.vanguard.classifiadmin.ui.screens.profile.StudentProfileScreen
 import com.vanguard.classifiadmin.ui.screens.reports.REPORTS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.reports.ReportsScreen
 import com.vanguard.classifiadmin.ui.screens.results.STUDENT_RESULTS_SCREEN
@@ -31,13 +33,24 @@ import com.vanguard.classifiadmin.ui.screens.support.SUPPORT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.support.SupportScreen
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
+object Destinations {
+    const val dashboard = MAIN_DASHBOARD_SCREEN
+    const val studentResults = STUDENT_RESULTS_SCREEN
+    const val support = SUPPORT_SCREEN
+    const val calendar = CALENDAR_SCREEN
+    const val account = ACCOUNT_SCREEN
+    const val manageClass = MANAGE_CLASS_SCREEN
+    const val studentProfile = STUDENT_PROFILE_SCREEN
+}
+
+
 @Composable
 fun NavGraph(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     finishActivity: () -> Unit,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Destinations.manageClass,
+    startDestination: String = Destinations.dashboard,
 ) {
     NavHost(
         modifier = modifier,
@@ -78,9 +91,23 @@ fun NavGraph(
                 onBack = {navController.navigate(Destinations.dashboard)}
             )
         }
+
+        composable(Destinations.studentProfile) {
+            StudentProfileScreen(
+                viewModel = viewModel,
+            )
+        }
     }
 }
 
+
+
+object BottomDestination {
+    const val feeds = FEEDS_SCREEN
+    const val students = STUDENTS_SCREEN
+    const val assessments = ASSESSMENT_SCREEN
+    const val reports = REPORTS_SCREEN
+}
 
 @Composable
 fun BottomNavGraph(
@@ -88,6 +115,7 @@ fun BottomNavGraph(
     startDestination: String = BottomDestination.feeds,
     navController: NavHostController = rememberNavController(),
     viewModel: MainViewModel,
+    onStudentOptions: () -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -107,6 +135,7 @@ fun BottomNavGraph(
             StudentsScreen(
                 modifier = modifier,
                 viewModel = viewModel,
+                onStudentOptions = onStudentOptions,
             )
         }
 
@@ -126,21 +155,4 @@ fun BottomNavGraph(
             )
         }
     }
-}
-
-
-object Destinations {
-    const val dashboard = MAIN_DASHBOARD_SCREEN
-    const val studentResults = STUDENT_RESULTS_SCREEN
-    const val support = SUPPORT_SCREEN
-    const val calendar = CALENDAR_SCREEN
-    const val account = ACCOUNT_SCREEN
-    const val manageClass = MANAGE_CLASS_SCREEN
-}
-
-object BottomDestination {
-    const val feeds = FEEDS_SCREEN
-    const val students = STUDENTS_SCREEN
-    const val assessments = ASSESSMENT_SCREEN
-    const val reports = REPORTS_SCREEN
 }
