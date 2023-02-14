@@ -156,11 +156,10 @@ fun StudentsScreen(
         ),
     )
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Wake up Students  screen")
-        }
-    }
+    StudentsScreenContent(
+        modifier = modifier,
+        students = students,
+    )
 }
 
 
@@ -170,14 +169,16 @@ fun StudentsScreenContent(
     students: List<Student>,
 ) {
     val verticalScroll = rememberLazyListState()
+    val innerModifier = Modifier
 
-    Surface(modifier = modifier.fillMaxSize().border(width = 2.dp, color = Color.Blue)) {
-
-         Box(modifier = modifier
-             .fillMaxSize()
-             .border(width = 2.dp, color = Color.Blue), contentAlignment = Alignment.Center) {
+    Surface(modifier = Modifier.fillMaxSize()) {
+         Column(
+             modifier = Modifier.fillMaxSize(),
+             verticalArrangement = Arrangement.Top,
+             horizontalAlignment = Alignment.CenterHorizontally,
+         ) {
              Row(
-                 modifier = modifier
+                 modifier = innerModifier
                      .fillMaxWidth()
                      .padding(horizontal = 16.dp, vertical = 8.dp),
                  verticalAlignment = Alignment.CenterVertically,
@@ -185,7 +186,7 @@ fun StudentsScreenContent(
              ) {
                  Text(
                      text = stringResource(id = R.string.members),
-                     fontSize = 14.sp,
+                     fontSize = 16.sp,
                      fontWeight = FontWeight.Bold,
                      color = MaterialTheme.colors.primary,
                  )
@@ -195,49 +196,22 @@ fun StudentsScreenContent(
                      icon = R.drawable.icon_add,
                  )
              }
+
+             LazyColumn(
+                 modifier = Modifier
+                     .padding(bottom = 72.dp),
+                 state = verticalScroll,
+             ) {
+                 items(students) { each ->
+                     StudentItem(
+                         studentName = each.name,
+                         studentCode = each.code,
+                         onOptions = {},
+                         onSelectStudent = {}
+                     )
+                 }
+             }
          }
-
-        /**
-        LazyColumn(
-            modifier = modifier
-                .padding(0.dp),
-            state = verticalScroll,
-        ) {
-
-            item {
-                Row(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.members),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.primary,
-                    )
-
-                    RoundedIconButton(
-                        onClick = { /*TODO*/ },
-                        icon = R.drawable.icon_add,
-                    )
-                }
-            }
-
-/**
-            items(students) { each ->
-                StudentItem(
-                    studentName = each.name,
-                    studentCode = each.code,
-                    onOptions = {},
-                    onSelectStudent = {}
-                )
-            }
-            */
-        }
-*/
     }
 }
 
