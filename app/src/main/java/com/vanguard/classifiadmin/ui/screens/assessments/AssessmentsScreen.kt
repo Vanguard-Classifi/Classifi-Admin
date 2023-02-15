@@ -2,19 +2,21 @@ package com.vanguard.classifiadmin.ui.screens.assessments
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromAssessment
@@ -57,13 +59,20 @@ const val ASSESSMENT_SCREEN = "assessment_screen"
 @Composable
 fun AssessmentsScreen(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    onPublishedAssessmentOptions: (Assessment) -> Unit,
+    onInReviewAssessmentOptions: (Assessment) -> Unit,
+    onDraftAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
 ) {
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Wake up Assessment screen")
-        }
-    }
+    AssessmentsScreenContent(
+        viewModel = viewModel,
+        modifier = modifier,
+        onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+        onSelectAssessment = onSelectAssessment,
+        onInReviewAssessmentOptions = onInReviewAssessmentOptions,
+        onDraftAssessmentOptions = onDraftAssessmentOptions,
+    )
 }
 
 
@@ -71,14 +80,19 @@ fun AssessmentsScreen(
 fun AssessmentsScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onPublishedAssessmentOptions: (Assessment) -> Unit,
+    onInReviewAssessmentOptions: (Assessment) -> Unit,
+    onDraftAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
 ) {
     val verticalScroll = rememberLazyListState()
     val innerModifier = Modifier
+    val currentAssessmentOption by viewModel.currentAssessmentOption.collectAsState()
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
@@ -102,17 +116,204 @@ fun AssessmentsScreenContent(
             }
 
             AssessmentSelector(
-                modifier = modifier,
+                modifier = innerModifier,
                 viewModel = viewModel,
             )
 
-            LazyColumn(
-                modifier = Modifier
-                    .padding(bottom = 72.dp),
-                state = verticalScroll,
-            ) {
+            when (currentAssessmentOption) {
+                AssessmentOption.Published -> {
+                    AssessmentsScreenContentPublished(
+                        viewModel = viewModel,
+                        verticalScroll = verticalScroll,
+                        onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+                        onSelectAssessment = onSelectAssessment,
+                    )
+                }
 
+                AssessmentOption.InReview -> {
+                    AssessmentsScreenContentInReview(
+                        viewModel = viewModel,
+                        verticalScroll = verticalScroll,
+                        onInReviewAssessmentOptions = onInReviewAssessmentOptions,
+                        onSelectAssessment = onSelectAssessment,
+                    )
+                }
+
+                AssessmentOption.Draft -> {
+                    AssessmentsScreenContentDraft(
+                        viewModel = viewModel,
+                        verticalScroll = verticalScroll,
+                        onDraftAssessmentOptions = onDraftAssessmentOptions,
+                        onSelectAssessment = onSelectAssessment,
+                    )
+                }
+
+                else -> {
+                    AssessmentsScreenContentPublished(
+                        viewModel = viewModel,
+                        verticalScroll = verticalScroll,
+                        onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+                        onSelectAssessment = onSelectAssessment,
+                    )
+                }
             }
+        }
+    }
+}
+
+
+@Composable
+fun AssessmentsScreenContentPublished(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    verticalScroll: LazyListState,
+    onPublishedAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
+) {
+    val items = listOf<Assessment>(
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = true,
+            reviewing = false,
+            date = "Feb",
+            attempted = true
+        ),
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = false,
+            reviewing = false,
+            date = "Feb",
+            attempted = true
+        ),
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = true,
+            reviewing = false,
+            date = "Feb",
+            attempted = false
+        ),
+    )
+    LazyColumn(
+        modifier = Modifier
+            .padding(bottom = 72.dp),
+        state = verticalScroll,
+    ) {
+        items(items) { each ->
+            AssessmentItem(
+                assessment = each,
+                onOptions = onPublishedAssessmentOptions,
+                onSelectAssessment = onSelectAssessment,
+            )
+        }
+    }
+}
+
+@Composable
+fun AssessmentsScreenContentInReview(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    verticalScroll: LazyListState,
+    onInReviewAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
+) {
+    val items = listOf<Assessment>(
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = false,
+            reviewing = true,
+            date = "Feb",
+            attempted = false
+        ),
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = false,
+            reviewing = true,
+            date = "Feb",
+            attempted = false
+        ),
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = false,
+            reviewing = true,
+            date = "Feb",
+            attempted = false
+        ),
+    )
+    LazyColumn(
+        modifier = Modifier
+            .padding(bottom = 72.dp),
+        state = verticalScroll,
+    ) {
+        items(items) { each ->
+            AssessmentItem(
+                assessment = each,
+                onOptions = onInReviewAssessmentOptions,
+                onSelectAssessment = onSelectAssessment,
+            )
+        }
+    }
+}
+
+@Composable
+fun AssessmentsScreenContentDraft(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    verticalScroll: LazyListState,
+    onDraftAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
+) {
+    val items = listOf<Assessment>(
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = false,
+            reviewing = false,
+            date = "Feb",
+            attempted = false
+        ),
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = false,
+            reviewing = false,
+            date = "Feb",
+            attempted = false
+        ),
+        Assessment(
+            title = "Chemistry Exam For SS 1",
+            subject = "Chemistry",
+            type = AssessmentState.Exam.name,
+            expired = false,
+            reviewing = false,
+            date = "Feb",
+            attempted = false
+        ),
+    )
+    LazyColumn(
+        modifier = Modifier
+            .padding(bottom = 72.dp),
+        state = verticalScroll,
+    ) {
+        items(items) { each ->
+            AssessmentItem(
+                assessment = each,
+                onOptions = onDraftAssessmentOptions,
+                onSelectAssessment = onSelectAssessment,
+            )
         }
     }
 }
@@ -131,7 +332,8 @@ fun AssessmentItem(
     Card(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(vertical = 8.dp, horizontal = 4.dp)
+            .clickable(onClick = { onSelectAssessment(assessment) }),
         shape = RoundedCornerShape(16.dp),
         elevation = 2.dp,
         border = BorderStroke(
@@ -149,7 +351,6 @@ fun AssessmentItem(
                 modifier = innerModifier
                     .layoutId("attemptStatus")
                     .width(3.dp)
-                    .fillMaxHeight()
                     .background(
                         color = if (assessment.attempted) Green100 else Black100.copy(0.5f),
                         shape = RoundedCornerShape(16.dp)
@@ -169,12 +370,12 @@ fun AssessmentItem(
                 color = MaterialTheme.colors.primary,
                 modifier = innerModifier
                     .layoutId("title")
-                    .widthIn(max = 120.dp),
+                    .widthIn(max = 200.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
 
-            if(assessment.expired) {
+            if (assessment.expired) {
                 Text(
                     text = stringResource(id = R.string.closed).uppercase(),
                     fontSize = 14.sp,
@@ -191,7 +392,11 @@ fun AssessmentItem(
             )
 
 
-
+            RoundedIconButton(
+                modifier = innerModifier.layoutId("extras"),
+                onClick = { onOptions(assessment) },
+                icon = R.drawable.icon_options_horizontal,
+            )
         }
     }
 }
@@ -209,16 +414,17 @@ private fun assessmentItemConstraints(margin: Dp): ConstraintSet {
             top.linkTo(parent.top, margin = 0.dp)
             bottom.linkTo(parent.bottom, margin = 0.dp)
             start.linkTo(parent.start, margin = 0.dp)
+            height = Dimension.fillToConstraints
         }
 
         constrain(dateIcon) {
             start.linkTo(attemptStatus.end, margin = 4.dp)
-            top.linkTo(parent.top, margin = 0.dp)
-            bottom.linkTo(parent.bottom, margin = 0.dp)
+            top.linkTo(title.top, margin = 0.dp)
+            bottom.linkTo(subjectAndType.bottom, margin = 0.dp)
         }
 
         constrain(title) {
-            top.linkTo(parent.top, margin = 8.dp)
+            top.linkTo(parent.top, margin = 4.dp)
             start.linkTo(dateIcon.end, margin = 8.dp)
         }
 
@@ -240,7 +446,7 @@ private fun assessmentItemConstraints(margin: Dp): ConstraintSet {
     }
 }
 
-@Composable 
+@Composable
 fun DateIcon(
     modifier: Modifier = Modifier,
     surfaceSize: Dp = 48.dp,
@@ -265,14 +471,18 @@ fun DateIcon(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colors.primary,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Clip
             )
 
             Text(
                 text = subtitle,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.primary
+                color = MaterialTheme.colors.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Clip
             )
         }
     }
@@ -330,7 +540,9 @@ fun AssessmentSelector(
         )
     ) {
         Row(
-            modifier = modifier.padding(horizontal = 8.dp),
+            modifier = modifier
+                .wrapContentHeight()
+                .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -395,6 +607,208 @@ enum class AssessmentState {
 }
 
 
+@Composable
+fun PublishedAssessmentBottomSheetContent(
+    modifier: Modifier = Modifier,
+    publishedAssessmentOptions: List<PublishedAssessmentBottomSheetOption> = PublishedAssessmentBottomSheetOption.values().toList(),
+    onSelectOption: (PublishedAssessmentBottomSheetOption) -> Unit,
+    ) {
+    LazyColumn(modifier = modifier.padding(bottom = 16.dp), state = rememberLazyListState()) {
+        items(publishedAssessmentOptions) { each ->
+           PublishedAssessmentOptionsListItem(
+               publishedAssessmentOption = each,
+               onSelect = onSelectOption
+           )
+        }
+    }
+}
+
+@Composable
+fun InReviewAssessmentBottomSheetContent(
+    modifier: Modifier = Modifier,
+    inReviewAssessmentOptions: List<InReviewAssessmentBottomSheetOption> = InReviewAssessmentBottomSheetOption.values()
+        .toList(),
+    onSelectOption: (InReviewAssessmentBottomSheetOption) -> Unit,
+) {
+    LazyColumn(modifier = modifier.padding(bottom = 16.dp), state = rememberLazyListState()) {
+        items(inReviewAssessmentOptions) { each ->
+            InReviewAssessmentOptionsListItem(
+                inReviewAssessmentOption = each,
+                onSelect = onSelectOption
+            )
+        }
+    }
+}
+
+@Composable
+fun DraftAssessmentBottomSheetContent(
+    modifier: Modifier = Modifier,
+    draftAssessmentOptions: List<DraftAssessmentBottomSheetOption> = DraftAssessmentBottomSheetOption.values()
+        .toList(),
+    onSelectOption: (DraftAssessmentBottomSheetOption) -> Unit,
+) {
+    LazyColumn(modifier = modifier.padding(bottom = 16.dp), state = rememberLazyListState()) {
+        items(draftAssessmentOptions) { each ->
+            DraftAssessmentOptionsListItem(
+                draftAssessmentOption = each,
+                onSelect = onSelectOption,
+            )
+        }
+    }
+}
+
+
+@Composable
+fun DraftAssessmentOptionsListItem(
+    modifier: Modifier = Modifier,
+    draftAssessmentOption: DraftAssessmentBottomSheetOption,
+    onSelect: (DraftAssessmentBottomSheetOption) -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { onSelect(draftAssessmentOption) }
+            .clip(RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary,
+        )
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                painter = painterResource(id = draftAssessmentOption.icon),
+                contentDescription = draftAssessmentOption.label,
+                tint = MaterialTheme.colors.primary,
+                modifier = modifier
+                    .size(24.dp)
+                    .padding(2.dp)
+            )
+
+            Text(
+                text = draftAssessmentOption.label,
+                color = MaterialTheme.colors.primary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = modifier.padding(8.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun InReviewAssessmentOptionsListItem(
+    modifier: Modifier = Modifier,
+    inReviewAssessmentOption: InReviewAssessmentBottomSheetOption,
+    onSelect: (InReviewAssessmentBottomSheetOption) -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { onSelect(inReviewAssessmentOption) }
+            .clip(RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary,
+        )
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                painter = painterResource(id = inReviewAssessmentOption.icon),
+                contentDescription = inReviewAssessmentOption.label,
+                tint = MaterialTheme.colors.primary,
+                modifier = modifier
+                    .size(24.dp)
+                    .padding(2.dp)
+            )
+
+            Text(
+                text = inReviewAssessmentOption.label,
+                color = MaterialTheme.colors.primary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = modifier.padding(8.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun PublishedAssessmentOptionsListItem(
+    modifier: Modifier = Modifier,
+    publishedAssessmentOption: PublishedAssessmentBottomSheetOption,
+    onSelect: (PublishedAssessmentBottomSheetOption) -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { onSelect(publishedAssessmentOption) }
+            .clip(RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary,
+        )
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                painter = painterResource(id = publishedAssessmentOption.icon),
+                contentDescription = publishedAssessmentOption.label,
+                tint = MaterialTheme.colors.primary,
+                modifier = modifier
+                    .size(24.dp)
+                    .padding(2.dp)
+            )
+
+            Text(
+                text = publishedAssessmentOption.label,
+                color = MaterialTheme.colors.primary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = modifier.padding(8.dp)
+            )
+        }
+    }
+}
+
+
+enum class PublishedAssessmentBottomSheetOption(val label: String, val icon: Int) {
+    ViewReport("View Report", R.drawable.icon_preview),
+    RestartAssessment("Restart Assessment", R.drawable.icon_repeat),
+}
+
+enum class InReviewAssessmentBottomSheetOption(val label: String, val icon: Int) {
+    Edit("Edit", R.drawable.icon_edit)
+}
+
+enum class DraftAssessmentBottomSheetOption(val label: String, val icon: Int) {
+    AddQuestions("Add Questions", R.drawable.icon_add)
+}
+
 @Preview
 @Composable
 private fun AssessmentSubjectTypePreview() {
@@ -417,5 +831,23 @@ private fun DateIconPreview() {
     DateIcon(
         title = "02",
         subtitle = "Aug"
+    )
+}
+
+@Preview
+@Composable
+private fun AssessmentItemPreview() {
+    AssessmentItem(
+        assessment = Assessment(
+            title = "Year 11 Examination",
+            subject = "Mathematics",
+            type = AssessmentState.Quiz.name,
+            expired = true,
+            reviewing = false,
+            date = "Aug",
+            attempted = false,
+        ),
+        onOptions = {},
+        onSelectAssessment = {}
     )
 }

@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
 import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN
 import com.vanguard.classifiadmin.ui.screens.calendar.MyCalendarScreen
@@ -116,6 +117,10 @@ fun BottomNavGraph(
     navController: NavHostController = rememberNavController(),
     viewModel: MainViewModel,
     onStudentOptions: () -> Unit,
+    onPublishedAssessmentOptions: (Assessment) -> Unit,
+    onInReviewAssessmentOptions: (Assessment) -> Unit,
+    onDraftAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -144,6 +149,10 @@ fun BottomNavGraph(
             AssessmentsScreen(
                 modifier = modifier,
                 viewModel = viewModel,
+                onSelectAssessment = onSelectAssessment,
+                onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+                onInReviewAssessmentOptions = onInReviewAssessmentOptions,
+                onDraftAssessmentOptions = onDraftAssessmentOptions,
             )
         }
 

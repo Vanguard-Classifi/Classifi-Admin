@@ -60,6 +60,13 @@ import com.vanguard.classifiadmin.ui.components.FeatureListItem
 import com.vanguard.classifiadmin.ui.components.Level
 import com.vanguard.classifiadmin.ui.components.StudentOption
 import com.vanguard.classifiadmin.ui.components.StudentOptionsListItem
+import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
+import com.vanguard.classifiadmin.ui.screens.assessments.DraftAssessmentBottomSheetContent
+import com.vanguard.classifiadmin.ui.screens.assessments.DraftAssessmentBottomSheetOption
+import com.vanguard.classifiadmin.ui.screens.assessments.InReviewAssessmentBottomSheetContent
+import com.vanguard.classifiadmin.ui.screens.assessments.InReviewAssessmentBottomSheetOption
+import com.vanguard.classifiadmin.ui.screens.assessments.PublishedAssessmentBottomSheetContent
+import com.vanguard.classifiadmin.ui.screens.assessments.PublishedAssessmentBottomSheetOption
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassScreen
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -126,6 +133,33 @@ fun MainDashboardScreen(
                             delay(500)
                             sheetState.hide()
                         }
+                    },
+                    onSelectDraftItem = {
+                        /*TODO -> on draft option pressed */
+                        //hide bottom sheet
+                        coroutineScope.launch {
+                            showModalSheet.value = false
+                            delay(500)
+                            sheetState.hide()
+                        }
+                    },
+                    onSelectPublishedItem = {
+                        /*TODO -> on draft option pressed */
+                        //hide bottom sheet
+                        coroutineScope.launch {
+                            showModalSheet.value = false
+                            delay(500)
+                            sheetState.hide()
+                        }
+                    },
+                    onSelectInReviewItem = {
+                        /*TODO -> on draft option pressed */
+                        //hide bottom sheet
+                        coroutineScope.launch {
+                            showModalSheet.value = false
+                            delay(500)
+                            sheetState.hide()
+                        }
                     }
                 )
             }
@@ -151,6 +185,36 @@ fun MainDashboardScreen(
                 onStudentOptions = {
                     viewModel.onCurrentDashboardBottomSheetFlavorChanged(
                         DashboardBottomSheetFlavor.StudentOptions
+                    )
+                    coroutineScope.launch {
+                        showModalSheet.value = true
+                        sheetState.show()
+                    }
+                },
+                onSelectAssessment = {
+
+                },
+                onPublishedAssessmentOptions = {
+                    viewModel.onCurrentDashboardBottomSheetFlavorChanged(
+                        DashboardBottomSheetFlavor.PublishedAssessment
+                    )
+                    coroutineScope.launch {
+                        showModalSheet.value = true
+                        sheetState.show()
+                    }
+                },
+                onInReviewAssessmentOptions = {
+                    viewModel.onCurrentDashboardBottomSheetFlavorChanged(
+                        DashboardBottomSheetFlavor.InReviewAssessment
+                    )
+                    coroutineScope.launch {
+                        showModalSheet.value = true
+                        sheetState.show()
+                    }
+                },
+                onDraftAssessmentOptions = {
+                    viewModel.onCurrentDashboardBottomSheetFlavorChanged(
+                        DashboardBottomSheetFlavor.DraftAssessment
                     )
                     coroutineScope.launch {
                         showModalSheet.value = true
@@ -299,6 +363,10 @@ fun MainDashboardScreenContent(
     openProfile: () -> Unit,
     username: String,
     onStudentOptions: () -> Unit,
+    onPublishedAssessmentOptions: (Assessment) -> Unit,
+    onInReviewAssessmentOptions: (Assessment) -> Unit,
+    onDraftAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
 ) {
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -323,6 +391,10 @@ fun MainDashboardScreenContent(
                     navController = navController,
                     modifier = Modifier.padding(padding),
                     onStudentOptions = onStudentOptions,
+                    onSelectAssessment = onSelectAssessment,
+                    onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+                    onDraftAssessmentOptions = onDraftAssessmentOptions,
+                    onInReviewAssessmentOptions = onInReviewAssessmentOptions,
                 )
             }
         )
@@ -337,6 +409,9 @@ fun DashboardBottomSheetContent(
     features: List<ClassifiFeature> = ClassifiFeature.values().toList(),
     studentOptions: List<StudentOption> = StudentOption.values().toList(),
     onSelectOption: (StudentOption) -> Unit,
+    onSelectPublishedItem: (PublishedAssessmentBottomSheetOption) -> Unit,
+    onSelectInReviewItem: (InReviewAssessmentBottomSheetOption) -> Unit,
+    onSelectDraftItem: (DraftAssessmentBottomSheetOption) -> Unit,
 ) {
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -375,6 +450,20 @@ fun DashboardBottomSheetContent(
                     modifier = modifier,
                     studentOptions = studentOptions,
                     onSelectOption = onSelectOption,
+                )
+            }
+
+            DashboardBottomSheetFlavor.DraftAssessment -> {
+                DraftAssessmentBottomSheetContent(onSelectOption = onSelectDraftItem)
+            }
+
+            DashboardBottomSheetFlavor.InReviewAssessment -> {
+                InReviewAssessmentBottomSheetContent(onSelectOption = onSelectInReviewItem)
+            }
+
+            DashboardBottomSheetFlavor.PublishedAssessment -> {
+                PublishedAssessmentBottomSheetContent(
+                    onSelectOption = onSelectPublishedItem,
                 )
             }
 
@@ -427,4 +516,7 @@ enum class DestinationItem(val label: String, val icon: Int, val screen: String)
 sealed class DashboardBottomSheetFlavor {
     object Features : DashboardBottomSheetFlavor()
     object StudentOptions : DashboardBottomSheetFlavor()
+    object PublishedAssessment: DashboardBottomSheetFlavor()
+    object InReviewAssessment: DashboardBottomSheetFlavor()
+    object DraftAssessment: DashboardBottomSheetFlavor()
 }

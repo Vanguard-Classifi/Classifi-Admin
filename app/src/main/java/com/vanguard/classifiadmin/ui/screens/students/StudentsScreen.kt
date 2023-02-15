@@ -311,7 +311,6 @@ private fun studentItemConstraints(margin: Dp): ConstraintSet {
     }
 }
 
-
 data class Student(
     val name: String,
     val code: String,

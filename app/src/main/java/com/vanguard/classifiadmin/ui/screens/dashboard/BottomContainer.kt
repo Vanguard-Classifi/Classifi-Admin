@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.router.BottomNavGraph
+import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 @Composable
@@ -18,11 +19,19 @@ fun BottomContainer(
     viewModel: MainViewModel,
     navController: NavHostController = rememberNavController(),
     onStudentOptions: () -> Unit,
+    onPublishedAssessmentOptions: (Assessment) -> Unit,
+    onInReviewAssessmentOptions: (Assessment) -> Unit,
+    onDraftAssessmentOptions: (Assessment) -> Unit,
+    onSelectAssessment: (Assessment) -> Unit,
 ) {
     BottomNavGraph(
         viewModel = viewModel,
         modifier = Modifier.fillMaxSize(),
         navController = navController,
         onStudentOptions = onStudentOptions,
+        onSelectAssessment = onSelectAssessment,
+        onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+        onInReviewAssessmentOptions = onInReviewAssessmentOptions,
+        onDraftAssessmentOptions = onDraftAssessmentOptions,
     )
 }
