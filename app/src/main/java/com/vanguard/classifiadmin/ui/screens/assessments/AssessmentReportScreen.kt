@@ -220,19 +220,19 @@ fun AssessmentReportScreen(
     val participants = listOf(
         Participant(
             order = 1,
-            studentName = "Yusuf Musa",
+            studentName = "Musuf Musa",
             date = "23rd June, 2023",
             score = 0.67f,
         ),
         Participant(
             order = 2,
-            studentName = "Yusuf Musa",
+            studentName = "Musuf Musa",
             date = "23rd June, 2023",
             score = 0.67f,
         ),
         Participant(
             order = 3,
-            studentName = "Yusuf Musa",
+            studentName = "Musuf Musa",
             date = "23rd June, 2023",
             score = 0.67f,
         ),

@@ -36,4 +36,9 @@
     <string name="review_questions">Review Questions</string>
     <string name="assessment_link">Assessment Link</string>
     <string name="participants">Participants</string>
+    <string name="questions">Questions</string>
+    <string name="max_score">Max. Score</string>
+    <string name="date_created">Date Created</string>
+    <string name="status">Status</string>
+    <string name="from_class">Class</string>
 </resources>
