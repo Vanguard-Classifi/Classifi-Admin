@@ -114,7 +114,7 @@ fun NavGraph(
         composable(Destinations.assessmentReport) {
             AssessmentReportScreen(
                 viewModel = viewModel,
-                onBack = { navController.navigate(Destinations.dashboard) }
+                onBack = { navController.navigate(Destinations.dashboard) },
             )
         }
 

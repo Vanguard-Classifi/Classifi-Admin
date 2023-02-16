@@ -16,7 +16,7 @@ fun ClassifiApp(
     viewModel: MainViewModel,
     finishActivity: () -> Unit,
     darkTheme: Boolean = false,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ) {
     ClassifiAdminTheme(darkTheme = darkTheme) {
         Surface(modifier = modifier.fillMaxSize()) {

@@ -35,4 +35,5 @@
     <string name="closed">Closed</string>
     <string name="review_questions">Review Questions</string>
     <string name="assessment_link">Assessment Link</string>
+    <string name="participants">Participants</string>
 </resources>

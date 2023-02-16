@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vanguard.classifiadmin.domain.extensions.frequencies
 import com.vanguard.classifiadmin.domain.extensions.toGrade
+import com.vanguard.classifiadmin.domain.extensions.toPercentage
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromGrade
 import java.text.DecimalFormat
 import kotlin.math.roundToLong
@@ -61,7 +62,6 @@ fun GradePreviewBarItem(
     grade: Char,
     percentage: Float,
 ) {
-    val pct = DecimalFormat("0.00").format(percentage * 100)
 
     Column(
         modifier = modifier,
@@ -85,7 +85,7 @@ fun GradePreviewBarItem(
         }
 
         Text(
-            text = "$pct%",
+            text = percentage.toPercentage(),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = Color(generateColorFromGrade(grade))

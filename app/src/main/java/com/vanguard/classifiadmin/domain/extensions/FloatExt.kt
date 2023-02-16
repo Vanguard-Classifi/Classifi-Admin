@@ -1,5 +1,7 @@
 package com.vanguard.classifiadmin.domain.extensions
 
+import java.text.DecimalFormat
+
 fun List<Float>.sum(): Float {
     var sum = 0.0f
     forEach { sum += it }
@@ -44,4 +46,9 @@ fun Float.toGrade(): Char {
 fun List<Float>.average(): Float {
     val sum = sum()
     return sum / size
+}
+
+fun Float.toPercentage(): String {
+    val percentage = DecimalFormat("0.00").format(this * 100)
+    return "$percentage%"
 }
