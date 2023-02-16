@@ -7,11 +7,15 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +38,60 @@ import androidx.compose.ui.unit.sp
 import com.vanguard.classifiadmin.domain.extensions.frequencies
 import com.vanguard.classifiadmin.domain.extensions.toGrade
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromGrade
+import java.text.DecimalFormat
+import kotlin.math.roundToLong
+
+
+@Composable
+fun GradePreviewBar(
+    modifier: Modifier = Modifier,
+    grades: List<Char> = listOf('A','B','C','D','E','F')
+) {
+    Row(modifier = modifier) {
+        grades.forEach {
+            GradePreviewBarItem(grade = it, percentage = 0.67f)
+        }
+    }
+}
+
+
+@Composable
+fun GradePreviewBarItem(
+    modifier: Modifier = Modifier,
+    grade: Char,
+    percentage: Float,
+) {
+    val pct = DecimalFormat("0.00").format(percentage * 100)
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = modifier
+                .background(
+                    color = Color(generateColorFromGrade(grade)),
+                )
+                .size(42.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = grade.toString(),
+                color = MaterialTheme.colors.onPrimary,
+                fontSize = 12.sp,
+                modifier = modifier.padding(8.dp)
+            )
+        }
+
+        Text(
+            text = "$pct%",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(generateColorFromGrade(grade))
+        )
+    }
+}
 
 
 @Composable
@@ -177,5 +235,14 @@ private fun ChartValueItemPreview() {
     ChartValueItem(
         heading = "76%",
         subtitle = "AVG SCORE",
+    )
+}
+
+@Preview
+@Composable
+private fun GradePreviewBarItemPreview() {
+    GradePreviewBarItem(
+        grade = 'A',
+        percentage = 0.97f
     )
 }

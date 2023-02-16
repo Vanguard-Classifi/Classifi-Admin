@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin.ui.screens.assessments
 
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScrollableTabRow
+import androidx.compose.material.Surface
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
@@ -26,10 +28,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,7 +52,9 @@ import com.vanguard.classifiadmin.domain.extensions.customTabIndicatorOffset
 import com.vanguard.classifiadmin.ui.components.ChartValueItem
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.ui.components.ClassIcon
+import com.vanguard.classifiadmin.ui.components.GradePreviewBar
 import com.vanguard.classifiadmin.ui.components.PerformanceCircle
+import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
@@ -335,7 +343,11 @@ fun AssessmentReportScreenContentSummary(
 ) {
     val verticalScroll = rememberScrollState()
 
-    Column(modifier = modifier.verticalScroll(verticalScroll)) {
+    Column(
+        modifier = modifier.verticalScroll(verticalScroll),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
         //performance card
         AssessmentPerformanceCard(
             maxHeight = maxHeight,
@@ -344,6 +356,8 @@ fun AssessmentReportScreenContentSummary(
         )
 
         //access link
+        AssessmentLinkBar(
+            onCopyLink = { /*TODO*/ })
     }
 }
 
@@ -380,7 +394,9 @@ fun AssessmentPerformanceCard(
     ) {
         BoxWithConstraints(modifier = modifier) {
             ConstraintLayout(
-                modifier = modifier.fillMaxWidth().padding(8.dp),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
                 constraintSet = constraints,
             ) {
                 PerformanceCircle(values = values, modifier = innerModifier.layoutId("circle"))
@@ -402,6 +418,10 @@ fun AssessmentPerformanceCard(
                     subtitle = "Completion Rate",
                     modifier = innerModifier.layoutId("completion")
                 )
+
+                GradePreviewBar(
+                    modifier = innerModifier.layoutId("gradeBar")
+                )
             }
         }
     }
@@ -413,6 +433,7 @@ private fun assessmentPerformanceCardConstraints(margin: Dp): ConstraintSet {
         val avg = createRefFor("avg")
         val submitted = createRefFor("submitted")
         val completion = createRefFor("completion")
+        val gradeBar = createRefFor("gradeBar")
 
         constrain(circle) {
             top.linkTo(parent.top, margin)
@@ -436,5 +457,93 @@ private fun assessmentPerformanceCardConstraints(margin: Dp): ConstraintSet {
             top.linkTo(circle.bottom, 4.dp)
             end.linkTo(parent.end, margin)
         }
+
+        constrain(gradeBar) {
+            top.linkTo(submitted.bottom, 8.dp)
+            start.linkTo(parent.start, 0.dp)
+            end.linkTo(parent.end, 0.dp)
+        }
     }
+}
+
+@Composable
+fun AssessmentLinkBar(
+    modifier: Modifier = Modifier,
+    onCopyLink: () -> Unit,
+    color: Color = MaterialTheme.colors.onPrimary,
+    backgroundColor: Color = MaterialTheme.colors.primary,
+) {
+    val innerModifier = Modifier
+    val constraints = assessmentLinkBarConstraints(8.dp)
+
+    Card(
+        modifier = modifier
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        backgroundColor = backgroundColor,
+        elevation = 2.dp, shape = RoundedCornerShape(16.dp)
+    ) {
+        BoxWithConstraints(modifier = modifier) {
+            ConstraintLayout(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                constraintSet = constraints,
+            ) {
+                Text(
+                    text = stringResource(id = R.string.assessment_link),
+                    fontSize = 12.sp,
+                    modifier = innerModifier.layoutId("title"),
+                    color = color.copy(0.5f)
+                )
+                Text(
+                    text = "https://app.classifi.co/exam/start/530523",
+                    fontSize = 12.sp,
+                    modifier = innerModifier.layoutId("link"),
+                    color = color,
+                )
+
+                RoundedIconButton(
+                    icon = R.drawable.icon_copy,
+                    onClick = onCopyLink,
+                    modifier = innerModifier.layoutId("icon"),
+                    tint = MaterialTheme.colors.onPrimary,
+                )
+            }
+        }
+    }
+
+}
+
+private fun assessmentLinkBarConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val title = createRefFor("title")
+        val link = createRefFor("link")
+
+        constrain(icon) {
+            top.linkTo(title.top, 0.dp)
+            bottom.linkTo(link.bottom, 0.dp)
+            end.linkTo(parent.end, margin)
+        }
+
+        constrain(title) {
+            start.linkTo(parent.start, margin)
+            top.linkTo(parent.top, margin)
+        }
+
+        constrain(link) {
+            top.linkTo(title.bottom, 4.dp)
+            start.linkTo(title.start, 0.dp)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun AssessmentLinkBarPreview() {
+    AssessmentLinkBar(
+        onCopyLink = {}
+    )
 }
