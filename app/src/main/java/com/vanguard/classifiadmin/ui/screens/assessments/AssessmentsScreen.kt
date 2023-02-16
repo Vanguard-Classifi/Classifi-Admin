@@ -174,29 +174,32 @@ fun AssessmentsScreenContentPublished(
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = true,
             reviewing = false,
             date = "Feb",
-            attempted = true
+            attempted = true,
+            state = AssessmentState.Published.name,
         ),
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = false,
             reviewing = false,
             date = "Feb",
-            attempted = true
+            attempted = true,
+            state = AssessmentState.Published.name,
         ),
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = true,
             reviewing = false,
             date = "Feb",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.Published.name,
         ),
     )
     LazyColumn(
@@ -226,29 +229,32 @@ fun AssessmentsScreenContentInReview(
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = false,
             reviewing = true,
             date = "Feb",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.InReview.name,
         ),
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = false,
             reviewing = true,
             date = "Feb",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.InReview.name,
         ),
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = false,
             reviewing = true,
             date = "Feb",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.InReview.name,
         ),
     )
     LazyColumn(
@@ -278,29 +284,32 @@ fun AssessmentsScreenContentDraft(
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = false,
             reviewing = false,
             date = "Feb",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.Draft.name,
         ),
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = false,
             reviewing = false,
             date = "Feb",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.Draft.name,
         ),
         Assessment(
             title = "Chemistry Exam For SS 1",
             subject = "Chemistry",
-            type = AssessmentState.Exam.name,
+            type = AssessmentType.Exam.name,
             expired = false,
             reviewing = false,
             date = "Feb",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.Draft.name,
         ),
     )
     LazyColumn(
@@ -596,14 +605,19 @@ data class Assessment(
     val title: String,
     val subject: String,
     val type: String,
+    val state: String,
     val expired: Boolean,
     val reviewing: Boolean,
     val date: String,
     val attempted: Boolean,
 )
 
-enum class AssessmentState {
+enum class AssessmentType {
     Quiz, Test, Exam
+}
+
+enum class AssessmentState {
+    Published, InReview, Draft
 }
 
 
@@ -816,11 +830,12 @@ private fun AssessmentSubjectTypePreview() {
         assessment = Assessment(
             title = "",
             subject = "Mathematics Education Knowledge Subject",
-            type = AssessmentState.Quiz.name,
+            type = AssessmentType.Quiz.name,
             expired = false,
             reviewing = false,
             date = "",
-            attempted = false
+            attempted = false,
+            state = AssessmentState.Published.name,
         )
     )
 }
@@ -841,11 +856,12 @@ private fun AssessmentItemPreview() {
         assessment = Assessment(
             title = "Year 11 Examination",
             subject = "Mathematics",
-            type = AssessmentState.Quiz.name,
+            type = AssessmentType.Quiz.name,
             expired = true,
             reviewing = false,
             date = "Aug",
             attempted = false,
+            state = AssessmentState.Published.name,
         ),
         onOptions = {},
         onSelectAssessment = {}

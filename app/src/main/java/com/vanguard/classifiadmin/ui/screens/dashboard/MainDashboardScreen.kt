@@ -61,6 +61,7 @@ import com.vanguard.classifiadmin.ui.components.Level
 import com.vanguard.classifiadmin.ui.components.StudentOption
 import com.vanguard.classifiadmin.ui.components.StudentOptionsListItem
 import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.DraftAssessmentBottomSheetContent
 import com.vanguard.classifiadmin.ui.screens.assessments.DraftAssessmentBottomSheetOption
 import com.vanguard.classifiadmin.ui.screens.assessments.InReviewAssessmentBottomSheetContent
@@ -84,6 +85,9 @@ fun MainDashboardScreen(
     onSelectMenu: (DashboardMenu) -> Unit,
     onSelectProfile: () -> Unit,
     onManageClass: (String) -> Unit,
+    goToAssessmentReport: (Assessment) -> Unit,
+    goToAssessmentReview: (Assessment) -> Unit,
+    goToModifyAssessment: (Assessment) -> Unit,
 ) {
     val navController = rememberNavController()
     val currentBottomSheetFlavor by viewModel.currentDashboardBottomSheetFlavor.collectAsState()
@@ -192,7 +196,22 @@ fun MainDashboardScreen(
                     }
                 },
                 onSelectAssessment = {
+                    //when assessment is published go to assessment report
+                    when (it.state) {
+                        AssessmentState.Published.name -> {
+                            goToAssessmentReport(it)
+                        }
+                        AssessmentState.InReview.name -> {
+                           goToAssessmentReview(it)
+                        }
 
+                        AssessmentState.Draft.name -> {
+                            goToModifyAssessment(it)
+                        }
+                        else -> {
+                            goToAssessmentReport(it)
+                        }
+                    }
                 },
                 onPublishedAssessmentOptions = {
                     viewModel.onCurrentDashboardBottomSheetFlavorChanged(
@@ -516,7 +535,7 @@ enum class DestinationItem(val label: String, val icon: Int, val screen: String)
 sealed class DashboardBottomSheetFlavor {
     object Features : DashboardBottomSheetFlavor()
     object StudentOptions : DashboardBottomSheetFlavor()
-    object PublishedAssessment: DashboardBottomSheetFlavor()
-    object InReviewAssessment: DashboardBottomSheetFlavor()
-    object DraftAssessment: DashboardBottomSheetFlavor()
+    object PublishedAssessment : DashboardBottomSheetFlavor()
+    object InReviewAssessment : DashboardBottomSheetFlavor()
+    object DraftAssessment : DashboardBottomSheetFlavor()
 }

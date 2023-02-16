@@ -9,9 +9,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REPORT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REVIEW_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReviewScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.MODIFY_ASSESSMENT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.assessments.ModifyAssessmentScreen
 import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN
 import com.vanguard.classifiadmin.ui.screens.calendar.MyCalendarScreen
 import com.vanguard.classifiadmin.ui.screens.classes.MANAGE_CLASS_SCREEN
@@ -42,6 +48,9 @@ object Destinations {
     const val account = ACCOUNT_SCREEN
     const val manageClass = MANAGE_CLASS_SCREEN
     const val studentProfile = STUDENT_PROFILE_SCREEN
+    const val assessmentReport = ASSESSMENT_REPORT_SCREEN
+    const val assessmentReview = ASSESSMENT_REVIEW_SCREEN
+    const val modifyAssessment = MODIFY_ASSESSMENT_SCREEN
 }
 
 
@@ -64,7 +73,10 @@ fun NavGraph(
                 goToFeature = { navController.navigate(it.screen) },
                 onSelectMenu = { navController.navigate(it.screen) },
                 onSelectProfile = { navController.navigate(Destinations.account) },
-                onManageClass = { navController.navigate(Destinations.manageClass) }
+                onManageClass = { navController.navigate(Destinations.manageClass) },
+                goToAssessmentReport = { navController.navigate(Destinations.assessmentReport) },
+                goToAssessmentReview = { navController.navigate(Destinations.assessmentReview) },
+                goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) }
             )
         }
 
@@ -89,7 +101,7 @@ fun NavGraph(
         composable(Destinations.manageClass) {
             ManageClassScreen(
                 viewModel = viewModel,
-                onBack = {navController.navigate(Destinations.dashboard)}
+                onBack = { navController.navigate(Destinations.dashboard) }
             )
         }
 
@@ -98,9 +110,29 @@ fun NavGraph(
                 viewModel = viewModel,
             )
         }
+
+        composable(Destinations.assessmentReport) {
+            AssessmentReportScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.dashboard) }
+            )
+        }
+
+        composable(Destinations.assessmentReview) {
+            AssessmentReviewScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.dashboard) }
+            )
+        }
+
+        composable(Destinations.modifyAssessment) {
+            ModifyAssessmentScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.dashboard) }
+            )
+        }
     }
 }
-
 
 
 object BottomDestination {
