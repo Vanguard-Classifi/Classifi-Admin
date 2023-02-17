@@ -38,6 +38,8 @@ import com.vanguard.classifiadmin.ui.screens.students.STUDENTS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.students.StudentsScreen
 import com.vanguard.classifiadmin.ui.screens.support.SUPPORT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.support.SupportScreen
+import com.vanguard.classifiadmin.ui.screens.weeklyplan.WEEKLY_PLAN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.weeklyplan.WeeklyPlanScreen
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 object Destinations {
@@ -51,6 +53,7 @@ object Destinations {
     const val assessmentReport = ASSESSMENT_REPORT_SCREEN
     const val assessmentReview = ASSESSMENT_REVIEW_SCREEN
     const val modifyAssessment = MODIFY_ASSESSMENT_SCREEN
+    const val weeklyPlan = WEEKLY_PLAN_SCREEN
 }
 
 
@@ -129,6 +132,12 @@ fun NavGraph(
             ModifyAssessmentScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.dashboard) }
+            )
+        }
+
+        composable(Destinations.weeklyPlan) {
+            WeeklyPlanScreen(
+                viewModel = viewModel
             )
         }
     }

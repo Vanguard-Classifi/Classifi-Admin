@@ -121,12 +121,12 @@ fun MainDashboardScreen(
                     currentBottomSheetFlavor = currentBottomSheetFlavor
                         ?: DashboardBottomSheetFlavor.Features,
                     onSelectFeature = {
-                        goToFeature(it)          //go to feature destination
                         //hide bottom sheet
                         coroutineScope.launch {
                             showModalSheet.value = false
                             delay(500)
                             sheetState.hide()
+                            goToFeature(it)          //go to feature destination goToFeature(it)          //go to feature destination
                         }
                     },
                     onSelectOption = {
