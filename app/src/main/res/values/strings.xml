@@ -41,4 +41,7 @@
     <string name="date_created">Date Created</string>
     <string name="status">Status</string>
     <string name="from_class">Class</string>
+    <string name="class_code">Class Code</string>
+    <string name="upcoming_activities">Upcoming Activities</string>
+    <string name="add_students_heading">Add students to class with the class code</string>
 </resources>
