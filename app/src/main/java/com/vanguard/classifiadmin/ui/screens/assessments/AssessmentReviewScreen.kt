@@ -7,20 +7,28 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,13 +41,10 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
-import com.vanguard.classifiadmin.domain.extensions.average
-import com.vanguard.classifiadmin.domain.extensions.toPercentage
 import com.vanguard.classifiadmin.ui.components.ChartValueItem
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
-import com.vanguard.classifiadmin.ui.components.GradePreviewBar
-import com.vanguard.classifiadmin.ui.components.PerformanceCircle
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.theme.Green100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 const val ASSESSMENT_REVIEW_SCREEN = "assessment_review_screen"
@@ -108,18 +113,18 @@ fun AssessmentReviewScreenContent(
             modifier = modifier,
             state = state,
         ) {
-                item {
-                    AssessmentReviewCard(
-                        modifier = modifier,
-                        subjectName = subject,
-                        heading = fromClass,
-                        questions = 51,
-                        maxScore = 51,
-                        dateCreated = "12th August, 2033",
-                        fromClass = fromClass,
-                        status = status,
-                    )
-                }
+            item {
+                AssessmentReviewCard(
+                    modifier = modifier,
+                    subjectName = subject,
+                    heading = fromClass,
+                    questions = 51,
+                    maxScore = 51,
+                    dateCreated = "12th August, 2033",
+                    fromClass = fromClass,
+                    status = status,
+                )
+            }
 
         }
     }
@@ -362,6 +367,265 @@ fun AssessmentReviewRowItem(
     }
 }
 
+enum class QuestionMode(val fullname: String) {
+    MultipleChoice("Multiple Choice"),
+    TrueFalse("True/False"),
+    ShortAnswer("Short Answer"),
+    Essay("Essay"),
+}
+
+enum class QuestionDifficulty {
+    Easy,
+    Medium,
+    Har,
+}
+
+@Composable
+fun TextIconButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    size: Dp = 24.dp,
+    icon: Int,
+    tint: Color = MaterialTheme.colors.primary,
+) {
+    Surface(
+        modifier = modifier.clip(CircleShape),
+        shape = CircleShape,
+        color = tint.copy(0.1f)
+    ) {
+        TextButton(onClick = onClick, modifier = modifier.clip(CircleShape)) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = stringResource(id = R.string.add),
+                modifier = modifier.size(size),
+                tint = tint,
+            )
+        }
+    }
+}
+
+
+@Composable
+fun QuestionItem(
+    modifier: Modifier = Modifier,
+    question: Question,
+) {
+    val innerModifier = Modifier
+    val constraints = questionItemConstraints(8.dp)
+
+    Card(
+        modifier = modifier
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        elevation = 2.dp, shape = RoundedCornerShape(16.dp)
+    ) {
+        BoxWithConstraints(modifier = modifier) {
+            ConstraintLayout(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                constraintSet = constraints,
+            ) {
+
+            }
+        }
+    }
+}
+
+private fun questionItemConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val number = createRefFor("number")
+        val question = createRefFor("question")
+        val expandButton = createRefFor("expandButton")
+        val subjectRow = createRefFor("subjectRow")
+        val mode = createRefFor("mode")
+        val answer = createRefFor("answer")
+        val remove = createRefFor("remove")
+
+        constrain(number) {
+            start.linkTo(parent.start, margin)
+            top.linkTo(question.top, 0.dp)
+        }
+
+        constrain(expandButton) {
+            top.linkTo(question.top, 0.dp)
+            end.linkTo(parent.end, margin)
+        }
+
+        constrain(subjectRow) {
+            start.linkTo(parent.start, 0.dp)
+            end.linkTo(parent.end, 0.dp)
+            top.linkTo(subjectRow.bottom, 16.dp)
+            width = Dimension.fillToConstraints
+        }
+
+        constrain(mode) {
+            start.linkTo(parent.start, 8.dp)
+            end.linkTo(parent.end, 8.dp)
+            top.linkTo(subjectRow.bottom, 16.dp)
+            width = Dimension.fillToConstraints
+        }
+
+        constrain(answer) {
+            start.linkTo(parent.start, 0.dp)
+            end.linkTo(parent.end, 0.dp)
+            top.linkTo(mode.bottom, 4.dp)
+            width = Dimension.fillToConstraints
+        }
+
+        constrain(remove) {
+            start.linkTo(parent.start, 16.dp)
+            top.linkTo(answer.bottom, 16.dp)
+        }
+    }
+}
+
+@Composable
+fun MultipleChoiceAnswerCard(
+    modifier: Modifier = Modifier,
+    choices: ArrayList<String>,
+    chars: List<Char> = listOf('a','b','c','d'),
+    selectedChar: Char,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        repeat(chars.size) {index ->
+            Row(
+                modifier = modifier.padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+            ) {
+                RoundedCharButton(
+                    onClick = { /*TODO*/ },
+                    char = chars[index],
+                    selected = selectedChar == chars[index],
+                    modifier = modifier,
+                )
+
+                Text(
+                    text = choices[index],
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colors.primary,
+                    modifier = modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun TrueFalseAnswerCard(
+    modifier: Modifier = Modifier,
+    choices: ArrayList<String> = arrayListOf("True","False"),
+    chars: List<Char> = listOf('a','b'),
+    selectedChar: Char,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        repeat(chars.size) {index ->
+            Row(
+                modifier = modifier.padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+            ) {
+                RoundedCharButton(
+                    onClick = { /*TODO*/ },
+                    char = chars[index],
+                    selected = selectedChar == chars[index],
+                    modifier = modifier,
+                )
+
+                Text(
+                    text = choices[index],
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colors.primary,
+                    modifier = modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ShortAnswerCard(
+    modifier: Modifier = Modifier,
+    answer: String,
+) {
+    Surface(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = answer,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.primary,
+        )
+    }
+}
+
+
+@Composable
+fun RoundedCharButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    size: Dp = 24.dp,
+    char: Char,
+    selected: Boolean = false,
+    color: Color = MaterialTheme.colors.primary,
+) {
+    Surface(
+        modifier = modifier
+            .clip(CircleShape)
+            .padding(8.dp),
+        shape = CircleShape,
+        color = if(selected) Green100 else color.copy(0.1f)
+    ) {
+        TextButton(onClick = onClick,
+            modifier = modifier.clip(CircleShape).size(32.dp),
+            content = {
+           if(selected) {
+               Icon(
+                   painter = painterResource(id = R.drawable.icon_tick),
+                   tint = color,
+                   contentDescription = char.toString(),
+                   modifier = Modifier.size(size)
+               )
+           } else {
+               Text(
+                   text = char.toString(),
+                   fontSize = 12.sp,
+                   color = color,
+                   modifier = Modifier
+               )
+           }
+        })
+    }
+}
+
+data class Question(
+    val id: String,
+    val difficulty: String,
+    val mode: String,
+    val question: String,
+    val images: ArrayList<String>,
+    val answer: String,
+    val choices: ArrayList<String>,
+)
+
+val mode: QuestionMode = QuestionMode.Essay
+val questionModeName = mode.toString()
+
 
 @Composable
 @Preview
@@ -376,12 +640,42 @@ private fun AssessmentReviewRowItemPreview() {
 @Preview
 fun AssessmentReviewCardPreview() {
     AssessmentReviewCard(
-        subjectName = "Mathematics",
+        subjectName = questionModeName.substring(63),
         heading = "Grade 23",
         questions = 23,
         maxScore = 23,
         dateCreated = "12th August",
         fromClass = "Grade 23",
         status = "Pending"
+    )
+}
+
+@Composable
+@Preview
+private fun RoundedCharButtonPreview() {
+    RoundedCharButton(
+        onClick = {},
+        char = 'a',
+        selected = true,
+    )
+}
+
+@Composable
+@Preview
+private fun MultipleChoiceAnswerCardPreview() {
+    MultipleChoiceAnswerCard(
+        choices = arrayListOf(
+            "Lion", "Tiger", "Giraffe", "Cat"
+        ),
+        selectedChar = 'b',
+    )
+}
+
+
+@Composable
+@Preview
+private fun ShortAnswerCardPreview() {
+    ShortAnswerCard(
+        answer = "The cat ate the mice in the new building"
     )
 }
