@@ -99,6 +99,7 @@ fun WeeklyPlanGrid(
 ) {
     var dayIndex = 0
     val numRows = 8
+    val numCols = headings.size
     val cellWidth = 200.dp
     val textPadding = 16.dp
     var dataIndex = 0
@@ -107,7 +108,7 @@ fun WeeklyPlanGrid(
     val sideBarWidth = 42.dp
     val sideBarItemHeight = 400.dp
     val rowHeight = sideBarItemHeight.div(numRows)
-    var rowWidth by remember { mutableStateOf(0) }
+    val rowWidth = cellWidth.times(numCols)
     val numDays = daysOfWeek.size
 
 
@@ -121,9 +122,6 @@ fun WeeklyPlanGrid(
             content = header,
             textPaddingX = textPadding,
             modifier = Modifier
-                .onGloballyPositioned {
-                    rowWidth = it.size.width
-                }
                 .horizontalScroll(horizontalScrollState)
                 .padding(
                     start = with(LocalDensity.current) {
@@ -159,14 +157,12 @@ fun WeeklyPlanGrid(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(verticalScrollState)
-                    .horizontalScroll(horizontalScrollState)
+                   .horizontalScroll(horizontalScrollState)
             ) {
                 repeat(numRows * numDays) { rowIndex ->
                     Box(modifier = Modifier
                         .height(rowHeight)
-                        .width(
-                            with(LocalDensity.current) { rowWidth.toDp() }
-                        )
+                        .width(rowWidth)
                         .border(
                             width = 1.dp,
                             color = Color.Black
