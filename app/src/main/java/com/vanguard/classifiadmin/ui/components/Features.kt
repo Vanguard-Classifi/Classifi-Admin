@@ -72,7 +72,7 @@ fun FeatureListItem(
 
 enum class ClassifiFeature(val label: String, val icon: Int, val screen: String) {
     StudentResult("Student Results", R.drawable.icon_spreadsheet, Destinations.studentResults),
-    WeeklyPlan("Weekly Plan", R.drawable.icon_week, Destinations.weeklyPlan)
+    WeeklyPlan("Weekly Plan", R.drawable.icon_week, Destinations.weeklyPlanDetail)
 }
 
 @Preview

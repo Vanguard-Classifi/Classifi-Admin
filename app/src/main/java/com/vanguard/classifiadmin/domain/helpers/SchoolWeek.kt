@@ -1,19 +1,19 @@
 package com.vanguard.classifiadmin.domain.helpers
 
 enum class SchoolWeek {
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
+    Mon,
+    Tues,
+    Wed,
+    Thurs,
+    Fri,
 }
 
 fun String.toSchoolWeek(): SchoolWeek =
     when(this) {
-        "Monday" -> SchoolWeek.Monday
-        "Tuesday" -> SchoolWeek.Tuesday
-        "Wednesday" -> SchoolWeek.Wednesday
-        "Thursday" -> SchoolWeek.Thursday
-        "Friday" -> SchoolWeek.Friday
-        else -> SchoolWeek.Monday
+        "Mon" -> SchoolWeek.Mon
+        "Tues" -> SchoolWeek.Tues
+        "Wed" -> SchoolWeek.Wed
+        "Thurs" -> SchoolWeek.Thurs
+        "Fri" -> SchoolWeek.Fri
+        else -> SchoolWeek.Mon
     }

@@ -44,4 +44,5 @@
     <string name="class_code">Class Code</string>
     <string name="upcoming_activities">Upcoming Activities</string>
     <string name="add_students_heading">Add students to class with the class code</string>
+    <string name="locked">Locked</string>
 </resources>
