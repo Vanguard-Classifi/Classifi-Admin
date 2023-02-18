@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.SchoolWeek
@@ -59,6 +61,7 @@ fun WeeklyPlanGrid(
     onEdit: (String) -> Unit,
     isLocked: Boolean = false,
     headingColor: Color,
+    cellSelected: Boolean = false,
     headingBackgroundColor: Color,
     daysOfWeek: List<SchoolWeek> = SchoolWeek.values().toList(),
     plans: List<WeeklyPlanModel>,
@@ -84,16 +87,22 @@ fun WeeklyPlanGrid(
     row: @Composable (
         data: String,
         isLocked: Boolean,
+        selected: Boolean,
         textPadding: Dp,
+        cellWidth: Dp,
+        cellHeight: Dp,
         onTap: (String) -> Unit,
         onEdit: (String) -> Unit
-    ) -> Unit = { _data, _isLocked, _textPadding, _onTap, _onEdit ->
+    ) -> Unit = { _data, _isLocked, _selected, _textPadding, _cellWidth, _cellHeight, _onTap, _onEdit ->
         WeeklyPlanEntryCell(
             data = _data,
             isLocked = _isLocked,
+            selected = _selected,
             onTap = _onTap,
             onEdit = _onEdit,
             textPadding = _textPadding,
+            cellWidth = _cellWidth,
+            cellHeight = _cellHeight,
         )
     }
 ) {
@@ -157,30 +166,20 @@ fun WeeklyPlanGrid(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(verticalScrollState)
-                   .horizontalScroll(horizontalScrollState)
+                    .horizontalScroll(horizontalScrollState)
             ) {
                 repeat(numRows * numDays) { rowIndex ->
-                    Box(modifier = Modifier
-                        .height(rowHeight)
-                        .width(rowWidth)
-                        .border(
-                            width = 1.dp,
-                            color = Color.Black
-                        ))
-                    /**
                     WeeklyPlanRow(
-                    width = with(LocalDensity.current) {
-                    rowWidth.toDp()
-                    },
-                    height = rowHeight,
-                    isLocked = isLocked,
-                    textPadding = textPadding,
-                    weeklyPlan = plans[rowIndex],
-                    onTap = onTap,
-                    onEdit = onEdit,
-                    content = row,
+                        cellWidth = cellWidth,
+                        cellHeight = rowHeight,
+                        isLocked = isLocked,
+                        textPadding = textPadding,
+                        weeklyPlan = plans[rowIndex],
+                        onTap = onTap,
+                        onEdit = onEdit,
+                        content = row,
+                        selected = cellSelected,
                     )
-                     */
                 }
             }
         }
@@ -191,9 +190,10 @@ fun WeeklyPlanGrid(
 @Composable
 fun WeeklyPlanRow(
     modifier: Modifier = Modifier,
-    height: Dp,
-    width: Dp,
+    cellWidth: Dp,
+    cellHeight: Dp,
     isLocked: Boolean,
+    selected: Boolean,
     textPadding: Dp,
     weeklyPlan: WeeklyPlanModel,
     onTap: (String) -> Unit,
@@ -202,77 +202,49 @@ fun WeeklyPlanRow(
     content: @Composable (
         data: String,
         isLocked: Boolean,
+        selected: Boolean,
         textPadding: Dp,
+        cellWidth: Dp,
+        cellHeight: Dp,
         onTap: (String) -> Unit,
         onEdit: (String) -> Unit
-    ) -> Unit = { _data, _isLocked, _textPadding, _onTap, _onEdit ->
+    ) -> Unit = { _data, _isLocked, _selected,  _cellWidth, _cellHeight, _textPadding, _onTap, _onEdit ->
         WeeklyPlanEntryCell(
             data = _data,
             isLocked = _isLocked,
+            selected = _selected,
             onTap = _onTap,
             onEdit = _onEdit,
             textPadding = _textPadding,
+            cellWidth = _cellWidth,
+            cellHeight = _cellHeight,
         )
     }
 ) {
     val numCols = 6
-    val numLines = 2
-    val resultingHeight = height
-    val resultingWidth = width.div(6)
-
-    val dividerColor = color.copy(0.5f)
-
-    Layout(
-        modifier = Modifier,
-        content = {
-            //spread out the weekly plan model across the row
-            repeat(numCols) { col ->
-                val field = when (col) {
-                    0 -> weeklyPlan.period.toString()
-                    1 -> weeklyPlan.subject
-                    2 -> weeklyPlan.pages
-                    3 -> weeklyPlan.topic
-                    4 -> weeklyPlan.homework
-                    5 -> weeklyPlan.notes
-                    else -> weeklyPlan.notes
-                }
-                Box(modifier = Modifier.weeklyPlanModelData(field ?: "")) {
-                    content(
-                        data = field ?: "",
-                        isLocked = isLocked,
-                        onTap = onTap,
-                        onEdit = onEdit,
-                        textPadding = textPadding,
-                    )
-                }
+    Row(modifier = Modifier.padding(end = 8.dp)) {
+        repeat(numCols) { itemIndex ->
+            val field = when (itemIndex) {
+                0 -> weeklyPlan.period
+                1 -> weeklyPlan.subject
+                2 -> weeklyPlan.pages
+                3 -> weeklyPlan.topic
+                4 -> weeklyPlan.homework
+                5 -> weeklyPlan.notes
+                else -> weeklyPlan.notes
             }
-        }
-    ) { measurables, constraints ->
 
-        val placeables = measurables.map { measurable ->
-            val field = measurable.parentData as String
-            val placeable = measurable.measure(
-                constraints.copy(
-                    minWidth = resultingWidth.roundToPx(),
-                    maxWidth = resultingWidth.roundToPx(),
-                    minHeight = resultingHeight.roundToPx(),
-                    maxHeight = resultingHeight.roundToPx(),
-                )
+            content(
+                data = field ?: "",
+                isLocked = isLocked,
+                textPadding = textPadding,
+                cellWidth = cellWidth,
+                cellHeight = cellHeight,
+                onTap = onTap,
+                onEdit = onEdit,
+                selected = selected,
             )
-
-            Pair(placeable, field)
         }
-
-        layout(resultingWidth.roundToPx(), resultingHeight.roundToPx()) {
-            var start = 0
-            placeables.forEach { (placeable, field) ->
-                val positionX = start * resultingWidth.roundToPx()
-                val positionY = 0
-                placeable.place(positionX, positionY)
-                start++
-            }
-        }
-
     }
 
 }
@@ -282,7 +254,10 @@ fun WeeklyPlanRow(
 fun WeeklyPlanEntryCell(
     modifier: Modifier = Modifier,
     data: String = "",
+    cellWidth: Dp,
+    cellHeight: Dp,
     isLocked: Boolean = false,
+    selected: Boolean = false,
     textPadding: Dp,
     onTap: (String) -> Unit,
     onEdit: (String) -> Unit,
@@ -291,46 +266,52 @@ fun WeeklyPlanEntryCell(
     val innerModifier = Modifier
 
     Box(modifier = modifier
+        .width(cellWidth)
+        .height(cellHeight)
         .border(
-            width = 1.dp,
-            color = Black100.copy(alpha = 0.5f),
+            width = if(selected) 2.dp else 1.dp,
+            color = if(selected) Black100 else Black100.copy(alpha = 0.3f),
             shape = RoundedCornerShape(0.dp)
         )
         .pointerInput(Unit) {
             detectTapGestures(
                 onLongPress = {
-                    onEdit(data)
+                    if (!isLocked) onEdit(data)
                 },
                 onDoubleTap = {
-                    onEdit(data)
+                    if (!isLocked) onEdit(data)
                 },
                 onTap = {
-                    onTap(data)
+                    if (!isLocked) onTap(data)
                 }
             )
         }
     ) {
         ConstraintLayout(
-            modifier = Modifier,
+            modifier = Modifier.fillMaxWidth(),
             constraintSet = constraints,
         ) {
             Text(
                 text = data,
                 color = Black100,
                 fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = innerModifier
                     .layoutId("text")
                     .padding(textPadding)
             )
 
-            Icon(
-                painter = painterResource(R.drawable.icon_lock),
-                contentDescription = stringResource(id = R.string.locked),
-                modifier = innerModifier
-                    .layoutId("locked")
-                    .size(8.dp),
-                tint = Black100.copy(0.5f)
-            )
+            if (isLocked) {
+                Icon(
+                    painter = painterResource(R.drawable.icon_lock),
+                    contentDescription = stringResource(id = R.string.locked),
+                    modifier = innerModifier
+                        .layoutId("locked")
+                        .size(8.dp),
+                    tint = Black100.copy(0.5f)
+                )
+            }
         }
     }
 }
@@ -345,6 +326,7 @@ private fun weeklyPlanEntryCellConstraints(margin: Dp): ConstraintSet {
             bottom.linkTo(parent.bottom, 0.dp)
             start.linkTo(parent.start, 0.dp)
             end.linkTo(parent.end, 0.dp)
+            width = Dimension.fillToConstraints
         }
 
         constrain(locked) {
@@ -445,7 +427,7 @@ fun WeeklyPlanHeader(
 ) {
     Row(
         modifier = modifier
-            .padding(4.dp)
+            .padding(end = 8.dp,top = 8.dp)
             .border(
                 width = 1.dp,
                 color = headingColor.copy(alpha = 0.3f),
@@ -535,6 +517,8 @@ private fun WeeklyPlanEntryCellPreview() {
         onTap = {},
         onEdit = {},
         textPadding = 16.dp,
+        cellHeight = 48.dp,
+        cellWidth = 200.dp
     )
 }
 

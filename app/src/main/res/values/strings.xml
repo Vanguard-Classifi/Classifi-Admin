@@ -45,4 +45,8 @@
     <string name="upcoming_activities">Upcoming Activities</string>
     <string name="add_students_heading">Add students to class with the class code</string>
     <string name="locked">Locked</string>
+    <string name="message_icon">Message Icon</string>
+    <string name="close">Close</string>
+    <string name="double_tap_or_hold">Double tap or hold to edit</string>
+    <string name="done">DONE</string>
 </resources>
