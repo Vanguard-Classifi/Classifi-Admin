@@ -1,22 +1,17 @@
 package com.vanguard.classifiadmin.ui.components
 
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -104,20 +99,20 @@ fun WeeklyPlanGrid(
 ) {
     var dayIndex = 0
     val numRows = 8
-    val rowMinHeight = 24.dp
-    val headerMinHeight = 28.dp
     val cellWidth = 200.dp
-    val rowMinWidth = 120.dp
     val textPadding = 16.dp
     var dataIndex = 0
     val verticalScrollState = rememberScrollState()
     val horizontalScrollState = rememberScrollState()
     val sideBarWidth = 42.dp
     val sideBarItemHeight = 400.dp
+    val rowHeight = sideBarItemHeight.div(numRows)
+    var rowWidth by remember { mutableStateOf(0) }
+    val numDays = daysOfWeek.size
 
 
 
-    Column(modifier = Modifier) {
+    Column(modifier = Modifier.fillMaxSize()) {
         WeeklyPlanHeader(
             cellWidth = cellWidth,
             headingColor = headingColor,
@@ -126,63 +121,82 @@ fun WeeklyPlanGrid(
             content = header,
             textPaddingX = textPadding,
             modifier = Modifier
+                .onGloballyPositioned {
+                    rowWidth = it.size.width
+                }
                 .horizontalScroll(horizontalScrollState)
                 .padding(
                     start = with(LocalDensity.current) {
-                        52.dp
+                        sideBarWidth
                     }
                 )
         )
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(verticalScrollState)
-        ) {
-            daysOfWeek.forEach { day ->
-                Row(
-                    modifier = Modifier
-                ) {
-                    WeeklyPlanSide(
-                        height = sideBarItemHeight,
-                        width = sideBarWidth,
-                        dayOfWeek = day,
-                        content = side,
+        Row(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(verticalScrollState)
+            ) {
+                daysOfWeek.forEach { day ->
+                    Row(
                         modifier = Modifier
-                    )
+                    ) {
+                        WeeklyPlanSide(
+                            height = sideBarItemHeight,
+                            width = sideBarWidth,
+                            dayOfWeek = day,
+                            content = side,
+                            modifier = Modifier
+                        )
+                    }
 
+                    dayIndex++
+                }
+            }
+
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(verticalScrollState)
+                    .horizontalScroll(horizontalScrollState)
+            ) {
+                repeat(numRows * numDays) { rowIndex ->
+                    Box(modifier = Modifier
+                        .height(rowHeight)
+                        .width(
+                            with(LocalDensity.current) { rowWidth.toDp() }
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = Color.Black
+                        ))
                     /**
-
-                    Column(modifier = Modifier) {
-                    repeat(numRows) { rowIndex ->
                     WeeklyPlanRow(
-                    minHeight = rowMinHeight,
-                    minWidth = rowMinWidth,
+                    width = with(LocalDensity.current) {
+                    rowWidth.toDp()
+                    },
+                    height = rowHeight,
                     isLocked = isLocked,
                     textPadding = textPadding,
-                    weeklyPlan = plans[dataIndex],
+                    weeklyPlan = plans[rowIndex],
                     onTap = onTap,
                     onEdit = onEdit,
                     content = row,
                     )
-                    dataIndex++
-                    }
-                    }
-
                      */
                 }
-
-                dayIndex++
             }
         }
+
     }
 }
 
 @Composable
 fun WeeklyPlanRow(
     modifier: Modifier = Modifier,
-    minHeight: Dp,
-    minWidth: Dp,
+    height: Dp,
+    width: Dp,
     isLocked: Boolean,
     textPadding: Dp,
     weeklyPlan: WeeklyPlanModel,
@@ -207,42 +221,13 @@ fun WeeklyPlanRow(
 ) {
     val numCols = 6
     val numLines = 2
-    val height = minHeight + textPadding.times(2)
-    val width = minWidth + textPadding.times(2)
+    val resultingHeight = height
+    val resultingWidth = width.div(6)
 
     val dividerColor = color.copy(0.5f)
 
     Layout(
-        modifier = Modifier
-            .drawBehind {
-                //horizontal
-                repeat(numLines) { rowIndex ->
-                    drawLine(
-                        color = dividerColor,
-                        start = Offset(
-                            0f, rowIndex * height.toPx()
-                        ),
-                        end = Offset(
-                            size.width, rowIndex * height.toPx()
-                        ),
-                        strokeWidth = 1.dp.toPx()
-                    )
-                }
-
-                //vertical
-                repeat(numCols) { colIndex ->
-                    drawLine(
-                        color = dividerColor,
-                        start = Offset(
-                            colIndex * width.toPx(), 0f
-                        ),
-                        end = Offset(
-                            colIndex * width.toPx(), size.height
-                        ),
-                        strokeWidth = 1.dp.toPx()
-                    )
-                }
-            },
+        modifier = Modifier,
         content = {
             //spread out the weekly plan model across the row
             repeat(numCols) { col ->
@@ -272,20 +257,20 @@ fun WeeklyPlanRow(
             val field = measurable.parentData as String
             val placeable = measurable.measure(
                 constraints.copy(
-                    minWidth = width.roundToPx(),
-                    maxWidth = width.roundToPx(),
-                    minHeight = height.roundToPx(),
-                    maxHeight = height.roundToPx(),
+                    minWidth = resultingWidth.roundToPx(),
+                    maxWidth = resultingWidth.roundToPx(),
+                    minHeight = resultingHeight.roundToPx(),
+                    maxHeight = resultingHeight.roundToPx(),
                 )
             )
 
             Pair(placeable, field)
         }
 
-        layout(width.roundToPx(), height.roundToPx()) {
+        layout(resultingWidth.roundToPx(), resultingHeight.roundToPx()) {
             var start = 0
             placeables.forEach { (placeable, field) ->
-                val positionX = start * width.roundToPx()
+                val positionX = start * resultingWidth.roundToPx()
                 val positionY = 0
                 placeable.place(positionX, positionY)
                 start++
@@ -401,7 +386,8 @@ fun WeeklyPlanSide(
                 color = color.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(0.dp)
             ),
-        contentAlignment = Alignment.Center) {
+        contentAlignment = Alignment.Center
+    ) {
         content(
             color = color,
             backgroundColor = backgroundColor,
