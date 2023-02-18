@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Admin</string>
+    <string name="app_name">Classifi</string>
     <string name="open_sheet">Open Sheet</string>
     <string name="icon_brand">Branding Icon</string>
     <string name="dropdown">Dropdown list</string>
@@ -49,4 +49,18 @@
     <string name="close">Close</string>
     <string name="double_tap_or_hold">Double tap or hold to edit</string>
     <string name="done">DONE</string>
+    <string name="branding">Branding</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="show_password">Show Password</string>
+    <string name="hide_password">Hide Password</string>
+    <string name="login">LOG IN</string>
+    <string name="facebook">Facebook</string>
+    <string name="cant_remember">Can\'t remember password?</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="join_as_admin_or_school_director">Join as Admin or School Director?</string>
+    <string name="register_school">Register School</string>
+    <string name="enter_your_email">Enter your email</string>
+    <string name="enter_your_password">Enter your password</string>
 </resources>

@@ -52,6 +52,7 @@ fun TopBar(
     sheetEnabled: Boolean = true,
     openSheet: () -> Unit,
     openProfile: () -> Unit,
+    onLogin: () -> Unit = {},
     username: String,
     profileEnabled: Boolean = true,
 ) {
@@ -64,7 +65,9 @@ fun TopBar(
             Icon(
                 painter = painterResource(id = R.drawable.icon_branding_big),
                 contentDescription = stringResource(id = R.string.icon_brand),
-                modifier = modifier.size(28.dp),
+                modifier = modifier
+                    .size(28.dp)
+                    .clickable { onLogin() },
                 tint = MaterialTheme.colors.primary,
             )
 

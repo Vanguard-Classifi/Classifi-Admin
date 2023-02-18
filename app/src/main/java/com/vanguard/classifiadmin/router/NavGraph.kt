@@ -42,6 +42,8 @@ import com.vanguard.classifiadmin.ui.screens.weeklyplan.WEEKLY_PLAN_DETAIL_SCREE
 import com.vanguard.classifiadmin.ui.screens.weeklyplan.WEEKLY_PLAN_SCREEN
 import com.vanguard.classifiadmin.ui.screens.weeklyplan.WeeklyPlanDetailScreen
 import com.vanguard.classifiadmin.ui.screens.weeklyplan.WeeklyPlanScreen
+import com.vanguard.classifiadmin.ui.screens.welcome.LOGIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.welcome.LoginScreen
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 object Destinations {
@@ -57,6 +59,7 @@ object Destinations {
     const val modifyAssessment = MODIFY_ASSESSMENT_SCREEN
     const val weeklyPlan = WEEKLY_PLAN_SCREEN
     const val weeklyPlanDetail = WEEKLY_PLAN_DETAIL_SCREEN
+    const val login = LOGIN_SCREEN
 }
 
 
@@ -82,7 +85,8 @@ fun NavGraph(
                 onManageClass = { navController.navigate(Destinations.manageClass) },
                 goToAssessmentReport = { navController.navigate(Destinations.assessmentReport) },
                 goToAssessmentReview = { navController.navigate(Destinations.assessmentReview) },
-                goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) }
+                goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) },
+                onLogin = {navController.navigate(Destinations.login)}
             )
         }
 
@@ -146,6 +150,12 @@ fun NavGraph(
 
         composable(Destinations.weeklyPlanDetail) {
             WeeklyPlanDetailScreen(
+                viewModel = viewModel
+            )
+        }
+
+        composable(Destinations.login) {
+            LoginScreen(
                 viewModel = viewModel
             )
         }

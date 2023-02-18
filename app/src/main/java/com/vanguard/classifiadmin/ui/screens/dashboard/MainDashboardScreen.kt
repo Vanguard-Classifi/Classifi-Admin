@@ -85,6 +85,7 @@ fun MainDashboardScreen(
     onSelectMenu: (DashboardMenu) -> Unit,
     onSelectProfile: () -> Unit,
     onManageClass: (String) -> Unit,
+    onLogin: () -> Unit = {},
     goToAssessmentReport: (Assessment) -> Unit,
     goToAssessmentReview: (Assessment) -> Unit,
     goToModifyAssessment: (Assessment) -> Unit,
@@ -171,6 +172,7 @@ fun MainDashboardScreen(
             MainDashboardScreenContent(
                 modifier = modifier,
                 viewModel = viewModel,
+                onLogin = onLogin,
                 navController = navController,
                 filterLabel = "KG 2",
                 filterState = filterState,
@@ -382,6 +384,7 @@ fun MainDashboardScreenContent(
     openProfile: () -> Unit,
     username: String,
     onStudentOptions: () -> Unit,
+    onLogin: () -> Unit = {},
     onPublishedAssessmentOptions: (Assessment) -> Unit,
     onInReviewAssessmentOptions: (Assessment) -> Unit,
     onDraftAssessmentOptions: (Assessment) -> Unit,
@@ -399,6 +402,7 @@ fun MainDashboardScreenContent(
                     openProfile = openProfile,
                     username = username,
                     filterActivated = filterState,
+                    onLogin = onLogin,
                 )
             },
             bottomBar = {
