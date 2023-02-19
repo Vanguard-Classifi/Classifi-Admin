@@ -63,4 +63,7 @@
     <string name="register_school">Register School</string>
     <string name="enter_your_email">Enter your email</string>
     <string name="enter_your_password">Enter your password</string>
+    <string name="please_check_your_email_address">Please check your email address</string>
+    <string name="please_check_your_password">Please check your password</string>
+    <string name="something_went_wrong">Something went wrong</string>
 </resources>

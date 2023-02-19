@@ -1,12 +1,16 @@
 package com.vanguard.classifiadmin.ui.screens.welcome
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -25,6 +29,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,10 +57,15 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
+import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.isEmailValid
+import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.ui.theme.Green100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
 
 const val LOGIN_SCREEN = "login_screen"
 
@@ -64,7 +75,7 @@ fun LoginScreen(
     viewModel: MainViewModel,
 ) {
     LoginScreenContent(
-
+        viewModel = viewModel,
     )
 }
 
@@ -72,17 +83,25 @@ fun LoginScreen(
 @Composable
 fun LoginScreenContent(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
 ) {
     val innerModifier = Modifier
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val emailLogin by viewModel.emailLogin.collectAsState()
+    val passwordLogin by viewModel.passwordLogin.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    var loginErrorState: LoginErrorState? by remember { mutableStateOf(null) }
     val constraints = loginScreenContentConstraints(8.dp)
 
+    LaunchedEffect(loginErrorState) {
+        if (loginErrorState != null) {
+            delay(3000)
+            loginErrorState = null
+        }
+    }
 
     Surface(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(
-            modifier = Modifier,
+            modifier = Modifier.fillMaxSize(),
         ) {
             ConstraintLayout(
                 modifier = Modifier,
@@ -104,11 +123,9 @@ fun LoginScreenContent(
 
 
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = {
-                        email = it
-                    },
-                    label = {
+                    value = emailLogin ?: "",
+                    onValueChange = viewModel::onEmailLoginChanged,
+                    placeholder = {
                         Text(
                             text = stringResource(id = R.string.enter_your_email),
                             fontSize = 14.sp,
@@ -136,13 +153,14 @@ fun LoginScreenContent(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                     ),
+                    isError =
+                    loginErrorState == LoginErrorState.InvalidEmail
+                            || loginErrorState == LoginErrorState.InvalidUserCredentials,
                 )
 
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = {
-                        password = it
-                    },
+                    value = passwordLogin ?: "",
+                    onValueChange = viewModel::onPasswordLoginChanged,
                     placeholder = {
                         Text(
                             text = stringResource(id = R.string.enter_your_password),
@@ -153,9 +171,9 @@ fun LoginScreenContent(
                     },
                     shape = RoundedCornerShape(16.dp),
                     keyboardOptions = KeyboardOptions(
-                        autoCorrect = true,
-                        imeAction = ImeAction.Next,
-                        keyboardType = KeyboardType.Email
+                        autoCorrect = false,
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Password
                     ),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         textColor = MaterialTheme.colors.primary.copy(0.5f),
@@ -184,6 +202,9 @@ fun LoginScreenContent(
                             onClick = { passwordVisible = !passwordVisible }
                         ) { Icon(imageVector = image, contentDescription = description) }
                     },
+                    isError =
+                    loginErrorState == LoginErrorState.InvalidPassword ||
+                            loginErrorState == LoginErrorState.InvalidUserCredentials,
                 )
 
 
@@ -199,10 +220,61 @@ fun LoginScreenContent(
                 PrimaryTextButton(
                     label = stringResource(id = R.string.login),
                     onClick = {
-                        /*todo  login*/
+                        //login computation
+                        if (emailLogin == null || emailLogin?.isBlank() == true) {
+                            loginErrorState = LoginErrorState.InvalidEmail
+                            return@PrimaryTextButton
+                        }
+
+                        if (!isEmailValid(emailLogin ?: "")) {
+                            loginErrorState = LoginErrorState.InvalidEmail
+                            return@PrimaryTextButton
+                        }
+
+                        if (passwordLogin == null || passwordLogin?.isBlank() == true) {
+                            loginErrorState = LoginErrorState.InvalidPassword
+                            return@PrimaryTextButton
+                        }
+
+                        viewModel.signIn(
+                            emailLogin,
+                            passwordLogin,
+                            onResult = { error ->
+                                when (error) {
+                                    Resource.Success(AuthExceptionState.NetworkProblem) -> {
+                                        loginErrorState = LoginErrorState.NetworkError
+                                        return@signIn
+                                    }
+
+                                    Resource.Success(AuthExceptionState.InvalidUser) -> {
+                                        loginErrorState = LoginErrorState.InvalidUserCredentials
+                                        return@signIn
+                                    }
+
+                                    Resource.Success(AuthExceptionState.InvalidEmail) -> {
+                                        loginErrorState = LoginErrorState.InvalidEmail
+                                        return@signIn
+                                    }
+
+                                    Resource.Success(AuthExceptionState.InvalidUserCredentials) -> {
+                                        loginErrorState = LoginErrorState.InvalidUserCredentials
+                                        return@signIn
+                                    }
+
+                                    else -> {
+                                        loginErrorState = LoginErrorState.NetworkError
+                                        return@signIn
+                                    }
+                                }
+                            }
+                        )
+
+                        //move forward
+
                     },
                     modifier = innerModifier.layoutId("loginBtn")
                 )
+
 
                 TextRowWithClickable(
                     unClickable = stringResource(id = R.string.join_as_admin_or_school_director),
@@ -223,9 +295,43 @@ fun LoginScreenContent(
                 SupportRow(
                     modifier = innerModifier.layoutId("support"),
                 )
-             
+
                 Copyright(year = "2023", modifier = innerModifier.layoutId("copyright"))
 
+
+            }
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopEnd,
+            ) {
+                AnimatedVisibility(
+                    visible = loginErrorState != null,
+                    enter = slideInHorizontally(
+                        initialOffsetX = { fullWidth -> fullWidth },
+                        animationSpec = tween(durationMillis = 20)
+                    ),
+                    exit = slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> fullWidth },
+                        animationSpec = tween(durationMillis = 20)
+                    ),
+                ) {
+                    //on tap message content
+                    val message: String = when (loginErrorState) {
+                        LoginErrorState.InvalidUserCredentials -> loginErrorState?.message ?: ""
+                        LoginErrorState.InvalidEmail -> loginErrorState?.message ?: ""
+                        LoginErrorState.InvalidPassword -> loginErrorState?.message ?: ""
+                        LoginErrorState.NetworkError -> loginErrorState?.message ?: ""
+                        else -> stringResource(id = R.string.something_went_wrong)
+                    }
+
+                    MessageBar(
+                        message = message,
+                        onClose = {
+                            loginErrorState = null
+                        }
+                    )
+                }
 
             }
         }
@@ -279,14 +385,14 @@ private fun loginScreenContentConstraints(margin: Dp): ConstraintSet {
         }
 
         constrain(loginBtn) {
-            top.linkTo(resetPasswordRow.bottom, 32.dp)
+            top.linkTo(resetPasswordRow.bottom, 48.dp)
             start.linkTo(parent.start, 8.dp)
             end.linkTo(parent.end, 8.dp)
             width = Dimension.fillToConstraints
         }
 
         constrain(createSchool) {
-            top.linkTo(loginBtn.bottom, 8.dp)
+            top.linkTo(loginBtn.bottom, 16.dp)
             start.linkTo(loginBtn.start, 0.dp)
             end.linkTo(loginBtn.end, 0.dp)
             width = Dimension.fillToConstraints
@@ -374,7 +480,9 @@ fun SupportRow(
                 fontSize = 12.sp,
                 color = Black100.copy(0.3f),
                 maxLines = 1,
-                modifier = modifier.clickable { onSelect(support) }.padding(horizontal = 16.dp)
+                modifier = modifier
+                    .clickable { onSelect(support) }
+                    .padding(horizontal = 16.dp)
             )
         }
     }
@@ -395,7 +503,9 @@ fun Copyright(
             painter = painterResource(id = R.drawable.icon_copyright),
             tint = Black100.copy(0.3f),
             contentDescription = stringResource(id = R.string.facebook),
-            modifier = modifier.padding(4.dp).size(14.dp)
+            modifier = modifier
+                .padding(4.dp)
+                .size(14.dp)
         )
 
         Text(
@@ -502,10 +612,9 @@ enum class SupportType(val title: String) {
     PrivacyPolicy("Privacy Policy")
 }
 
-@Composable
-@Preview
-private fun LoginScreenContentPreview() {
-    LoginScreenContent(
-
-    )
+enum class LoginErrorState(val message: String) {
+    InvalidEmail("Please check your email address"),
+    InvalidPassword("Please check your password"),
+    InvalidUserCredentials("Please ensure to enter the correct information"),
+    NetworkError("Please check your network and try again"),
 }

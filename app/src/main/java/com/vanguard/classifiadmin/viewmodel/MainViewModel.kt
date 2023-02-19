@@ -2,6 +2,10 @@ package com.vanguard.classifiadmin.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseUser
+import com.vanguard.classifiadmin.data.repository.MainRepository
+import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
+import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
@@ -13,7 +17,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val repository: MainRepository,
+) : ViewModel() {
 
     private var _classCodeAddClass = MutableStateFlow(null as String?)
     val classCodeAddClass: StateFlow<String?> = _classCodeAddClass
@@ -30,12 +36,54 @@ class MainViewModel @Inject constructor() : ViewModel() {
     private var _selectedClassManageClass = MutableStateFlow(null as String?)
     val selectedClassManageClass: StateFlow<String?> = _selectedClassManageClass
 
-    private var _currentDashboardBottomSheetFlavor = MutableStateFlow(null as DashboardBottomSheetFlavor?)
-    val currentDashboardBottomSheetFlavor: StateFlow<DashboardBottomSheetFlavor?> = _currentDashboardBottomSheetFlavor
+    private var _currentDashboardBottomSheetFlavor =
+        MutableStateFlow(null as DashboardBottomSheetFlavor?)
+    val currentDashboardBottomSheetFlavor: StateFlow<DashboardBottomSheetFlavor?> =
+        _currentDashboardBottomSheetFlavor
 
 
     private var _currentAssessmentOption = MutableStateFlow(null as AssessmentOption?)
     val currentAssessmentOption: StateFlow<AssessmentOption?> = _currentAssessmentOption
+
+    private var _currentUserFirebase =
+        MutableStateFlow(Resource.Loading<FirebaseUser?>() as Resource<FirebaseUser?>)
+    val currentUserFirebase: StateFlow<Resource<FirebaseUser?>> = _currentUserFirebase
+
+    private var _emailLogin = MutableStateFlow(null as String?)
+    val emailLogin: StateFlow<String?> = _emailLogin
+
+    private var _passwordLogin = MutableStateFlow(null as String?)
+    val passwordLogin: StateFlow<String?> = _passwordLogin
+
+    fun onEmailLoginChanged(email: String?) = effect {
+        _emailLogin.value = email
+    }
+
+    fun onPasswordLoginChanged(password: String?) = effect {
+        _passwordLogin.value = password
+    }
+
+    fun getCurrentUserFirebase() = effect {
+        _currentUserFirebase.value = repository.currentUser
+    }
+
+    fun signUp(
+        email: String?,
+        password: String?,
+        onResult: (Resource<AuthExceptionState?>) -> Unit
+    ) = effect {
+        repository.signUp(email, password, onResult)
+    }
+
+    fun signIn(
+        email: String?,
+        password: String?,
+        onResult: (Resource<AuthExceptionState?>) -> Unit
+    ) = effect {
+        repository.signIn(email, password, onResult)
+    }
+
+    fun signOut() = effect { repository.signOut() }
 
     fun onCurrentAssessmentOptionChanged(option: AssessmentOption?) = effect {
         _currentAssessmentOption.value = option

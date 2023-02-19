@@ -150,9 +150,11 @@ fun WeeklyPlanDetailScreenContent(
                 visible = onTapMessageState,
                 enter = slideInHorizontally(
                     initialOffsetX = { fullWidth -> fullWidth },
+                    animationSpec = tween(durationMillis = 20)
                 ),
                 exit = slideOutHorizontally(
-                    targetOffsetX = { fullWidth -> fullWidth }
+                    targetOffsetX = { fullWidth -> fullWidth },
+                    animationSpec = tween(durationMillis = 20)
                 ),
             ) {
                 //on tap message content
