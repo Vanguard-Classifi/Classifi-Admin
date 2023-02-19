@@ -97,6 +97,7 @@ fun WeeklyPlanDetailScreenContent(
 
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val maxWidth = maxWidth
 
         ModalBottomSheetLayout(
             modifier = modifier
@@ -162,7 +163,8 @@ fun WeeklyPlanDetailScreenContent(
                     message = stringResource(id = R.string.double_tap_or_hold),
                     onClose = {
                         onTapMessageState = false
-                    }
+                    },
+                    maxWidth = maxWidth,
                 )
             }
 

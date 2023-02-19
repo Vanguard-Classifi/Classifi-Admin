@@ -73,9 +73,11 @@ const val LOGIN_SCREEN = "login_screen"
 fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onCreateSchool: () -> Unit,
 ) {
     LoginScreenContent(
         viewModel = viewModel,
+        onCreateSchool = onCreateSchool
     )
 }
 
@@ -84,6 +86,7 @@ fun LoginScreen(
 fun LoginScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onCreateSchool: () -> Unit,
 ) {
     val innerModifier = Modifier
     val emailLogin by viewModel.emailLogin.collectAsState()
@@ -103,6 +106,8 @@ fun LoginScreenContent(
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
         ) {
+            val maxWidth = maxWidth
+
             ConstraintLayout(
                 modifier = Modifier,
                 constraintSet = constraints,
@@ -247,7 +252,7 @@ fun LoginScreenContent(
                                     }
 
                                     Resource.Success(AuthExceptionState.InvalidUser) -> {
-                                        loginErrorState = LoginErrorState.InvalidUserCredentials
+                                        loginErrorState = LoginErrorState.InvalidUser
                                         return@signIn
                                     }
 
@@ -262,7 +267,7 @@ fun LoginScreenContent(
                                     }
 
                                     else -> {
-                                        loginErrorState = LoginErrorState.NetworkError
+                                        loginErrorState = LoginErrorState.InvalidUser
                                         return@signIn
                                     }
                                 }
@@ -279,9 +284,7 @@ fun LoginScreenContent(
                 TextRowWithClickable(
                     unClickable = stringResource(id = R.string.join_as_admin_or_school_director),
                     clickable = stringResource(id = R.string.register_school),
-                    onClick = {
-                        /*register school*/
-                    },
+                    onClick = onCreateSchool,
                     modifier = innerModifier.layoutId("createSchool")
                 )
 
@@ -303,7 +306,7 @@ fun LoginScreenContent(
 
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.TopEnd,
+                contentAlignment = Alignment.TopCenter,
             ) {
                 AnimatedVisibility(
                     visible = loginErrorState != null,
@@ -322,6 +325,7 @@ fun LoginScreenContent(
                         LoginErrorState.InvalidEmail -> loginErrorState?.message ?: ""
                         LoginErrorState.InvalidPassword -> loginErrorState?.message ?: ""
                         LoginErrorState.NetworkError -> loginErrorState?.message ?: ""
+                        LoginErrorState.InvalidUser -> loginErrorState?.message ?: ""
                         else -> stringResource(id = R.string.something_went_wrong)
                     }
 
@@ -329,7 +333,8 @@ fun LoginScreenContent(
                         message = message,
                         onClose = {
                             loginErrorState = null
-                        }
+                        },
+                        maxWidth = maxWidth,
                     )
                 }
 
@@ -616,5 +621,6 @@ enum class LoginErrorState(val message: String) {
     InvalidEmail("Please check your email address"),
     InvalidPassword("Please check your password"),
     InvalidUserCredentials("Please ensure to enter the correct information"),
+    InvalidUser("This account seem not to exist."),
     NetworkError("Please check your network and try again"),
 }

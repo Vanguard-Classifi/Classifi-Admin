@@ -66,7 +66,7 @@ class FirebaseAuthManagerImpl @Inject constructor() : FirebaseAuthManager {
                     }
                 }
         } catch (e: Exception) {
-            onResult(Resource.Error("Sorry something is wrong"))
+            onResult(Resource.Error("Sorry something went wrong"))
         }
     }
 

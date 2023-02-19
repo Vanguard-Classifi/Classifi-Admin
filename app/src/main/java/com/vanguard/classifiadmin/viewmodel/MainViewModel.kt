@@ -55,6 +55,48 @@ class MainViewModel @Inject constructor(
     private var _passwordLogin = MutableStateFlow(null as String?)
     val passwordLogin: StateFlow<String?> = _passwordLogin
 
+    private var _fullNameCreateSchool = MutableStateFlow(null as String?)
+    val fullNameCreateSchool: StateFlow<String?> = _fullNameCreateSchool
+
+    private var _schoolNameCreateSchool = MutableStateFlow(null as String?)
+    val schoolNameCreateSchool: StateFlow<String?> = _schoolNameCreateSchool
+
+    private var _emailCreateSchool = MutableStateFlow(null as String?)
+    val emailCreateSchool: StateFlow<String?> = _emailCreateSchool
+
+    private var _phoneCreateSchool = MutableStateFlow(null as String?)
+    val phoneCreateSchool: StateFlow<String?> = _phoneCreateSchool
+
+    private var _passwordCreateSchool = MutableStateFlow(null as String?)
+    val passwordCreateSchool: StateFlow<String?> = _passwordCreateSchool
+
+    private var _selectedPhoneCode = MutableStateFlow(null as String?)
+    val selectedPhoneCode: StateFlow<String?> = _selectedPhoneCode
+
+    fun onSelectedPhoneCodeChanged(code: String?) = effect {
+        _selectedPhoneCode.value = code
+    }
+
+    fun onFullNameCreateSchoolChanged(name: String?) = effect {
+        _fullNameCreateSchool.value = name
+    }
+
+    fun onSchoolNameCreateSchoolChanged(name: String?) = effect {
+        _schoolNameCreateSchool.value = name
+    }
+
+    fun onEmailCreateSchoolChanged(email: String?) = effect {
+        _emailCreateSchool.value = email
+    }
+
+    fun onPhoneCreateSchoolChanged(phone: String?) = effect {
+        _phoneCreateSchool.value = phone
+    }
+
+    fun onPasswordCreateSchoolChanged(password: String?) = effect {
+        _passwordCreateSchool.value = password
+    }
+
     fun onEmailLoginChanged(email: String?) = effect {
         _emailLogin.value = email
     }

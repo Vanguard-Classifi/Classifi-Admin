@@ -66,4 +66,17 @@
     <string name="please_check_your_email_address">Please check your email address</string>
     <string name="please_check_your_password">Please check your password</string>
     <string name="something_went_wrong">Something went wrong</string>
+    <string name="create_school_account">Create a School Account</string>
+    <string name="enter_your_full_name">Enter your full name</string>
+    <string name="create_password">Create a password</string>
+    <string name="enter_school_name">Enter school name</string>
+    <string name="enter_email_address">Enter email address</string>
+    <string name="enter_phone">Enter phone</string>
+    <string name="code">Code</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="join_an_existing_school_instead">Join an existing school instead?</string>
+    <string name="join">Join</string>
+    <string name="create_account">CREATE ACCOUNT</string>
+    <string name="flag">Country Flag</string>
+    <string name="indicator">Indicator</string>
 </resources>

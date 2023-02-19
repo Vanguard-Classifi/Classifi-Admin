@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 
@@ -33,6 +35,7 @@ fun MessageBar(
     message: String,
     icon: Int = R.drawable.icon_info,
     onClose: () -> Unit,
+    maxWidth: Dp,
 ) {
     val constraints = messageBarConstraints(8.dp)
     val innerModifier = Modifier
@@ -40,13 +43,17 @@ fun MessageBar(
     Card(
         modifier = Modifier
             .wrapContentHeight()
-            .widthIn(min = 300.dp)
+            .widthIn(max = maxWidth.times(0.95f))
             .padding(horizontal = 8.dp, vertical = 8.dp),
         backgroundColor = MaterialTheme.colors.surface,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary,
+        ),
         elevation = 2.dp, shape = RoundedCornerShape(8.dp)
     ) {
         ConstraintLayout(
-            modifier = Modifier,
+            modifier = Modifier.fillMaxWidth(),
             constraintSet = constraints,
         ) {
             Icon(
@@ -54,6 +61,7 @@ fun MessageBar(
                 contentDescription = stringResource(id = R.string.message_icon),
                 modifier = innerModifier
                     .layoutId("icon")
+                    .padding(4.dp)
                     .size(24.dp),
                 tint = MaterialTheme.colors.primary
             )
@@ -63,9 +71,10 @@ fun MessageBar(
                 fontSize = 12.sp,
                 color = MaterialTheme.colors.primary,
                 modifier = innerModifier
-                    .widthIn(max = 220.dp)
+                    .padding(horizontal = 2.dp)
+                    .widthIn(max = maxWidth.times(0.7f))
                     .layoutId("message"),
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
 
@@ -73,7 +82,7 @@ fun MessageBar(
             IconButton(
                 onClick = onClose,
                 modifier = innerModifier.layoutId("close")
-                    .size(30.dp)
+                    .size(30.dp).padding(4.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.icon_close),
@@ -102,7 +111,9 @@ private fun messageBarConstraints(margin: Dp): ConstraintSet {
 
         constrain(message) {
             top.linkTo(parent.top, margin)
-            start.linkTo(icon.end, 8.dp)
+            start.linkTo(icon.end, 4.dp)
+            end.linkTo(close.start, 4.dp)
+         // width = Dimension.fillToConstraints
         }
 
         constrain(close) {
@@ -119,6 +130,7 @@ private fun MessageBarPreview() {
     MessageBar(
        icon = R.drawable.icon_info,
         onClose = {},
-        message = "Warning, Close now"
+        message = "Warning, Close gcfdfcgcgufuhftguguvcgucvgucfcgcfydtfdfgunohfgcgcgcgcgwdgsgfgfgfgdfgrfgfgfdfggufguvguvuhghiw",
+        maxWidth = 700.dp
     )
 }

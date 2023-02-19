@@ -31,6 +31,24 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 
+@Composable
+fun ChildTopBarWithCloseButtonOnly(
+    modifier: Modifier = Modifier,
+    onClose: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RoundedIconButton(
+            onClick = onClose,
+            modifier = modifier.padding(8.dp),
+            icon = R.drawable.icon_close,
+            size = 18.dp,
+        )
+    }
+}
 
 @Composable
 fun ChildTopBarWithInfo(
@@ -48,7 +66,9 @@ fun ChildTopBarWithInfo(
         val innerModifier = Modifier
 
         ConstraintLayout(
-            modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             constraintSet = constraints
         ) {
             RoundedIconButtonTopBar(
@@ -214,5 +234,13 @@ private fun ChildTopBarWithInfoPreview() {
         onInfo = {},
         heading = "The Boy is neat",
         subheading = "There is a way out",
+    )
+}
+
+@Composable
+@Preview
+private fun ChildTopBarWithCloseButtonOnlyPreview() {
+    ChildTopBarWithCloseButtonOnly(
+        onClose = {}
     )
 }
