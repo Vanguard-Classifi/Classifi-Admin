@@ -34,6 +34,8 @@ class MainBackgroundService : Service() {
                     store.saveCurrentUserIdPref(currentUser?.userId ?: "") {}
                     //save user name to pref
                     store.saveCurrentUsernamePref(currentUser?.fullname ?: "") {}
+                    //save user email
+                    store.saveCurrentUserEmailPref(currentUserEmail){}
                     //save school id to pref
                     store.saveCurrentSchoolIdPref(currentUser?.currentSchoolId ?: "") {}
                     //save school name to pref

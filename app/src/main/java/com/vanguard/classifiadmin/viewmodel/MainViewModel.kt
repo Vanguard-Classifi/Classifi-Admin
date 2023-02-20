@@ -109,6 +109,18 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(Resource.Loading<UserNetworkModel?>() as Resource<UserNetworkModel?>)
     val userByEmailNetwork: StateFlow<Resource<UserNetworkModel?>> = _userByEmailNetwork
 
+    private var _currentUserEmailPref = MutableStateFlow(null as String?)
+    val currentUserEmailPref: StateFlow<String?> = _currentUserEmailPref
+    fun saveCurrentUserEmailPref(email: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentUserEmailPref(email, onResult)
+    }
+
+    fun getCurrentUserEmail() = effect {
+        store.currentUserEmailPref.collect { email ->
+            _currentUserEmailPref.value = email
+        }
+    }
+
     fun getUserByEmailNetwork(email: String, onResult: (Resource<UserNetworkModel?>) -> Unit) = effect {
         repository.getUserByEmailNetwork(email) {
             _userByEmailNetwork.value = it

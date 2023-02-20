@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +31,55 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+
+
+@Composable
+fun PagerBarWithIcon(
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    icon: Int,
+    text: String,
+    backgroundColor: Color = MaterialTheme.colors.primary,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+) {
+    Surface(
+        modifier = Modifier.padding(horizontal = 12.dp).clip(CircleShape),
+        color = backgroundColor,
+        shape = CircleShape,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = if (selected) Arrangement.SpaceBetween else Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = text,
+                tint = if (selected) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onPrimary.copy(
+                    0.5f
+                ),
+                modifier = modifier
+                    .size(24.dp)
+                    .padding(2.dp)
+            )
+
+            if (selected) {
+                Text(
+                    modifier = modifier.padding(8.dp),
+                    text = text,
+                    color = if (selected) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onPrimary.copy(
+                        0.5f
+                    ),
+                    maxLines = 1,
+                    fontSize = 12.sp,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    onTextLayout = onTextLayout,
+                )
+            }
+        }
+    }
+
+}
 
 @Composable
 fun ChildTopBarWithCloseButtonOnly(
@@ -241,5 +291,15 @@ private fun ChildTopBarWithInfoPreview() {
 private fun ChildTopBarWithCloseButtonOnlyPreview() {
     ChildTopBarWithCloseButtonOnly(
         onClose = {}
+    )
+}
+
+@Composable
+@Preview
+private fun PagerBarWithIconPreview() {
+    PagerBarWithIcon(
+        icon = R.drawable.icon_settings,
+        text = "Profile",
+        selected = true,
     )
 }

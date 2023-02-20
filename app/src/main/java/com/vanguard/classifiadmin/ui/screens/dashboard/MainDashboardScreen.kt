@@ -97,6 +97,7 @@ fun MainDashboardScreen(
     val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val currentSchoolNamePref by viewModel.currentSchoolNamePref.collectAsState()
+    val currentUserEmailPref by viewModel.currentUserEmailPref.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -114,6 +115,7 @@ fun MainDashboardScreen(
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentUsernamePref()
+        viewModel.getCurrentUserEmail()
        delay(3000)
        viewModel.clearSignInFields()
        viewModel.clearSignUpFields()
@@ -203,7 +205,7 @@ fun MainDashboardScreen(
                         sheetState.show()
                     }
                 },
-                username = "Christopher Adams",
+                username = currentUsernamePref ?: "",
                 onStudentOptions = {
                     viewModel.onCurrentDashboardBottomSheetFlavorChanged(
                         DashboardBottomSheetFlavor.StudentOptions
@@ -279,8 +281,8 @@ fun MainDashboardScreen(
                 offset = IntOffset(0, 100),
                 onDismissRequest = { menuState = false }) {
                 DashboardMenuScreen(
-                    username = "Genju Wuhabby",
-                    email = "hamzajesim@gmail.com",
+                    username = currentUsernamePref ?: "",
+                    email = currentUserEmailPref ?: "",
                     status = "Update your profile",
                     onSelectProfile = onSelectProfile,
                     onSelectMenu = onSelectMenu,

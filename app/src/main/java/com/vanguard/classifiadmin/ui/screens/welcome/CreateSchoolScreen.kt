@@ -462,6 +462,10 @@ fun CreateSchoolScreenContent(
                                             viewModel.saveCurrentUsernamePref(
                                                 fullNameCreateSchool ?: "",
                                                 onResult = {})
+                                            viewModel.saveCurrentUserEmailPref(
+                                                emailCreateSchool ?: "",
+                                                onResult = {}
+                                            )
                                             viewModel.saveCurrentSchoolIdPref(
                                                 schoolId,
                                                 onResult = {})

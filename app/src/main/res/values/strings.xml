@@ -84,4 +84,5 @@
     <string name="create_school_anyways">Create School Anyways</string>
     <string name="school_creation_completed">School Creation Completed!</string>
     <string name="create_school">CREATE SCHOOL</string>
+    <string name="manage_account">Manage Account</string>
 </resources>

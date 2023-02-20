@@ -26,6 +26,7 @@ object PrefKeys {
     const val currentUsername = "currentUsername"
     const val currentSchoolId = "currentSchoolId"
     const val currentSchoolName = "currentSchoolName"
+    const val currentUserEmail = "currentUserEmail"
 }
 
 @Singleton
@@ -55,6 +56,18 @@ class PrefDatastoreImpl @Inject constructor(
             scope.launch {
                 store.edit { pref ->
                     pref[stringPreferencesKey(PrefKeys.currentUsername)] = username
+                }
+            }.invokeOnCompletion { callback { onResult(true) } }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override fun saveCurrentUserEmailPref(email: String, onResult: (Boolean) -> Unit) {
+        try {
+            scope.launch {
+                store.edit { pref ->
+                    pref[stringPreferencesKey(PrefKeys.currentUserEmail)] = email
                 }
             }.invokeOnCompletion { callback { onResult(true) } }
         } catch (e: Exception) {
@@ -104,6 +117,15 @@ class PrefDatastoreImpl @Inject constructor(
                 return flowOf("")
             }
             return username
+        }
+    override val currentUserEmailPref: Flow<String?>
+        get() {
+            val email = try {
+                store.data.map { pref -> pref[stringPreferencesKey(PrefKeys.currentUserEmail)] }
+            } catch (e: Exception) {
+                return flowOf("")
+            }
+            return email
         }
 
     override val currentSchoolIdPref: Flow<String?>

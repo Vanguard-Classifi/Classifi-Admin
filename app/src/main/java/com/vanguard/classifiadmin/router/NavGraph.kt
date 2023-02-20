@@ -108,7 +108,9 @@ fun NavGraph(
         }
 
         composable(Destinations.account) {
-            MyAccountScreen()
+            MyAccountScreen(
+                onBack = { navController.navigate(Destinations.dashboard) }
+            )
         }
 
         composable(Destinations.manageClass) {
@@ -162,7 +164,7 @@ fun NavGraph(
                 viewModel = viewModel,
                 onCreateSchool = { navController.navigate(Destinations.createSchool) },
                 onLoginCompleted = { navController.navigate(Destinations.dashboard) },
-                onAddSchool = {navController.navigate(Destinations.addSchoolScreen)},
+                onAddSchool = { navController.navigate(Destinations.addSchoolScreen) },
             )
         }
 
@@ -179,8 +181,8 @@ fun NavGraph(
             AddSchoolScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.login) },
-                onSchoolCreated = {navController.navigate(Destinations.dashboard)},
-                onJoinSchool = {navController.navigate(Destinations.login)}
+                onSchoolCreated = { navController.navigate(Destinations.dashboard) },
+                onJoinSchool = { navController.navigate(Destinations.login) }
             )
         }
     }

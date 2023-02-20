@@ -35,9 +35,12 @@ val AvatarColorMap: Map<Char, Long> = mapOf(
 
 
 fun generateColorFromUserName(username: String): Long {
-    val split = username.lowercase().splitWithSpace()
-    val first = split.first()[0].toString()
-    return AvatarColorMap[split.first()[0]] ?: 0xff000000
+    if (username.isNotBlank()) {
+        val split = username.lowercase().splitWithSpace()
+        val first = if (split.isNotEmpty()) split.first()[0].toString() else ""
+        return AvatarColorMap[first.toCharArray().first()] ?: 0xff000000
+    }
+    return 0xff000000
 }
 
 val ClassColorMap: Map<Int, Long> = mapOf(
@@ -66,9 +69,12 @@ val ClassColorMap: Map<Int, Long> = mapOf(
 )
 
 fun generateColorFromClassName(className: String): Long {
-    val split = className.splitWithSpace()
-    val second = if (split.size > 1) split[1].toIntOrNull() else 0
-    return ClassColorMap[second ?: 0] ?: 0xff000000
+    if (className.isNotBlank()) {
+        val split = className.splitWithSpace()
+        val second = if (split.size > 1) split[1].toIntOrNull() else 0
+        return ClassColorMap[second ?: 0] ?: 0xff000000
+    }
+    return 0xff000000
 }
 
 val AssessmentTypeColorMap: Map<String, Long> = mapOf(
@@ -78,7 +84,10 @@ val AssessmentTypeColorMap: Map<String, Long> = mapOf(
 )
 
 fun generateColorFromAssessment(assessment: Assessment): Long {
-    return AssessmentTypeColorMap[assessment.type] ?: 0xff000000
+    if (assessment.type.isNotBlank()) {
+        return AssessmentTypeColorMap[assessment.type] ?: 0xff000000
+    }
+    return 0xff000000
 }
 
 val GradeColorMap: Map<Char, Long> = mapOf(
@@ -91,5 +100,8 @@ val GradeColorMap: Map<Char, Long> = mapOf(
 )
 
 fun generateColorFromGrade(grade: Char): Long {
-    return GradeColorMap[grade] ?: 0xf000000
+    if (grade.isDefined()) {
+        return GradeColorMap[grade] ?: 0xf000000
+    }
+    return 0xf000000
 }
