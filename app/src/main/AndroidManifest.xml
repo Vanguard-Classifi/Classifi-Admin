@@ -24,6 +24,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".domain.services.MainBackgroundService"
+            android:enabled="true" />
     </application>
 
 </manifest>

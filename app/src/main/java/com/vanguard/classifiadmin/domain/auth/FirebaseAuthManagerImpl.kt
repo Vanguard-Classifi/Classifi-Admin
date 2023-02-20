@@ -77,6 +77,12 @@ class FirebaseAuthManagerImpl @Inject constructor() : FirebaseAuthManager {
                                 Resource.Success(AuthExceptionState.NetworkProblem)
                             )
                             return@addOnCompleteListener
+                        } else {
+                            onResult(
+                                Resource.Error("Error parsing user"),
+                                Resource.Success(AuthExceptionState.ErrorParsingUser)
+                            )
+                            return@addOnCompleteListener
                         }
                     }
                 }
@@ -112,6 +118,9 @@ class FirebaseAuthManagerImpl @Inject constructor() : FirebaseAuthManager {
 
                         if (task.exception is FirebaseAuthInvalidUserException) {
                             onResult(Resource.Success(AuthExceptionState.InvalidUser))
+                            return@addOnCompleteListener
+                        } else {
+                            onResult(Resource.Success(AuthExceptionState.UserDoesNotExist))
                             return@addOnCompleteListener
                         }
 

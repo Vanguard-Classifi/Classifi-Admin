@@ -8,6 +8,7 @@ interface FirestoreManager {
     //user
     suspend fun saveUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
     suspend fun getUserByIdNetwork(userId: String, onResult: (Resource<UserNetworkModel?>) -> Unit)
+    suspend fun getUserByEmailNetwork(email: String, onResult: (Resource<UserNetworkModel?>) -> Unit)
     suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit)
     suspend fun deleteUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
 

@@ -67,6 +67,7 @@ import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.helpers.UserRole
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
 import com.vanguard.classifiadmin.ui.components.MessageBar
@@ -397,86 +398,81 @@ fun CreateSchoolScreenContent(
                                     emailCreateSchool,
                                     passwordCreateSchool,
                                     onResult = { user, error ->
-                                        when (error) {
-                                            Resource.Success(AuthExceptionState.UserAlreadyExists) -> {
-                                                createSchoolErrorState =
-                                                    CreateSchoolErrorState.AlreadyExistingEmail
-                                                return@signUp
-                                            }
-
-                                            Resource.Success(AuthExceptionState.InvalidUserCredentials) -> {
-                                                createSchoolErrorState =
-                                                    CreateSchoolErrorState.InvalidCredentials
-                                                return@signUp
-                                            }
-
-                                            Resource.Success(AuthExceptionState.InvalidEmail) -> {
-                                                createSchoolErrorState =
-                                                    CreateSchoolErrorState.InvalidEmail
-                                                return@signUp
-                                            }
-
-                                            Resource.Success(AuthExceptionState.NetworkProblem) -> {
-                                                createSchoolErrorState =
-                                                    CreateSchoolErrorState.Network
-                                                return@signUp
-                                            }
-
-                                            else -> {
-                                                createSchoolErrorState = null
-                                                //do your thing
-                                                scope.launch {
-                                                    //save user to db
-                                                    val schoolId = UUID.randomUUID().toString()
-                                                    val currentRole = UserRole.SuperAdmin.name
-                                                    val superAdminUser = UserModel(
-                                                        userId = user.data?.uid ?: "",
-                                                        email = emailCreateSchool,
-                                                        fullname = fullNameCreateSchool,
-                                                        currentRole = currentRole,
-                                                        roles = arrayListOf(currentRole),
-                                                        schoolIds = arrayListOf(schoolId),
-                                                        currentSchoolId = schoolId,
-                                                        phone = phoneCreateSchool,
-                                                        lastModified = today(),
-                                                    )
-                                                    //save school
-                                                    val newSchool = SchoolModel(
-                                                        schoolId = schoolId,
-                                                        schoolName = schoolNameCreateSchool,
-                                                        superAdminId = user.data?.uid ?: "",
-                                                        dateCreated = today(),
-                                                        lastModified = today(),
-                                                    )
-
-                                                    viewModel.saveUserNetwork(
-                                                        user = superAdminUser,
-                                                        onResult = {}
-                                                    )
-
-                                                    viewModel.saveSchoolNetwork(
-                                                        school = newSchool,
-                                                        onResult = {}
-                                                    )
-
-                                                    viewModel.saveCurrentUserIdPref(
-                                                        user.data?.uid ?: "", onResult = {})
-                                                    viewModel.saveCurrentUsernamePref(
-                                                        fullNameCreateSchool ?: "",
-                                                        onResult = {})
-                                                    viewModel.saveCurrentSchoolIdPref(
-                                                        schoolId,
-                                                        onResult = {})
-                                                    viewModel.saveCurrentSchoolNamePref(
-                                                        schoolNameCreateSchool ?: "",
-                                                        onResult = {})
-                                                }
-
-                                                //show completed dialog
-                                                signUpCompletedState = true
-
-                                            }
+                                        if (error.data == AuthExceptionState.UserAlreadyExists) {
+                                            createSchoolErrorState =
+                                                CreateSchoolErrorState.AlreadyExistingEmail
+                                            return@signUp
                                         }
+                                        if (error.data == AuthExceptionState.InvalidUserCredentials) {
+                                            createSchoolErrorState =
+                                                CreateSchoolErrorState.InvalidCredentials
+                                            return@signUp
+                                        }
+                                        if (error.data == AuthExceptionState.InvalidEmail) {
+                                            createSchoolErrorState =
+                                                CreateSchoolErrorState.InvalidEmail
+                                            return@signUp
+                                        }
+
+                                        if (error.data == AuthExceptionState.NetworkProblem) {
+                                            createSchoolErrorState =
+                                                CreateSchoolErrorState.Network
+                                            return@signUp
+                                        }
+
+                                        createSchoolErrorState = null
+                                        //do your thing
+                                        scope.launch {
+                                            //save user to db
+                                            val schoolId = UUID.randomUUID().toString()
+                                            val currentRole = UserRole.SuperAdmin.name
+                                            val superAdminUser = UserModel(
+                                                userId = user.data?.uid ?: "",
+                                                email = emailCreateSchool,
+                                                fullname = fullNameCreateSchool,
+                                                currentRole = currentRole,
+                                                roles = arrayListOf(currentRole),
+                                                schoolIds = arrayListOf(schoolId),
+                                                currentSchoolId = schoolId,
+                                                currentSchoolName = schoolNameCreateSchool,
+                                                phone = phoneCreateSchool,
+                                                lastModified = today(),
+                                            )
+                                            //save school
+                                            val newSchool = SchoolModel(
+                                                schoolId = schoolId,
+                                                schoolName = schoolNameCreateSchool,
+                                                superAdminId = user.data?.uid ?: "",
+                                                dateCreated = today(),
+                                                lastModified = today(),
+                                            )
+
+                                            viewModel.saveUserNetwork(
+                                                user = superAdminUser,
+                                                onResult = {}
+                                            )
+
+                                            viewModel.saveSchoolNetwork(
+                                                school = newSchool,
+                                                onResult = {}
+                                            )
+
+                                            viewModel.saveCurrentUserIdPref(
+                                                user.data?.uid ?: "", onResult = {})
+                                            viewModel.saveCurrentUsernamePref(
+                                                fullNameCreateSchool ?: "",
+                                                onResult = {})
+                                            viewModel.saveCurrentSchoolIdPref(
+                                                schoolId,
+                                                onResult = {})
+                                            viewModel.saveCurrentSchoolNamePref(
+                                                schoolNameCreateSchool ?: "",
+                                                onResult = {})
+                                        }
+                                            .invokeOnCompletion { runnableBlock { viewModel.clearSignUpFields() } }
+
+                                        //show completed dialog
+                                        signUpCompletedState = true
                                     }
                                 )
 
@@ -687,7 +683,8 @@ enum class CreateSchoolErrorState(val message: String) {
     AlreadyExistingEmail("Sorry this email is already in use"),
     InvalidPhoneNumber("Please enter a valid phone number"),
     InvalidPassword("Password should be at least six characters"),
-    Network("Please check your network and try again")
+    Network("Please check your network and try again"),
+    ErrorParsingUser("Sorry, could not parse user")
 }
 
 

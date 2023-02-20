@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.welcome
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -97,6 +98,7 @@ fun LoginScreenContent(
     onLoginCompleted: () -> Unit,
     onAddSchool: () -> Unit,
 ) {
+    val TAG = "LoginScreenContent"
     val innerModifier = Modifier
     val emailLogin by viewModel.emailLogin.collectAsState()
     val passwordLogin by viewModel.passwordLogin.collectAsState()
@@ -256,41 +258,31 @@ fun LoginScreenContent(
                             emailLogin,
                             passwordLogin,
                             onResult = { error ->
-                                when (error) {
-                                    Resource.Success(AuthExceptionState.NetworkProblem) -> {
-                                        loginErrorState = LoginErrorState.NetworkError
-                                        return@signIn
-                                    }
-
-                                    Resource.Success(AuthExceptionState.InvalidUser) -> {
-                                        loginErrorState = LoginErrorState.InvalidUser
-                                        return@signIn
-                                    }
-
-                                    Resource.Success(AuthExceptionState.InvalidEmail) -> {
-                                        loginErrorState = LoginErrorState.InvalidEmail
-                                        return@signIn
-                                    }
-
-                                    Resource.Success(AuthExceptionState.InvalidUserCredentials) -> {
-                                        loginErrorState = LoginErrorState.InvalidUserCredentials
-                                        return@signIn
-                                    }
-
-                                    else -> {
-                                        loginErrorState = null
-                                        //find user by email
-                                        //login
-                                        if (userLoginState == UserLoginState.SchoolCreator) {
-                                            onAddSchool()
-                                        } else {
-                                            scope.launch {
-                                                //run a service
-                                            }
-                                            onLoginCompleted()
-                                        }
-                                    }
+                                Log.e(TAG, "LoginScreenContent: error is ${error}", )
+                                if (error.data == AuthExceptionState.NetworkProblem) {
+                                    loginErrorState = LoginErrorState.NetworkError
+                                    return@signIn
                                 }
+                                if (error.data == AuthExceptionState.InvalidUser) {
+                                    loginErrorState = LoginErrorState.InvalidUser
+                                    return@signIn
+                                }
+                                if (error.data == AuthExceptionState.InvalidEmail) {
+                                    loginErrorState = LoginErrorState.InvalidEmail
+                                    return@signIn
+                                }
+                                if (error.data == AuthExceptionState.InvalidUserCredentials) {
+                                    loginErrorState = LoginErrorState.InvalidUserCredentials
+                                    return@signIn
+                                }
+
+                                if (error.data == AuthExceptionState.UserDoesNotExist) {
+                                    loginErrorState = LoginErrorState.UserDoesNotExist
+                                    return@signIn
+                                }
+
+                                loginErrorState = null
+                                onLoginCompleted()
                             }
                         )
 
@@ -344,6 +336,7 @@ fun LoginScreenContent(
                         LoginErrorState.InvalidPassword -> loginErrorState?.message ?: ""
                         LoginErrorState.NetworkError -> loginErrorState?.message ?: ""
                         LoginErrorState.InvalidUser -> loginErrorState?.message ?: ""
+                        LoginErrorState.UserDoesNotExist -> loginErrorState?.message ?: ""
                         else -> stringResource(id = R.string.something_went_wrong)
                     }
 
@@ -641,4 +634,5 @@ enum class LoginErrorState(val message: String) {
     InvalidUserCredentials("Please ensure to enter the correct information"),
     InvalidUser("This account seem not to exist."),
     NetworkError("Please check your network and try again"),
+    UserDoesNotExist("This user seem not to exist."),
 }

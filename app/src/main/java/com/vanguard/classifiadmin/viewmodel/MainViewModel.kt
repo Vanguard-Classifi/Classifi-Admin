@@ -105,6 +105,16 @@ class MainViewModel @Inject constructor(
     private var _currentSchoolNamePref = MutableStateFlow(null as String?)
     val currentSchoolNamePref: StateFlow<String?> = _currentSchoolNamePref
 
+    private var _userByEmailNetwork =
+        MutableStateFlow(Resource.Loading<UserNetworkModel?>() as Resource<UserNetworkModel?>)
+    val userByEmailNetwork: StateFlow<Resource<UserNetworkModel?>> = _userByEmailNetwork
+
+    fun getUserByEmailNetwork(email: String, onResult: (Resource<UserNetworkModel?>) -> Unit) = effect {
+        repository.getUserByEmailNetwork(email) {
+            _userByEmailNetwork.value = it
+        }
+    }
+
     fun getCurrentUserIdPref() = effect {
         store.currentUserIdPref.collect { id ->
             _currentUserIdPref.value = id
@@ -231,11 +241,7 @@ class MainViewModel @Inject constructor(
         onResult: (Resource<FirebaseUser?>, Resource<AuthExceptionState?>) -> Unit
     ) = effect {
         repository.signUp(email, password, onResult)
-        _fullNameCreateSchool.value = null
-        _schoolNameCreateSchool.value = null
-        _emailCreateSchool.value = null
-        _phoneCreateSchool.value = null
-        _passwordCreateSchool.value = null
+
     }
 
     fun signIn(
@@ -244,8 +250,19 @@ class MainViewModel @Inject constructor(
         onResult: (Resource<AuthExceptionState?>) -> Unit
     ) = effect {
         repository.signIn(email, password, onResult)
+    }
+
+    fun clearSignInFields() = effect {
         _emailLogin.value = null
         _passwordLogin.value = null
+    }
+
+    fun clearSignUpFields() = effect {
+        _fullNameCreateSchool.value = null
+        _schoolNameCreateSchool.value = null
+        _emailCreateSchool.value = null
+        _phoneCreateSchool.value = null
+        _passwordCreateSchool.value = null
     }
 
     fun signOut() = effect { repository.signOut() }

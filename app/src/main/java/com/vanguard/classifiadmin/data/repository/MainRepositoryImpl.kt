@@ -50,6 +50,13 @@ class MainRepositoryImpl @Inject constructor(
        firestoreManager.getUserByIdNetwork(userId, onResult)
     }
 
+    override suspend fun getUserByEmailNetwork(
+        email: String,
+        onResult: (Resource<UserNetworkModel?>) -> Unit
+    ) {
+        firestoreManager.getUserByEmailNetwork(email, onResult)
+    }
+
     override suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit) {
        firestoreManager.deleteUserByIdNetwork(userId, onResult)
     }

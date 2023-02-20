@@ -31,6 +31,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,6 +93,11 @@ fun MainDashboardScreen(
 ) {
     val navController = rememberNavController()
     val currentBottomSheetFlavor by viewModel.currentDashboardBottomSheetFlavor.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val currentSchoolNamePref by viewModel.currentSchoolNamePref.collectAsState()
+
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
@@ -102,6 +108,16 @@ fun MainDashboardScreen(
     var menuState by remember { mutableStateOf(false) }
     var filterState by remember { mutableStateOf(false) }
     var joinClassState by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentSchoolNamePref()
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentUsernamePref()
+       delay(3000)
+       viewModel.clearSignInFields()
+       viewModel.clearSignUpFields()
+    }
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -174,7 +190,7 @@ fun MainDashboardScreen(
                 viewModel = viewModel,
                 onLogin = onLogin,
                 navController = navController,
-                filterLabel = "KG 2",
+                filterLabel = currentUsernamePref ?: "",
                 filterState = filterState,
                 onFilter = { filterState = !filterState },
                 openProfile = { menuState = !menuState },

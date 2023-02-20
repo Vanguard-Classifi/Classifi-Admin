@@ -26,7 +26,6 @@ class MainBackgroundService : Service() {
         val currentUserEmail = intent?.getStringExtra(IntentExtras.currentUserEmail)
 
         //find user by email
-        /**
         if(currentUserEmail != null) {
             scope.launch {
                 repository.getUserByEmailNetwork(currentUserEmail ?: "") { user ->
@@ -43,7 +42,6 @@ class MainBackgroundService : Service() {
                 }
             }
         }
-        */
 
         return START_STICKY
     }

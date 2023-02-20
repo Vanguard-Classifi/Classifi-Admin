@@ -46,6 +46,28 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+    override suspend fun getUserByEmailNetwork(
+        email: String,
+        onResult: (Resource<UserNetworkModel?>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("email", email)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<UserNetworkModel>())
+                    }
+                    onResult(Resource.Success(results.first()))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch user")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+
     override suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit) {
         try {
             firestore.collection(Collections.collectionUsers).document(userId)

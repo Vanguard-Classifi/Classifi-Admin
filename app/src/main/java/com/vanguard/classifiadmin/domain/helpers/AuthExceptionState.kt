@@ -6,4 +6,6 @@ enum class AuthExceptionState {
     NetworkProblem,
     InvalidEmail,
     InvalidUser,
+    UserDoesNotExist,
+    ErrorParsingUser,
 }
