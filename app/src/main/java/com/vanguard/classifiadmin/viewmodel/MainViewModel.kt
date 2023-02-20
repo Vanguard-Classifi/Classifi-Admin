@@ -7,6 +7,7 @@ import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
+import com.vanguard.classifiadmin.data.preferences.PrefDatastore
 import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
@@ -16,14 +17,17 @@ import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: MainRepository,
+    private val store: PrefDatastore,
 ) : ViewModel() {
 
     private var _classCodeAddClass = MutableStateFlow(null as String?)
@@ -88,6 +92,59 @@ class MainViewModel @Inject constructor(
 
     private var _userLoginState = MutableStateFlow(UserLoginState.Registered as UserLoginState)
     val userLoginState: StateFlow<UserLoginState> = _userLoginState
+
+    private var _currentUserIdPref = MutableStateFlow(null as String?)
+    val currentUserIdPref: StateFlow<String?> = _currentUserIdPref
+
+    private var _currentUsernamePref = MutableStateFlow(null as String?)
+    val currentUsernamePref: StateFlow<String?> = _currentUsernamePref
+
+    private var _currentSchoolIdPref = MutableStateFlow(null as String?)
+    val currentSchoolIdPref: StateFlow<String?> = _currentSchoolIdPref
+
+    private var _currentSchoolNamePref = MutableStateFlow(null as String?)
+    val currentSchoolNamePref: StateFlow<String?> = _currentSchoolNamePref
+
+    fun getCurrentUserIdPref() = effect {
+        store.currentUserIdPref.collect { id ->
+            _currentUserIdPref.value = id
+        }
+    }
+
+    fun getCurrentUsernamePref() = effect {
+        store.currentUsernamePref.collect { name ->
+            _currentUsernamePref.value = name
+        }
+    }
+
+    fun getCurrentSchoolIdPref() = effect {
+        store.currentSchoolIdPref.collect { id ->
+            _currentSchoolIdPref.value = id
+        }
+    }
+
+    fun getCurrentSchoolNamePref() = effect {
+        store.currentSchoolNamePref.collect { name ->
+            _currentSchoolNamePref.value = name
+        }
+    }
+
+    fun saveCurrentUserIdPref(userId: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentUserIdPref(userId, onResult)
+    }
+
+    fun saveCurrentUsernamePref(username: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentUsernamePref(username, onResult)
+    }
+
+    fun saveCurrentSchoolIdPref(schoolId: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentSchoolIdPref(schoolId, onResult)
+    }
+
+    fun saveCurrentSchoolNamePref(schoolName: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentSchoolNamePref(schoolName, onResult)
+    }
+
 
     fun onUserLoginStateChanged(state: UserLoginState) = effect {
         _userLoginState.value = state

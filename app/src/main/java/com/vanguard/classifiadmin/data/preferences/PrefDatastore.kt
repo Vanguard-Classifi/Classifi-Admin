@@ -1,15 +1,16 @@
 package com.vanguard.classifiadmin.data.preferences
 
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import kotlinx.coroutines.flow.Flow
 
 interface PrefDatastore {
-    fun saveCurrentUserIdPref(userId: String)
-    fun saveCurrentUsernamePref(username: String)
-    fun saveCurrentSchoolIdPref(schoolId: String)
-    fun saveCurrentSchoolNamePref(schoolName: String)
+    fun saveCurrentUserIdPref(userId: String, onResult: (Boolean) -> Unit)
+    fun saveCurrentUsernamePref(username: String, onResult: (Boolean) -> Unit)
+    fun saveCurrentSchoolIdPref(schoolId: String, onResult: (Boolean) -> Unit)
+    fun saveCurrentSchoolNamePref(schoolName: String, onResult: (Boolean) -> Unit)
 
-    val currentUserIdPref: Resource<String?>
-    val currentUsernamePref: Resource<String?>
-    val currentSchoolIdPref: Resource<String?>
-    val currentSchoolNamePref: Resource<String?>
+    val currentUserIdPref: Flow<String?>
+    val currentUsernamePref:  Flow<String?>
+    val currentSchoolIdPref:  Flow<String?>
+    val currentSchoolNamePref:  Flow<String?>
 }

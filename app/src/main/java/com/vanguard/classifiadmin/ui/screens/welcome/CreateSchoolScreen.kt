@@ -458,6 +458,18 @@ fun CreateSchoolScreenContent(
                                                         school = newSchool,
                                                         onResult = {}
                                                     )
+
+                                                    viewModel.saveCurrentUserIdPref(
+                                                        user.data?.uid ?: "", onResult = {})
+                                                    viewModel.saveCurrentUsernamePref(
+                                                        fullNameCreateSchool ?: "",
+                                                        onResult = {})
+                                                    viewModel.saveCurrentSchoolIdPref(
+                                                        schoolId,
+                                                        onResult = {})
+                                                    viewModel.saveCurrentSchoolNamePref(
+                                                        schoolNameCreateSchool ?: "",
+                                                        onResult = {})
                                                 }
 
                                                 //show completed dialog
