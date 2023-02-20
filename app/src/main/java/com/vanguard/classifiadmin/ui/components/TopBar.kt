@@ -45,7 +45,6 @@ fun ChildTopBarWithCloseButtonOnly(
             onClick = onClose,
             modifier = modifier.padding(8.dp),
             icon = R.drawable.icon_close,
-            size = 18.dp,
         )
     }
 }

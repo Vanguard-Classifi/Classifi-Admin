@@ -59,6 +59,7 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.helpers.isEmailValid
 import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
@@ -74,10 +75,14 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onCreateSchool: () -> Unit,
+    onLoginCompleted: () -> Unit,
+    onAddSchool: () -> Unit,
 ) {
     LoginScreenContent(
         viewModel = viewModel,
-        onCreateSchool = onCreateSchool
+        onCreateSchool = onCreateSchool,
+        onLoginCompleted = onLoginCompleted,
+        onAddSchool = onAddSchool
     )
 }
 
@@ -87,6 +92,8 @@ fun LoginScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onCreateSchool: () -> Unit,
+    onLoginCompleted: () -> Unit,
+    onAddSchool: () -> Unit,
 ) {
     val innerModifier = Modifier
     val emailLogin by viewModel.emailLogin.collectAsState()
@@ -94,6 +101,7 @@ fun LoginScreenContent(
     var passwordVisible by remember { mutableStateOf(false) }
     var loginErrorState: LoginErrorState? by remember { mutableStateOf(null) }
     val constraints = loginScreenContentConstraints(8.dp)
+    val userLoginState by viewModel.userLoginState.collectAsState()
 
     LaunchedEffect(loginErrorState) {
         if (loginErrorState != null) {
@@ -267,14 +275,17 @@ fun LoginScreenContent(
                                     }
 
                                     else -> {
-                                        loginErrorState = LoginErrorState.InvalidUser
-                                        return@signIn
+                                        loginErrorState = null
+                                        //login
+                                        if (userLoginState == UserLoginState.SchoolCreator) {
+                                            onAddSchool()
+                                        } else {
+                                            onLoginCompleted()
+                                        }
                                     }
                                 }
                             }
                         )
-
-                        //move forward
 
                     },
                     modifier = innerModifier.layoutId("loginBtn")

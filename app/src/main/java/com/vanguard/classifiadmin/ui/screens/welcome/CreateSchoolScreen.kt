@@ -65,6 +65,7 @@ import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
@@ -83,7 +84,7 @@ fun CreateSchoolScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
-    onLogin: () -> Unit,
+    onAddSchool: () -> Unit,
     onSignUpCompleted: () -> Unit,
 ) {
     Surface(modifier = Modifier) {
@@ -98,7 +99,7 @@ fun CreateSchoolScreen(
                 CreateSchoolScreenContent(
                     modifier = modifier.padding(padding),
                     viewModel = viewModel,
-                    onLogin = onLogin,
+                    onAddSchool = onAddSchool,
                     onSignUpCompleted = onSignUpCompleted,
                 )
             }
@@ -111,14 +112,14 @@ fun CreateSchoolScreen(
 fun CreateSchoolScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    onLogin: () -> Unit,
+    onAddSchool: () -> Unit,
     onSignUpCompleted: () -> Unit,
 ) {
     val innerModifier = Modifier
     val scope = rememberCoroutineScope()
     var passwordVisible by remember { mutableStateOf(false) }
     var signUpCompletedState by remember { mutableStateOf(false) }
-    val constraints = CreateSchoolScreenContentConstraints(8.dp)
+    val constraints = AddSchoolScreenContentConstraints(8.dp)
     var createSchoolErrorState: CreateSchoolErrorState? by remember { mutableStateOf(null) }
     val verticalScroll = rememberScrollState()
 
@@ -129,14 +130,14 @@ fun CreateSchoolScreenContent(
     val passwordCreateSchool by viewModel.passwordCreateSchool.collectAsState()
 
     LaunchedEffect(createSchoolErrorState) {
-        if(createSchoolErrorState != null) {
+        if (createSchoolErrorState != null) {
             delay(3000)
             createSchoolErrorState = null
         }
     }
 
     LaunchedEffect(signUpCompletedState) {
-        if(signUpCompletedState) {
+        if (signUpCompletedState) {
             delay(2000)
             signUpCompletedState = false
             //go to dashboard
@@ -472,9 +473,12 @@ fun CreateSchoolScreenContent(
                         )
 
                         TextRowWithClickable(
-                            unClickable = stringResource(id = R.string.join_an_existing_school_instead),
-                            clickable = stringResource(id = R.string.join),
-                            onClick = onLogin,
+                            unClickable = stringResource(id = R.string.already_have_account),
+                            clickable = stringResource(id = R.string.create_school_anyways),
+                            onClick = {
+                                viewModel.onUserLoginStateChanged(UserLoginState.SchoolCreator)
+                                onAddSchool()
+                            },
                             modifier = innerModifier.layoutId("login")
                         )
                     }
@@ -533,7 +537,7 @@ fun CreateSchoolScreenContent(
 
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.BottomCenter,
             ) {
                 AnimatedVisibility(
                     visible = signUpCompletedState,
@@ -546,10 +550,10 @@ fun CreateSchoolScreenContent(
                         animationSpec = tween(durationMillis = 20)
                     ),
                 ) {
-                   SuccessBar(
-                       message = stringResource(id = R.string.account_creation_completed),
-                       maxWidth = maxWidth,
-                   )
+                    SuccessBar(
+                        message = stringResource(id = R.string.account_creation_completed),
+                        maxWidth = maxWidth,
+                    )
                 }
 
             }
@@ -558,7 +562,7 @@ fun CreateSchoolScreenContent(
     }
 }
 
-private fun CreateSchoolScreenContentConstraints(margin: Dp): ConstraintSet {
+private fun AddSchoolScreenContentConstraints(margin: Dp): ConstraintSet {
     return ConstraintSet {
         val header = createRefFor("header")
         val fullname = createRefFor("fullname")

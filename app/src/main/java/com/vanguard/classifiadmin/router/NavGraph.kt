@@ -1,10 +1,7 @@
 package com.vanguard.classifiadmin.router
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,6 +39,8 @@ import com.vanguard.classifiadmin.ui.screens.weeklyplan.WEEKLY_PLAN_DETAIL_SCREE
 import com.vanguard.classifiadmin.ui.screens.weeklyplan.WEEKLY_PLAN_SCREEN
 import com.vanguard.classifiadmin.ui.screens.weeklyplan.WeeklyPlanDetailScreen
 import com.vanguard.classifiadmin.ui.screens.weeklyplan.WeeklyPlanScreen
+import com.vanguard.classifiadmin.ui.screens.welcome.ADD_SCHOOL_SCREEN
+import com.vanguard.classifiadmin.ui.screens.welcome.AddSchoolScreen
 import com.vanguard.classifiadmin.ui.screens.welcome.CREATE_SCHOOL_SCREEN
 import com.vanguard.classifiadmin.ui.screens.welcome.CreateSchoolScreen
 import com.vanguard.classifiadmin.ui.screens.welcome.LOGIN_SCREEN
@@ -63,6 +62,7 @@ object Destinations {
     const val weeklyPlanDetail = WEEKLY_PLAN_DETAIL_SCREEN
     const val login = LOGIN_SCREEN
     const val createSchool = CREATE_SCHOOL_SCREEN
+    const val addSchoolScreen = ADD_SCHOOL_SCREEN
 }
 
 
@@ -89,7 +89,7 @@ fun NavGraph(
                 goToAssessmentReport = { navController.navigate(Destinations.assessmentReport) },
                 goToAssessmentReview = { navController.navigate(Destinations.assessmentReview) },
                 goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) },
-                onLogin = {navController.navigate(Destinations.login)}
+                onLogin = { navController.navigate(Destinations.login) }
             )
         }
 
@@ -160,16 +160,27 @@ fun NavGraph(
         composable(Destinations.login) {
             LoginScreen(
                 viewModel = viewModel,
-                onCreateSchool = {navController.navigate(Destinations.createSchool)}
+                onCreateSchool = { navController.navigate(Destinations.createSchool) },
+                onLoginCompleted = { navController.navigate(Destinations.dashboard) },
+                onAddSchool = {navController.navigate(Destinations.addSchoolScreen)},
             )
         }
 
         composable(Destinations.createSchool) {
             CreateSchoolScreen(
                 viewModel = viewModel,
-                onBack = {navController.navigate(Destinations.login)},
-                onLogin = {navController.navigate(Destinations.login)},
-                onSignUpCompleted = {navController.navigate(Destinations.dashboard)}
+                onBack = { navController.navigate(Destinations.login) },
+                onAddSchool = { navController.navigate(Destinations.login) },
+                onSignUpCompleted = { navController.navigate(Destinations.dashboard) }
+            )
+        }
+
+        composable(Destinations.addSchoolScreen) {
+            AddSchoolScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.login) },
+                onSchoolCreated = {navController.navigate(Destinations.dashboard)},
+                onJoinSchool = {navController.navigate(Destinations.login)}
             )
         }
     }

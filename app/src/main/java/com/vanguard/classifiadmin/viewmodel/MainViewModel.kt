@@ -10,6 +10,7 @@ import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
@@ -84,6 +85,13 @@ class MainViewModel @Inject constructor(
     private var _schoolByIdNetwork =
         MutableStateFlow(Resource.Loading<SchoolNetworkModel?>() as Resource<SchoolNetworkModel?>)
     val schoolByIdNetwork: StateFlow<Resource<SchoolNetworkModel?>> = _schoolByIdNetwork
+
+    private var _userLoginState = MutableStateFlow(UserLoginState.Registered as UserLoginState)
+    val userLoginState: StateFlow<UserLoginState> = _userLoginState
+
+    fun onUserLoginStateChanged(state: UserLoginState) = effect {
+        _userLoginState.value = state
+    }
 
     //user
     fun saveUserNetwork(user: UserModel, onResult: (Boolean) -> Unit) = effect {
@@ -166,6 +174,11 @@ class MainViewModel @Inject constructor(
         onResult: (Resource<FirebaseUser?>, Resource<AuthExceptionState?>) -> Unit
     ) = effect {
         repository.signUp(email, password, onResult)
+        _fullNameCreateSchool.value = null
+        _schoolNameCreateSchool.value = null
+        _emailCreateSchool.value = null
+        _phoneCreateSchool.value = null
+        _passwordCreateSchool.value = null
     }
 
     fun signIn(
@@ -174,6 +187,8 @@ class MainViewModel @Inject constructor(
         onResult: (Resource<AuthExceptionState?>) -> Unit
     ) = effect {
         repository.signIn(email, password, onResult)
+        _emailLogin.value = null
+        _passwordLogin.value = null
     }
 
     fun signOut() = effect { repository.signOut() }

@@ -532,7 +532,7 @@ fun FeaturesBottomSheetContent(
 enum class DestinationItem(val label: String, val icon: Int, val screen: String) {
     Feed("Feed", icon = R.drawable.icon_feeds, BottomDestination.feeds),
     Students("Students", R.drawable.icon_students, BottomDestination.students),
-    Assessments("Assessments", R.drawable.icon_assessment, BottomDestination.assessments),
+  //  Assessments("Assessments", R.drawable.icon_assessment, BottomDestination.assessments),
     Reports("Reports", R.drawable.icon_reports, BottomDestination.reports)
 }
 
