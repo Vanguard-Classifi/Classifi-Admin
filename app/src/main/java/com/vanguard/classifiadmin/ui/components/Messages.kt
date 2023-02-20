@@ -31,6 +31,78 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 
 @Composable
+fun SuccessBar(
+    modifier: Modifier = Modifier,
+    message: String,
+    maxWidth: Dp,
+) {
+    val constraints = successBarConstraints(8.dp)
+    val innerModifier = Modifier
+
+    Card(
+        modifier = Modifier
+            .wrapContentHeight()
+            .widthIn(max = maxWidth.times(0.95f))
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        backgroundColor = MaterialTheme.colors.surface,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary,
+        ),
+        elevation = 2.dp, shape = RoundedCornerShape(8.dp)
+    ) {
+        ConstraintLayout(
+            modifier = Modifier.fillMaxWidth(),
+            constraintSet = constraints,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.icon_tick),
+                contentDescription = stringResource(id = R.string.completed_icon),
+                modifier = innerModifier
+                    .layoutId("icon")
+                    .padding(4.dp)
+                    .size(24.dp),
+                tint = MaterialTheme.colors.primary
+            )
+
+            Text(
+                text = message,
+                fontSize = 12.sp,
+                color = MaterialTheme.colors.primary,
+                modifier = innerModifier
+                    .padding(horizontal = 2.dp)
+                    .widthIn(max = maxWidth.times(0.7f))
+                    .layoutId("message"),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+private fun successBarConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val message = createRefFor("message")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin)
+            top.linkTo(message.top, 0.dp)
+            bottom.linkTo(message.bottom, 0.dp)
+        }
+
+        constrain(message) {
+            top.linkTo(parent.top, margin)
+            start.linkTo(icon.end, 4.dp)
+            end.linkTo(parent.end, 4.dp)
+            // width = Dimension.fillToConstraints
+        }
+
+    }
+}
+
+
+@Composable
 fun MessageBar(
     message: String,
     icon: Int = R.drawable.icon_info,
@@ -132,5 +204,14 @@ private fun MessageBarPreview() {
         onClose = {},
         message = "Warning, Close gcfdfcgcgufuhftguguvcgucvgucfcgcfydtfdfgunohfgcgcgcgcgwdgsgfgfgfgdfgrfgfgfdfggufguvguvuhghiw",
         maxWidth = 700.dp
+    )
+}
+
+@Preview
+@Composable
+private fun SuccessBarPreview() {
+    SuccessBar(
+        message = "Account Creation Completed!",
+        maxWidth = 400.dp,
     )
 }

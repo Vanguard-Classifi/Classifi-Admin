@@ -32,7 +32,7 @@ class FirebaseAuthManagerImpl @Inject constructor() : FirebaseAuthManager {
     override fun signUp(
         email: String?,
         password: String?,
-        onResult: (Resource<AuthExceptionState?>) -> Unit
+        onResult: (Resource<FirebaseUser?>, Resource<AuthExceptionState?>) -> Unit
     ) {
         try {
             auth.createUserWithEmailAndPassword(email!!, password!!)
@@ -40,33 +40,51 @@ class FirebaseAuthManagerImpl @Inject constructor() : FirebaseAuthManager {
                     if (task.isSuccessful) {
                         auth.currentUser?.sendEmailVerification()
                             ?.addOnCompleteListener { secondTask ->
-                                onResult(Resource.Success(null))
+                                onResult(
+                                    Resource.Success(auth.currentUser),
+                                    Resource.Success(null)
+                                )
                             }
                         return@addOnCompleteListener
                     } else {
                         if (task.exception is FirebaseAuthUserCollisionException) {
-                            onResult(Resource.Success(AuthExceptionState.UserAlreadyExists))
+                            onResult(
+                                Resource.Error("Error fetching user"),
+                                Resource.Success(AuthExceptionState.UserAlreadyExists)
+                            )
                             return@addOnCompleteListener
                         }
 
                         if (task.exception is FirebaseAuthInvalidCredentialsException) {
-                            onResult(Resource.Success(AuthExceptionState.InvalidUserCredentials))
+                            onResult(
+                                Resource.Error("Error fetching user"),
+                                Resource.Success(AuthExceptionState.InvalidUserCredentials)
+                            )
                             return@addOnCompleteListener
                         }
 
                         if (task.exception is FirebaseAuthEmailException) {
-                            onResult(Resource.Success(AuthExceptionState.InvalidEmail))
+                            onResult(
+                                Resource.Error("Error fetching user"),
+                                Resource.Success(AuthExceptionState.InvalidEmail)
+                            )
                             return@addOnCompleteListener
                         }
 
                         if (task.exception is FirebaseNetworkException) {
-                            onResult(Resource.Success(AuthExceptionState.NetworkProblem))
+                            onResult(
+                                Resource.Error("Error fetching user"),
+                                Resource.Success(AuthExceptionState.NetworkProblem)
+                            )
                             return@addOnCompleteListener
                         }
                     }
                 }
         } catch (e: Exception) {
-            onResult(Resource.Error("Sorry something went wrong"))
+            onResult(
+                Resource.Error("Sorry something went wrong"),
+                Resource.Error("Sorry something went wrong")
+            )
         }
     }
 

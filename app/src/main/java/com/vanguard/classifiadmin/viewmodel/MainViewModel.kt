@@ -3,6 +3,10 @@ package com.vanguard.classifiadmin.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
+import com.vanguard.classifiadmin.data.local.models.SchoolModel
+import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
+import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
@@ -73,6 +77,53 @@ class MainViewModel @Inject constructor(
     private var _selectedPhoneCode = MutableStateFlow(null as String?)
     val selectedPhoneCode: StateFlow<String?> = _selectedPhoneCode
 
+    private var _userByIdNetwork =
+        MutableStateFlow(Resource.Loading<UserNetworkModel?>() as Resource<UserNetworkModel?>)
+    val userByIdNetwork: StateFlow<Resource<UserNetworkModel?>> = _userByIdNetwork
+
+    private var _schoolByIdNetwork =
+        MutableStateFlow(Resource.Loading<SchoolNetworkModel?>() as Resource<SchoolNetworkModel?>)
+    val schoolByIdNetwork: StateFlow<Resource<SchoolNetworkModel?>> = _schoolByIdNetwork
+
+    //user
+    fun saveUserNetwork(user: UserModel, onResult: (Boolean) -> Unit) = effect {
+        repository.saveUserNetwork(user.toNetwork(), onResult)
+    }
+
+    fun getUserByIdNetwork(userId: String) = effect {
+        repository.getUserByIdNetwork(userId) {
+            _userByIdNetwork.value = it
+        }
+    }
+
+    fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit) = effect {
+        repository.deleteUserByIdNetwork(userId, onResult)
+    }
+
+    fun deleteUserNetwork(user: UserModel, onResult: (Boolean) -> Unit) = effect {
+        repository.deleteUserNetwork(user.toNetwork(), onResult)
+    }
+
+    //school
+    fun saveSchoolNetwork(school: SchoolModel, onResult: (Boolean) -> Unit) = effect {
+        repository.saveSchoolNetwork(school.toNetwork(), onResult)
+    }
+
+    fun getSchoolByIdNetwork(schoolId: String) =
+        effect {
+            repository.getSchoolByIdNetwork(schoolId) {
+                _schoolByIdNetwork.value = it
+            }
+        }
+
+    fun deleteSchoolByIdNetwork(schoolId: String, onResult: (Boolean) -> Unit) = effect {
+        repository.deleteSchoolByIdNetwork(schoolId, onResult)
+    }
+
+    fun deleteSchoolNetwork(school: SchoolModel, onResult: (Boolean) -> Unit) = effect {
+        repository.deleteSchoolNetwork(school.toNetwork(), onResult)
+    }
+
     fun onSelectedPhoneCodeChanged(code: String?) = effect {
         _selectedPhoneCode.value = code
     }
@@ -112,7 +163,7 @@ class MainViewModel @Inject constructor(
     fun signUp(
         email: String?,
         password: String?,
-        onResult: (Resource<AuthExceptionState?>) -> Unit
+        onResult: (Resource<FirebaseUser?>, Resource<AuthExceptionState?>) -> Unit
     ) = effect {
         repository.signUp(email, password, onResult)
     }

@@ -1,7 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.welcome
 
 
-import android.telephony.PhoneNumberUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -15,18 +14,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.ExposedDropdownMenuDefaults.TrailingIcon
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -34,18 +28,17 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowDownward
-import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,15 +61,20 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.SchoolModel
+import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
-import com.vanguard.classifiadmin.domain.helpers.isEmailValid
+import com.vanguard.classifiadmin.domain.helpers.UserRole
+import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
 import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
-import com.vanguard.classifiadmin.ui.theme.Black100
+import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
-import java.util.Locale
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 const val CREATE_SCHOOL_SCREEN = "create_school_screen"
 
@@ -86,6 +84,7 @@ fun CreateSchoolScreen(
     viewModel: MainViewModel,
     onBack: () -> Unit,
     onLogin: () -> Unit,
+    onSignUpCompleted: () -> Unit,
 ) {
     Surface(modifier = Modifier) {
         Scaffold(
@@ -100,6 +99,7 @@ fun CreateSchoolScreen(
                     modifier = modifier.padding(padding),
                     viewModel = viewModel,
                     onLogin = onLogin,
+                    onSignUpCompleted = onSignUpCompleted,
                 )
             }
         )
@@ -112,10 +112,12 @@ fun CreateSchoolScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onLogin: () -> Unit,
+    onSignUpCompleted: () -> Unit,
 ) {
     val innerModifier = Modifier
+    val scope = rememberCoroutineScope()
     var passwordVisible by remember { mutableStateOf(false) }
-    var countryMenuExpanded by remember { mutableStateOf(false) }
+    var signUpCompletedState by remember { mutableStateOf(false) }
     val constraints = CreateSchoolScreenContentConstraints(8.dp)
     var createSchoolErrorState: CreateSchoolErrorState? by remember { mutableStateOf(null) }
     val verticalScroll = rememberScrollState()
@@ -125,6 +127,22 @@ fun CreateSchoolScreenContent(
     val emailCreateSchool by viewModel.emailCreateSchool.collectAsState()
     val phoneCreateSchool by viewModel.phoneCreateSchool.collectAsState()
     val passwordCreateSchool by viewModel.passwordCreateSchool.collectAsState()
+
+    LaunchedEffect(createSchoolErrorState) {
+        if(createSchoolErrorState != null) {
+            delay(3000)
+            createSchoolErrorState = null
+        }
+    }
+
+    LaunchedEffect(signUpCompletedState) {
+        if(signUpCompletedState) {
+            delay(2000)
+            signUpCompletedState = false
+            //go to dashboard
+            onSignUpCompleted()
+        }
+    }
 
     Surface(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(
@@ -347,28 +365,29 @@ fun CreateSchoolScreenContent(
                         PrimaryTextButton(
                             label = stringResource(id = R.string.create_account),
                             onClick = {
-                                /*todo create account with school*/
-                                if(fullNameCreateSchool == null || fullNameCreateSchool?.isBlank() == true) {
+                                if (fullNameCreateSchool == null || fullNameCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState = CreateSchoolErrorState.InvalidUsername
                                     return@PrimaryTextButton
                                 }
 
-                                if(schoolNameCreateSchool == null || schoolNameCreateSchool?.isBlank() == true) {
-                                    createSchoolErrorState = CreateSchoolErrorState.InvalidSchoolName
+                                if (schoolNameCreateSchool == null || schoolNameCreateSchool?.isBlank() == true) {
+                                    createSchoolErrorState =
+                                        CreateSchoolErrorState.InvalidSchoolName
                                     return@PrimaryTextButton
                                 }
 
-                                if(emailCreateSchool == null || emailCreateSchool?.isBlank() == true) {
+                                if (emailCreateSchool == null || emailCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState = CreateSchoolErrorState.InvalidEmail
                                     return@PrimaryTextButton
                                 }
 
-                                if(phoneCreateSchool == null || phoneCreateSchool?.isBlank() == true) {
-                                    createSchoolErrorState = CreateSchoolErrorState.InvalidPhoneNumber
+                                if (phoneCreateSchool == null || phoneCreateSchool?.isBlank() == true) {
+                                    createSchoolErrorState =
+                                        CreateSchoolErrorState.InvalidPhoneNumber
                                     return@PrimaryTextButton
                                 }
 
-                                if(passwordCreateSchool == null || passwordCreateSchool?.isBlank() == true) {
+                                if (passwordCreateSchool == null || passwordCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState = CreateSchoolErrorState.InvalidPassword
                                     return@PrimaryTextButton
                                 }
@@ -376,38 +395,77 @@ fun CreateSchoolScreenContent(
                                 viewModel.signUp(
                                     emailCreateSchool,
                                     passwordCreateSchool,
-                                    onResult = { error ->
+                                    onResult = { user, error ->
                                         when (error) {
                                             Resource.Success(AuthExceptionState.UserAlreadyExists) -> {
-                                                createSchoolErrorState = CreateSchoolErrorState.AlreadyExistingEmail
+                                                createSchoolErrorState =
+                                                    CreateSchoolErrorState.AlreadyExistingEmail
                                                 return@signUp
                                             }
 
                                             Resource.Success(AuthExceptionState.InvalidUserCredentials) -> {
-                                                createSchoolErrorState = CreateSchoolErrorState.InvalidCredentials
+                                                createSchoolErrorState =
+                                                    CreateSchoolErrorState.InvalidCredentials
                                                 return@signUp
                                             }
 
                                             Resource.Success(AuthExceptionState.InvalidEmail) -> {
-                                                createSchoolErrorState = CreateSchoolErrorState.InvalidEmail
+                                                createSchoolErrorState =
+                                                    CreateSchoolErrorState.InvalidEmail
                                                 return@signUp
                                             }
 
                                             Resource.Success(AuthExceptionState.NetworkProblem) -> {
-                                                createSchoolErrorState = CreateSchoolErrorState.Network
+                                                createSchoolErrorState =
+                                                    CreateSchoolErrorState.Network
                                                 return@signUp
                                             }
 
                                             else -> {
                                                 createSchoolErrorState = null
+                                                //do your thing
+                                                scope.launch {
+                                                    //save user to db
+                                                    val schoolId = UUID.randomUUID().toString()
+                                                    val currentRole = UserRole.SuperAdmin.name
+                                                    val superAdminUser = UserModel(
+                                                        userId = user.data?.uid ?: "",
+                                                        email = emailCreateSchool,
+                                                        fullname = fullNameCreateSchool,
+                                                        currentRole = currentRole,
+                                                        roles = arrayListOf(currentRole),
+                                                        schoolIds = arrayListOf(schoolId),
+                                                        currentSchoolId = schoolId,
+                                                        phone = phoneCreateSchool,
+                                                        lastModified = today(),
+                                                    )
+                                                    //save school
+                                                    val newSchool = SchoolModel(
+                                                        schoolId = schoolId,
+                                                        schoolName = schoolNameCreateSchool,
+                                                        superAdminId = user.data?.uid ?: "",
+                                                        dateCreated = today(),
+                                                        lastModified = today(),
+                                                    )
+
+                                                    viewModel.saveUserNetwork(
+                                                        user = superAdminUser,
+                                                        onResult = {}
+                                                    )
+
+                                                    viewModel.saveSchoolNetwork(
+                                                        school = newSchool,
+                                                        onResult = {}
+                                                    )
+                                                }
+
+                                                //show completed dialog
+                                                signUpCompletedState = true
+
                                             }
                                         }
                                     }
                                 )
-
-                                //do your thing
-                                //save user to db
-                                //save school
 
                             },
                             modifier = innerModifier.layoutId("createBtn")
@@ -469,6 +527,29 @@ fun CreateSchoolScreenContent(
                         },
                         maxWidth = maxWidth
                     )
+                }
+
+            }
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                AnimatedVisibility(
+                    visible = signUpCompletedState,
+                    enter = slideInHorizontally(
+                        initialOffsetX = { fullWidth -> fullWidth },
+                        animationSpec = tween(durationMillis = 20)
+                    ),
+                    exit = slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> fullWidth },
+                        animationSpec = tween(durationMillis = 20)
+                    ),
+                ) {
+                   SuccessBar(
+                       message = stringResource(id = R.string.account_creation_completed),
+                       maxWidth = maxWidth,
+                   )
                 }
 
             }

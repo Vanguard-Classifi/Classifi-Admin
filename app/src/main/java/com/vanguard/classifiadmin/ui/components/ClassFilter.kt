@@ -427,11 +427,12 @@ fun RoundedIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     size: Dp = 24.dp,
+    surfaceSize: Dp = 28.dp,
     icon: Int,
     tint: Color = MaterialTheme.colors.primary,
 ) {
     Surface(
-        modifier = modifier.clip(CircleShape),
+        modifier = modifier.clip(CircleShape).size(surfaceSize),
         shape = CircleShape,
         color = tint.copy(0.1f)
     ) {

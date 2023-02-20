@@ -169,6 +169,7 @@ fun NavGraph(
                 viewModel = viewModel,
                 onBack = {navController.navigate(Destinations.login)},
                 onLogin = {navController.navigate(Destinations.login)},
+                onSignUpCompleted = {navController.navigate(Destinations.dashboard)}
             )
         }
     }

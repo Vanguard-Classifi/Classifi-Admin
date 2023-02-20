@@ -10,7 +10,7 @@ interface FirebaseAuthManager {
     fun signUp(
         email: String?,
         password: String?,
-        onResult: (Resource<AuthExceptionState?>) -> Unit
+        onResult: (Resource<FirebaseUser?>, Resource<AuthExceptionState?>) -> Unit
     )
 
     fun signIn(

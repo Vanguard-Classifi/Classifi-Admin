@@ -79,4 +79,6 @@
     <string name="create_account">CREATE ACCOUNT</string>
     <string name="flag">Country Flag</string>
     <string name="indicator">Indicator</string>
+    <string name="completed_icon">Completed icon</string>
+    <string name="account_creation_completed">Account Creation Completed!</string>
 </resources>

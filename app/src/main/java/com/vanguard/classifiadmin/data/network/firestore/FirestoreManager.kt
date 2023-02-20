@@ -1,28 +1,10 @@
-package com.vanguard.classifiadmin.data.repository
+package com.vanguard.classifiadmin.data.network.firestore
 
-import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
-import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
 
-interface MainRepository {
-    val currentUser: Resource<FirebaseUser?>
-
-    fun signUp(
-        email: String?,
-        password: String?,
-        onResult: (Resource<FirebaseUser?>,Resource<AuthExceptionState?>) -> Unit
-    )
-
-    fun signIn(
-        email: String?,
-        password: String?,
-        onResult: (Resource<AuthExceptionState?>) -> Unit
-    )
-
-    fun signOut()
-
+interface FirestoreManager {
     //user
     suspend fun saveUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
     suspend fun getUserByIdNetwork(userId: String, onResult: (Resource<UserNetworkModel?>) -> Unit)
