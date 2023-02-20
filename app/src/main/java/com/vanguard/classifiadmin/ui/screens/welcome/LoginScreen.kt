@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.welcome
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -60,9 +62,11 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
+import com.vanguard.classifiadmin.domain.helpers.IntentExtras
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.helpers.isEmailValid
+import com.vanguard.classifiadmin.domain.services.MainBackgroundService
 import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.theme.Black100
@@ -107,6 +111,7 @@ fun LoginScreenContent(
     val constraints = loginScreenContentConstraints(8.dp)
     val userLoginState by viewModel.userLoginState.collectAsState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(loginErrorState) {
         if (loginErrorState != null) {
@@ -282,6 +287,10 @@ fun LoginScreenContent(
                                 }
 
                                 loginErrorState = null
+                                //start service
+                                val intent = Intent(context, MainBackgroundService::class.java)
+                                    .putExtra(IntentExtras.currentUserEmail, emailLogin)
+                                context.startService(intent)
                                 onLoginCompleted()
                             }
                         )
