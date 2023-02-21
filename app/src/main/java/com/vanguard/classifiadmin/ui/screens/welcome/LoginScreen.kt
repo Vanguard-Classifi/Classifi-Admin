@@ -63,17 +63,14 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.IntentExtras
-import com.vanguard.classifiadmin.domain.helpers.Resource
-import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.helpers.isEmailValid
 import com.vanguard.classifiadmin.domain.services.MainBackgroundService
 import com.vanguard.classifiadmin.ui.components.MessageBar
-import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
+import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.ui.theme.Green100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 const val LOGIN_SCREEN = "login_screen"
 
@@ -240,23 +237,23 @@ fun LoginScreenContent(
                     modifier = innerModifier.layoutId("resetPasswordRow")
                 )
 
-                PrimaryTextButton(
+                PrimaryTextButtonFillWidth(
                     label = stringResource(id = R.string.login),
                     onClick = {
                         //login computation
                         if (emailLogin == null || emailLogin?.isBlank() == true) {
                             loginErrorState = LoginErrorState.InvalidEmail
-                            return@PrimaryTextButton
+                            return@PrimaryTextButtonFillWidth
                         }
 
                         if (!isEmailValid(emailLogin ?: "")) {
                             loginErrorState = LoginErrorState.InvalidEmail
-                            return@PrimaryTextButton
+                            return@PrimaryTextButtonFillWidth
                         }
 
                         if (passwordLogin == null || passwordLogin?.isBlank() == true) {
                             loginErrorState = LoginErrorState.InvalidPassword
-                            return@PrimaryTextButton
+                            return@PrimaryTextButtonFillWidth
                         }
 
                         viewModel.signIn(

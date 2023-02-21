@@ -33,6 +33,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vanguard.classifiadmin.R
@@ -162,6 +164,8 @@ fun DefaultAvatarBig(
     label: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
+    fontSize: TextUnit = 14.sp,
+    size: Dp = 42.dp,
 ) {
     val labelSplit = label.lowercase().splitWithSpace()
     val first = labelSplit.first()[0].toString()
@@ -178,14 +182,13 @@ fun DefaultAvatarBig(
         Box(
             modifier = modifier
                 .padding(0.dp)
-                .height(42.dp)
-                .width(42.dp), contentAlignment = Alignment.Center
+                .size(size), contentAlignment = Alignment.Center
         ) {
             TextButton(onClick = onClick, enabled = enabled, modifier = modifier.padding(0.dp)) {
                 Text(
                     text = avatar.uppercase(),
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 14.sp,
+                    fontSize = fontSize,
                     color = MaterialTheme.colors.onPrimary,
                 )
             }

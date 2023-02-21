@@ -1,23 +1,31 @@
 package com.vanguard.classifiadmin.ui.screens.profile
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,24 +37,41 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.layoutId
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.SchoolModel
+import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.extensions.customTabIndicatorOffset
+import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
+import com.vanguard.classifiadmin.domain.helpers.UserLoginState
+import com.vanguard.classifiadmin.domain.helpers.UserRole
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
-import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreenContentParticipants
-import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreenContentSummary
+import com.vanguard.classifiadmin.ui.components.PagerBarWithIcon
+import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
+import com.vanguard.classifiadmin.ui.screens.welcome.CreateSchoolErrorState
+import com.vanguard.classifiadmin.ui.screens.welcome.TextRowWithClickable
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 
 const val ACCOUNT_SCREEN = "account_screen"
@@ -174,29 +199,13 @@ fun MyAccountScreenContentHeader(
                 selected = currentPage == index,
                 unselectedContentColor = MaterialTheme.colors.onPrimary.copy(0.5f),
                 text = {
-                    Text(
-                        text = tab.name,
-                        color = if (currentPage == index) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onPrimary.copy(
-                            0.5f
-                        ),
+                    PagerBarWithIcon(
+                        icon = tab.icon, text = tab.fullname,
+                        selected = currentPage == index,
+                        backgroundColor = backgroundColor,
                         onTextLayout = { result ->
-                            tabWidths[index] = with(density) { result.size.width.toDp() }
-                        },
-                        maxLines = 1,
-                        fontSize = 12.sp,
-                        fontWeight = if (currentPage == index) FontWeight.Bold else FontWeight.Normal,
-                    )
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.icon_preference),
-                        contentDescription = tab.name,
-                        tint = if (currentPage == index) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onPrimary.copy(
-                            0.5f
-                        ),
-                        modifier = modifier
-                            .size(24.dp)
-                            .padding(2.dp)
+                            tabWidths[index] = with(density) {  result.size.width.toDp().plus(34.dp) }
+                        }
                     )
                 },
                 selectedContentColor = MaterialTheme.colors.onPrimary,
@@ -230,34 +239,6 @@ fun MyAccountScreenContentBody(
     }
 }
 
-@Composable
-fun MyAccountScreenProfile(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    Text(text = "Profile", modifier = Modifier.clickable { onClick() })
-}
-
-@Composable
-fun MyAccountScreenAccountSettings(
-    modifier: Modifier = Modifier
-) {
-
-}
-
-@Composable
-fun MyAccountScreenPreferences(
-    modifier: Modifier = Modifier
-) {
-
-}
-
-@Composable
-fun MyAccountScreenAdmin(
-    modifier: Modifier = Modifier
-) {
-
-}
 
 @Composable
 fun MyAccountScreenContentBottomSheetContent(

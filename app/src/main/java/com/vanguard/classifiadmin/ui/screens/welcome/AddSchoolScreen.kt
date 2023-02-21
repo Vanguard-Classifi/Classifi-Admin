@@ -14,17 +14,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Visibility
-import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,8 +36,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,21 +44,14 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
-import com.vanguard.classifiadmin.data.local.models.SchoolModel
-import com.vanguard.classifiadmin.data.local.models.UserModel
-import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
-import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
-import com.vanguard.classifiadmin.domain.helpers.UserRole
-import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
 import com.vanguard.classifiadmin.ui.components.MessageBar
-import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
+import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 const val ADD_SCHOOL_SCREEN = "add_school_screen"
 
@@ -203,14 +189,14 @@ fun AddSchoolScreenContent(
                         )
 
 
-                        PrimaryTextButton(
+                        PrimaryTextButtonFillWidth(
                             label = stringResource(id = R.string.create_school),
                             onClick = {
 
                                 if (schoolNameCreateSchool == null || schoolNameCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState =
                                         CreateSchoolErrorState.InvalidSchoolName
-                                    return@PrimaryTextButton
+                                    return@PrimaryTextButtonFillWidth
                                 }
 
                                 scope.launch {

@@ -4,10 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Arrangement
@@ -43,20 +40,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import com.vanguard.classifiadmin.R
-import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.MessageBar
-import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
+import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.WeeklyPlanGrid
 import com.vanguard.classifiadmin.ui.components.WeeklyPlanModel
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 const val WEEKLY_PLAN_DETAIL_SCREEN = "weekly_plan_detail_screen"
 
@@ -221,7 +214,7 @@ fun WeeklyPlanDetailBottomSheetContent(
             },
         )
 
-        PrimaryTextButton(
+        PrimaryTextButtonFillWidth(
             label = stringResource(id = R.string.done),
             onClick = onDone,
             modifier = Modifier.padding(8.dp)

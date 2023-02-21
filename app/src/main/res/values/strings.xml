@@ -85,4 +85,14 @@
     <string name="school_creation_completed">School Creation Completed!</string>
     <string name="create_school">CREATE SCHOOL</string>
     <string name="manage_account">Manage Account</string>
+    <string name="profile">Profile</string>
+    <string name="upload_photo">Upload Photo</string>
+    <string name="accepts_examples">Accepts .png, .jpg, .jpeg</string>
+    <string name="update_photo">Update Photo</string>
+    <string name="edit">Edit Button</string>
+    <string name="your_name">Your name</string>
+    <string name="your_password">Your password</string>
+    <string name="your_phone">Your phone</string>
+    <string name="your_bio">Your Bio</string>
+    <string name="your_date_of_birth">Your date of birth</string>
 </resources>

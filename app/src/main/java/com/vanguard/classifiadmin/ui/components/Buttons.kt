@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,14 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.vanguard.classifiadmin.R
-import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.theme.Black100
 
 
@@ -70,9 +68,68 @@ fun LocalIconButton(
     }
 }
 
+@Composable
+fun SecondaryTextButton(
+    modifier: Modifier = Modifier,
+    label: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+        shape = CircleShape,
+        modifier = modifier
+            .clip(CircleShape),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary,
+        ),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Color.Transparent,
+            contentColor = MaterialTheme.colors.primary,
+            disabledBackgroundColor = Color.Transparent,
+        )
+    ) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+        )
+    }
+}
+
 
 @Composable
 fun PrimaryTextButton(
+    modifier: Modifier = Modifier,
+    label: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+        shape = CircleShape,
+        modifier = modifier
+            .clip(CircleShape),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = MaterialTheme.colors.primary.copy(0.3f) ,
+            contentColor = MaterialTheme.colors.primary,
+            disabledBackgroundColor = Black100.copy(0.1f)
+        )
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+    }
+}
+
+
+@Composable
+fun PrimaryTextButtonFillWidth(
     modifier: Modifier = Modifier,
     label: String,
     onClick: () -> Unit,
@@ -102,7 +159,7 @@ fun PrimaryTextButton(
 @Composable
 @Preview
 private fun PrimaryTextButtonPreview() {
-    PrimaryTextButton(
+    PrimaryTextButtonFillWidth(
         label = "DONE",
         onClick = {}
     )

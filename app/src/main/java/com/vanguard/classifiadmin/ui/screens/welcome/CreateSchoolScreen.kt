@@ -64,14 +64,13 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
-import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
 import com.vanguard.classifiadmin.ui.components.MessageBar
-import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
+import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -107,6 +106,7 @@ fun CreateSchoolScreen(
         )
     }
 }
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -161,7 +161,7 @@ fun CreateSchoolScreenContent(
                 Card(
                     modifier = modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .padding(vertical = 8.dp, horizontal = 8.dp),
+                        .padding(top = 8.dp, bottom = 32.dp, start = 8.dp, end = 8.dp),
                     shape = RoundedCornerShape(16.dp),
                     elevation = 2.dp,
                 ) {
@@ -364,34 +364,34 @@ fun CreateSchoolScreenContent(
                             isError = createSchoolErrorState == CreateSchoolErrorState.InvalidPassword
                         )
 
-                        PrimaryTextButton(
+                        PrimaryTextButtonFillWidth(
                             label = stringResource(id = R.string.create_account),
                             onClick = {
                                 if (fullNameCreateSchool == null || fullNameCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState = CreateSchoolErrorState.InvalidUsername
-                                    return@PrimaryTextButton
+                                    return@PrimaryTextButtonFillWidth
                                 }
 
                                 if (schoolNameCreateSchool == null || schoolNameCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState =
                                         CreateSchoolErrorState.InvalidSchoolName
-                                    return@PrimaryTextButton
+                                    return@PrimaryTextButtonFillWidth
                                 }
 
                                 if (emailCreateSchool == null || emailCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState = CreateSchoolErrorState.InvalidEmail
-                                    return@PrimaryTextButton
+                                    return@PrimaryTextButtonFillWidth
                                 }
 
                                 if (phoneCreateSchool == null || phoneCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState =
                                         CreateSchoolErrorState.InvalidPhoneNumber
-                                    return@PrimaryTextButton
+                                    return@PrimaryTextButtonFillWidth
                                 }
 
                                 if (passwordCreateSchool == null || passwordCreateSchool?.isBlank() == true) {
                                     createSchoolErrorState = CreateSchoolErrorState.InvalidPassword
-                                    return@PrimaryTextButton
+                                    return@PrimaryTextButtonFillWidth
                                 }
 
                                 viewModel.signUp(

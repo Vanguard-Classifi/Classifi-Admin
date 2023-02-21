@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -43,9 +44,8 @@ fun PagerBarWithIcon(
     onTextLayout: (TextLayoutResult) -> Unit = {},
 ) {
     Surface(
-        modifier = Modifier.padding(horizontal = 12.dp).clip(CircleShape),
+        modifier = Modifier,
         color = backgroundColor,
-        shape = CircleShape,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -95,6 +95,7 @@ fun ChildTopBarWithCloseButtonOnly(
             onClick = onClose,
             modifier = modifier.padding(8.dp),
             icon = R.drawable.icon_close,
+            surfaceSize = 32.dp,
         )
     }
 }
