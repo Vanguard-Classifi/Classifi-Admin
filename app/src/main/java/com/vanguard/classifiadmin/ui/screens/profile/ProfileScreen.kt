@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.profile
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,6 +76,7 @@ fun MyAccountScreenProfile(
     viewModel: MainViewModel,
     onSaveChanges: () -> Unit,
 ) {
+    val TAG = "MyAccountScreenProfile"
     val verticalScroll = rememberScrollState()
     val scope = rememberCoroutineScope()
     val constraints = MyAccountScreenProfileConstraints(16.dp)
@@ -93,10 +95,12 @@ fun MyAccountScreenProfile(
     val userCityProfile by viewModel.userCityProfile.collectAsState()
     val userPostalCodeProfile by viewModel.userPostalCodeProfile.collectAsState()
 
-    LaunchedEffect(Unit) {
-        delay(1000)
+    LaunchedEffect(userByIdNetwork.data) {
+        viewModel.getUserByIdNetwork(currentUserIdPref ?: "")
+        Log.e(TAG, "MyAccountScreenProfile: currentUserIdPref is ${currentUserIdPref}")
         //update the fields with value from the current user
         val user = userByIdNetwork.data
+        Log.e(TAG, "MyAccountScreenProfile: user is $user")
         viewModel.onUsernameProfileChanged(user?.fullname ?: "")
         viewModel.onUserPhoneProfileChanged(user?.phone ?: "")
         viewModel.onUserBioProfileChanged(user?.bio ?: "")
@@ -106,7 +110,6 @@ fun MyAccountScreenProfile(
         viewModel.onUserStateProfileChanged(user?.state ?: "")
         viewModel.onUserCityProfileChanged(user?.city ?: "")
         viewModel.onUserPostalCodeProfileChanged(user?.postalCode ?: "")
-
     }
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {

@@ -108,7 +108,7 @@ fun MyAccountScreen(
     val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
     var profileSavedMessageState by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(currentUserIdPref) {
         //find current user profile
         viewModel.getCurrentUserIdPref()
         delay(1000)

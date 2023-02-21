@@ -25,6 +25,11 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -167,11 +172,21 @@ fun DefaultAvatarBig(
     fontSize: TextUnit = 14.sp,
     size: Dp = 42.dp,
 ) {
-    val labelSplit = label.lowercase().splitWithSpace()
-    val first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
-    val second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
-    val avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
-    val colorHex = generateColorFromUserName(label)
+    var first by remember { mutableStateOf("")}
+    var second by remember { mutableStateOf("")}
+    var colorHex by remember { mutableStateOf(0xFF000000)}
+    var avatar by remember { mutableStateOf("")}
+
+    LaunchedEffect(label) {
+        if(label.isNotBlank()) {
+            val labelSplit = label.lowercase().splitWithSpace()
+            first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
+            second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
+            colorHex = generateColorFromUserName(label)
+            avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
+        }
+    }
+
 
     Surface(
         modifier = modifier
@@ -203,11 +218,21 @@ fun DefaultAvatar(
     onClick: () -> Unit,
     enabled: Boolean = true,
 ) {
-    val labelSplit = label.lowercase().splitWithSpace()
-    val first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
-    val second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
-    val avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
-    val colorHex = generateColorFromUserName(label)
+    var first by remember { mutableStateOf("")}
+    var second by remember { mutableStateOf("")}
+    var colorHex by remember { mutableStateOf(0xFF000000)}
+    var avatar by remember { mutableStateOf("")}
+
+    LaunchedEffect(label) {
+        if(label.isNotBlank()) {
+            val labelSplit = label.lowercase().splitWithSpace()
+            first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
+            second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
+            colorHex = generateColorFromUserName(label)
+            avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
+        }
+    }
+
 
     Surface(
         modifier = modifier
