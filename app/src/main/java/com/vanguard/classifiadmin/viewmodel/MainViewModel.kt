@@ -111,6 +111,76 @@ class MainViewModel @Inject constructor(
 
     private var _currentUserEmailPref = MutableStateFlow(null as String?)
     val currentUserEmailPref: StateFlow<String?> = _currentUserEmailPref
+
+    private var _usernameProfile = MutableStateFlow(null as String?)
+    val usernameProfile: StateFlow<String?> = _usernameProfile
+
+    private var _userPhoneProfile = MutableStateFlow(null as String?)
+    val userPhoneProfile: StateFlow<String?> = _userPhoneProfile
+
+    private var _userPasswordProfile = MutableStateFlow(null as String?)
+    val userPasswordProfile: StateFlow<String?> = _userPasswordProfile
+
+    private var _userBioProfile = MutableStateFlow(null as String?)
+    val userBioProfile: StateFlow<String?> = _userBioProfile
+
+    private var _userDobProfile = MutableStateFlow(null as String?)
+    val userDobProfile: StateFlow<String?> = _userDobProfile
+
+    private var _userAddressProfile = MutableStateFlow(null as String?)
+    val userAddressProfile: StateFlow<String?> = _userAddressProfile
+
+    private var _userCountryProfile = MutableStateFlow(null as String?)
+    val userCountryProfile: StateFlow<String?> = _userCountryProfile
+
+    private var _userStateProfile = MutableStateFlow(null as String?)
+    val userStateProfile: StateFlow<String?> = _userStateProfile
+
+    private var _userCityProfile = MutableStateFlow(null as String?)
+    val userCityProfile: StateFlow<String?> = _userCityProfile
+
+    private var _userPostalCodeProfile = MutableStateFlow(null as String?)
+    val userPostalCodeProfile: StateFlow<String?> = _userPostalCodeProfile
+
+    fun onUserPostalCodeProfileChanged(postal: String?) = effect {
+        _userPostalCodeProfile.value = postal
+    }
+
+    fun onUserCityProfileChanged(city: String?) = effect {
+        _userCityProfile.value = city
+    }
+
+    fun onUserStateProfileChanged(state: String?) = effect {
+        _userStateProfile.value = state
+    }
+
+    fun onUserCountryProfileChanged(country: String?) = effect {
+        _userCountryProfile.value = country
+    }
+
+    fun onUserAddressProfileChanged(address: String?) = effect {
+        _userAddressProfile.value = address
+    }
+
+    fun onUserDobProfileChanged(dob: String?) = effect {
+        _userDobProfile.value = dob
+    }
+
+    fun onUserBioProfileChanged(bio: String?) = effect {
+        _userBioProfile.value = bio
+    }
+    fun onUserPasswordProfileChanged(password: String?) = effect {
+        _userPasswordProfile.value = password
+    }
+
+    fun onUserPhoneProfileChanged(phone: String?) = effect {
+        _userPhoneProfile.value = phone
+    }
+
+    fun onUsernameProfileChanged(name: String?) = effect {
+        _usernameProfile.value = name
+    }
+
     fun saveCurrentUserEmailPref(email: String, onResult: (Boolean) -> Unit) = effect {
         store.saveCurrentUserEmailPref(email, onResult)
     }

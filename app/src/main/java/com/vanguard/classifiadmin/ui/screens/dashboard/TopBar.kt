@@ -168,7 +168,7 @@ fun DefaultAvatarBig(
     size: Dp = 42.dp,
 ) {
     val labelSplit = label.lowercase().splitWithSpace()
-    val first = labelSplit.first()[0].toString()
+    val first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
     val second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
     val avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
     val colorHex = generateColorFromUserName(label)
@@ -204,7 +204,7 @@ fun DefaultAvatar(
     enabled: Boolean = true,
 ) {
     val labelSplit = label.lowercase().splitWithSpace()
-    val first = if (labelSplit.size > 1) labelSplit.first()[0].toString() else ""
+    val first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
     val second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
     val avatar = if (labelSplit.size > 1) "$first$second" else first.toString()
     val colorHex = generateColorFromUserName(label)

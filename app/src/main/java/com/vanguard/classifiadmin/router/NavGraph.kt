@@ -109,7 +109,8 @@ fun NavGraph(
 
         composable(Destinations.account) {
             MyAccountScreen(
-                onBack = { navController.navigate(Destinations.dashboard) }
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.dashboard) },
             )
         }
 

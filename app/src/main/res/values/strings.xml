@@ -102,4 +102,5 @@
     <string name="postal_code">Postal Code</string>
     <string name="save_changes">Save Changes</string>
     <string name="country">Country</string>
+    <string name="changes_saved">Changes Saved Successfully!</string>
 </resources>

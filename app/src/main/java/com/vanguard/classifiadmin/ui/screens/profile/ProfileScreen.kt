@@ -26,9 +26,12 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,10 +55,16 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatarBig
 import com.vanguard.classifiadmin.ui.theme.Black100
+import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -63,12 +72,42 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 fun MyAccountScreenProfile(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    viewModel: MainViewModel,
+    onSaveChanges: () -> Unit,
 ) {
     val verticalScroll = rememberScrollState()
+    val scope = rememberCoroutineScope()
     val constraints = MyAccountScreenProfileConstraints(16.dp)
     val innerModifier = Modifier
     var countryMenuState by remember { mutableStateOf(false) }
 
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
+    val usernameProfile by viewModel.usernameProfile.collectAsState()
+    val userPhoneProfile by viewModel.userPhoneProfile.collectAsState()
+    val userBioProfile by viewModel.userBioProfile.collectAsState()
+    val userDobProfile by viewModel.userDobProfile.collectAsState()
+    val userAddressProfile by viewModel.userAddressProfile.collectAsState()
+    val userCountryProfile by viewModel.userCountryProfile.collectAsState()
+    val userStateProfile by viewModel.userStateProfile.collectAsState()
+    val userCityProfile by viewModel.userCityProfile.collectAsState()
+    val userPostalCodeProfile by viewModel.userPostalCodeProfile.collectAsState()
+
+    LaunchedEffect(Unit) {
+        delay(1000)
+        //update the fields with value from the current user
+        val user = userByIdNetwork.data
+        viewModel.onUsernameProfileChanged(user?.fullname ?: "")
+        viewModel.onUserPhoneProfileChanged(user?.phone ?: "")
+        viewModel.onUserBioProfileChanged(user?.bio ?: "")
+        viewModel.onUserDobProfileChanged(user?.dob ?: "")
+        viewModel.onUserAddressProfileChanged(user?.address ?: "")
+        viewModel.onUserCountryProfileChanged(user?.country ?: "")
+        viewModel.onUserStateProfileChanged(user?.state ?: "")
+        viewModel.onUserCityProfileChanged(user?.city ?: "")
+        viewModel.onUserPostalCodeProfileChanged(user?.postalCode ?: "")
+
+    }
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
 
@@ -93,7 +132,7 @@ fun MyAccountScreenProfile(
                 )
 
                 DefaultAvatarBig(
-                    label = "Hamza Jesim",
+                    label = usernameProfile ?: "",
                     onClick = { /*TODO*/ },
                     size = 78.dp,
                     fontSize = 18.sp,
@@ -136,7 +175,7 @@ fun MyAccountScreenProfile(
 
                 ProfileItemRow(
                     onEdit = { /*TODO*/ },
-                    item = "Your name",
+                    item = usernameProfile ?: "",
                     modifier = innerModifier.layoutId("changeName")
                 )
 
@@ -150,7 +189,7 @@ fun MyAccountScreenProfile(
 
                 ProfileItemRow(
                     onEdit = { /*TODO*/ },
-                    item = "Your phone",
+                    item = userPhoneProfile ?: "",
                     modifier = innerModifier.layoutId("changePhone")
                 )
 
@@ -179,7 +218,7 @@ fun MyAccountScreenProfile(
 
                 ProfileItemRow(
                     onEdit = { /*TODO*/ },
-                    item = "A little something about yourself...",
+                    item = userBioProfile ?: "A little something about yourself...",
                     modifier = innerModifier.layoutId("changeBio")
                 )
 
@@ -193,7 +232,7 @@ fun MyAccountScreenProfile(
 
                 ProfileItemRow(
                     onEdit = { /*TODO*/ },
-                    item = "Date of birth not set",
+                    item = userDobProfile ?: "Date of birth not set",
                     modifier = innerModifier.layoutId("changeDob")
                 )
 
@@ -212,8 +251,8 @@ fun MyAccountScreenProfile(
 
                 OutlinedTextField(
                     modifier = innerModifier.layoutId("address"),
-                    value = "",
-                    onValueChange = {},
+                    value = userPhoneProfile ?: "",
+                    onValueChange = viewModel::onUserPhoneProfileChanged,
                     label = {
                         Text(
                             text = stringResource(id = R.string.street_address),
@@ -239,7 +278,7 @@ fun MyAccountScreenProfile(
                     expanded = countryMenuState,
                     modifier = innerModifier
                         .fillMaxWidth()
-                    .layoutId("country"),
+                        .layoutId("country"),
                     onExpandedChange = {
                         countryMenuState = !countryMenuState
                     },
@@ -247,7 +286,7 @@ fun MyAccountScreenProfile(
 
                     OutlinedTextField(
                         modifier = Modifier.fillMaxWidth(),
-                        value = "",
+                        value = userCountryProfile ?: "",
                         onValueChange = {},
                         readOnly = true,
                         label = {
@@ -259,7 +298,7 @@ fun MyAccountScreenProfile(
                             )
                         },
                         trailingIcon = {
-                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = countryMenuState)
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = countryMenuState)
                         },
                         shape = RoundedCornerShape(16.dp),
                         textStyle = TextStyle(
@@ -286,6 +325,7 @@ fun MyAccountScreenProfile(
                             DropdownMenuItem(
                                 onClick = {
                                     //on click
+                                    viewModel.onUserCountryProfileChanged(country)
                                 }
                             ) {
                                 Text(
@@ -303,8 +343,8 @@ fun MyAccountScreenProfile(
 
                 OutlinedTextField(
                     modifier = innerModifier.layoutId("state"),
-                    value = "",
-                    onValueChange = {},
+                    value = userStateProfile ?: "",
+                    onValueChange = viewModel::onUserStateProfileChanged,
                     label = {
                         Text(
                             text = stringResource(id = R.string.state),
@@ -328,8 +368,8 @@ fun MyAccountScreenProfile(
 
                 OutlinedTextField(
                     modifier = innerModifier.layoutId("city"),
-                    value = "",
-                    onValueChange = {},
+                    value = userCityProfile ?: "",
+                    onValueChange = viewModel::onUserCityProfileChanged,
                     label = {
                         Text(
                             text = stringResource(id = R.string.city_town),
@@ -352,8 +392,8 @@ fun MyAccountScreenProfile(
 
                 OutlinedTextField(
                     modifier = innerModifier.layoutId("postalCode"),
-                    value = "",
-                    onValueChange = {},
+                    value = userPostalCodeProfile ?: "",
+                    onValueChange = viewModel::onUserPostalCodeProfileChanged,
                     label = {
                         Text(
                             text = stringResource(id = R.string.postal_code),
@@ -384,7 +424,20 @@ fun MyAccountScreenProfile(
                 PrimaryTextButton(
                     label = stringResource(id = R.string.save_changes).uppercase(),
                     onClick = {
-
+                        //save user
+                        scope.launch {
+                            val currentUser = userByIdNetwork.data?.toLocal()
+                            currentUser?.fullname = usernameProfile
+                            currentUser?.phone = userPhoneProfile
+                            currentUser?.bio = userBioProfile
+                            currentUser?.dob = userDobProfile
+                            currentUser?.address = userAddressProfile
+                            currentUser?.country = userCountryProfile
+                            currentUser?.state = userStateProfile
+                            currentUser?.city = userCityProfile
+                            currentUser?.postalCode = userPostalCodeProfile
+                            viewModel.saveUserNetwork(currentUser ?: UserModel.Invalid) {}
+                        }.invokeOnCompletion { runnableBlock { onSaveChanges() } }
                     },
                     modifier = innerModifier.layoutId("saveBtn")
                 )
@@ -628,14 +681,6 @@ fun ProfileItemRow(
             )
         }
     }
-}
-
-@Preview
-@Composable
-private fun MyAccountScreenProfilePreview() {
-    MyAccountScreenProfile(
-        onClick = {}
-    )
 }
 
 @Composable

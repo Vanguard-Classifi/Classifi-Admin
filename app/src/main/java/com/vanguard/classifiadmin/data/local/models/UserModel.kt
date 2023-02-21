@@ -5,7 +5,7 @@ import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 data class UserModel(
     val userId: String,
     var email: String? = null,
-    val fullname: String? = null,
+    var fullname: String? = null,
     var currentRole: String? = null,
     var roles: ArrayList<String> = arrayListOf(),
     var schoolIds: ArrayList<String> = arrayListOf(),
@@ -13,6 +13,12 @@ data class UserModel(
     var currentSchoolName: String? = null,
     var address: String? = null,
     var phone: String? = null,
+    var bio: String? = null,
+    var dob: String?= null,
+    var country: String? = null,
+    var state: String? = null,
+    var city: String? = null,
+    var postalCode: String? = null,
     var studentIds: ArrayList<String> = arrayListOf(),
     var classIds: ArrayList<String> = arrayListOf(),
     var lastModified: String? = null,
@@ -24,6 +30,12 @@ data class UserModel(
         currentRole = currentRole,
         roles = roles,
         phone = phone,
+        country = country,
+        state = state,
+        city = city,
+        bio = bio,
+        dob = dob,
+        postalCode = postalCode,
         schoolIds = schoolIds,
         currentSchoolId = currentSchoolId,
         currentSchoolName = currentSchoolName,
@@ -32,4 +44,10 @@ data class UserModel(
         classIds = classIds,
         lastModified = lastModified
     )
+
+    companion object  {
+        val Invalid  = UserModel(
+            userId = "Invalid",
+        )
+    }
 }
