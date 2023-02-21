@@ -12,12 +12,18 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +38,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -43,11 +52,13 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatarBig
 import com.vanguard.classifiadmin.ui.theme.Black100
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MyAccountScreenProfile(
     modifier: Modifier = Modifier,
@@ -56,6 +67,7 @@ fun MyAccountScreenProfile(
     val verticalScroll = rememberScrollState()
     val constraints = MyAccountScreenProfileConstraints(16.dp)
     val innerModifier = Modifier
+    var countryMenuState by remember { mutableStateOf(false) }
 
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
@@ -63,7 +75,7 @@ fun MyAccountScreenProfile(
         Card(
             modifier = modifier
                 .clip(RoundedCornerShape(16.dp))
-                .padding(top = 8.dp, bottom = 32.dp, start = 8.dp, end = 8.dp),
+                .padding(top = 8.dp, bottom = 64.dp, start = 8.dp, end = 8.dp),
             shape = RoundedCornerShape(16.dp),
             elevation = 2.dp,
         ) {
@@ -161,6 +173,7 @@ fun MyAccountScreenProfile(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary,
+                    maxLines = 10,
                     modifier = innerModifier.layoutId("bioHeader")
                 )
 
@@ -190,7 +203,191 @@ fun MyAccountScreenProfile(
                         .fillMaxWidth()
                 )
 
+                Text(
+                    text = stringResource(id = R.string.contact_details).uppercase(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = innerModifier.layoutId("contactHeader")
+                )
 
+                OutlinedTextField(
+                    modifier = innerModifier.layoutId("address"),
+                    value = "",
+                    onValueChange = {},
+                    label = {
+                        Text(
+                            text = stringResource(id = R.string.street_address),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.primary,
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle(
+                        color = Black100.copy(0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
+                    )
+                )
+
+
+                ExposedDropdownMenuBox(
+                    expanded = countryMenuState,
+                    modifier = innerModifier
+                        .fillMaxWidth()
+                    .layoutId("country"),
+                    onExpandedChange = {
+                        countryMenuState = !countryMenuState
+                    },
+                ) {
+
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = {
+                            Text(
+                                text = stringResource(id = R.string.country),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.primary,
+                            )
+                        },
+                        trailingIcon = {
+                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = countryMenuState)
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        textStyle = TextStyle(
+                            color = Black100.copy(0.5f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done,
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = countryMenuState,
+                        onDismissRequest = {
+                            countryMenuState = false
+                        }
+                    ) {
+                        //items
+                        listOf<String>(
+                            "Nigeria", "Congo",
+                        ).forEach { country ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    //on click
+                                }
+                            ) {
+                                Text(
+                                    text = country,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colors.primary,
+                                )
+                            }
+
+                        }
+                    }
+
+                }
+
+                OutlinedTextField(
+                    modifier = innerModifier.layoutId("state"),
+                    value = "",
+                    onValueChange = {},
+                    label = {
+                        Text(
+                            text = stringResource(id = R.string.state),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.primary,
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle(
+                        color = Black100.copy(0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
+                    )
+                )
+
+
+                OutlinedTextField(
+                    modifier = innerModifier.layoutId("city"),
+                    value = "",
+                    onValueChange = {},
+                    label = {
+                        Text(
+                            text = stringResource(id = R.string.city_town),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.primary,
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle(
+                        color = Black100.copy(0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
+                    )
+                )
+
+                OutlinedTextField(
+                    modifier = innerModifier.layoutId("postalCode"),
+                    value = "",
+                    onValueChange = {},
+                    label = {
+                        Text(
+                            text = stringResource(id = R.string.postal_code),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.primary,
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle(
+                        color = Black100.copy(0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Done,
+                    )
+                )
+
+                Divider(
+                    modifier = innerModifier
+                        .layoutId("divider3")
+                        .fillMaxWidth()
+                )
+
+
+                PrimaryTextButton(
+                    label = stringResource(id = R.string.save_changes).uppercase(),
+                    onClick = {
+
+                    },
+                    modifier = innerModifier.layoutId("saveBtn")
+                )
 
             }
         }
@@ -218,6 +415,14 @@ private fun MyAccountScreenProfileConstraints(margin: Dp): ConstraintSet {
         val dobHeader = createRefFor("dobHeader")
         val changeDob = createRefFor("changeDob")
         val divider2 = createRefFor("divider2")
+        val contactHeader = createRefFor("contactHeader")
+        val address = createRefFor("address")
+        val country = createRefFor("country")
+        val state = createRefFor("state")
+        val city = createRefFor("city")
+        val postalCode = createRefFor("postalCode")
+        val divider3 = createRefFor("divider3")
+        val saveBtn = createRefFor("saveBtn")
 
 
         constrain(header) {
@@ -319,6 +524,57 @@ private fun MyAccountScreenProfileConstraints(margin: Dp): ConstraintSet {
             width = Dimension.fillToConstraints
         }
 
+        constrain(contactHeader) {
+            top.linkTo(divider2.bottom, 28.dp)
+            start.linkTo(parent.start, margin)
+        }
+
+        constrain(address) {
+            width = Dimension.fillToConstraints
+            start.linkTo(parent.start, margin)
+            end.linkTo(parent.end, margin)
+            top.linkTo(contactHeader.bottom, 16.dp)
+        }
+
+        constrain(country) {
+            start.linkTo(parent.start, margin)
+            end.linkTo(parent.end, margin)
+            top.linkTo(address.bottom, 16.dp)
+            width = Dimension.fillToConstraints
+        }
+
+        constrain(state) {
+            width = Dimension.fillToConstraints
+            start.linkTo(parent.start, margin)
+            end.linkTo(parent.end, margin)
+            top.linkTo(country.bottom, 16.dp)
+        }
+
+        constrain(city) {
+            width = Dimension.fillToConstraints
+            start.linkTo(parent.start, margin)
+            end.linkTo(parent.end, margin)
+            top.linkTo(state.bottom, 16.dp)
+        }
+
+        constrain(postalCode) {
+            width = Dimension.fillToConstraints
+            start.linkTo(parent.start, margin)
+            end.linkTo(parent.end, margin)
+            top.linkTo(city.bottom, 16.dp)
+        }
+
+        constrain(divider3) {
+            width = Dimension.fillToConstraints
+            start.linkTo(parent.start, margin)
+            end.linkTo(parent.end, margin)
+            top.linkTo(postalCode.bottom, 28.dp)
+        }
+
+        constrain(saveBtn) {
+            top.linkTo(divider3.bottom, 32.dp)
+            end.linkTo(parent.end, margin)
+        }
 
     }
 }
@@ -328,6 +584,7 @@ fun ProfileItemRow(
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
     item: String,
+    maxLines: Int = 2,
 ) {
     var rowWidth by remember { mutableStateOf(0) }
 
@@ -346,10 +603,10 @@ fun ProfileItemRow(
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = Black100.copy(0.5f),
-            maxLines = 2,
+            maxLines = maxLines,
             overflow = TextOverflow.Ellipsis,
             modifier = modifier
-                .padding(8.dp)
+                .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
                 .width(
                     with(LocalDensity.current) {
                         (rowWidth - 68).toDp()

@@ -95,4 +95,11 @@
     <string name="your_phone">Your phone</string>
     <string name="your_bio">Your Bio</string>
     <string name="your_date_of_birth">Your date of birth</string>
+    <string name="contact_details">Contact Details</string>
+    <string name="street_address">Street Address</string>
+    <string name="state">State</string>
+    <string name="city_town">City/Town</string>
+    <string name="postal_code">Postal Code</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="country">Country</string>
 </resources>
