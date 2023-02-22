@@ -151,7 +151,7 @@ fun PrimaryTextButtonFillWidth(
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colors.primary,
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         )
     }
 }

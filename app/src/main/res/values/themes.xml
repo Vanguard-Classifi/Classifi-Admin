@@ -4,13 +4,24 @@
         <item name="android:statusBarColor">@color/purple_200</item>
         <item name="android:windowBackground">@color/purple_200</item>
         <item name="colorPrimary">@color/purple_200</item>
+
     </style>
 
     <style name="SplashScreenTheme" parent="Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/Theme.ClassifiAdmin</item>
         <item name="windowSplashScreenBackground">@color/purple_200</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/icon_brand</item>
-
-
     </style>
+
+    <style name="DatePickerTheme" parent="ThemeOverlay.AppCompat.Dialog">
+        <item name="android:windowBackground">@color/purple_200</item>
+        <item name="colorAccent">@color/purple_100</item>
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorControlActivated">@color/purple_100</item>
+        <item name="colorControlHighlight">@color/purple_100</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
+        <item name="android:selectableItemBackgroundBorderless">@color/purple_200</item>
+    </style>
+
 </resources>

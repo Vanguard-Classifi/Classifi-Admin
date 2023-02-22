@@ -57,8 +57,10 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.domain.helpers.Country
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.ui.components.DatePicker
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatarBig
@@ -75,6 +77,10 @@ fun MyAccountScreenProfile(
     onClick: () -> Unit,
     viewModel: MainViewModel,
     onSaveChanges: () -> Unit,
+    onEditUsername: () -> Unit,
+    onEditUserPhone: () -> Unit,
+    onEditUserPassword: () -> Unit,
+    onEditUserBio: () -> Unit,
 ) {
     val TAG = "MyAccountScreenProfile"
     val verticalScroll = rememberScrollState()
@@ -177,7 +183,7 @@ fun MyAccountScreenProfile(
                 )
 
                 ProfileItemRow(
-                    onEdit = { /*TODO*/ },
+                    onEdit = onEditUsername,
                     item = usernameProfile ?: "",
                     modifier = innerModifier.layoutId("changeName")
                 )
@@ -191,8 +197,8 @@ fun MyAccountScreenProfile(
                 )
 
                 ProfileItemRow(
-                    onEdit = { /*TODO*/ },
-                    item = userPhoneProfile ?: "",
+                    onEdit = onEditUserPhone,
+                    item = userPhoneProfile ?: "Phone number not set",
                     modifier = innerModifier.layoutId("changePhone")
                 )
 
@@ -205,7 +211,7 @@ fun MyAccountScreenProfile(
                 )
 
                 ProfileItemRow(
-                    onEdit = { /*TODO*/ },
+                    onEdit = onEditUserPassword,
                     item = "xxxxxxxxxxxxxx",
                     modifier = innerModifier.layoutId("changePassword")
                 )
@@ -220,7 +226,7 @@ fun MyAccountScreenProfile(
                 )
 
                 ProfileItemRow(
-                    onEdit = { /*TODO*/ },
+                    onEdit = onEditUserBio,
                     item = userBioProfile ?: "A little something about yourself...",
                     modifier = innerModifier.layoutId("changeBio")
                 )
@@ -233,11 +239,12 @@ fun MyAccountScreenProfile(
                     modifier = innerModifier.layoutId("dobHeader")
                 )
 
-                ProfileItemRow(
-                    onEdit = { /*TODO*/ },
-                    item = userDobProfile ?: "Date of birth not set",
+                DatePicker(
+                    value = userDobProfile ?: "",
+                    onValueChange = viewModel::onUserDobProfileChanged,
                     modifier = innerModifier.layoutId("changeDob")
                 )
+
 
                 Divider(
                     modifier = innerModifier
@@ -254,8 +261,8 @@ fun MyAccountScreenProfile(
 
                 OutlinedTextField(
                     modifier = innerModifier.layoutId("address"),
-                    value = userPhoneProfile ?: "",
-                    onValueChange = viewModel::onUserPhoneProfileChanged,
+                    value = userAddressProfile ?: "",
+                    onValueChange = viewModel::onUserAddressProfileChanged,
                     label = {
                         Text(
                             text = stringResource(id = R.string.street_address),
@@ -321,14 +328,14 @@ fun MyAccountScreenProfile(
                             countryMenuState = false
                         }
                     ) {
-                        //items
-                        listOf<String>(
-                            "Nigeria", "Congo",
-                        ).forEach { country ->
+
+                        Country.getAllCountries()
+                        .forEach { country ->
                             DropdownMenuItem(
                                 onClick = {
                                     //on click
                                     viewModel.onUserCountryProfileChanged(country)
+                                    countryMenuState = false
                                 }
                             ) {
                                 Text(
@@ -338,7 +345,6 @@ fun MyAccountScreenProfile(
                                     color = MaterialTheme.colors.primary,
                                 )
                             }
-
                         }
                     }
 

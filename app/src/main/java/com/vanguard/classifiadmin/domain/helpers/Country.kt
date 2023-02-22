@@ -1,25 +1,19 @@
 package com.vanguard.classifiadmin.domain.helpers
 
-import android.telephony.PhoneNumberUtils
-import com.vanguard.classifiadmin.domain.extensions.splitWithSpace
 import java.util.Locale
 
-data class Country(
-    val name: String,
-    val code: String,
-) {
+class Country {
     companion object {
-        fun all(): List<Country> {
-            val isoCountries  = Locale.getISOCountries()
-            val countries = ArrayList<Country>()
-            isoCountries.map { iso ->
-                val locale = Locale("", iso)
-                countries.add(Country(
-                    name  = locale.displayCountry.splitWithSpace().first(),
-                    code = ""
-                ))
+        fun getAllCountries(): List<String> {
+            val names = ArrayList<String>()
+            for (locale in Locale.getAvailableLocales()) {
+                val name = locale.displayCountry
+                if (name.trim().isNotEmpty() && !names.contains((name))) {
+                    names.add(name)
+                }
             }
-            return countries
+            names.sort()
+            return names
         }
     }
 }

@@ -16,6 +16,7 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
+import com.vanguard.classifiadmin.ui.screens.profile.AccountBottomSheetState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -141,6 +142,13 @@ class MainViewModel @Inject constructor(
 
     private var _userPostalCodeProfile = MutableStateFlow(null as String?)
     val userPostalCodeProfile: StateFlow<String?> = _userPostalCodeProfile
+
+    private var _accountBottomSheetState  = MutableStateFlow(AccountBottomSheetState.Username as AccountBottomSheetState)
+    val accountBottomSheetState: StateFlow<AccountBottomSheetState> = _accountBottomSheetState
+
+    fun onAccountBottomSheetStateChanged(state: AccountBottomSheetState) = effect {
+        _accountBottomSheetState.value = state
+    }
 
     fun onUserPostalCodeProfileChanged(postal: String?) = effect {
         _userPostalCodeProfile.value = postal
