@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
@@ -143,10 +144,26 @@ class MainViewModel @Inject constructor(
     private var _userPostalCodeProfile = MutableStateFlow(null as String?)
     val userPostalCodeProfile: StateFlow<String?> = _userPostalCodeProfile
 
-    private var _accountBottomSheetState  = MutableStateFlow(AccountBottomSheetState.Username as AccountBottomSheetState)
-    val accountBottomSheetState: StateFlow<AccountBottomSheetState> = _accountBottomSheetState
+    private var _accountBottomSheetState = MutableStateFlow(null as AccountBottomSheetState?)
+    val accountBottomSheetState: StateFlow<AccountBottomSheetState?> = _accountBottomSheetState
 
-    fun onAccountBottomSheetStateChanged(state: AccountBottomSheetState) = effect {
+    private var _avatarUri = MutableStateFlow(null as Uri?)
+    val avatarUri: StateFlow<Uri?> = _avatarUri
+
+    fun onAvatarUriChanged(uri: Uri?) = effect {
+        _avatarUri.value = uri
+    }
+
+    fun uploadAvatar(
+        fileUri: Uri,
+        userId: String,
+        onProgress: (Long, Long) -> Unit,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.uploadAvatar(fileUri, userId, onProgress, onResult)
+    }
+
+    fun onAccountBottomSheetStateChanged(state: AccountBottomSheetState?) = effect {
         _accountBottomSheetState.value = state
     }
 
@@ -177,6 +194,7 @@ class MainViewModel @Inject constructor(
     fun onUserBioProfileChanged(bio: String?) = effect {
         _userBioProfile.value = bio
     }
+
     fun onUserPasswordProfileChanged(password: String?) = effect {
         _userPasswordProfile.value = password
     }
@@ -199,11 +217,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getUserByEmailNetwork(email: String, onResult: (Resource<UserNetworkModel?>) -> Unit) = effect {
-        repository.getUserByEmailNetwork(email) {
-            _userByEmailNetwork.value = it
+    fun getUserByEmailNetwork(email: String, onResult: (Resource<UserNetworkModel?>) -> Unit) =
+        effect {
+            repository.getUserByEmailNetwork(email) {
+                _userByEmailNetwork.value = it
+            }
         }
-    }
 
     fun getCurrentUserIdPref() = effect {
         store.currentUserIdPref.collect { id ->

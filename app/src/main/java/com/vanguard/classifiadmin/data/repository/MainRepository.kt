@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.data.repository
 
+import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -36,4 +37,12 @@ interface MainRepository {
     suspend fun getSchoolByIdNetwork(schoolId: String, onResult: (Resource<SchoolNetworkModel?>) -> Unit)
     suspend fun deleteSchoolByIdNetwork(schoolId: String, onResult: (Boolean) -> Unit)
     suspend fun deleteSchoolNetwork(school: SchoolNetworkModel, onResult: (Boolean) -> Unit)
+
+    //avatar
+    suspend fun uploadAvatar(
+        fileUri: Uri,
+        userId: String,
+        onProgress: (Long, Long) -> Unit,
+        onResult: (Boolean) -> Unit
+    )
 }

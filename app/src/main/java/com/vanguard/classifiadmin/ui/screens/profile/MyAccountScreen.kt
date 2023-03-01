@@ -6,6 +6,8 @@ import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,6 +19,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -76,6 +81,7 @@ import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.extensions.customTabIndicatorOffset
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
+import com.vanguard.classifiadmin.domain.helpers.Country
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
@@ -114,6 +120,7 @@ fun MyAccountScreen(
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
     var profileSavedMessageState by remember { mutableStateOf(false) }
+    val bottomSheetState by viewModel.accountBottomSheetState.collectAsState()
 
     LaunchedEffect(currentUserIdPref) {
         //find current user profile
@@ -147,6 +154,15 @@ fun MyAccountScreen(
                     viewModel = viewModel,
                     onClose = {
                         //hide bottom sheet
+                        coroutineScope.launch {
+                            showModalSheet.value = false
+                            delay(500)
+                            sheetState.hide()
+                        }
+                    },
+                    onSelectCountry = {
+                        //hide bottom sheet
+                        viewModel.onUserCountryProfileChanged(it)
                         coroutineScope.launch {
                             showModalSheet.value = false
                             delay(500)
@@ -207,6 +223,13 @@ fun MyAccountScreen(
                                 sheetState.show()
                             }
                         },
+                        onShowCountries = {
+                            viewModel.onAccountBottomSheetStateChanged(AccountBottomSheetState.Country)
+                            coroutineScope.launch {
+                                showModalSheet.value = true
+                                sheetState.show()
+                            }
+                        }
                     )
                 }
             )
@@ -248,6 +271,7 @@ fun MyAccountScreenContent(
     onEditUserPassword: () -> Unit,
     onEditUserBio: () -> Unit,
     onSaveProfileChanges: () -> Unit,
+    onShowCountries: () -> Unit
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
 
@@ -264,6 +288,7 @@ fun MyAccountScreenContent(
             onEditUserPhone = onEditUserPhone,
             onEditUsername = onEditUsername,
             onEditUserBio = onEditUserBio,
+            onShowCountries = onShowCountries,
         )
     }
 }
@@ -348,6 +373,7 @@ fun MyAccountScreenContentBody(
     onEditUserPhone: () -> Unit,
     onEditUserPassword: () -> Unit,
     onEditUserBio: () -> Unit,
+    onShowCountries: () -> Unit,
     pages: List<AccountPage> = AccountPage.values().toList(),
 ) {
     val TAG = "MyAccountScreenContentBody"
@@ -362,6 +388,7 @@ fun MyAccountScreenContentBody(
                 onEditUserPhone = onEditUserPhone,
                 onEditUsername = onEditUsername,
                 onEditUserBio = onEditUserBio,
+                onShowCountries = onShowCountries,
             )
 
             1 -> MyAccountScreenAccountSettings()
@@ -377,6 +404,7 @@ fun MyAccountScreenContentBottomSheetContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onClose: () -> Unit,
+    onSelectCountry: (String) -> Unit,
 ) {
     val accountBottomSheetState by viewModel.accountBottomSheetState.collectAsState()
 
@@ -392,7 +420,14 @@ fun MyAccountScreenContentBottomSheetContent(
         AccountBottomSheetState.Bio -> {
             BioProfileEditor(viewModel = viewModel, onClose = onClose)
         }
-        else -> {}
+
+        AccountBottomSheetState.Country -> {
+            CountrySelection(viewModel = viewModel, onSelectCountry = onSelectCountry)
+        }
+
+        else -> {
+            UsernameProfileEditor(viewModel = viewModel, onClose = onClose)
+        }
     }
 }
 
@@ -535,6 +570,75 @@ fun PasswordProfileEditor(
 }
 
 @Composable
+fun CountrySelection(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    countries: List<String> = Country.getAllCountries(),
+    onSelectCountry: (String) -> Unit,
+) {
+    val userBioProfile by viewModel.userBioProfile.collectAsState()
+    val verticalScroll = rememberScrollState()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 32.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Surface(
+                modifier = modifier,
+                shape = RoundedCornerShape(16.dp),
+                color = Black100.copy(0.5f)
+            ) {
+                Box(
+                    modifier = modifier
+                        .width(102.dp)
+                        .height(3.dp)
+                )
+            }
+        }
+
+        LazyColumn(state = rememberLazyListState()) {
+            items(countries) { country ->
+                Surface(
+                    modifier = modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onSelectCountry(country) },
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colors.onPrimary,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp), contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = country,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.primary,
+                            modifier = Modifier
+                                .padding(
+                                    top = 8.dp,
+                                    bottom = 8.dp,
+                                    end = 8.dp
+                                )
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
 fun BioProfileEditor(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
@@ -613,4 +717,5 @@ sealed class AccountBottomSheetState {
     object Phone : AccountBottomSheetState()
     object Password : AccountBottomSheetState()
     object Bio : AccountBottomSheetState()
+    object Country : AccountBottomSheetState()
 }

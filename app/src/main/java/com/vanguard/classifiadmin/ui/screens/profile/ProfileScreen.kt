@@ -1,7 +1,10 @@
 package com.vanguard.classifiadmin.ui.screens.profile
 
+import android.content.Intent
 import android.util.Log
-import androidx.compose.foundation.border
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,10 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -37,8 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,16 +56,16 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.UserModel
-import com.vanguard.classifiadmin.domain.helpers.Country
-import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.domain.services.UploadService
+import com.vanguard.classifiadmin.domain.services.UploadServiceActions
+import com.vanguard.classifiadmin.domain.services.UploadServiceExtras
 import com.vanguard.classifiadmin.ui.components.DatePicker
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatarBig
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -81,14 +80,14 @@ fun MyAccountScreenProfile(
     onEditUserPhone: () -> Unit,
     onEditUserPassword: () -> Unit,
     onEditUserBio: () -> Unit,
+    onShowCountries: () -> Unit
 ) {
     val TAG = "MyAccountScreenProfile"
     val verticalScroll = rememberScrollState()
     val scope = rememberCoroutineScope()
     val constraints = MyAccountScreenProfileConstraints(16.dp)
     val innerModifier = Modifier
-    var countryMenuState by remember { mutableStateOf(false) }
-
+    val context = LocalContext.current
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
     val usernameProfile by viewModel.usernameProfile.collectAsState()
@@ -100,6 +99,27 @@ fun MyAccountScreenProfile(
     val userStateProfile by viewModel.userStateProfile.collectAsState()
     val userCityProfile by viewModel.userCityProfile.collectAsState()
     val userPostalCodeProfile by viewModel.userPostalCodeProfile.collectAsState()
+    val bottomSheetState by viewModel.accountBottomSheetState.collectAsState()
+    val avatarUri by viewModel.avatarUri.collectAsState()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri ->
+            viewModel.onAvatarUriChanged(uri)
+            //start upload service
+            val intent = Intent(
+                context,
+                UploadService::class.java,
+            )
+            intent.apply {
+                putExtra(UploadServiceExtras.uploadedFileUri, uri)
+                putExtra(UploadServiceExtras.currentUserId, currentUserIdPref)
+                action = UploadServiceActions.ACTION_UPLOAD
+            }
+            context.startService(intent)
+        }
+    )
+
 
     LaunchedEffect(userByIdNetwork.data) {
         viewModel.getUserByIdNetwork(currentUserIdPref ?: "")
@@ -163,7 +183,10 @@ fun MyAccountScreenProfile(
 
                 SecondaryTextButton(
                     label = stringResource(id = R.string.update_photo).uppercase(),
-                    onClick = {},
+                    onClick = {
+                        //load image from file chooser
+                        launcher.launch(arrayOf("image/*"))
+                    },
                     modifier = innerModifier.layoutId("changePhotoBtn")
                 )
 
@@ -283,72 +306,45 @@ fun MyAccountScreenProfile(
                     )
                 )
 
-
-                ExposedDropdownMenuBox(
-                    expanded = countryMenuState,
+                OutlinedTextField(
                     modifier = innerModifier
+                        .layoutId("country")
+                        .clickable {
+                            onShowCountries()
+                        }
                         .fillMaxWidth()
-                        .layoutId("country"),
-                    onExpandedChange = {
-                        countryMenuState = !countryMenuState
-                    },
-                ) {
-
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = userCountryProfile ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = {
-                            Text(
-                                text = stringResource(id = R.string.country),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colors.primary,
-                            )
-                        },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = countryMenuState)
-                        },
-                        shape = RoundedCornerShape(16.dp),
-                        textStyle = TextStyle(
-                            color = Black100.copy(0.5f),
+                        .clip(RoundedCornerShape(16.dp)),
+                    value = userCountryProfile ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    enabled = false,
+                    label = {
+                        Text(
+                            text = stringResource(id = R.string.country),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done,
+                            color = MaterialTheme.colors.primary,
                         )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.icon_arrow_down),
+                            contentDescription = stringResource(id = R.string.down),
+                            tint = MaterialTheme.colors.primary,
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle(
+                        color = Black100.copy(0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
                     )
+                )
 
-                    ExposedDropdownMenu(
-                        expanded = countryMenuState,
-                        onDismissRequest = {
-                            countryMenuState = false
-                        }
-                    ) {
-
-                        Country.getAllCountries()
-                        .forEach { country ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    //on click
-                                    viewModel.onUserCountryProfileChanged(country)
-                                    countryMenuState = false
-                                }
-                            ) {
-                                Text(
-                                    text = country,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colors.primary,
-                                )
-                            }
-                        }
-                    }
-
-                }
 
                 OutlinedTextField(
                     modifier = innerModifier.layoutId("state"),
