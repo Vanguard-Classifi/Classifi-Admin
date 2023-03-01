@@ -6,11 +6,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.vanguard.classifiadmin.R
 
-abstract class BaseUploadService : Service() {
+abstract class BaseAvatarService : Service() {
     private var pendingTasks = 0
 
     private val notificationManager by lazy {

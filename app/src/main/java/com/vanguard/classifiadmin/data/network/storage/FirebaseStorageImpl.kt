@@ -23,10 +23,9 @@ class FirebaseStorageImpl @Inject constructor() : FirebaseStorage {
         fileUri: Uri,
         userId: String,
         onProgress: (Long, Long) -> Unit,
-        onResult: (Boolean) -> Unit
+        onResult: (Boolean, String) -> Unit
     ) {
         try {
-           // val file = Uri.fromFile(File(filePath))
             val metadata = storageMetadata { contentType = "image/jpg" }
             val avatarRef =
                 storageRef.child("${StorageDir.avatars}/$userId/${fileUri.lastPathSegment}")
@@ -35,13 +34,51 @@ class FirebaseStorageImpl @Inject constructor() : FirebaseStorage {
             uploadTask.addOnProgressListener { (bytesTransferred, totalByteCount) ->
                 onProgress(bytesTransferred, totalByteCount)
             }
+                .continueWithTask { task ->
+                    if (!task.isSuccessful) throw task.exception!!
+                    avatarRef.downloadUrl
+                }
                 .addOnFailureListener {
-                    onResult(false)
-                }.addOnSuccessListener { _ ->
-                    onResult(true)
+                    onResult(false, "")
+                }.addOnSuccessListener { downloadUri ->
+                    onResult(true, downloadUri.toString())
                 }
         } catch (e: Exception) {
-            onResult(false)
+            onResult(false, "")
+        }
+    }
+
+    override suspend fun downloadAvatar(
+        fileUri: Uri,
+        userId: String,
+        onProgress: (Long, Long) -> Unit,
+        onResult: (Boolean, Long) -> Unit
+    ) {
+        try {
+            onProgress(0, 0)
+            val avatarRef =
+                storageRef.child("${StorageDir.avatars}/$userId/${fileUri.lastPathSegment}")
+            val downloadTask = avatarRef.getStream { (_, totalBytes), inputStream ->
+                var bytesDownloaded: Long = 0
+                val buffer = ByteArray(1024)
+                var size: Int = inputStream.read(buffer)
+
+                while (size != -1) {
+                    bytesDownloaded += size.toLong()
+                    onProgress(bytesDownloaded, totalBytes)
+                    size = inputStream.read(buffer)
+                }
+                inputStream.close()
+            }
+                .addOnSuccessListener { (_, totalBytes) ->
+                    onResult(true, totalBytes)
+                }
+                .addOnFailureListener { _ ->
+                    onResult(false, 0)
+                }
+
+        } catch (e: Exception) {
+            onResult(false, 0L)
         }
     }
 }

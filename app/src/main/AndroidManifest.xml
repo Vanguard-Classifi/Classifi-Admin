@@ -32,8 +32,12 @@
             android:name=".domain.services.MainBackgroundService"
             android:enabled="true" />
 
-        <service android:name=".domain.services.UploadService"
+        <service android:name=".domain.services.AvatarUploadService"
             android:exported="false"/>
+
+        <service android:name=".domain.services.AvatarDownloadService"
+            android:exported="false"/>
+
     </application>
 
 </manifest>

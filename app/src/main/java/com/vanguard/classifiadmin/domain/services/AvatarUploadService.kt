@@ -3,11 +3,15 @@ package com.vanguard.classifiadmin.domain.services
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
-import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import com.vanguard.classifiadmin.MainActivity
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
+import com.vanguard.classifiadmin.data.preferences.PrefDatastore
 import com.vanguard.classifiadmin.data.repository.MainRepository
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.domain.services.UploadServiceActions.ACTION_COMPLETED
 import com.vanguard.classifiadmin.domain.services.UploadServiceActions.ACTION_ERROR
 import com.vanguard.classifiadmin.domain.services.UploadServiceActions.ACTION_UPLOAD
@@ -15,6 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,6 +27,7 @@ object UploadServiceExtras {
     const val uploadedFileUri: String = "uploaded_file_uri"
     const val currentUserId: String = "currentUserId"
 }
+
 
 object UploadServiceActions {
     const val ACTION_UPLOAD = "action_upload"
@@ -31,13 +37,15 @@ object UploadServiceActions {
 
 
 @AndroidEntryPoint
-class UploadService : BaseUploadService() {
-
+class AvatarUploadService : BaseAvatarService() {
+    val TAG = "AvatarUploadService"
 
     @Inject
     lateinit var repository: MainRepository
-
+    
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
+    private var currentUser: UserNetworkModel? = null
+    private var downloadUrl: String = ""
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         scope.launch {
@@ -49,11 +57,12 @@ class UploadService : BaseUploadService() {
                 )
 
                 uploadAvatar(fileUri, userId)
+
             }
+
         }
 
-
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -61,33 +70,41 @@ class UploadService : BaseUploadService() {
     }
 
     private suspend fun uploadAvatar(avatar: Uri, userId: String) {
-        //start task
-        progressNotification(getString(R.string.uploading_avatar), 0, 0)
-
-        //do your thing
         repository.uploadAvatar(
             fileUri = avatar,
             userId = userId,
-            onProgress = { current, total ->
-                progressNotification(getString(R.string.uploading), current, total)
+            onProgress = { _, _ ->
             },
-            onResult = { success ->
-                if (success) {
-                    showUploadFinishedNotification(avatar)
+            onResult = { _, url ->
+                scope.launch {
+                    downloadUrl = url
+                    Log.e(TAG, "uploadAvatar: the download url is $url")
+                    updateProfileImage(userId, url)
                 }
             },
         )
+        
     }
 
+    private suspend fun updateProfileImage(userId: String, url: String) {
+        Log.e(TAG, "updateProfileImage: fetching current user", )
+        repository.getUserByIdNetwork(userId) { userResource ->
+            //fetch the user by id
+            currentUser = userResource.data
+        }
+        //save user back
+        delay(2000)
+        //update the profile image
+        currentUser?.profileImage = url
+        currentUser?.lastModified = today()
 
-    private fun showUploadFinishedNotification(fileUri: Uri) {
-        dismissProgressNotification()
-        val intent = Intent(this, MainActivity::class.java)
-            .putExtra(UploadServiceExtras.uploadedFileUri, fileUri)
-            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-        completedNotification(getString(R.string.upload_success), intent, true)
+        if (currentUser != null) {
+            repository.saveUserNetwork(currentUser!!) {
+               Log.e(TAG, "updateProfileImage: profile image has been updated", )
+            }
+        }
     }
+
 
     companion object {
         val intentFilter: IntentFilter

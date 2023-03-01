@@ -150,6 +150,18 @@ class MainViewModel @Inject constructor(
     private var _avatarUri = MutableStateFlow(null as Uri?)
     val avatarUri: StateFlow<Uri?> = _avatarUri
 
+    private var _currentProfileImagePref = MutableStateFlow(null as String?)
+    val currentProfileImagePref: StateFlow<String?> = _currentProfileImagePref
+
+    fun getCurrentProfileImagePref() = effect {
+        store.currentProfileImagePref.collect { url ->
+            _currentProfileImagePref.value = url
+        }
+    }
+    fun saveCurrentProfileImage(downloadUrl: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentProfileImagePref(downloadUrl, onResult)
+    }
+
     fun onAvatarUriChanged(uri: Uri?) = effect {
         _avatarUri.value = uri
     }
@@ -158,7 +170,7 @@ class MainViewModel @Inject constructor(
         fileUri: Uri,
         userId: String,
         onProgress: (Long, Long) -> Unit,
-        onResult: (Boolean) -> Unit
+        onResult: (Boolean, String) -> Unit
     ) = effect {
         repository.uploadAvatar(fileUri, userId, onProgress, onResult)
     }

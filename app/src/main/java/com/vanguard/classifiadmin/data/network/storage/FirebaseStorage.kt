@@ -7,6 +7,13 @@ interface FirebaseStorage {
         fileUri: Uri,
         userId: String,
         onProgress: (Long, Long) -> Unit,
-        onResult: (Boolean) -> Unit
+        onResult: (Boolean, String) -> Unit
+    )
+
+    suspend fun downloadAvatar(
+        fileUri: Uri,
+        userId: String,
+        onProgress: (Long, Long) -> Unit,
+        onResult: (Boolean, Long) -> Unit
     )
 }

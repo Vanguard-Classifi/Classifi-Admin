@@ -97,8 +97,20 @@ class MainRepositoryImpl @Inject constructor(
         fileUri: Uri,
         userId: String,
         onProgress: (Long, Long) -> Unit,
-        onResult: (Boolean) -> Unit
+        onResult: (Boolean, String) -> Unit
     ) {
         firebaseStorage.uploadAvatar(fileUri, userId, onProgress, onResult)
+    }
+
+    override suspend fun downloadAvatar(
+        fileUri: Uri,
+        userId: String,
+        onProgress: (Long, Long) -> Unit,
+        onResult: (Boolean, Long) -> Unit
+    ) {
+        firebaseStorage.downloadAvatar(
+            fileUri,
+            userId, onProgress, onResult
+        )
     }
 }

@@ -35,10 +35,15 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         onResult: (Resource<UserNetworkModel?>) -> Unit
     ) {
         try {
-            firestore.collection(Collections.collectionUsers).document(userId)
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("userId", userId)
                 .get()
-                .addOnSuccessListener { doc ->
-                    onResult(Resource.Success(doc.toObject<UserNetworkModel>()))
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<UserNetworkModel>())
+                    }
+                    onResult(Resource.Success(results.first()))
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch user")) }
         } catch (e: Exception) {

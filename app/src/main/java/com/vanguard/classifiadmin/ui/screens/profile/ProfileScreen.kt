@@ -57,7 +57,9 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
-import com.vanguard.classifiadmin.domain.services.UploadService
+import com.vanguard.classifiadmin.domain.services.AvatarDownloadService
+import com.vanguard.classifiadmin.domain.services.AvatarUploadService
+import com.vanguard.classifiadmin.domain.services.DownloadServiceExtras
 import com.vanguard.classifiadmin.domain.services.UploadServiceActions
 import com.vanguard.classifiadmin.domain.services.UploadServiceExtras
 import com.vanguard.classifiadmin.ui.components.DatePicker
@@ -109,7 +111,7 @@ fun MyAccountScreenProfile(
             //start upload service
             val intent = Intent(
                 context,
-                UploadService::class.java,
+                AvatarUploadService::class.java,
             )
             intent.apply {
                 putExtra(UploadServiceExtras.uploadedFileUri, uri)
@@ -162,7 +164,14 @@ fun MyAccountScreenProfile(
 
                 DefaultAvatarBig(
                     label = usernameProfile ?: "",
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        //download photo
+                        val intent = Intent(context, AvatarDownloadService::class.java)
+                            .putExtra(DownloadServiceExtras.currentUserId, currentUserIdPref)
+                            .putExtra(DownloadServiceExtras.downloadFileUri, avatarUri)
+                        context.startService(intent)
+                        Log.e(TAG, "MyAccountScreenProfile: start download", )
+                    },
                     size = 78.dp,
                     fontSize = 18.sp,
                     modifier = innerModifier.layoutId("avatar")

@@ -111,4 +111,6 @@
     <string name="uploading">Uploading...</string>
     <string name="avatar_has_been_uploaded">Avatar Has Been Uploaded</string>
     <string name="upload_success">Upload Success</string>
+    <string name="downloading_avatar">Downloading Avatar</string>
+    <string name="download_completed">Download Completed</string>
 </resources>

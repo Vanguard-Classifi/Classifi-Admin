@@ -27,6 +27,7 @@ object PrefKeys {
     const val currentSchoolId = "currentSchoolId"
     const val currentSchoolName = "currentSchoolName"
     const val currentUserEmail = "currentUserEmail"
+    const val currentProfileImage = "currentProfileImage"
 }
 
 @Singleton
@@ -99,6 +100,18 @@ class PrefDatastoreImpl @Inject constructor(
         }
     }
 
+    override fun saveCurrentProfileImagePref(downloadUrl: String, onResult: (Boolean) -> Unit) {
+        try {
+            scope.launch {
+                store.edit { pref ->
+                    pref[stringPreferencesKey(PrefKeys.currentProfileImage)] = downloadUrl
+                }
+            }.invokeOnCompletion { callback { onResult(true) } }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
     override val currentUserIdPref: Flow<String?>
         get() {
             val userId = try {
@@ -147,5 +160,13 @@ class PrefDatastoreImpl @Inject constructor(
             }
             return schoolName
         }
-
+    override val currentProfileImagePref: Flow<String?>
+        get() {
+            val profileImage = try {
+                store.data.map { pref -> pref[stringPreferencesKey(PrefKeys.currentProfileImage)] }
+            } catch (e: Exception) {
+                return flowOf("")
+            }
+            return profileImage
+        }
 }
