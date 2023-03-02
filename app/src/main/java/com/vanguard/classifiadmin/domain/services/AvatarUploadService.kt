@@ -10,6 +10,7 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.data.preferences.PrefDatastore
 import com.vanguard.classifiadmin.data.repository.MainRepository
+import com.vanguard.classifiadmin.domain.downloader.Downloader
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.domain.services.UploadServiceActions.ACTION_COMPLETED
@@ -42,7 +43,9 @@ class AvatarUploadService : BaseAvatarService() {
 
     @Inject
     lateinit var repository: MainRepository
-    
+    @Inject
+    lateinit var downloader: Downloader
+
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
     private var currentUser: UserNetworkModel? = null
     private var downloadUrl: String = ""
@@ -80,6 +83,7 @@ class AvatarUploadService : BaseAvatarService() {
                     downloadUrl = url
                     Log.e(TAG, "uploadAvatar: the download url is $url")
                     updateProfileImage(userId, url)
+                    downloader.downloadFile(url)
                 }
             },
         )
