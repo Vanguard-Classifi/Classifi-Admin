@@ -5,13 +5,9 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.IBinder
 import android.util.Log
-import com.vanguard.classifiadmin.MainActivity
-import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
-import com.vanguard.classifiadmin.data.preferences.PrefDatastore
 import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.downloader.Downloader
-import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.domain.services.UploadServiceActions.ACTION_COMPLETED
 import com.vanguard.classifiadmin.domain.services.UploadServiceActions.ACTION_ERROR
@@ -38,7 +34,7 @@ object UploadServiceActions {
 
 
 @AndroidEntryPoint
-class AvatarUploadService : BaseAvatarService() {
+class AvatarUploadService : BaseService() {
     val TAG = "AvatarUploadService"
 
     @Inject

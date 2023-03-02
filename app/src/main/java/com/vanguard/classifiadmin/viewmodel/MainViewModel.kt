@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.data.preferences.PrefDatastore
@@ -153,11 +154,125 @@ class MainViewModel @Inject constructor(
     private var _currentProfileImagePref = MutableStateFlow(null as String?)
     val currentProfileImagePref: StateFlow<String?> = _currentProfileImagePref
 
+    private var _classNameAdmin = MutableStateFlow(null as String?)
+    val classNameAdmin: StateFlow<String?> = _classNameAdmin
+
+    private var _classCodeAdmin = MutableStateFlow(null as String?)
+    val classCodeAdmin: StateFlow<String?> = _classCodeAdmin
+
+    private var _classByIdNetwork =
+        MutableStateFlow(Resource.Loading<ClassNetworkModel?>() as Resource<ClassNetworkModel?>)
+    val classByIdNetwork: StateFlow<Resource<ClassNetworkModel?>> = _classByIdNetwork
+
+    private var _classByCodeNetwork =
+        MutableStateFlow(Resource.Loading<ClassNetworkModel?>() as Resource<ClassNetworkModel?>)
+    val classByCodeNetwork: StateFlow<Resource<ClassNetworkModel?>> = _classByCodeNetwork
+
+    private var _verifiedClassesNetwork =
+        MutableStateFlow(Resource.Loading<List<ClassNetworkModel>>() as Resource<List<ClassNetworkModel>>)
+    val verifiedClassesNetwork: StateFlow<Resource<List<ClassNetworkModel>>> =
+        _verifiedClassesNetwork
+
+    private var _stagedClassesNetwork =
+        MutableStateFlow(Resource.Loading<List<ClassNetworkModel>>() as Resource<List<ClassNetworkModel>>)
+    val stagedClassesNetwork: StateFlow<Resource<List<ClassNetworkModel>>> = _stagedClassesNetwork
+
+
+    fun clearCreateClassAdminFields() = effect {
+        _classNameAdmin.value = null
+        _classCodeAdmin.value = null
+    }
+
+    //class
+    fun saveClassAsStagedNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveClassAsStagedNetwork(myClass, onResult)
+    }
+
+    fun saveClassesAsStagedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveClassesAsStagedNetwork(myClasses, onResult)
+    }
+
+
+    fun saveClassAsVerifiedNetwork(myClass: ClassNetworkModel, onResult: (Boolean) -> Unit) =
+        effect {
+            repository.saveClassAsVerifiedNetwork(myClass, onResult)
+        }
+
+    fun saveClassesAsVerifiedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveClassesAsVerifiedNetwork(myClasses, onResult)
+    }
+
+    fun getClassByIdNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getClassByIdNetwork(classId, schoolId) {
+            _classByIdNetwork.value = it
+        }
+    }
+
+    fun getClassByCodeNetwork(
+        code: String,
+        schoolId: String,
+    ) = effect {
+        repository.getClassByCodeNetwork(code, schoolId) {
+            _classByCodeNetwork.value = it
+        }
+    }
+
+    fun getVerifiedClassesNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedClassesNetwork(schoolId) {
+            _verifiedClassesNetwork.value = it
+        }
+    }
+
+    fun getStagedClassesNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedClassesNetwork(schoolId) {
+            _stagedClassesNetwork.value = it
+        }
+    }
+
+    fun deleteClassNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteClassNetwork(myClass, onResult)
+    }
+
+    fun deleteClassesNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteClassesNetwork(myClasses, onResult)
+    }
+
+    fun onClassNameAdminChanged(name: String?) = effect {
+        _classNameAdmin.value = name
+    }
+
+    fun onClassCodeAdminChanged(code: String?) = effect {
+        _classCodeAdmin.value = code
+    }
+
     fun getCurrentProfileImagePref() = effect {
         store.currentProfileImagePref.collect { url ->
             _currentProfileImagePref.value = url
         }
     }
+
     fun saveCurrentProfileImage(downloadUrl: String, onResult: (Boolean) -> Unit) = effect {
         store.saveCurrentProfileImagePref(downloadUrl, onResult)
     }

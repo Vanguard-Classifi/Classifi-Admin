@@ -9,7 +9,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.vanguard.classifiadmin.R
 
-abstract class BaseAvatarService : Service() {
+abstract class BaseService : Service() {
     private var pendingTasks = 0
 
     private val notificationManager by lazy {

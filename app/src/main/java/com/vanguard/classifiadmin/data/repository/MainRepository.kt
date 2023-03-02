@@ -2,6 +2,7 @@ package com.vanguard.classifiadmin.data.repository
 
 import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
+import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
@@ -52,4 +53,57 @@ interface MainRepository {
         onProgress: (Long, Long) -> Unit,
         onResult: (Boolean, Long) -> Unit
     )
+
+
+    //class
+    suspend fun saveClassAsStagedNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun saveClassesAsStagedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    )
+
+
+    suspend fun saveClassAsVerifiedNetwork(myClass: ClassNetworkModel, onResult: (Boolean) -> Unit)
+
+    suspend fun saveClassesAsVerifiedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun getClassByIdNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<ClassNetworkModel?>) -> Unit
+    )
+
+    suspend fun getClassByCodeNetwork(
+        code: String,
+        schoolId: String,
+        onResult: (Resource<ClassNetworkModel?>) -> Unit
+    )
+
+    suspend fun getVerifiedClassesNetwork(
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedClassesNetwork(
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    )
+
+    suspend fun deleteClassNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun deleteClassesNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    )
+
 }

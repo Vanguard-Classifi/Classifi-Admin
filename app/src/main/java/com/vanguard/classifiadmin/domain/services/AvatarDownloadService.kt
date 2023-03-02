@@ -5,10 +5,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.IBinder
-import com.vanguard.classifiadmin.MainActivity
-import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.repository.MainRepository
-import com.vanguard.classifiadmin.domain.downloader.Downloader
 import com.vanguard.classifiadmin.domain.services.DownloadServiceActions.ACTION_DOWNLOAD
 import com.vanguard.classifiadmin.domain.services.DownloadServiceActions.ACTION_DOWNLOAD_ERROR
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,7 +27,7 @@ object DownloadServiceActions {
 }
 
 @AndroidEntryPoint
-class AvatarDownloadService : BaseAvatarService() {
+class AvatarDownloadService : BaseService() {
     @Inject
     lateinit var repository: MainRepository
 

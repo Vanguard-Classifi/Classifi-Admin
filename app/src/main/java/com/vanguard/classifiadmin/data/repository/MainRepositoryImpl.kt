@@ -3,6 +3,7 @@ package com.vanguard.classifiadmin.data.repository
 import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.firestore.FirestoreManager
+import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.data.network.storage.FirebaseStorage
@@ -112,5 +113,80 @@ class MainRepositoryImpl @Inject constructor(
             fileUri,
             userId, onProgress, onResult
         )
+    }
+
+    override suspend fun saveClassAsStagedNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveClassAsStagedNetwork(
+            myClass, onResult
+        )
+    }
+
+    override suspend fun saveClassesAsStagedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveClassesAsStagedNetwork(myClasses, onResult)
+    }
+
+    override suspend fun saveClassAsVerifiedNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveClassAsVerifiedNetwork(myClass, onResult)
+    }
+
+    override suspend fun saveClassesAsVerifiedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveClassesAsVerifiedNetwork(myClasses, onResult)
+    }
+
+
+    override suspend fun getClassByIdNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<ClassNetworkModel?>) -> Unit
+    ) {
+        firestoreManager.getClassByIdNetwork(classId, schoolId, onResult)
+    }
+
+    override suspend fun getClassByCodeNetwork(
+        code: String,
+        schoolId: String,
+        onResult: (Resource<ClassNetworkModel?>) -> Unit
+    ) {
+        firestoreManager.getClassByCodeNetwork(code, schoolId, onResult)
+    }
+
+    override suspend fun getVerifiedClassesNetwork(
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedClassesNetwork(schoolId, onResult)
+    }
+
+    override suspend fun getStagedClassesNetwork(
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getStagedClassesNetwork(schoolId, onResult)
+    }
+
+    override suspend fun deleteClassNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.deleteClassNetwork(myClass, onResult)
+    }
+
+    override suspend fun deleteClassesNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.deleteClassesNetwork(myClasses, onResult)
     }
 }

@@ -3,6 +3,7 @@ package com.vanguard.classifiadmin.data.network.firestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
+import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
@@ -13,6 +14,7 @@ import javax.inject.Singleton
 object Collections {
     const val collectionUsers = "collection_users"
     const val collectionSchools = "collection_schools"
+    const val collectionClasses = "collection_classes"
 }
 
 
@@ -147,6 +149,208 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .delete()
                 .addOnSuccessListener { onResult(true) }
                 .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveClassAsStagedNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            myClass.verified = false
+            firestore.collection(Collections.collectionSchools).document(myClass.schoolId ?: "")
+                .collection(Collections.collectionClasses)
+                .document(myClass.classCode ?: "")
+                .set(myClass)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveClassesAsStagedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            val classCollection = firestore.collection(Collections.collectionSchools)
+                .document(myClasses.first().schoolId ?: "")
+                .collection(Collections.collectionClasses)
+
+            myClasses.map { myClass ->
+                myClass.verified = false
+                classCollection.document(myClass.classCode ?: "")
+                    .set(myClass)
+                    .addOnSuccessListener { onResult(true) }
+                    .addOnFailureListener { onResult(false) }
+            }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveClassAsVerifiedNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            myClass.verified = true
+            firestore.collection(Collections.collectionSchools).document(myClass.schoolId ?: "")
+                .collection(Collections.collectionClasses)
+                .document(myClass.classCode ?: "")
+                .set(myClass)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveClassesAsVerifiedNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            val classCollection = firestore.collection(Collections.collectionSchools)
+                .document(myClasses.first().schoolId ?: "")
+                .collection(Collections.collectionClasses)
+
+            myClasses.map { myClass ->
+                myClass.verified = true
+                classCollection.document(myClass.classCode ?: "")
+                    .set(myClass)
+                    .addOnSuccessListener { onResult(true) }
+                    .addOnFailureListener { onResult(false) }
+            }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun getClassByIdNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<ClassNetworkModel?>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionClasses)
+                .whereEqualTo("classId", classId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<ClassNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<ClassNetworkModel>())
+                    }
+                    onResult(Resource.Success(results.first()))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
+    override suspend fun getClassByCodeNetwork(
+        code: String,
+        schoolId: String,
+        onResult: (Resource<ClassNetworkModel?>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionClasses)
+                .whereEqualTo("classCode", code)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<ClassNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<ClassNetworkModel>())
+                    }
+                    onResult(Resource.Success(results.first()))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
+    override suspend fun getVerifiedClassesNetwork(
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionClasses)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<ClassNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<ClassNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
+    override suspend fun getStagedClassesNetwork(
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionClasses)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<ClassNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<ClassNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
+    override suspend fun deleteClassNetwork(
+        myClass: ClassNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(myClass.schoolId ?: "")
+                .collection(Collections.collectionClasses)
+                .document(myClass.classCode ?: "")
+                .delete()
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun deleteClassesNetwork(
+        myClasses: List<ClassNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            val classCollection =
+                firestore.collection(Collections.collectionSchools).document(myClasses.first().schoolId ?: "")
+                    .collection(Collections.collectionClasses)
+            myClasses.map { myClass ->
+                classCollection.document(myClass.classCode ?: "")
+                    .delete()
+                    .addOnSuccessListener { onResult(true) }
+                    .addOnFailureListener { onResult(false) }
+            }
         } catch (e: Exception) {
             onResult(false)
         }

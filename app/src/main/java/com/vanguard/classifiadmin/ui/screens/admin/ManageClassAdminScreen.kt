@@ -9,4 +9,5 @@ const val MANAGE_CLASS_ADMIN_SCREEN = "manage_class_admin_screen"
 fun ManageClassAdminScreen(
     modifier: Modifier = Modifier
 ) {
+
 }
