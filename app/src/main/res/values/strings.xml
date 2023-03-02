@@ -113,4 +113,7 @@
     <string name="upload_success">Upload Success</string>
     <string name="downloading_avatar">Downloading Avatar</string>
     <string name="download_completed">Download Completed</string>
+    <string name="item_icon">Item Icon</string>
+    <string name="create_or_manage">Create or Manage</string>
+    <string name="enroll">Enroll</string>
 </resources>
