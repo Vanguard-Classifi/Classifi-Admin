@@ -56,6 +56,13 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 @Composable
 fun MyAccountScreenAdmin(
     modifier: Modifier = Modifier,
+    onAdminManageSubject: () -> Unit,
+    onAdminManageClasses: () -> Unit,
+    onAdminCreateClasses: () -> Unit,
+    onAdminCreateSubjects: () -> Unit,
+    onAdminEnrollTeacher: () -> Unit,
+    onAdminEnrollStudent: () -> Unit,
+    onAdminEnrollParent: () -> Unit,
     createOrManageFeatures: List<AdminCreateOrManageFeature> = AdminCreateOrManageFeature.values()
         .toList(),
     enrollFeatures: List<AdminEnrollFeature> = AdminEnrollFeature.values().toList(),
@@ -92,10 +99,16 @@ fun MyAccountScreenAdmin(
                     CreateOrManageAdminItem(
                         feature = feature,
                         onManageItem = {
-                            /*todo: on manage item */
+                            when (it) {
+                                AdminCreateOrManageFeature.Subject -> onAdminManageSubject()
+                                AdminCreateOrManageFeature.Classroom -> onAdminManageClasses()
+                            }
                         },
                         onSelectItem = {
-                            /*todo: on Select item */
+                           when(it) {
+                               AdminCreateOrManageFeature.Subject -> onAdminCreateSubjects()
+                               AdminCreateOrManageFeature.Classroom -> onAdminCreateClasses()
+                           }
                         }
                     )
 
@@ -130,7 +143,13 @@ fun MyAccountScreenAdmin(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 enrollFeatures.forEach { feature ->
-                    EnrollAdminItem(feature = feature, onSelectItem = {})
+                    EnrollAdminItem(feature = feature, onSelectItem = {
+                        when(it) {
+                            AdminEnrollFeature.Parent -> onAdminEnrollParent()
+                            AdminEnrollFeature.Student -> onAdminEnrollStudent()
+                            AdminEnrollFeature.Teacher -> onAdminEnrollTeacher()
+                        }
+                    })
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -162,7 +181,9 @@ fun EnrollAdminItem(
             contentAlignment = Alignment.CenterStart,
         ) {
             Row(
-                modifier = modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 12.dp),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp, horizontal = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {

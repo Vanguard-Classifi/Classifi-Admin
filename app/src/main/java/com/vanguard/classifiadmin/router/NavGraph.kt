@@ -6,6 +6,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.vanguard.classifiadmin.ui.screens.admin.CREATE_CLASS_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.CREATE_SUBJECT_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.CreateClassAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.CreateSubjectAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.ENROLL_PARENT_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.ENROLL_STUDENT_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.ENROLL_TEACHER_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_CLASS_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_SUBJECT_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REPORT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REVIEW_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
@@ -63,6 +77,13 @@ object Destinations {
     const val login = LOGIN_SCREEN
     const val createSchool = CREATE_SCHOOL_SCREEN
     const val addSchoolScreen = ADD_SCHOOL_SCREEN
+    const val createClassAdmin = CREATE_CLASS_ADMIN_SCREEN
+    const val createSubjectAdmin = CREATE_SUBJECT_ADMIN_SCREEN
+    const val enrollTeacherAdmin = ENROLL_TEACHER_ADMIN_SCREEN
+    const val enrollStudentAdmin = ENROLL_STUDENT_ADMIN_SCREEN
+    const val enrollParentAdmin = ENROLL_PARENT_ADMIN_SCREEN
+    const val manageClassAdmin = MANAGE_CLASS_ADMIN_SCREEN
+    const val manageSubjectAdmin = MANAGE_SUBJECT_ADMIN_SCREEN
 }
 
 
@@ -111,6 +132,13 @@ fun NavGraph(
             MyAccountScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.dashboard) },
+                onAdminManageSubject = { navController.navigate(Destinations.manageSubjectAdmin) },
+                onAdminManageClasses = { navController.navigate(Destinations.manageClassAdmin) },
+                onAdminCreateSubjects = { navController.navigate(Destinations.createSubjectAdmin) },
+                onAdminCreateClasses = { navController.navigate(Destinations.createClassAdmin) },
+                onAdminEnrollTeacher = { navController.navigate(Destinations.enrollTeacherAdmin) },
+                onAdminEnrollStudent = { navController.navigate(Destinations.enrollStudentAdmin) },
+                onAdminEnrollParent = { navController.navigate(Destinations.enrollParentAdmin) },
             )
         }
 
@@ -186,6 +214,48 @@ fun NavGraph(
                 onJoinSchool = { navController.navigate(Destinations.login) }
             )
         }
+
+        composable(Destinations.createClassAdmin) {
+            CreateClassAdminScreen(
+
+            )
+        }
+
+        composable(Destinations.createSubjectAdmin) {
+            CreateSubjectAdminScreen(
+
+            )
+        }
+
+        composable(Destinations.enrollParentAdmin) {
+            EnrollParentAdminScreen(
+
+            )
+        }
+
+        composable(Destinations.enrollTeacherAdmin) {
+            EnrollTeacherAdminScreen(
+
+            )
+        }
+
+        composable(Destinations.enrollStudentAdmin) {
+            EnrollStudentAdminScreen(
+
+            )
+        }
+
+        composable(Destinations.manageClassAdmin) {
+            ManageClassAdminScreen(
+
+            )
+        }
+
+        composable(Destinations.manageSubjectAdmin) {
+            ManageSubjectAdminScreen(
+
+            )
+        }
     }
 }
 
@@ -250,5 +320,6 @@ fun BottomNavGraph(
                 viewModel = viewModel,
             )
         }
+
     }
 }

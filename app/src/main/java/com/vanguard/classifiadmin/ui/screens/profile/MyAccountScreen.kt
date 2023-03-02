@@ -109,6 +109,13 @@ fun MyAccountScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    onAdminManageSubject: () -> Unit,
+    onAdminManageClasses: () -> Unit,
+    onAdminCreateClasses: () -> Unit,
+    onAdminCreateSubjects: () -> Unit,
+    onAdminEnrollTeacher: () -> Unit,
+    onAdminEnrollStudent: () -> Unit,
+    onAdminEnrollParent: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -229,7 +236,14 @@ fun MyAccountScreen(
                                 showModalSheet.value = true
                                 sheetState.show()
                             }
-                        }
+                        },
+                        onAdminCreateClasses = onAdminCreateClasses,
+                        onAdminCreateSubjects = onAdminCreateSubjects,
+                        onAdminManageClasses = onAdminManageClasses,
+                        onAdminManageSubject = onAdminManageSubject,
+                        onAdminEnrollParent = onAdminEnrollParent,
+                        onAdminEnrollStudent = onAdminEnrollStudent,
+                        onAdminEnrollTeacher = onAdminEnrollTeacher,
                     )
                 }
             )
@@ -271,7 +285,14 @@ fun MyAccountScreenContent(
     onEditUserPassword: () -> Unit,
     onEditUserBio: () -> Unit,
     onSaveProfileChanges: () -> Unit,
-    onShowCountries: () -> Unit
+    onShowCountries: () -> Unit,
+    onAdminManageSubject: () -> Unit,
+    onAdminManageClasses: () -> Unit,
+    onAdminCreateClasses: () -> Unit,
+    onAdminCreateSubjects: () -> Unit,
+    onAdminEnrollTeacher: () -> Unit,
+    onAdminEnrollStudent: () -> Unit,
+    onAdminEnrollParent: () -> Unit,
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
 
@@ -289,6 +310,13 @@ fun MyAccountScreenContent(
             onEditUsername = onEditUsername,
             onEditUserBio = onEditUserBio,
             onShowCountries = onShowCountries,
+            onAdminCreateClasses = onAdminCreateClasses,
+            onAdminCreateSubjects = onAdminCreateSubjects,
+            onAdminManageClasses = onAdminManageClasses,
+            onAdminManageSubject = onAdminManageSubject,
+            onAdminEnrollParent = onAdminEnrollParent,
+            onAdminEnrollStudent = onAdminEnrollStudent,
+            onAdminEnrollTeacher = onAdminEnrollTeacher,
         )
     }
 }
@@ -374,6 +402,13 @@ fun MyAccountScreenContentBody(
     onEditUserPassword: () -> Unit,
     onEditUserBio: () -> Unit,
     onShowCountries: () -> Unit,
+    onAdminManageSubject: () -> Unit,
+    onAdminManageClasses: () -> Unit,
+    onAdminCreateClasses: () -> Unit,
+    onAdminCreateSubjects: () -> Unit,
+    onAdminEnrollTeacher: () -> Unit,
+    onAdminEnrollStudent: () -> Unit,
+    onAdminEnrollParent: () -> Unit,
     pages: List<AccountPage> = AccountPage.values().toList(),
 ) {
     val TAG = "MyAccountScreenContentBody"
@@ -393,7 +428,15 @@ fun MyAccountScreenContentBody(
 
             1 -> MyAccountScreenAccountSettings()
             2 -> MyAccountScreenPreferences()
-            3 -> MyAccountScreenAdmin()
+            3 -> MyAccountScreenAdmin(
+                onAdminManageClasses = onAdminManageClasses,
+                onAdminCreateClasses = onAdminCreateClasses,
+                onAdminCreateSubjects = onAdminCreateSubjects,
+                onAdminEnrollParent = onAdminEnrollParent,
+                onAdminEnrollStudent = onAdminEnrollStudent,
+                onAdminEnrollTeacher = onAdminEnrollTeacher,
+                onAdminManageSubject = onAdminManageSubject,
+            )
         }
     }
 }
