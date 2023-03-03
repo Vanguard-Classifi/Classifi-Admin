@@ -244,7 +244,7 @@ fun CreateOrManageAdminItem(
             FeatureIcon(
                 icon = feature.icon,
                 modifier = innerModifier.layoutId("icon"),
-                color = Color(generateColorFromUserName(feature.title.splitWithSpace()[1])),
+                color = MaterialTheme.colors.primary,
             )
 
             Text(
@@ -252,7 +252,7 @@ fun CreateOrManageAdminItem(
                 text = feature.title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(generateColorFromUserName(feature.title.splitWithSpace()[1])),
+                color = MaterialTheme.colors.primary,
             )
 
             Text(
@@ -267,7 +267,7 @@ fun CreateOrManageAdminItem(
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = Color(generateColorFromUserName(feature.title.splitWithSpace()[1])),
+                color = MaterialTheme.colors.primary,
             )
 
 
