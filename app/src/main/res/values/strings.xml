@@ -121,4 +121,9 @@
     <string name="add_more">Add More</string>
     <string name="save_and_exit">Save and Exit</string>
     <string name="class_already_exists">This class already exists</string>
+    <string name="subject_name">Subject Name</string>
+    <string name="subject_code">Subject Code</string>
+    <string name="subject_already_exists">This subject already exists</string>
+    <string name="subject_creation">Subject Creation</string>
+    <string name="arrow_dropdown">Arrow dropdown</string>
 </resources>

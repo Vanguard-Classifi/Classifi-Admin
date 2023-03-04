@@ -328,8 +328,9 @@ fun CreateClassAdminScreenContent(
                         onClick = {
                             keyboardController?.hide()
 
-                            if (classCodeAdmin == classByCodeNetwork.data?.classCode ||
-                                classNameAdmin == classByCodeNetwork.data?.className
+                            if ((classCodeAdmin == classByCodeNetwork.data?.classCode ||
+                                        classNameAdmin == classByCodeNetwork.data?.className) &&
+                                classCodeAdmin?.isNotBlank() == true
                             ) {
                                 viewModel.onClassAlreadyExistStateAdminChanged(true)
                                 return@PrimaryTextButton
@@ -337,34 +338,41 @@ fun CreateClassAdminScreenContent(
 
 
                             scope.launch {
-                                if (
-                                    classNameAdmin?.isNotBlank() == true &&
-                                    classCodeAdmin?.isNotBlank() == true
+                                if ((classNameAdmin?.isNotBlank() == true &&
+                                            classCodeAdmin?.isNotBlank() == true) ||
+                                    stagedClassesNetwork.data?.isNotEmpty() == true
                                 ) {
-                                    viewModel.saveClassAsVerifiedNetwork(
-                                        ClassModel(
-                                            classId = UUID.randomUUID().toString(),
-                                            className = classNameAdmin,
-                                            classCode = classCodeAdmin,
-                                            schoolId = currentSchoolIdPref,
-                                            dateCreated = today(),
-                                            lastModified = todayComputational(),
-                                        ).toNetwork(),
-                                        onResult = {}
+                                    //process constraints
+                                    if (
+                                        classNameAdmin?.isNotBlank() == true &&
+                                        classCodeAdmin?.isNotBlank() == true
+                                    ) {
+                                        viewModel.saveClassAsVerifiedNetwork(
+                                            ClassModel(
+                                                classId = UUID.randomUUID().toString(),
+                                                className = classNameAdmin,
+                                                classCode = classCodeAdmin,
+                                                schoolId = currentSchoolIdPref,
+                                                dateCreated = today(),
+                                                lastModified = todayComputational(),
+                                            ).toNetwork(),
+                                            onResult = {}
+                                        )
+                                    }
+
+                                    //call an insertion service
+                                    val intent = Intent(
+                                        context,
+                                        ClassCreationService::class.java
+                                    ).putExtra(
+                                        ClassCreationServiceExtras.currentSchoolId,
+                                        currentSchoolIdPref
                                     )
+                                        .setAction(ClassCreationServiceActions.ACTION_UPLOAD)
+
+                                    context.startService(intent)
                                 }
 
-                                //call an insertion service
-                                val intent = Intent(
-                                    context,
-                                    ClassCreationService::class.java
-                                ).putExtra(
-                                    ClassCreationServiceExtras.currentSchoolId,
-                                    currentSchoolIdPref
-                                )
-                                    .setAction(ClassCreationServiceActions.ACTION_UPLOAD)
-
-                                context.startService(intent)
                             }.invokeOnCompletion {
                                 runnableBlock {
                                     viewModel.clearCreateClassAdminFields()
@@ -494,22 +502,24 @@ private fun StagedClassItemConstraints(margin: Dp): ConstraintSet {
 
         constrain(icon) {
             start.linkTo(parent.start, margin = margin)
-            top.linkTo(className.top, margin = 0.dp)
+            top.linkTo(manage.top, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
         }
 
         constrain(className) {
-            top.linkTo(parent.top, margin = margin)
+            top.linkTo(manage.top, margin = 0.dp)
             start.linkTo(icon.end, margin = 8.dp)
         }
 
         constrain(code) {
             top.linkTo(className.bottom, margin = 4.dp)
             start.linkTo(className.start, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
         }
 
         constrain(manage) {
-            top.linkTo(className.top, margin = 0.dp)
-            bottom.linkTo(code.bottom, margin = 0.dp)
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
             end.linkTo(parent.end, margin = margin)
         }
     }

@@ -4,10 +4,12 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
+import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
+import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.data.preferences.PrefDatastore
 import com.vanguard.classifiadmin.data.repository.MainRepository
@@ -180,6 +182,131 @@ class MainViewModel @Inject constructor(
     private var _classAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
     val classAlreadyExistStateAdmin: StateFlow<Boolean?> = _classAlreadyExistStateAdmin
 
+    private var _subjectNameAdmin = MutableStateFlow(null as String?)
+    val subjectNameAdmin: StateFlow<String?> = _subjectNameAdmin
+
+    private var _subjectCodeAdmin = MutableStateFlow(null as String?)
+    val subjectCodeAdmin: StateFlow<String?> = _subjectCodeAdmin
+
+    private var _selectedClassSubjectCreationAdmin = MutableStateFlow(null as ClassModel?)
+    val selectedClassSubjectCreationAdmin: StateFlow<ClassModel?> =
+        _selectedClassSubjectCreationAdmin
+
+
+    private var _subjectByIdNetwork =
+        MutableStateFlow(Resource.Loading<SubjectNetworkModel?>() as Resource<SubjectNetworkModel?>)
+    val subjectByIdNetwork: StateFlow<Resource<SubjectNetworkModel?>> = _subjectByIdNetwork
+
+    private var _subjectByCodeNetwork =
+        MutableStateFlow(Resource.Loading<SubjectNetworkModel?>() as Resource<SubjectNetworkModel?>)
+    val subjectByCodeNetwork: StateFlow<Resource<SubjectNetworkModel?>> = _subjectByCodeNetwork
+
+    private var _verifiedSubjectsNetwork =
+        MutableStateFlow(Resource.Loading<List<SubjectNetworkModel>>() as Resource<List<SubjectNetworkModel>>)
+    val verifiedSubjectsNetwork: StateFlow<Resource<List<SubjectNetworkModel>>> =
+        _verifiedSubjectsNetwork
+
+    private var _stagedSubjectsNetwork =
+        MutableStateFlow(Resource.Loading<List<SubjectNetworkModel>>() as Resource<List<SubjectNetworkModel>>)
+    val stagedSubjectsNetwork: StateFlow<Resource<List<SubjectNetworkModel>>> =
+        _stagedSubjectsNetwork
+
+
+    private var _subjectAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
+    val subjectAlreadyExistStateAdmin: StateFlow<Boolean?> = _subjectAlreadyExistStateAdmin
+
+    fun onSubjectAlreadyExistStateAdminChanged(state: Boolean?) = effect {
+        _subjectAlreadyExistStateAdmin.value = state
+    }
+
+
+    //subject
+    fun saveSubjectAsStagedNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveSubjectAsStagedNetwork(subject, onResult)
+    }
+
+    fun saveSubjectsAsStagedNetwork(
+        subjects: List<SubjectNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveSubjectsAsStagedNetwork(subjects, onResult)
+    }
+
+    fun saveSubjectAsVerifiedNetwork(subject: SubjectNetworkModel, onResult: (Boolean) -> Unit) =
+        effect {
+            repository.saveSubjectAsVerifiedNetwork(subject, onResult)
+        }
+
+    fun saveSubjectsAsVerifiedNetwork(
+        subjects: List<SubjectNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveSubjectsAsVerifiedNetwork(subjects, onResult)
+    }
+
+    fun getSubjectByIdNetwork(
+        subjectId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getSubjectByIdNetwork(subjectId, schoolId) {
+            _subjectByIdNetwork.value = it
+        }
+    }
+
+    fun getSubjectByCodeNetwork(
+        code: String,
+        schoolId: String,
+    ) = effect {
+        repository.getSubjectByCodeNetwork(code, schoolId) {
+            _subjectByCodeNetwork.value = it
+        }
+    }
+
+    fun getVerifiedSubjectsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedSubjectsNetwork(schoolId) {
+            _verifiedSubjectsNetwork.value = it
+        }
+    }
+
+    fun getStagedSubjectsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedSubjectsNetwork(schoolId) {
+            _stagedSubjectsNetwork.value = it
+        }
+    }
+
+    fun deleteSubjectNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteSubjectNetwork(subject, onResult)
+    }
+
+    fun deleteSubjectsNetwork(
+        subjects: List<SubjectNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteSubjectsNetwork(subjects, onResult)
+    }
+
+    fun onSelectedClassSubjectCreationAdminChanged(myClass: ClassModel?) = effect {
+        _selectedClassSubjectCreationAdmin.value = myClass
+    }
+
+    fun onSubjectNameAdminChanged(name: String?) = effect {
+        _subjectNameAdmin.value = name
+    }
+
+    fun onSubjectCodeAdminChanged(code: String?) = effect {
+        _subjectCodeAdmin.value = code
+    }
+
     fun onClassAlreadyExistStateAdminChanged(state: Boolean?) = effect {
         _classAlreadyExistStateAdmin.value = state
     }
@@ -188,6 +315,12 @@ class MainViewModel @Inject constructor(
     fun clearCreateClassAdminFields() = effect {
         _classNameAdmin.value = null
         _classCodeAdmin.value = null
+    }
+
+    fun clearCreateSubjectAdminFields() = effect {
+        _subjectCodeAdmin.value = null
+        _subjectNameAdmin.value = null
+        _selectedClassSubjectCreationAdmin.value = null
     }
 
     //class

@@ -4,9 +4,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
 import com.vanguard.classifiadmin.MainActivity
-import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.repository.MainRepository
-import com.vanguard.classifiadmin.domain.services.ClassCreationServiceActions.ACTION_UPLOAD
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,44 +14,51 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-object ClassCreationServiceExtras {
-    const val currentSchoolId = "currentSchoolIdClassCreationServiceExtras"
+object SubjectCreationServiceExtras {
+    const val currentSchoolId = "currentSchoolIdSubjectCreationServiceExtras"
 }
 
-object ClassCreationServiceActions {
+object SubjectCreationServiceActions {
     const val ACTION_UPLOAD = "action_upload"
     const val ACTION_ERROR = "action_error"
     const val ACTION_COMPLETED = "action_completed"
 }
 
 
+
 @AndroidEntryPoint
-class ClassCreationService : BaseInsertionService() {
+class SubjectCreationService: BaseInsertionService() {
     @Inject
     lateinit var repository: MainRepository
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         scope.launch {
-            if (intent?.action == ACTION_UPLOAD) {
+            if (intent?.action == SubjectCreationServiceActions.ACTION_UPLOAD) {
                 val currentSchoolId =
-                    intent.getStringExtra(ClassCreationServiceExtras.currentSchoolId)!!
-                saveClassesAsVerified(currentSchoolId)
+                    intent.getStringExtra(SubjectCreationServiceExtras.currentSchoolId)!!
+                saveSubjectsAsVerified(currentSchoolId)
             }
         }
 
         return START_STICKY
     }
 
-    private suspend fun saveClassesAsVerified(schoolId: String) {
-        repository.getStagedClassesNetwork(schoolId) { classes ->
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+
+    private suspend fun saveSubjectsAsVerified(schoolId: String) {
+        repository.getStagedSubjectsNetwork(schoolId) { subjects ->
             scope.launch {
                 delay(1000)
-                if (classes.data != null) {
-                    repository.saveClassesAsVerifiedNetwork(classes.data) {
+                if (subjects.data != null) {
+                    repository.saveSubjectsAsVerifiedNetwork(subjects.data) {
                         onCompletionNotification(
-                            caption = if (classes.data.isEmpty()) "Successfully created a class!" else
-                                "Successfully created ${classes.data.size} classes!",
+                            caption = if (subjects.data.isEmpty()) "Successfully created a subject!" else
+                                "Successfully created ${subjects.data.size} subjects!",
                             true,
                         )
                     }
@@ -62,9 +67,6 @@ class ClassCreationService : BaseInsertionService() {
         }
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
 
     private fun onCompletionNotification(caption: String, success: Boolean) {
         completedNotification(

@@ -45,6 +45,10 @@
             android:name=".domain.services.ClassCreationService"
             android:exported="false" />
 
+        <service
+            android:name=".domain.services.SubjectCreationService"
+            android:exported="false" />
+
     </application>
 
 </manifest>

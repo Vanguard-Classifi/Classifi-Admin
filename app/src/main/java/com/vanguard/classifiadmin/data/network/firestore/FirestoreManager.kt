@@ -2,6 +2,7 @@ package com.vanguard.classifiadmin.data.network.firestore
 
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
+import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 
@@ -79,5 +80,55 @@ interface FirestoreManager {
         onResult: (Boolean) -> Unit
     )
 
+
+    //subject
+    suspend fun saveSubjectAsStagedNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun saveSubjectsAsStagedNetwork(
+        subjects: List<SubjectNetworkModel>,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun saveSubjectAsVerifiedNetwork(subject: SubjectNetworkModel, onResult: (Boolean) -> Unit)
+
+    suspend fun saveSubjectsAsVerifiedNetwork(
+        subjects: List<SubjectNetworkModel>,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun getSubjectByIdNetwork(
+        subjectId: String,
+        schoolId: String,
+        onResult: (Resource<SubjectNetworkModel?>) -> Unit
+    )
+
+    suspend fun getSubjectByCodeNetwork(
+        code: String,
+        schoolId: String,
+        onResult: (Resource<SubjectNetworkModel?>) -> Unit
+    )
+
+    suspend fun getVerifiedSubjectsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedSubjectsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    )
+
+    suspend fun deleteSubjectNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun deleteSubjectsNetwork(
+        subjects: List<SubjectNetworkModel>,
+        onResult: (Boolean) -> Unit
+    )
 
 }

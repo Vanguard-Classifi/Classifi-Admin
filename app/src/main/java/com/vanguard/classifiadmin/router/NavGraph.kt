@@ -224,7 +224,8 @@ fun NavGraph(
 
         composable(Destinations.createSubjectAdmin) {
             CreateSubjectAdminScreen(
-
+            viewModel = viewModel,
+                onBack = {navController.navigate(Destinations.account)}
             )
         }
 
