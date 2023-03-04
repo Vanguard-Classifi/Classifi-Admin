@@ -56,12 +56,11 @@ abstract class BaseService : Service() {
     ) {
         val flag = PendingIntent.FLAG_IMMUTABLE
         val pi = PendingIntent.getActivity(this, 0, intent, flag)
-        val icon = if (success) R.drawable.icon_tick else R.drawable.icon_error
 
         createDefaultNotificationChannel()
 
         val builder = NotificationCompat.Builder(this, DEFAULT_NOTIFICATION_CHANNEL)
-            .setSmallIcon(icon)
+            .setSmallIcon(R.drawable.icon_branding_big)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(caption)
             .setAutoCancel(true)

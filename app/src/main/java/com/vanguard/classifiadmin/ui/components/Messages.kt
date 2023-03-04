@@ -104,6 +104,7 @@ private fun successBarConstraints(margin: Dp): ConstraintSet {
 
 @Composable
 fun MessageBar(
+    modifier: Modifier = Modifier,
     message: String,
     icon: Int = R.drawable.icon_info,
     onClose: () -> Unit,
@@ -113,7 +114,7 @@ fun MessageBar(
     val innerModifier = Modifier
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .wrapContentHeight()
             .widthIn(max = maxWidth.times(0.95f))
             .padding(horizontal = 8.dp, vertical = 8.dp),
@@ -125,7 +126,7 @@ fun MessageBar(
         elevation = 2.dp, shape = RoundedCornerShape(8.dp)
     ) {
         ConstraintLayout(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxWidth(),
             constraintSet = constraints,
         ) {
             Icon(

@@ -1,12 +1,16 @@
 package com.vanguard.classifiadmin.ui.screens.admin
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,12 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +72,7 @@ import com.vanguard.classifiadmin.domain.services.ClassCreationServiceExtras
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.ui.components.ClassFilterManageButton
 import com.vanguard.classifiadmin.ui.components.ClassIcon
+import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
@@ -85,36 +92,67 @@ fun CreateClassAdminScreen(
     viewModel: MainViewModel,
     onBack: () -> Unit,
 ) {
+    val classAlreadyExistStateAdmin by viewModel.classAlreadyExistStateAdmin.collectAsState()
+
+    LaunchedEffect(classAlreadyExistStateAdmin) {
+        if (classAlreadyExistStateAdmin == true) {
+            delay(3000)
+            viewModel.onClassAlreadyExistStateAdminChanged(false)
+        }
+    }
+
     Surface(modifier = Modifier) {
-        Scaffold(
-            modifier = modifier,
-            topBar = {
-                ChildTopBar(
-                    onBack = onBack,
-                    elevation = 0.dp,
-                    heading = stringResource(id = R.string.class_creation),
-                    backgroundColor = MaterialTheme.colors.primary,
-                    contentColor = MaterialTheme.colors.onPrimary,
-                )
-            },
-            content = {
-                CreateClassAdminScreenContent(
-                    modifier = Modifier.padding(it),
-                    viewModel = viewModel,
-                    onBack = onBack,
-                )
+        BoxWithConstraints(modifier = Modifier) {
+            val maxWidth = maxWidth
+            val maxHeight = maxHeight
+
+            Scaffold(
+                modifier = modifier,
+                topBar = {
+                    ChildTopBar(
+                        onBack = onBack,
+                        elevation = 0.dp,
+                        heading = stringResource(id = R.string.class_creation),
+                        backgroundColor = MaterialTheme.colors.primary,
+                        contentColor = MaterialTheme.colors.onPrimary,
+                    )
+                },
+                content = {
+                    CreateClassAdminScreenContent(
+                        modifier = Modifier.padding(it),
+                        viewModel = viewModel,
+                        onBack = onBack,
+                    )
+                }
+            )
+
+
+            if (classAlreadyExistStateAdmin == true) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                    MessageBar(
+                        message = stringResource(id = R.string.class_already_exists),
+                        icon = R.drawable.icon_info,
+                        onClose = {
+                            viewModel.onClassAlreadyExistStateAdminChanged(false)
+                        },
+                        maxWidth = maxWidth,
+                        modifier = modifier.padding(vertical = 16.dp, horizontal = 8.dp)
+                    )
+                }
             }
-        )
+        }
     }
 }
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CreateClassAdminScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
 ) {
+    val TAG = "CreateClassAdminScreenContent"
     val verticalScroll = rememberScrollState()
     val context = LocalContext.current
     val classNameAdmin by viewModel.classNameAdmin.collectAsState()
@@ -124,7 +162,10 @@ fun CreateClassAdminScreenContent(
     val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val currentSchoolNamePref by viewModel.currentSchoolNamePref.collectAsState()
+    val classByCodeNetwork by viewModel.classByCodeNetwork.collectAsState()
     var stagingListener by remember { mutableStateOf(0) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val scope = rememberCoroutineScope()
     val exception: MutableState<CreateClassAdminException> = remember {
@@ -143,6 +184,15 @@ fun CreateClassAdminScreenContent(
         //find the staged classes
         viewModel.getStagedClassesNetwork(currentSchoolIdPref ?: "")
     })
+
+    LaunchedEffect(key1 = classCodeAdmin, block = {
+        //search for existing class name or class code
+        if (classCodeAdmin != null) {
+            viewModel.getClassByCodeNetwork(classCodeAdmin ?: "", currentSchoolIdPref ?: "")
+            Log.e(TAG, "CreateClassAdminScreenContent: finding class by code")
+        }
+    })
+
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
         Card(
@@ -225,12 +275,21 @@ fun CreateClassAdminScreenContent(
                         modifier = Modifier.padding(8.dp),
                         label = stringResource(id = R.string.add_more).uppercase(),
                         onClick = {
+                            keyboardController?.hide()
+
                             if (classNameAdmin == null || classNameAdmin?.isBlank() == true) {
                                 exception.value = CreateClassAdminException.ClassName()
                                 return@SecondaryTextButton
                             }
                             if (classCodeAdmin == null || classCodeAdmin?.isBlank() == true) {
                                 exception.value = CreateClassAdminException.ClassCode()
+                                return@SecondaryTextButton
+                            }
+
+                            if (classCodeAdmin == classByCodeNetwork.data?.classCode ||
+                                classNameAdmin == classByCodeNetwork.data?.className
+                            ) {
+                                viewModel.onClassAlreadyExistStateAdminChanged(true)
                                 return@SecondaryTextButton
                             }
 
@@ -267,6 +326,16 @@ fun CreateClassAdminScreenContent(
                         ),
                         label = stringResource(id = R.string.save_and_exit).uppercase(),
                         onClick = {
+                            keyboardController?.hide()
+
+                            if (classCodeAdmin == classByCodeNetwork.data?.classCode ||
+                                classNameAdmin == classByCodeNetwork.data?.className
+                            ) {
+                                viewModel.onClassAlreadyExistStateAdminChanged(true)
+                                return@PrimaryTextButton
+                            }
+
+
                             scope.launch {
                                 if (
                                     classNameAdmin?.isNotBlank() == true &&

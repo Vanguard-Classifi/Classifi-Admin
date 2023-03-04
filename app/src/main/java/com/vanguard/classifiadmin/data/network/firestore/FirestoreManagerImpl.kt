@@ -268,7 +268,9 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<ClassNetworkModel>())
                     }
-                    onResult(Resource.Success(results.first()))
+                    if (results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
         } catch (e: Exception) {
@@ -343,7 +345,8 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
     ) {
         try {
             val classCollection =
-                firestore.collection(Collections.collectionSchools).document(myClasses.first().schoolId ?: "")
+                firestore.collection(Collections.collectionSchools)
+                    .document(myClasses.first().schoolId ?: "")
                     .collection(Collections.collectionClasses)
             myClasses.map { myClass ->
                 classCollection.document(myClass.classCode ?: "")

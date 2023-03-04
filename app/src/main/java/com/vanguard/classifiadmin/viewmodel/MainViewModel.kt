@@ -177,6 +177,13 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(Resource.Loading<List<ClassNetworkModel>>() as Resource<List<ClassNetworkModel>>)
     val stagedClassesNetwork: StateFlow<Resource<List<ClassNetworkModel>>> = _stagedClassesNetwork
 
+    private var _classAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
+    val classAlreadyExistStateAdmin: StateFlow<Boolean?> = _classAlreadyExistStateAdmin
+
+    fun onClassAlreadyExistStateAdminChanged(state: Boolean?) = effect {
+        _classAlreadyExistStateAdmin.value = state
+    }
+
 
     fun clearCreateClassAdminFields() = effect {
         _classNameAdmin.value = null

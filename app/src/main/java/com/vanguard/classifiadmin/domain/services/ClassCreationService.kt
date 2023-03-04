@@ -3,6 +3,8 @@ package com.vanguard.classifiadmin.domain.services
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
+import com.vanguard.classifiadmin.MainActivity
+import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.services.ClassCreationServiceActions.ACTION_UPLOAD
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,6 +51,10 @@ class ClassCreationService : BaseInsertionService() {
                 delay(1000)
                 if (classes.data != null) {
                     repository.saveClassesAsVerifiedNetwork(classes.data) {
+                        onCompletionNotification(
+                            "Successfully created ${classes.data.size} classes!",
+                            true,
+                        )
                     }
                 }
             }
@@ -57,6 +63,14 @@ class ClassCreationService : BaseInsertionService() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    private fun onCompletionNotification(caption: String, success: Boolean) {
+        completedNotification(
+            caption = caption,
+            intent = Intent(this, MainActivity::class.java),
+            success = success
+        )
     }
 
     companion object {

@@ -6,7 +6,7 @@ teachers, parents and the management of schools**
 
 ### TODOS: 
 - [x] Feature to create school and set up admin account
-- [ ] Feature to create classes in school and sections
+- [x] Feature to create classes in school and sections
 - [ ] Feature to create subjects in school 
 - [ ] Feature to enroll teachers into the platform
 - [ ] Feature to enroll students into the platform 

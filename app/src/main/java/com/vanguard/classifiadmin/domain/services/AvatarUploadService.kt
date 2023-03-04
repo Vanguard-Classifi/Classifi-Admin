@@ -39,6 +39,7 @@ class AvatarUploadService : BaseService() {
 
     @Inject
     lateinit var repository: MainRepository
+
     @Inject
     lateinit var downloader: Downloader
 
@@ -49,13 +50,20 @@ class AvatarUploadService : BaseService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         scope.launch {
             if (intent?.action == ACTION_UPLOAD) {
-                val fileUri = intent.getParcelableExtra<Uri>(UploadServiceExtras.uploadedFileUri)!!
-                val userId = intent.getStringExtra(UploadServiceExtras.currentUserId)!!
-                contentResolver.takePersistableUriPermission(
-                    fileUri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
+                try {
+                    val fileUri =
+                        intent.getParcelableExtra<Uri>(UploadServiceExtras.uploadedFileUri)!!
+                    val userId = intent.getStringExtra(UploadServiceExtras.currentUserId)!!
+                    contentResolver.takePersistableUriPermission(
+                        fileUri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
 
-                uploadAvatar(fileUri, userId)
+                    uploadAvatar(fileUri, userId)
+                } catch (e: NullPointerException) {
+                    e.printStackTrace()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
 
             }
 
@@ -83,16 +91,15 @@ class AvatarUploadService : BaseService() {
                 }
             },
         )
-        
+
     }
 
     private suspend fun updateProfileImage(userId: String, url: String) {
-        Log.e(TAG, "updateProfileImage: fetching current user", )
+        Log.e(TAG, "updateProfileImage: fetching current user")
         repository.getUserByIdNetwork(userId) { userResource ->
             //fetch the user by id
             currentUser = userResource.data
         }
-        //save user back
         delay(2000)
         //update the profile image
         currentUser?.profileImage = url
@@ -100,7 +107,7 @@ class AvatarUploadService : BaseService() {
 
         if (currentUser != null) {
             repository.saveUserNetwork(currentUser!!) {
-               Log.e(TAG, "updateProfileImage: profile image has been updated", )
+                Log.e(TAG, "updateProfileImage: profile image has been updated")
             }
         }
     }

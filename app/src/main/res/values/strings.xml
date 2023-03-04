@@ -120,4 +120,5 @@
     <string name="name_of_class">Name of Class</string>
     <string name="add_more">Add More</string>
     <string name="save_and_exit">Save and Exit</string>
+    <string name="class_already_exists">This class already exists</string>
 </resources>
