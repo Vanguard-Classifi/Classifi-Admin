@@ -17,6 +17,7 @@ import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
+import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
@@ -241,8 +242,19 @@ class MainViewModel @Inject constructor(
     private var _currentPageMyAccountScreen = MutableStateFlow(null as Int?)
     val currentPageMyAccountScreen: StateFlow<Int?> = _currentPageMyAccountScreen
 
+    private var _enrollTeacherException =
+        MutableStateFlow(EnrollTeacherException.NoException as EnrollTeacherException)
+    val enrollTeacherException: StateFlow<EnrollTeacherException> = _enrollTeacherException
+
+    fun onEnrollTeacherExceptionChanged(exception: EnrollTeacherException) = effect {
+        _enrollTeacherException.value = exception
+    }
+
     fun onCurrentPageMyAccountScreenChanged(page: Int?) = effect {
-        Log.e(TAG, "onCurrentPageMyAccountScreenChanged: current page is $currentPageMyAccountScreen", )
+        Log.e(
+            TAG,
+            "onCurrentPageMyAccountScreenChanged: current page is $currentPageMyAccountScreen",
+        )
         _currentPageMyAccountScreen.value = page
     }
 
@@ -251,15 +263,19 @@ class MainViewModel @Inject constructor(
         _teacherPasswordEnrollTeacher.value = null
         _teacherConfirmPasswordEnrollTeacher.value = null
     }
+
     fun saveUserAsVerified(user: UserNetworkModel, onResult: (Boolean) -> Unit) = effect {
         repository.saveUserAsVerified(user, onResult)
     }
+
     fun saveUsersAsVerified(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit) = effect {
         repository.saveUsersAsVerified(users, onResult)
     }
+
     fun saveUserToStage(user: UserNetworkModel, onResult: (Boolean) -> Unit) = effect {
         repository.saveUserToStage(user, onResult)
     }
+
     fun saveUsersToStage(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit) = effect {
         repository.saveUsersToStage(users, onResult)
     }

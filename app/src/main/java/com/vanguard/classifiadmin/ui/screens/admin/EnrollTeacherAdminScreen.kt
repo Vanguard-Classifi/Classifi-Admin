@@ -80,6 +80,7 @@ import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -92,6 +93,15 @@ fun EnrollTeacherAdminScreen(
     viewModel: MainViewModel,
 ) {
     val teacherAlreadyExistState by viewModel.teacherAlreadyExistStateAdmin.collectAsState()
+    val enrollTeacherException by viewModel.enrollTeacherException.collectAsState()
+
+    LaunchedEffect(enrollTeacherException) {
+        if(enrollTeacherException !is EnrollTeacherException.NoException) {
+            delay(3000)
+            viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.NoException)
+        }
+    }
+
 
     Surface(modifier = Modifier) {
         BoxWithConstraints(modifier = Modifier) {
@@ -130,6 +140,20 @@ fun EnrollTeacherAdminScreen(
                     )
                 }
             }
+
+            if (enrollTeacherException !is EnrollTeacherException.NoException) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                    MessageBar(
+                        message = enrollTeacherException.message,
+                        icon = R.drawable.icon_info,
+                        onClose = {
+                            viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.NoException)
+                        },
+                        maxWidth = maxWidth,
+                        modifier = modifier.padding(vertical = 16.dp, horizontal = 8.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -159,10 +183,7 @@ fun EnrollTeacherAdminScreenContent(
 
 
     val scope = rememberCoroutineScope()
-
-    val exception: MutableState<EnrollTeacherException> = remember {
-        mutableStateOf(EnrollTeacherException.NoException)
-    }
+    val enrollTeacherException by viewModel.enrollTeacherException.collectAsState()
 
     var stagingListener by remember { mutableStateOf(0) }
 
@@ -239,7 +260,9 @@ fun EnrollTeacherAdminScreenContent(
                     ),
                     singleLine = true,
                     maxLines = 1,
-                    isError = exception.value is EnrollTeacherException.EmailException
+                    isError =
+                    enrollTeacherException is EnrollTeacherException.EmptyEmailException ||
+                            enrollTeacherException is EnrollTeacherException.InvalidEmailException
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -281,7 +304,9 @@ fun EnrollTeacherAdminScreenContent(
                             onClick = { passwordVisible = !passwordVisible }
                         ) { Icon(imageVector = image, contentDescription = description) }
                     },
-                    isError = exception.value is EnrollTeacherException.PasswordException
+                    isError = enrollTeacherException is EnrollTeacherException.EmptyPasswordException ||
+                            enrollTeacherException is EnrollTeacherException.PasswordMismatchException ||
+                            enrollTeacherException is EnrollTeacherException.PasswordLengthException
                 )
 
 
@@ -336,7 +361,7 @@ fun EnrollTeacherAdminScreenContent(
                             onClick = { passwordVisible = !passwordVisible }
                         ) { Icon(imageVector = image, contentDescription = description) }
                     },
-                    isError = exception.value is EnrollTeacherException.ConfirmPasswordException
+                    isError = enrollTeacherException is EnrollTeacherException.PasswordMismatchException
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -352,37 +377,44 @@ fun EnrollTeacherAdminScreenContent(
                             keyboardController?.hide()
 
                             if (teacherEmailEnrollTeacher == null || teacherEmailEnrollTeacher?.isBlank() == true) {
-                                exception.value = EnrollTeacherException.EmailException()
+                                //empty email exception
+                                viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.EmptyEmailException())
                                 return@SecondaryTextButton
                             }
 
                             if (!isEmailValid(teacherEmailEnrollTeacher ?: "")) {
-                                exception.value = EnrollTeacherException.EmailException()
+                                //invalid email exception
+                                viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.InvalidEmailException())
                                 return@SecondaryTextButton
                             }
 
                             if (teacherPasswordEnrollTeacher == null || teacherPasswordEnrollTeacher?.isBlank() == true) {
-                                exception.value = EnrollTeacherException.PasswordException()
+                                //empty password exception
+                                viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.EmptyPasswordException())
                                 return@SecondaryTextButton
                             }
 
                             if (teacherConfirmPasswordEnrollTeacher == null || teacherConfirmPasswordEnrollTeacher?.isBlank() == true) {
-                                exception.value = EnrollTeacherException.ConfirmPasswordException()
+                                //empty confirm password exception
+                               viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.PasswordMismatchException())
                                 return@SecondaryTextButton
                             }
 
                             if (teacherPasswordEnrollTeacher!!.length < 6) {
-                                exception.value = EnrollTeacherException.PasswordException()
+                                // password length exception
+                                viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.PasswordLengthException())
                                 return@SecondaryTextButton
                             }
 
                             if (teacherConfirmPasswordEnrollTeacher!!.length < 6) {
-                                exception.value = EnrollTeacherException.PasswordException()
+                                // confirm password length exception
+                               viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.PasswordLengthException())
                                 return@SecondaryTextButton
                             }
 
                             if (teacherPasswordEnrollTeacher != teacherConfirmPasswordEnrollTeacher) {
-                                exception.value = EnrollTeacherException.ConfirmPasswordException()
+                                // password mismatch exception
+                               viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.PasswordMismatchException())
                                 return@SecondaryTextButton
                             }
 
@@ -564,9 +596,12 @@ fun EnrollTeacherAdminScreenContent(
 
 
 sealed class EnrollTeacherException(val message: String) {
-    class EmailException : EnrollTeacherException("Please enter a valid email")
-    class PasswordException : EnrollTeacherException("Please enter a valid password")
-    class ConfirmPasswordException : EnrollTeacherException("Passwords do not match!")
+    class EmptyEmailException : EnrollTeacherException("Email cannot be blank")
+    class EmptyPasswordException : EnrollTeacherException("Please enter a valid password")
+    class InvalidEmailException : EnrollTeacherException("Please enter a valid email")
+    class PasswordLengthException : EnrollTeacherException("Password must be at least 6 characters")
+
+    class PasswordMismatchException : EnrollTeacherException("Passwords do not match!")
     object NoException : EnrollTeacherException("")
 }
 
