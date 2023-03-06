@@ -67,6 +67,9 @@ import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.domain.helpers.isEmailValid
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.todayComputational
+import com.vanguard.classifiadmin.domain.services.EnrollStudentsService
+import com.vanguard.classifiadmin.domain.services.EnrollStudentsServiceActions
+import com.vanguard.classifiadmin.domain.services.EnrollStudentsServiceExtras
 import com.vanguard.classifiadmin.domain.services.EnrollTeachersService
 import com.vanguard.classifiadmin.domain.services.EnrollTeachersServiceActions
 import com.vanguard.classifiadmin.domain.services.EnrollTeachersServiceExtras
@@ -94,14 +97,14 @@ fun EnrollStudentAdminScreen(
     val studentAlreadyExistState by viewModel.studentAlreadyExistStateAdmin.collectAsState()
 
     LaunchedEffect(studentAlreadyExistState) {
-        if(studentAlreadyExistState == true){
+        if (studentAlreadyExistState == true) {
             delay(3000)
             viewModel.onStudentAlreadyExistStateAdminChanged(false)
         }
     }
 
     LaunchedEffect(enrollStudentException) {
-        if(enrollStudentException !is EnrollStudentException.NoException) {
+        if (enrollStudentException !is EnrollStudentException.NoException) {
             delay(3000)
             viewModel.onEnrollStudentExceptionChanged(EnrollStudentException.NoException)
         }
@@ -192,7 +195,7 @@ fun EnrollStudentAdminScreenContent(
 
 
     LaunchedEffect(studentEmailEnrollStudent) {
-        if(studentEmailEnrollStudent != null) {
+        if (studentEmailEnrollStudent != null) {
             viewModel.getUserByEmailNetwork(studentEmailEnrollStudent ?: "")
         }
     }
@@ -504,7 +507,9 @@ fun EnrollStudentAdminScreenContent(
                                                         userId = UUID.randomUUID().toString(),
                                                         email = studentEmailEnrollStudent,
                                                         password = studentPasswordEnrollStudent,
-                                                        schoolIds = arrayListOf(currentSchoolIdPref ?: ""),
+                                                        schoolIds = arrayListOf(
+                                                            currentSchoolIdPref ?: ""
+                                                        ),
                                                         currentRole = UserRole.Student.name,
                                                         currentSchoolId = currentSchoolIdPref,
                                                         roles = arrayListOf(UserRole.Student.name),
@@ -522,18 +527,16 @@ fun EnrollStudentAdminScreenContent(
                                     }
 
                                     //call an insertion service
-                                    /**
                                     val intent = Intent(
                                         context,
-
+                                        EnrollStudentsService::class.java
                                     ).putExtra(
-
+                                        EnrollStudentsServiceExtras.currentSchoolId,
                                         currentSchoolIdPref
                                     )
-                                        .setAction(EnrollTeachersServiceActions.ACTION_UPLOAD)
+                                        .setAction(EnrollStudentsServiceActions.ACTION_UPLOAD)
 
                                     context.startService(intent)
-                                    */
                                 }
 
                             }.invokeOnCompletion {
@@ -554,14 +557,14 @@ fun EnrollStudentAdminScreenContent(
         }
 
 
-        if(stagedStudentsNetwork.data?.isNotEmpty() == true) {
+        if (stagedStudentsNetwork.data?.isNotEmpty() == true) {
             Card(
                 modifier = modifier
                     .clip(RoundedCornerShape(16.dp))
                     .padding(top = 8.dp, bottom = 64.dp, start = 8.dp, end = 8.dp),
                 shape = RoundedCornerShape(16.dp),
                 elevation = 2.dp,
-            ){
+            ) {
                 val stagedStudentsSorted = stagedStudentsNetwork.data?.sortedByDescending {
                     it.lastModified
                 }
@@ -572,7 +575,7 @@ fun EnrollStudentAdminScreenContent(
                         .padding(horizontal = 16.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    stagedStudentsSorted?.forEach{ each ->
+                    stagedStudentsSorted?.forEach { each ->
                         //staged user item
                         StagedStudentItem(
                             student = each.toLocal(),
