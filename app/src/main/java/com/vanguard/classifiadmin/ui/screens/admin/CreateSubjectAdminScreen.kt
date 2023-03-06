@@ -72,21 +72,16 @@ import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
-import com.vanguard.classifiadmin.domain.helpers.today
 import com.vanguard.classifiadmin.domain.helpers.todayComputational
-import com.vanguard.classifiadmin.domain.services.ClassCreationService
-import com.vanguard.classifiadmin.domain.services.ClassCreationServiceActions
-import com.vanguard.classifiadmin.domain.services.ClassCreationServiceExtras
 import com.vanguard.classifiadmin.domain.services.SubjectCreationService
 import com.vanguard.classifiadmin.domain.services.SubjectCreationServiceActions
 import com.vanguard.classifiadmin.domain.services.SubjectCreationServiceExtras
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
-import com.vanguard.classifiadmin.ui.components.ClassIcon
+import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
-import com.vanguard.classifiadmin.ui.components.StudentOptionsListItem
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -621,7 +616,7 @@ fun CreateSubjectClassItem(
                 .padding(8.dp),
             constraintSet = constraints
         ) {
-            ClassIcon(
+            StagedItemIcon(
                 modifier = innerModifier.layoutId("icon"),
                 color = Color(generateColorFromClassName(myClass.className ?: "")),
             )
@@ -707,7 +702,7 @@ fun StagedSubjectItem(
                 .padding(8.dp),
             constraintSet = constraints
         ) {
-            ClassIcon(
+            StagedItemIcon(
                 modifier = innerModifier.layoutId("icon"),
                 color = Color(generateColorFromClassName(subject.subjectName ?: "")),
             )

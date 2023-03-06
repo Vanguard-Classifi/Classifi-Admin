@@ -215,6 +215,77 @@ class MainViewModel @Inject constructor(
     private var _subjectAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
     val subjectAlreadyExistStateAdmin: StateFlow<Boolean?> = _subjectAlreadyExistStateAdmin
 
+    private var _teacherEmailEnrollTeacher = MutableStateFlow(null as String?)
+    val teacherEmailEnrollTeacher: StateFlow<String?> = _teacherEmailEnrollTeacher
+
+    private var _teacherPasswordEnrollTeacher = MutableStateFlow(null as String?)
+    val teacherPasswordEnrollTeacher: StateFlow<String?> = _teacherPasswordEnrollTeacher
+
+    private var _teacherConfirmPasswordEnrollTeacher = MutableStateFlow(null as String?)
+    val teacherConfirmPasswordEnrollTeacher: StateFlow<String?> =
+        _teacherConfirmPasswordEnrollTeacher
+
+    private var _teacherAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
+    val teacherAlreadyExistStateAdmin: StateFlow<Boolean?> = _teacherAlreadyExistStateAdmin
+
+    private var _verifiedUsersNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val verifiedUsersNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedUsersNetwork
+
+    private var _stagedUsersNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val stagedUsersNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _stagedUsersNetwork
+
+    fun clearEnrollTeacherFields() = effect {
+        _teacherEmailEnrollTeacher.value = null
+        _teacherPasswordEnrollTeacher.value = null
+        _teacherConfirmPasswordEnrollTeacher.value = null
+    }
+    fun saveUserAsVerified(user: UserNetworkModel, onResult: (Boolean) -> Unit) = effect {
+        repository.saveUserAsVerified(user, onResult)
+    }
+    fun saveUsersAsVerified(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit) = effect {
+        repository.saveUsersAsVerified(users, onResult)
+    }
+    fun saveUserToStage(user: UserNetworkModel, onResult: (Boolean) -> Unit) = effect {
+        repository.saveUserToStage(user, onResult)
+    }
+    fun saveUsersToStage(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit) = effect {
+        repository.saveUsersToStage(users, onResult)
+    }
+
+    fun getVerifiedUsersNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedUsersNetwork(schoolId) {
+            _verifiedUsersNetwork.value = it
+        }
+    }
+
+    fun getStagedUsersNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedUsersNetwork(schoolId) {
+            _stagedUsersNetwork.value = it
+        }
+    }
+
+    fun onTeacherAlreadyExistStateAdminChanged(state: Boolean?) = effect {
+        _teacherAlreadyExistStateAdmin.value = state
+    }
+
+    fun onTeacherEmailEnrollTeacherChanged(email: String?) = effect {
+        _teacherEmailEnrollTeacher.value = email
+    }
+
+    fun onTeacherPasswordEnrollTeacherChanged(password: String?) = effect {
+        _teacherPasswordEnrollTeacher.value = password
+    }
+
+    fun onTeacherConfirmPasswordEnrollTeacherChanged(confirm: String?) = effect {
+        _teacherConfirmPasswordEnrollTeacher.value = confirm
+    }
+
     fun onSubjectAlreadyExistStateAdminChanged(state: Boolean?) = effect {
         _subjectAlreadyExistStateAdmin.value = state
     }
@@ -484,7 +555,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getUserByEmailNetwork(email: String, onResult: (Resource<UserNetworkModel?>) -> Unit) =
+    fun getUserByEmailNetwork(email: String) =
         effect {
             repository.getUserByEmailNetwork(email) {
                 _userByEmailNetwork.value = it

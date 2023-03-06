@@ -80,9 +80,9 @@ class SubjectCreationService: BaseInsertionService() {
         val intentFilter: IntentFilter
             get() {
                 val filter = IntentFilter()
-                filter.addAction(UploadServiceActions.ACTION_UPLOAD)
-                filter.addAction(UploadServiceActions.ACTION_COMPLETED)
-                filter.addAction(UploadServiceActions.ACTION_ERROR)
+                filter.addAction(SubjectCreationServiceActions.ACTION_UPLOAD)
+                filter.addAction(SubjectCreationServiceActions.ACTION_COMPLETED)
+                filter.addAction(SubjectCreationServiceActions.ACTION_ERROR)
                 return filter
             }
     }

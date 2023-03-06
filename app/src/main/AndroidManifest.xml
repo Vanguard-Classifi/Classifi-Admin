@@ -49,6 +49,10 @@
             android:name=".domain.services.SubjectCreationService"
             android:exported="false" />
 
+        <service
+            android:name=".domain.services.EnrollTeachersService"
+            android:exported="false" />
+
     </application>
 
 </manifest>

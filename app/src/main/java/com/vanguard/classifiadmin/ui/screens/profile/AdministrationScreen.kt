@@ -46,12 +46,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
-import com.vanguard.classifiadmin.domain.extensions.splitWithSpace
-import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
-import com.vanguard.classifiadmin.domain.helpers.generateColorFromUserName
 import com.vanguard.classifiadmin.ui.components.ClassFilterManageButton
-import com.vanguard.classifiadmin.ui.components.ClassIcon
-import com.vanguard.classifiadmin.ui.theme.Black100
 
 @Composable
 fun MyAccountScreenAdmin(
@@ -196,13 +191,13 @@ fun EnrollAdminItem(
                         top = 16.dp,
                         bottom = 16.dp,
                     ),
-                    color = Color(generateColorFromUserName(feature.title.splitWithSpace()[1])),
+                    color = MaterialTheme.colors.primary,
                 )
 
                 Icon(
-                    painter = painterResource(id = R.drawable.icon_enroll),
+                    painter = painterResource(id = feature.icon),
                     contentDescription = stringResource(id = R.string.enroll),
-                    tint = Color(generateColorFromUserName(feature.title.splitWithSpace()[1])),
+                    tint = MaterialTheme.colors.primary,
                     modifier = Modifier.padding(12.dp)
                 )
             }
@@ -362,10 +357,11 @@ enum class AdminCreateOrManageFeature(
 
 enum class AdminEnrollFeature(
     val title: String,
+    val icon: Int,
 ) {
-    Teacher("Enroll teachers"),
-    Student("Enroll students"),
-    Parent("Enroll parents"),
+    Teacher("Enroll teachers", R.drawable.icon_enroll),
+    Student("Enroll students", R.drawable.icon_student_cap),
+    Parent("Enroll parents", R.drawable.icon_parent),
 }
 
 @Preview

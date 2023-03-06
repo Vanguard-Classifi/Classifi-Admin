@@ -289,7 +289,7 @@ fun ClassFilterItem(
                 .padding(8.dp),
             constraintSet = constraints
         ) {
-            ClassIcon(
+            StagedItemIcon(
                 modifier = innerModifier.layoutId("icon"),
                 color = Color(generateColorFromClassName(className)),
             )
@@ -392,11 +392,12 @@ fun ClassFilterManageButton(
 }
 
 @Composable
-fun ClassIcon(
+fun StagedItemIcon(
     modifier: Modifier = Modifier,
     color: Color,
     iconSize: Dp = 24.dp,
     surfaceSize: Dp = 38.dp,
+    icon: Int = R.drawable.icon_cap,
 ) {
     Surface(
         modifier = modifier
@@ -414,7 +415,7 @@ fun ClassIcon(
                 modifier = modifier
                     .size(iconSize)
                     .padding(4.dp),
-                painter = painterResource(id = R.drawable.icon_cap),
+                painter = painterResource(id = icon),
                 contentDescription = stringResource(id = R.string.class_icon),
                 tint = MaterialTheme.colors.onPrimary,
             )
@@ -462,7 +463,7 @@ private fun ClassFilterManageButtonPreview() {
 @Composable
 @Preview
 private fun ClassIconPreview() {
-    ClassIcon(
+    StagedItemIcon(
         color = Color(0xff000000)
     )
 }

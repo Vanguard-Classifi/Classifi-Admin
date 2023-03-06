@@ -48,6 +48,28 @@ class MainRepositoryImpl @Inject constructor(
         firestoreManager.saveUserNetwork(user, onResult)
     }
 
+    override suspend fun saveUserAsVerified(user: UserNetworkModel, onResult: (Boolean) -> Unit) {
+        firestoreManager.saveUserAsVerified(user, onResult)
+    }
+
+    override suspend fun saveUsersAsVerified(
+        users: List<UserNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveUsersAsVerified(users, onResult)
+    }
+
+    override suspend fun saveUserToStage(user: UserNetworkModel, onResult: (Boolean) -> Unit) {
+        firestoreManager.saveUserToStage(user, onResult)
+    }
+
+    override suspend fun saveUsersToStage(
+        users: List<UserNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveUsersToStage(users, onResult)
+    }
+
     override suspend fun getUserByIdNetwork(
         userId: String,
         onResult: (Resource<UserNetworkModel?>) -> Unit
@@ -60,6 +82,20 @@ class MainRepositoryImpl @Inject constructor(
         onResult: (Resource<UserNetworkModel?>) -> Unit
     ) {
         firestoreManager.getUserByEmailNetwork(email, onResult)
+    }
+
+    override suspend fun getVerifiedUsersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedUsersNetwork(schoolId, onResult)
+    }
+
+    override suspend fun getStagedUsersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getStagedUsersNetwork(schoolId, onResult)
     }
 
     override suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit) {

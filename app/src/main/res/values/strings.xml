@@ -126,4 +126,12 @@
     <string name="subject_already_exists">This subject already exists</string>
     <string name="subject_creation">Subject Creation</string>
     <string name="arrow_dropdown">Arrow dropdown</string>
+    <string name="enroll_teachers">Enroll Teachers</string>
+    <string name="teacher_email">Teacher Email</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="enroll_more">Enroll More</string>
+    <string name="password_minimum">Password should be 6 characters minimum</string>
+    <string name="pending_teacher">Pending Teacher</string>
+    <string name="teacher_already_exist">Teacher Already Exists</string>
 </resources>

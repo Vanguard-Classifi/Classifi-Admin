@@ -28,7 +28,70 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         try {
             firestore.collection(Collections.collectionUsers).document(user.userId ?: "")
                 .set(user)
-            onResult(true)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveUserAsVerified(user: UserNetworkModel, onResult: (Boolean) -> Unit) {
+        try {
+            user.verified = true
+            user.password = "xxxxxx"
+            firestore.collection(Collections.collectionUsers).document(user.userId ?: "")
+                .set(user)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveUsersAsVerified(
+        users: List<UserNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            val userCollection = firestore.collection(Collections.collectionUsers)
+            users.map { user ->
+                user.verified = true
+                user.password = "xxxxxx"
+                userCollection.document(user?.userId ?: "")
+                    .set(user)
+                    .addOnSuccessListener { onResult(true) }
+                    .addOnFailureListener { onResult(false) }
+            }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveUserToStage(user: UserNetworkModel, onResult: (Boolean) -> Unit) {
+        try {
+            user.verified = false
+            firestore.collection(Collections.collectionUsers).document(user.userId ?: "")
+                .set(user)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveUsersToStage(
+        users: List<UserNetworkModel>,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            val userCollection = firestore.collection(Collections.collectionUsers)
+            users.map { user ->
+                user.verified = false
+                userCollection.document(user?.userId ?: "")
+                    .set(user)
+                    .addOnSuccessListener { onResult(true) }
+                    .addOnFailureListener { onResult(false) }
+            }
         } catch (e: Exception) {
             onResult(false)
         }
@@ -57,6 +120,58 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+    override suspend fun getVerifiedUsersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val user = doc.toObject<UserNetworkModel>()
+                        if (user.schoolIds.contains(schoolId)) {
+                            results.add(user)
+                        }
+                    }
+                    if (results.isNotEmpty()) {
+                        onResult(Resource.Success(results))
+                    }
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch users")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("A problem occurred"))
+        }
+    }
+
+    override suspend fun getStagedUsersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val user = doc.toObject<UserNetworkModel>()
+                        if (user.schoolIds.contains(schoolId)) {
+                            results.add(user)
+                        }
+                    }
+                    if (results.isNotEmpty()) {
+                        onResult(Resource.Success(results))
+                    }
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch users")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("A problem occurred"))
+        }
+    }
+
     override suspend fun getUserByEmailNetwork(
         email: String,
         onResult: (Resource<UserNetworkModel?>) -> Unit
@@ -70,7 +185,9 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<UserNetworkModel>())
                     }
-                    onResult(Resource.Success(results.first()))
+                    if(results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch user")) }
         } catch (e: Exception) {
@@ -477,7 +594,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<SubjectNetworkModel>())
                     }
-                    if(results.isNotEmpty()) {
+                    if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
                     }
                 }

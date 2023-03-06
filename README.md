@@ -11,6 +11,7 @@ teachers, parents and the management of schools**
 - [ ] Feature to enroll teachers into the platform
 - [ ] Feature to enroll students into the platform 
 - [ ] Feature to enroll parents into the platform 
+- [ ] Feature to reset password
 - [ ] Feature to assign classes to teachers 
 - [ ] Feature to assign subjects to teachers 
 - [ ] Feature for parents to search for wards and link up with them 

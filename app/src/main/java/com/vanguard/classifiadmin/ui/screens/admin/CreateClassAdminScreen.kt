@@ -3,7 +3,6 @@ package com.vanguard.classifiadmin.ui.screens.admin
 import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -15,9 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -70,14 +66,11 @@ import com.vanguard.classifiadmin.domain.services.ClassCreationService
 import com.vanguard.classifiadmin.domain.services.ClassCreationServiceActions
 import com.vanguard.classifiadmin.domain.services.ClassCreationServiceExtras
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
-import com.vanguard.classifiadmin.ui.components.ClassFilterManageButton
-import com.vanguard.classifiadmin.ui.components.ClassIcon
+import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
-import com.vanguard.classifiadmin.ui.screens.profile.AdminCreateOrManageFeature
-import com.vanguard.classifiadmin.ui.screens.profile.FeatureIcon
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -456,7 +449,7 @@ fun StagedClassItem(
                 .padding(8.dp),
             constraintSet = constraints
         ) {
-            ClassIcon(
+            StagedItemIcon(
                 modifier = innerModifier.layoutId("icon"),
                 color = Color(generateColorFromClassName(myClass.className ?: "")),
             )

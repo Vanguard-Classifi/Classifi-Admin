@@ -13,6 +13,7 @@ data class UserNetworkModel(
     var currentSchoolId: String? = null,
     var currentSchoolName: String? = null,
     var address: String? = null,
+    var password: String? = null,
     var phone: String? = null,
     var bio: String? = null,
     var dob: String?= null,
@@ -20,8 +21,10 @@ data class UserNetworkModel(
     var state: String? = null,
     var city: String? = null,
     var postalCode: String? = null,
+    var verified: Boolean? = null,
     var studentIds: ArrayList<String> = arrayListOf(),
     var classIds: ArrayList<String> = arrayListOf(),
+    var modifiedBy: String? = null,
     var lastModified: String? = null,
 ) {
     fun toLocal() = UserModel(
@@ -30,6 +33,7 @@ data class UserNetworkModel(
         fullname = fullname,
         currentRole = currentRole,
         profileImage = profileImage,
+        password = password,
         roles = roles,
         phone = phone,
         country = country,
@@ -37,6 +41,7 @@ data class UserNetworkModel(
         city = city,
         bio = bio,
         dob = dob,
+        verified = verified,
         postalCode = postalCode,
         schoolIds = schoolIds,
         currentSchoolId = currentSchoolId,
@@ -44,6 +49,7 @@ data class UserNetworkModel(
         address = address,
         studentIds = studentIds,
         classIds = classIds,
+        modifiedBy = modifiedBy,
         lastModified = lastModified
     )
 }

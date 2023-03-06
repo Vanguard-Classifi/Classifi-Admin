@@ -9,7 +9,22 @@ import com.vanguard.classifiadmin.domain.helpers.Resource
 interface FirestoreManager {
     //user
     suspend fun saveUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
+
+    suspend fun saveUserAsVerified(user: UserNetworkModel, onResult: (Boolean) -> Unit)
+    suspend fun saveUsersAsVerified(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit)
+    suspend fun saveUserToStage(user: UserNetworkModel, onResult: (Boolean) -> Unit)
+    suspend fun saveUsersToStage(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit)
     suspend fun getUserByIdNetwork(userId: String, onResult: (Resource<UserNetworkModel?>) -> Unit)
+    suspend fun getVerifiedUsersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedUsersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
     suspend fun getUserByEmailNetwork(
         email: String,
         onResult: (Resource<UserNetworkModel?>) -> Unit
@@ -92,7 +107,10 @@ interface FirestoreManager {
         onResult: (Boolean) -> Unit
     )
 
-    suspend fun saveSubjectAsVerifiedNetwork(subject: SubjectNetworkModel, onResult: (Boolean) -> Unit)
+    suspend fun saveSubjectAsVerifiedNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
 
     suspend fun saveSubjectsAsVerifiedNetwork(
         subjects: List<SubjectNetworkModel>,

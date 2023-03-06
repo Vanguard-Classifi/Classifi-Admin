@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -74,16 +72,10 @@ import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromGrade
 import com.vanguard.classifiadmin.ui.components.ChartValueItem
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
-import com.vanguard.classifiadmin.ui.components.ClassIcon
-import com.vanguard.classifiadmin.ui.components.ClassifiFeature
-import com.vanguard.classifiadmin.ui.components.FeatureListItem
 import com.vanguard.classifiadmin.ui.components.GradePreviewBar
 import com.vanguard.classifiadmin.ui.components.PerformanceCircle
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
-import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatar
-import com.vanguard.classifiadmin.ui.screens.dashboard.FeaturesBottomSheetContent
-import com.vanguard.classifiadmin.ui.screens.dashboard.StudentOptionsBottomSheetContent
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay

@@ -50,7 +50,7 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
-import com.vanguard.classifiadmin.ui.components.ClassIcon
+import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
@@ -112,7 +112,7 @@ fun ManageClassScreenContent(
                     modifier = modifier.fillMaxWidth(),
                     constraintSet = constraints,
                 ) {
-                    ClassIcon(
+                    StagedItemIcon(
                         modifier = innerModifier.layoutId("classIcon"),
                         iconSize = 52.dp,
                         surfaceSize = 60.dp,

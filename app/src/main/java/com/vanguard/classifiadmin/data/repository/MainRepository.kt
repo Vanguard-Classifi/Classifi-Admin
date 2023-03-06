@@ -28,8 +28,15 @@ interface MainRepository {
 
     //user
     suspend fun saveUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
+    suspend fun saveUserAsVerified(user: UserNetworkModel, onResult: (Boolean) -> Unit)
+    suspend fun saveUsersAsVerified(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit)
+    suspend fun saveUserToStage(user: UserNetworkModel, onResult: (Boolean) -> Unit)
+    suspend fun saveUsersToStage(users: List<UserNetworkModel>, onResult: (Boolean) -> Unit)
     suspend fun getUserByIdNetwork(userId: String, onResult: (Resource<UserNetworkModel?>) -> Unit)
     suspend fun getUserByEmailNetwork(email: String, onResult: (Resource<UserNetworkModel?>) -> Unit)
+
+    suspend fun getVerifiedUsersNetwork(schoolId: String, onResult: (Resource<List<UserNetworkModel>>) -> Unit)
+    suspend fun getStagedUsersNetwork(schoolId: String, onResult: (Resource<List<UserNetworkModel>>) -> Unit)
     suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit)
     suspend fun deleteUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
 
@@ -157,4 +164,7 @@ interface MainRepository {
         subjects: List<SubjectNetworkModel>,
         onResult: (Boolean) -> Unit
     )
+
+
+
 }

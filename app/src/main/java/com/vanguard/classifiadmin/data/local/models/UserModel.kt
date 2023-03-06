@@ -12,6 +12,7 @@ data class UserModel(
     var schoolIds: ArrayList<String> = arrayListOf(),
     var currentSchoolId: String? = null,
     var currentSchoolName: String? = null,
+    var password: String? = null,
     var address: String? = null,
     var phone: String? = null,
     var bio: String? = null,
@@ -19,9 +20,11 @@ data class UserModel(
     var country: String? = null,
     var state: String? = null,
     var city: String? = null,
+    var verified: Boolean? = null,
     var postalCode: String? = null,
     var studentIds: ArrayList<String> = arrayListOf(),
     var classIds: ArrayList<String> = arrayListOf(),
+    var modifiedBy: String? = null,
     var lastModified: String? = null,
 ) {
     fun toNetwork() = UserNetworkModel(
@@ -31,12 +34,14 @@ data class UserModel(
         currentRole = currentRole,
         profileImage = profileImage,
         roles = roles,
+        password = password,
         phone = phone,
         country = country,
         state = state,
         city = city,
         bio = bio,
         dob = dob,
+        verified = verified,
         postalCode = postalCode,
         schoolIds = schoolIds,
         currentSchoolId = currentSchoolId,
@@ -44,6 +49,7 @@ data class UserModel(
         address = address,
         studentIds = studentIds,
         classIds = classIds,
+        modifiedBy = modifiedBy,
         lastModified = lastModified
     )
 
