@@ -99,6 +99,9 @@ class EnrollTeachersService : BaseInsertionService() {
                         successfullyCreated.isEmpty() ->
                             "Could not enroll ${failedAuthentications.size} teachers"
 
+                        successfullyCreated.size == 1 ->
+                            "Successfully enrolled a teacher!"
+
                         else ->
                             "${successfullyCreated.size} teachers enrolled, ${failedAuthentications.size} failed."
                     }

@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
@@ -34,6 +35,7 @@ class MainViewModel @Inject constructor(
     private val repository: MainRepository,
     private val store: PrefDatastore,
 ) : ViewModel() {
+    val TAG = "MainViewModel"
 
     private var _classCodeAddClass = MutableStateFlow(null as String?)
     val classCodeAddClass: StateFlow<String?> = _classCodeAddClass
@@ -235,6 +237,14 @@ class MainViewModel @Inject constructor(
     private var _stagedUsersNetwork =
         MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
     val stagedUsersNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _stagedUsersNetwork
+
+    private var _currentPageMyAccountScreen = MutableStateFlow(null as Int?)
+    val currentPageMyAccountScreen: StateFlow<Int?> = _currentPageMyAccountScreen
+
+    fun onCurrentPageMyAccountScreenChanged(page: Int?) = effect {
+        Log.e(TAG, "onCurrentPageMyAccountScreenChanged: current page is $currentPageMyAccountScreen", )
+        _currentPageMyAccountScreen.value = page
+    }
 
     fun clearEnrollTeacherFields() = effect {
         _teacherEmailEnrollTeacher.value = null

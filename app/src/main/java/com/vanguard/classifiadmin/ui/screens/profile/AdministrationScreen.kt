@@ -23,6 +23,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,10 +48,12 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.components.ClassFilterManageButton
+import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 @Composable
 fun MyAccountScreenAdmin(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     onAdminManageSubject: () -> Unit,
     onAdminManageClasses: () -> Unit,
     onAdminCreateClasses: () -> Unit,
@@ -63,6 +66,10 @@ fun MyAccountScreenAdmin(
     enrollFeatures: List<AdminEnrollFeature> = AdminEnrollFeature.values().toList(),
 ) {
     val verticalScroll = rememberScrollState()
+
+//    LaunchedEffect(key1 = Unit, block = {
+//        viewModel.onCurrentPageMyAccountScreenChanged(3)
+//    })
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
 

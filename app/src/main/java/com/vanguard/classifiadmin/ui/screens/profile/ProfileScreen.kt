@@ -122,6 +122,10 @@ fun MyAccountScreenProfile(
         }
     )
 
+//    LaunchedEffect(key1 = Unit, block = {
+//        viewModel.onCurrentPageMyAccountScreenChanged(0)
+//    })
+
 
     LaunchedEffect(userByIdNetwork.data) {
         viewModel.getUserByIdNetwork(currentUserIdPref ?: "")
@@ -170,7 +174,7 @@ fun MyAccountScreenProfile(
                             .putExtra(DownloadServiceExtras.currentUserId, currentUserIdPref)
                             .putExtra(DownloadServiceExtras.downloadFileUri, avatarUri)
                         context.startService(intent)
-                        Log.e(TAG, "MyAccountScreenProfile: start download", )
+                        Log.e(TAG, "MyAccountScreenProfile: start download")
                     },
                     size = 78.dp,
                     fontSize = 18.sp,

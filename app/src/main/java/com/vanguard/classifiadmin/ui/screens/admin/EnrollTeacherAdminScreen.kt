@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin.ui.screens.admin
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -142,6 +143,7 @@ fun EnrollTeacherAdminScreenContent(
 ) {
     val verticalScroll = rememberScrollState()
     val context = LocalContext.current
+    val TAG = "EnrollTeacherAdminScreenContent"
 
     val teacherEmailEnrollTeacher by viewModel.teacherEmailEnrollTeacher.collectAsState()
     val teacherPasswordEnrollTeacher by viewModel.teacherPasswordEnrollTeacher.collectAsState()
@@ -153,6 +155,7 @@ fun EnrollTeacherAdminScreenContent(
     val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
     val currentSchoolNamePref by viewModel.currentSchoolNamePref.collectAsState()
     val stagedUsersNetwork by viewModel.stagedUsersNetwork.collectAsState()
+    val verifiedUsersNetwork by viewModel.verifiedUsersNetwork.collectAsState()
 
 
     val scope = rememberCoroutineScope()
@@ -172,15 +175,27 @@ fun EnrollTeacherAdminScreenContent(
         }
     }
 
+    Log.e(
+        TAG,
+        "EnrollTeacherAdminScreenContent: number of staged teachers ${stagedUsersNetwork.data?.size}",
+    )
+
+    Log.e(
+        TAG,
+        "EnrollTeacherAdminScreenContent: number of verified teachers ${verifiedUsersNetwork.data?.size}",
+    )
+
     LaunchedEffect(Unit) {
         viewModel.getCurrentUsernamePref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentSchoolNamePref()
+        viewModel.getStagedUsersNetwork(currentSchoolIdPref ?: "")
     }
 
     LaunchedEffect(stagingListener) {
         viewModel.getStagedUsersNetwork(currentSchoolIdPref ?: "")
+        viewModel.getVerifiedUsersNetwork(currentSchoolIdPref ?: "")
     }
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
@@ -304,7 +319,7 @@ fun EnrollTeacherAdminScreenContent(
                     ),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Next,
+                        imeAction = ImeAction.Done,
                     ),
                     singleLine = true,
                     maxLines = 1,
@@ -415,7 +430,6 @@ fun EnrollTeacherAdminScreenContent(
                         onClick = {
                             keyboardController?.hide()
 
-
                             if (
                                 teacherEmailEnrollTeacher == userByEmailNetwork.data?.email &&
                                 teacherEmailEnrollTeacher?.isNotBlank() == true
@@ -442,7 +456,7 @@ fun EnrollTeacherAdminScreenContent(
                                         viewModel.signUp(
                                             teacherEmailEnrollTeacher,
                                             teacherPasswordEnrollTeacher,
-                                            onResult = { user, exception ->
+                                            onResult = { _, exception ->
                                                 //process sign up
                                                 if (exception.data == AuthExceptionState.UserAlreadyExists) {
                                                     return@signUp
@@ -499,6 +513,7 @@ fun EnrollTeacherAdminScreenContent(
 
                             }.invokeOnCompletion {
                                 runnableBlock {
+                                    stagingListener++
                                     viewModel.clearEnrollTeacherFields()
                                     //close screen
                                     onBack()
@@ -507,8 +522,6 @@ fun EnrollTeacherAdminScreenContent(
                         },
                     )
                 }
-
-
             }
         }
 

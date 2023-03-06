@@ -299,6 +299,7 @@ fun MyAccountScreenContent(
     Column {
         MyAccountScreenContentHeader(
             pagerState = pagerState,
+            viewModel = viewModel,
         )
         MyAccountScreenContentBody(
             pagerState = pagerState,
@@ -325,13 +326,15 @@ fun MyAccountScreenContent(
 @Composable
 fun MyAccountScreenContentHeader(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     pagerState: PagerState,
     backgroundColor: Color = MaterialTheme.colors.primary,
     pages: List<AccountPage> = AccountPage.values().toList()
 ) {
     val TAG = "MyAccountScreenContentHeader"
     val scope = rememberCoroutineScope()
-    var currentPage by remember { mutableStateOf(0) }
+    val currentPageMyAccountScreen by viewModel.currentPageMyAccountScreen.collectAsState()
+
     val density = LocalDensity.current
 
     val tabWidths = remember {
@@ -343,11 +346,11 @@ fun MyAccountScreenContentHeader(
     }
 
     LaunchedEffect(Unit) {
-        pagerState.animateScrollToPage(currentPage)
+        pagerState.animateScrollToPage(currentPageMyAccountScreen ?: 0)
     }
 
     ScrollableTabRow(
-        selectedTabIndex = currentPage,
+        selectedTabIndex = currentPageMyAccountScreen ?: 0,
         backgroundColor = backgroundColor,
         modifier = modifier,
         edgePadding = 0.dp,
@@ -357,20 +360,20 @@ fun MyAccountScreenContentHeader(
                 color = MaterialTheme.colors.onPrimary,
                 height = 3.dp,
                 modifier = Modifier.customTabIndicatorOffset(
-                    currentTabPosition = positions[currentPage],
-                    tabWidth = tabWidths[currentPage]
+                    currentTabPosition = positions[currentPageMyAccountScreen ?: 0],
+                    tabWidth = tabWidths[currentPageMyAccountScreen ?: 0]
                 )
             )
         }
     ) {
         pages.forEachIndexed { index, tab ->
             Tab(
-                selected = currentPage == index,
+                selected = (currentPageMyAccountScreen ?: 0) == index,
                 unselectedContentColor = MaterialTheme.colors.onPrimary.copy(0.5f),
                 text = {
                     PagerBarWithIcon(
                         icon = tab.icon, text = tab.fullname,
-                        selected = currentPage == index,
+                        selected = (currentPageMyAccountScreen ?: 0) == index,
                         backgroundColor = backgroundColor,
                         onTextLayout = { result ->
                             tabWidths[index] =
@@ -380,7 +383,7 @@ fun MyAccountScreenContentHeader(
                 },
                 selectedContentColor = MaterialTheme.colors.onPrimary,
                 onClick = {
-                    currentPage = index
+                    viewModel.onCurrentPageMyAccountScreenChanged(index)
                     scope.launch { pagerState.animateScrollToPage(index) }
                 }
             )
@@ -426,9 +429,14 @@ fun MyAccountScreenContentBody(
                 onShowCountries = onShowCountries,
             )
 
-            1 -> MyAccountScreenAccountSettings()
-            2 -> MyAccountScreenPreferences()
+            1 -> MyAccountScreenAccountSettings(
+                viewModel = viewModel,
+            )
+            2 -> MyAccountScreenPreferences(
+                viewModel = viewModel,
+            )
             3 -> MyAccountScreenAdmin(
+                viewModel = viewModel,
                 onAdminManageClasses = onAdminManageClasses,
                 onAdminCreateClasses = onAdminCreateClasses,
                 onAdminCreateSubjects = onAdminCreateSubjects,
