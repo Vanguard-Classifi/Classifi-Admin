@@ -218,14 +218,14 @@ fun NavGraph(
         composable(Destinations.createClassAdmin) {
             CreateClassAdminScreen(
                 viewModel = viewModel,
-                onBack = {navController.navigate(Destinations.account)}
+                onBack = { navController.navigate(Destinations.account) }
             )
         }
 
         composable(Destinations.createSubjectAdmin) {
             CreateSubjectAdminScreen(
-            viewModel = viewModel,
-                onBack = {navController.navigate(Destinations.account)}
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.account) }
             )
         }
 
@@ -238,13 +238,14 @@ fun NavGraph(
         composable(Destinations.enrollTeacherAdmin) {
             EnrollTeacherAdminScreen(
                 viewModel = viewModel,
-                onBack = {navController.navigate(Destinations.account)}
+                onBack = { navController.navigate(Destinations.account) }
             )
         }
 
         composable(Destinations.enrollStudentAdmin) {
             EnrollStudentAdminScreen(
-
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.account) }
             )
         }
 

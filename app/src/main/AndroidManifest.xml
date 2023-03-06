@@ -53,6 +53,10 @@
             android:name=".domain.services.EnrollTeachersService"
             android:exported="false" />
 
+        <service
+            android:name=".domain.services.EnrollStudentsService"
+            android:exported="false" />
+
     </application>
 
 </manifest>

@@ -25,6 +25,36 @@ interface FirestoreManager {
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     )
 
+    suspend fun getVerifiedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
     suspend fun getUserByEmailNetwork(
         email: String,
         onResult: (Resource<UserNetworkModel?>) -> Unit

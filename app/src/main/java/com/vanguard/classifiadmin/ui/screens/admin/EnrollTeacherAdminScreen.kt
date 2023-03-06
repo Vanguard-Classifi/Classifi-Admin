@@ -102,6 +102,13 @@ fun EnrollTeacherAdminScreen(
         }
     }
 
+    LaunchedEffect(teacherAlreadyExistState) {
+        if(teacherAlreadyExistState == true){
+            delay(3000)
+            viewModel.onTeacherAlreadyExistStateAdminChanged(false)
+        }
+    }
+
 
     Surface(modifier = Modifier) {
         BoxWithConstraints(modifier = Modifier) {
@@ -365,6 +372,8 @@ fun EnrollTeacherAdminScreenContent(
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
+
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -394,15 +403,15 @@ fun EnrollTeacherAdminScreenContent(
                                 return@SecondaryTextButton
                             }
 
-                            if (teacherConfirmPasswordEnrollTeacher == null || teacherConfirmPasswordEnrollTeacher?.isBlank() == true) {
-                                //empty confirm password exception
-                               viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.PasswordMismatchException())
-                                return@SecondaryTextButton
-                            }
-
                             if (teacherPasswordEnrollTeacher!!.length < 6) {
                                 // password length exception
                                 viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.PasswordLengthException())
+                                return@SecondaryTextButton
+                            }
+
+                            if (teacherConfirmPasswordEnrollTeacher == null || teacherConfirmPasswordEnrollTeacher?.isBlank() == true) {
+                                //empty confirm password exception
+                               viewModel.onEnrollTeacherExceptionChanged(EnrollTeacherException.PasswordMismatchException())
                                 return@SecondaryTextButton
                             }
 

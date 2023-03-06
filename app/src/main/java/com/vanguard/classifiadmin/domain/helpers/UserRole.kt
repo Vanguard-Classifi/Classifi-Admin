@@ -7,3 +7,7 @@ enum class UserRole {
     Parent,
     Student,
 }
+
+enum class Verification {
+    VERIFIED, STAGED
+}

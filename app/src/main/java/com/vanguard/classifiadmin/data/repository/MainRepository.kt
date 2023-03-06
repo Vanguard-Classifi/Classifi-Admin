@@ -37,6 +37,36 @@ interface MainRepository {
 
     suspend fun getVerifiedUsersNetwork(schoolId: String, onResult: (Resource<List<UserNetworkModel>>) -> Unit)
     suspend fun getStagedUsersNetwork(schoolId: String, onResult: (Resource<List<UserNetworkModel>>) -> Unit)
+
+    suspend fun getVerifiedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
     suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit)
     suspend fun deleteUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
 

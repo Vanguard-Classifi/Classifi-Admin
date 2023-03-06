@@ -8,6 +8,7 @@ import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -172,6 +173,91 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+    override suspend fun getVerifiedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getStagedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getVerifiedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val student = doc.toObject<UserNetworkModel>()
+                        if (student.schoolIds.contains(schoolId) &&
+                            student.verified == true &&
+                            student.roles.contains(UserRole.Student.name)
+                        ) {
+                            //add to container
+                            results.add(student)
+                        }
+                    }
+                    if (results.isNotEmpty()) onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
+        }
+    }
+
+    override suspend fun getStagedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val student = doc.toObject<UserNetworkModel>()
+                        if (student.schoolIds.contains(schoolId) &&
+                            student.verified == false &&
+                            student.roles.contains(UserRole.Student.name)
+                        ) {
+                            //add to container
+                            results.add(student)
+                        }
+                    }
+                    if (results.isNotEmpty()) onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
+        }
+    }
+
+    override suspend fun getVerifiedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getStagedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        TODO("Not yet implemented")
+    }
+
+
     override suspend fun getUserByEmailNetwork(
         email: String,
         onResult: (Resource<UserNetworkModel?>) -> Unit
@@ -185,7 +271,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<UserNetworkModel>())
                     }
-                    if(results.isNotEmpty()) {
+                    if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
                     }
                 }

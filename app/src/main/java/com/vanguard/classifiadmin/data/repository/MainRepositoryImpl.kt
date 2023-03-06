@@ -98,6 +98,50 @@ class MainRepositoryImpl @Inject constructor(
         firestoreManager.getStagedUsersNetwork(schoolId, onResult)
     }
 
+    override suspend fun getVerifiedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedTeachersNetwork(
+            schoolId, onResult
+        )
+    }
+
+    override suspend fun getStagedTeachersNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getStagedTeachersNetwork(schoolId, onResult)
+    }
+
+    override suspend fun getVerifiedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+      firestoreManager.getVerifiedStudentsNetwork(schoolId, onResult)
+    }
+
+    override suspend fun getStagedStudentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+       firestoreManager.getStagedStudentsNetwork(schoolId, onResult)
+    }
+
+    override suspend fun getVerifiedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedParentsNetwork(schoolId, onResult)
+    }
+
+    override suspend fun getStagedParentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+       firestoreManager.getStagedParentsNetwork(schoolId, onResult)
+    }
+
     override suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit) {
         firestoreManager.deleteUserByIdNetwork(userId, onResult)
     }

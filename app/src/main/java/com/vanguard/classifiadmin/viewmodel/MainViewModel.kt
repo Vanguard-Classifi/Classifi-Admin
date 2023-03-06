@@ -17,6 +17,7 @@ import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
+import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
@@ -246,6 +247,115 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(EnrollTeacherException.NoException as EnrollTeacherException)
     val enrollTeacherException: StateFlow<EnrollTeacherException> = _enrollTeacherException
 
+    private var _enrollStudentException =
+        MutableStateFlow(EnrollStudentException.NoException as EnrollStudentException)
+    val enrollStudentException: StateFlow<EnrollStudentException> = _enrollStudentException
+
+    private var _studentEmailEnrollStudent = MutableStateFlow(null as String?)
+    val studentEmailEnrollStudent: StateFlow<String?> = _studentEmailEnrollStudent
+
+    private var _studentPasswordEnrollStudent = MutableStateFlow(null as String?)
+    val studentPasswordEnrollStudent: StateFlow<String?> = _studentPasswordEnrollStudent
+
+    private var _studentConfirmPasswordEnrollStudent = MutableStateFlow(null as String?)
+    val studentConfirmPasswordEnrollStudent: StateFlow<String?> =
+        _studentConfirmPasswordEnrollStudent
+
+    private var _studentAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
+    val studentAlreadyExistStateAdmin: StateFlow<Boolean?> = _studentAlreadyExistStateAdmin
+
+    private var _stagedStudentsNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val stagedStudentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _stagedStudentsNetwork
+
+    private var _stagedTeachersNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val stagedTeachersNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _stagedTeachersNetwork
+
+    private var _stagedParentsNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val stagedParentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _stagedParentsNetwork
+
+    private var _verifiedStudentsNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val verifiedStudentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedStudentsNetwork
+
+    private var _verifiedTeachersNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val verifiedTeachersNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedTeachersNetwork
+
+    private var _verifiedParentsNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val verifiedParentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedParentsNetwork
+
+    fun getVerifiedTeachersNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedTeachersNetwork(schoolId) {
+            _verifiedTeachersNetwork.value = it
+        }
+    }
+
+    fun getStagedTeachersNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedTeachersNetwork(schoolId) {
+            _stagedTeachersNetwork.value = it
+        }
+    }
+
+    fun getVerifiedStudentsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedStudentsNetwork(schoolId) {
+            _verifiedStudentsNetwork.value = it
+        }
+    }
+
+    fun getStagedStudentsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedStudentsNetwork(schoolId) {
+            _stagedStudentsNetwork.value = it
+        }
+    }
+
+    fun getVerifiedParentsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedParentsNetwork(schoolId) {
+            _verifiedParentsNetwork.value = it
+        }
+    }
+
+    fun getStagedParentsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedParentsNetwork(schoolId) {
+            _stagedParentsNetwork.value = it
+        }
+    }
+
+    fun onStudentAlreadyExistStateAdminChanged(state: Boolean?) = effect {
+        _studentAlreadyExistStateAdmin.value = state
+    }
+
+    fun onStudentEmailEnrollStudentChanged(email: String?) = effect {
+        _studentEmailEnrollStudent.value = email
+    }
+
+    fun onStudentPasswordEnrollStudentChanged(password: String?) = effect {
+        _studentPasswordEnrollStudent.value = password
+    }
+
+    fun onStudentConfirmPasswordEnrollStudentChanged(confirm: String?) = effect {
+        _studentConfirmPasswordEnrollStudent.value = confirm
+    }
+
+    fun onEnrollStudentExceptionChanged(exception: EnrollStudentException) = effect {
+        _enrollStudentException.value = exception
+    }
+
     fun onEnrollTeacherExceptionChanged(exception: EnrollTeacherException) = effect {
         _enrollTeacherException.value = exception
     }
@@ -256,6 +366,12 @@ class MainViewModel @Inject constructor(
             "onCurrentPageMyAccountScreenChanged: current page is $currentPageMyAccountScreen",
         )
         _currentPageMyAccountScreen.value = page
+    }
+
+    fun clearEnrollStudentFields() = effect {
+        _studentEmailEnrollStudent.value = null
+        _studentPasswordEnrollStudent.value = null
+        _studentConfirmPasswordEnrollStudent.value = null
     }
 
     fun clearEnrollTeacherFields() = effect {

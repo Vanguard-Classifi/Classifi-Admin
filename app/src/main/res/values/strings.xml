@@ -134,4 +134,8 @@
     <string name="password_minimum">Password should be 6 characters minimum</string>
     <string name="pending_teacher">Pending Teacher</string>
     <string name="teacher_already_exist">Teacher Already Exists</string>
+    <string name="enroll_students">Enroll Students</string>
+    <string name="student_email">Student Email</string>
+    <string name="pending_student">Pending Student</string>
+    <string name="student_already_exists">Student Already Exists</string>
 </resources>
