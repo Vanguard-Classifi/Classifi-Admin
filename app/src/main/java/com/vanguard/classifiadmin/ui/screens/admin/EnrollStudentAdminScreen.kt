@@ -139,7 +139,7 @@ fun EnrollStudentAdminScreen(
             if (studentAlreadyExistState == true) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
                     MessageBar(
-                        message = stringResource(id = R.string.student_already_exists),
+                        message = stringResource(id = R.string.user_already_exists),
                         icon = R.drawable.icon_info,
                         onClose = {
                             viewModel.onStudentAlreadyExistStateAdminChanged(false)

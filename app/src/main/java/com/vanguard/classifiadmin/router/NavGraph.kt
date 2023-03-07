@@ -231,7 +231,8 @@ fun NavGraph(
 
         composable(Destinations.enrollParentAdmin) {
             EnrollParentAdminScreen(
-
+                onBack = { navController.navigate(Destinations.account) },
+                viewModel = viewModel
             )
         }
 

@@ -113,6 +113,8 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     }
                     if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
                     }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch user")) }
@@ -137,9 +139,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                             results.add(user)
                         }
                     }
-                    if (results.isNotEmpty()) {
-                        onResult(Resource.Success(results))
-                    }
+                    onResult(Resource.Success(results))
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch users")) }
         } catch (e: Exception) {
@@ -163,9 +163,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                             results.add(user)
                         }
                     }
-                    if (results.isNotEmpty()) {
-                        onResult(Resource.Success(results))
-                    }
+                    onResult(Resource.Success(results))
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch users")) }
         } catch (e: Exception) {
@@ -177,14 +175,56 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     ) {
-        TODO("Not yet implemented")
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val teacher = doc.toObject<UserNetworkModel>()
+                        if (teacher.schoolIds.contains(schoolId) &&
+                            teacher.verified == true &&
+                            teacher.roles.contains(UserRole.Teacher.name)
+                        ) {
+                            //add to container
+                            results.add(teacher)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
+        }
     }
 
     override suspend fun getStagedTeachersNetwork(
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     ) {
-        TODO("Not yet implemented")
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val teacher = doc.toObject<UserNetworkModel>()
+                        if (teacher.schoolIds.contains(schoolId) &&
+                            teacher.verified == false &&
+                            teacher.roles.contains(UserRole.Teacher.name)
+                        ) {
+                            //add to container
+                            results.add(teacher)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
+        }
     }
 
     override suspend fun getVerifiedStudentsNetwork(
@@ -207,7 +247,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                             results.add(student)
                         }
                     }
-                    if (results.isNotEmpty()) onResult(Resource.Success(results))
+                    onResult(Resource.Success(results))
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
         } catch (e: Exception) {
@@ -235,7 +275,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                             results.add(student)
                         }
                     }
-                    if (results.isNotEmpty()) onResult(Resource.Success(results))
+                    onResult(Resource.Success(results))
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
         } catch (e: Exception) {
@@ -247,14 +287,56 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     ) {
-        TODO("Not yet implemented")
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val parent = doc.toObject<UserNetworkModel>()
+                        if (parent.schoolIds.contains(schoolId) &&
+                            parent.verified == true &&
+                            parent.roles.contains(UserRole.Parent.name)
+                        ) {
+                            //add to container
+                            results.add(parent)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
+        }
     }
 
     override suspend fun getStagedParentsNetwork(
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     ) {
-        TODO("Not yet implemented")
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val parent = doc.toObject<UserNetworkModel>()
+                        if (parent.schoolIds.contains(schoolId) &&
+                            parent.verified == false &&
+                            parent.roles.contains(UserRole.Parent.name)
+                        ) {
+                            //add to container
+                            results.add(parent)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
+        }
     }
 
 
@@ -273,6 +355,8 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     }
                     if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
                     }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch user")) }
@@ -682,6 +766,8 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     }
                     if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
                     }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }

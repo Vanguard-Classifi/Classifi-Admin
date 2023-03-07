@@ -137,7 +137,7 @@ fun EnrollTeacherAdminScreen(
             if (teacherAlreadyExistState == true) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
                     MessageBar(
-                        message = stringResource(id = R.string.teacher_already_exist),
+                        message = stringResource(id = R.string.user_already_exists),
                         icon = R.drawable.icon_info,
                         onClose = {
                             viewModel.onTeacherAlreadyExistStateAdminChanged(false)
@@ -185,7 +185,7 @@ fun EnrollTeacherAdminScreenContent(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
     val currentSchoolNamePref by viewModel.currentSchoolNamePref.collectAsState()
-    val stagedUsersNetwork by viewModel.stagedUsersNetwork.collectAsState()
+    val stagedTeachersNetwork by viewModel.stagedTeachersNetwork.collectAsState()
     val verifiedUsersNetwork by viewModel.verifiedUsersNetwork.collectAsState()
 
 
@@ -203,27 +203,16 @@ fun EnrollTeacherAdminScreenContent(
         }
     }
 
-    Log.e(
-        TAG,
-        "EnrollTeacherAdminScreenContent: number of staged teachers ${stagedUsersNetwork.data?.size}",
-    )
-
-    Log.e(
-        TAG,
-        "EnrollTeacherAdminScreenContent: number of verified teachers ${verifiedUsersNetwork.data?.size}",
-    )
-
     LaunchedEffect(Unit) {
         viewModel.getCurrentUsernamePref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentSchoolNamePref()
-        viewModel.getStagedUsersNetwork(currentSchoolIdPref ?: "")
+        viewModel.getStagedTeachersNetwork(currentSchoolIdPref ?: "")
     }
 
     LaunchedEffect(stagingListener) {
-        viewModel.getStagedUsersNetwork(currentSchoolIdPref ?: "")
-        viewModel.getVerifiedUsersNetwork(currentSchoolIdPref ?: "")
+        viewModel.getStagedTeachersNetwork(currentSchoolIdPref ?: "")
     }
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
@@ -485,7 +474,7 @@ fun EnrollTeacherAdminScreenContent(
                                             teacherPasswordEnrollTeacher?.isNotBlank() == true &&
                                             teacherConfirmPasswordEnrollTeacher?.isNotBlank() == true
                                             ) ||
-                                    stagedUsersNetwork.data?.isNotEmpty() == true
+                                    stagedTeachersNetwork.data?.isNotEmpty() == true
                                 ) {
                                     //process constraints
                                     if (
@@ -566,7 +555,7 @@ fun EnrollTeacherAdminScreenContent(
             }
         }
 
-        if (stagedUsersNetwork.data?.isNotEmpty() == true) {
+        if (stagedTeachersNetwork.data?.isNotEmpty() == true) {
             Card(
                 modifier = modifier
                     .clip(RoundedCornerShape(16.dp))
@@ -574,7 +563,7 @@ fun EnrollTeacherAdminScreenContent(
                 shape = RoundedCornerShape(16.dp),
                 elevation = 2.dp,
             ) {
-                val stagedUsersSorted = stagedUsersNetwork.data?.sortedByDescending {
+                val stagedUsersSorted = stagedTeachersNetwork.data?.sortedByDescending {
                     it.lastModified
                 }
 

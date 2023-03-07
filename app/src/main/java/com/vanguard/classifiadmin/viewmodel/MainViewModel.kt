@@ -17,6 +17,7 @@ import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
+import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
@@ -278,15 +279,52 @@ class MainViewModel @Inject constructor(
 
     private var _verifiedStudentsNetwork =
         MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
-    val verifiedStudentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedStudentsNetwork
+    val verifiedStudentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> =
+        _verifiedStudentsNetwork
 
     private var _verifiedTeachersNetwork =
         MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
-    val verifiedTeachersNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedTeachersNetwork
+    val verifiedTeachersNetwork: StateFlow<Resource<List<UserNetworkModel>>> =
+        _verifiedTeachersNetwork
 
     private var _verifiedParentsNetwork =
         MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
-    val verifiedParentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedParentsNetwork
+    val verifiedParentsNetwork: StateFlow<Resource<List<UserNetworkModel>>> =
+        _verifiedParentsNetwork
+
+    private var _parentEmailEnrollParent = MutableStateFlow(null as String?)
+    val parentEmailEnrollParent: StateFlow<String?> = _parentEmailEnrollParent
+
+    private var _parentPasswordEnrollParent = MutableStateFlow(null as String?)
+    val parentPasswordEnrollParent: StateFlow<String?> = _parentPasswordEnrollParent
+
+    private var _parentConfirmPasswordEnrollParent = MutableStateFlow(null as String?)
+    val parentConfirmPasswordEnrollParent: StateFlow<String?> = _parentConfirmPasswordEnrollParent
+
+    private var _enrollParentException = MutableStateFlow(EnrollParentException.NoException as EnrollParentException)
+    val enrollParentException: StateFlow<EnrollParentException> = _enrollParentException
+
+    private var _parentAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
+    val parentAlreadyExistStateAdmin: StateFlow<Boolean?> = _parentAlreadyExistStateAdmin
+
+    fun onParentAlreadyExistStateAdminChanged(state: Boolean?) = effect {
+        _parentAlreadyExistStateAdmin.value = state
+    }
+    fun onEnrollParentExceptionChanged(exception: EnrollParentException) = effect {
+        _enrollParentException.value = exception
+    }
+
+    fun onParentEmailEnrollParentChanged(email: String?) = effect {
+        _parentEmailEnrollParent.value = email
+    }
+
+    fun onParentPasswordEnrollParentChanged(password: String?) = effect {
+        _parentPasswordEnrollParent.value = password
+    }
+
+    fun onParentConfirmPasswordEnrollParentChanged(confirm: String?) = effect {
+        _parentConfirmPasswordEnrollParent.value = confirm
+    }
 
     fun getVerifiedTeachersNetwork(
         schoolId: String,
@@ -366,6 +404,12 @@ class MainViewModel @Inject constructor(
             "onCurrentPageMyAccountScreenChanged: current page is $currentPageMyAccountScreen",
         )
         _currentPageMyAccountScreen.value = page
+    }
+
+    fun clearEnrollParentFields() = effect {
+        _parentEmailEnrollParent.value = null
+        _parentPasswordEnrollParent.value = null
+        _parentConfirmPasswordEnrollParent.value = null
     }
 
     fun clearEnrollStudentFields() = effect {

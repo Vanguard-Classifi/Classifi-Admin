@@ -138,4 +138,9 @@
     <string name="student_email">Student Email</string>
     <string name="pending_student">Pending Student</string>
     <string name="student_already_exists">Student Already Exists</string>
+    <string name="enroll_parents">Enroll Parents</string>
+    <string name="parent_email">Parent Email</string>
+    <string name="parent_already_exist">Parent Already Exists</string>
+    <string name="pending_parent">Pending Parent</string>
+    <string name="user_already_exists">User Already Exists</string>
 </resources>
