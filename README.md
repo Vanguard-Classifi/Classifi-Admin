@@ -8,9 +8,11 @@ teachers, parents and the management of schools**
 - [x] Feature to create school and set up admin account
 - [x] Feature to create classes in school and sections
 - [x] Feature to create subjects in school 
-- [ ] Feature to enroll teachers into the platform
-- [ ] Feature to enroll students into the platform 
-- [ ] Feature to enroll parents into the platform 
+- [x] Feature to enroll teachers into the platform
+- [x] Feature to enroll students into the platform 
+- [x] Feature to enroll parents into the platform 
+- [ ] Feature to manage classes 
+- [ ] Feature to manage subjects
 - [ ] Feature to reset password
 - [ ] Feature to assign classes to teachers 
 - [ ] Feature to assign subjects to teachers 

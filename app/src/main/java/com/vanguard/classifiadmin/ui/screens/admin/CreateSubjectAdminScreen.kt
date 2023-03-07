@@ -480,6 +480,7 @@ fun CreateSubjectAdminScreenContent(
 
                             }.invokeOnCompletion {
                                 runnableBlock {
+                                    stagingListener++
                                     viewModel.clearCreateSubjectAdminFields()
                                     //close screen
                                     onBack()

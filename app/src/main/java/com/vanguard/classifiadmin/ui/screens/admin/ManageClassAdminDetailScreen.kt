@@ -20,10 +20,11 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
-const val MANAGE_CLASS_ADMIN_SCREEN = "manage_class_admin_screen"
+const val MANAGE_CLASS_ADMIN_DETAIL_SCREEN =
+    "manage_class_admin_detail_screen"
 
 @Composable
-fun ManageClassAdminScreen(
+fun ManageClassAdminDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
@@ -51,12 +52,11 @@ fun ManageClassAdminScreen(
     }
 }
 
-
 @Composable
-fun ManageClassAdminScreenContent(
+fun ManageClassAdminDetailScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    onBack: () -> Unit,
+    onBack: () -> Unit
 ) {
     val verticalScroll = rememberScrollState()
 
@@ -80,5 +80,4 @@ fun ManageClassAdminScreenContent(
             }
         }
     }
-
 }

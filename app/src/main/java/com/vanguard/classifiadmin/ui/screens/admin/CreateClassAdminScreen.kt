@@ -368,6 +368,7 @@ fun CreateClassAdminScreenContent(
 
                             }.invokeOnCompletion {
                                 runnableBlock {
+                                    stagingListener++
                                     viewModel.clearCreateClassAdminFields()
                                     //close screen
                                     onBack()
