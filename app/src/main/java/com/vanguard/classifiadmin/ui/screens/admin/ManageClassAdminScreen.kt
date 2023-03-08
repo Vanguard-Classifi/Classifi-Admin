@@ -12,26 +12,27 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -57,11 +57,9 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
-import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithOptions
 import com.vanguard.classifiadmin.ui.components.ClassFilterManageButton
-import com.vanguard.classifiadmin.ui.components.DashboardMenu
-import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
+import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -85,6 +83,7 @@ fun ManageClassAdminScreen(
     val verifiedClassesNetwork by viewModel.verifiedClassesNetwork.collectAsState()
     val selectedClasses by viewModel.selectedClassesManageClasses.collectAsState()
     val classByCodeNetwork by viewModel.classByCodeNetwork.collectAsState()
+    val message by viewModel.manageClassMessage.collectAsState()
 
 
     Log.e(TAG, "ManageClassAdminScreen: class is selected ${classSelectedState ?: false}")
@@ -93,6 +92,14 @@ fun ManageClassAdminScreen(
         viewModel.getCurrentSchoolIdPref()
         viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
     }
+
+    LaunchedEffect(message) {
+        if (message !is ManageClassMessage.NoMessage) {
+            delay(3000)
+            viewModel.onManageClassMessageChanged(ManageClassMessage.NoMessage)
+        }
+    }
+
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -166,12 +173,30 @@ fun ManageClassAdminScreen(
                                                 }
                                         }
                                         viewModel.onDecSelectionListenerManageClass()
+                                        viewModel.onClearBufferManageClass()
+                                    } else {
+                                        viewModel.onManageClassMessageChanged(ManageClassMessage.NoItemSelected())
                                     }
                                 }
                             }
                         }
                         optionState = false
                     },
+                )
+            }
+        }
+
+
+        if (message !is ManageClassMessage.NoMessage) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                MessageBar(
+                    message = message.message,
+                    icon = R.drawable.icon_info,
+                    onClose = {
+                        viewModel.onManageClassMessageChanged(ManageClassMessage.NoMessage)
+                    },
+                    maxWidth = maxWidth,
+                    modifier = modifier.padding(vertical = 16.dp, horizontal = 8.dp)
                 )
             }
         }
@@ -195,7 +220,7 @@ fun ManageClassAdminScreenContent(
     Log.e(TAG, "ManageClassAdminScreenContent: selectionListener value is $selectionListener")
 
     LaunchedEffect(Unit) {
-        viewModel.onClearBuffer()
+        viewModel.onClearBufferManageClass()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getVerifiedClassesNetwork(currentSchoolIdPref ?: "")
     }
@@ -238,7 +263,7 @@ fun ManageClassAdminScreenContent(
                             myClass = each.toLocal(),
                             selected = selectedClasses.contains(each.toLocal().classCode.orEmpty()),
                             onManageClass = {
-
+                                    //go to class detail
                             },
                             onHold = {
                                 viewModel.onAddClassToBuffer(it.classCode.orEmpty())
@@ -255,6 +280,8 @@ fun ManageClassAdminScreenContent(
                                         //select
                                         viewModel.onAddClassToBuffer(it.classCode.orEmpty())
                                     }
+                                } else {
+                                    viewModel.onManageClassMessageChanged(ManageClassMessage.HoldToMark())
                                 }
                                 viewModel.onIncSelectionListenerManageClass()
                             }
@@ -428,4 +455,10 @@ fun ManageClassOptionItem(
 enum class ManageClassPopupOption(val title: String) {
     SelectAll("Select All"),
     Delete("Delete")
+}
+
+sealed class ManageClassMessage(val message: String) {
+    class HoldToMark() : ManageClassMessage("Please hold to mark item")
+    class NoItemSelected() : ManageClassMessage("No item selected")
+    object NoMessage : ManageClassMessage("")
 }

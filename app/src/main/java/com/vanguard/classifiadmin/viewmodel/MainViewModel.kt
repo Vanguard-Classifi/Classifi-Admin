@@ -20,16 +20,15 @@ import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
+import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.screens.profile.AccountBottomSheetState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -316,6 +315,13 @@ class MainViewModel @Inject constructor(
     private var _selectionListenerManageClass = MutableStateFlow(0)
     val selectionListenerManageClass: StateFlow<Int> = _selectionListenerManageClass
 
+    private var _manageClassMessage = MutableStateFlow(ManageClassMessage.NoMessage as ManageClassMessage)
+    val manageClassMessage: StateFlow<ManageClassMessage> = _manageClassMessage
+
+    fun onManageClassMessageChanged(message: ManageClassMessage) = effect {
+        _manageClassMessage.value = message
+    }
+
     fun onIncSelectionListenerManageClass() = effect {
         _selectionListenerManageClass.value++
     }
@@ -336,7 +342,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun onClearBuffer() = effect {
+    fun onClearBufferManageClass() = effect {
         _selectedClassesManageClasses.value.clear()
     }
 
