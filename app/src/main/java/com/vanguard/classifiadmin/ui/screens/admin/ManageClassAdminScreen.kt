@@ -74,6 +74,7 @@ fun ManageClassAdminScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    onManageClassDetail: (ClassModel) -> Unit,
 ) {
     val TAG = "ManageClassAdminScreen"
     val scope = rememberCoroutineScope()
@@ -124,6 +125,7 @@ fun ManageClassAdminScreen(
                     modifier = modifier.padding(it),
                     viewModel = viewModel,
                     onBack = onBack,
+                    onManageClassDetail = onManageClassDetail,
                 )
             }
         )
@@ -210,6 +212,7 @@ fun ManageClassAdminScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    onManageClassDetail: (ClassModel) -> Unit,
 ) {
     val TAG = "ManageClassAdminScreenContent"
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
@@ -263,7 +266,9 @@ fun ManageClassAdminScreenContent(
                             myClass = each.toLocal(),
                             selected = selectedClasses.contains(each.toLocal().classCode.orEmpty()),
                             onManageClass = {
-                                    //go to class detail
+                                //go to class detail
+                                viewModel.onSelectedClassManageClassAdminChanged(it)
+                                onManageClassDetail(it)
                             },
                             onHold = {
                                 viewModel.onAddClassToBuffer(it.classCode.orEmpty())

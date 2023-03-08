@@ -21,6 +21,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
+import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
@@ -300,7 +301,8 @@ class MainViewModel @Inject constructor(
     private var _parentConfirmPasswordEnrollParent = MutableStateFlow(null as String?)
     val parentConfirmPasswordEnrollParent: StateFlow<String?> = _parentConfirmPasswordEnrollParent
 
-    private var _enrollParentException = MutableStateFlow(EnrollParentException.NoException as EnrollParentException)
+    private var _enrollParentException =
+        MutableStateFlow(EnrollParentException.NoException as EnrollParentException)
     val enrollParentException: StateFlow<EnrollParentException> = _enrollParentException
 
     private var _parentAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
@@ -315,8 +317,24 @@ class MainViewModel @Inject constructor(
     private var _selectionListenerManageClass = MutableStateFlow(0)
     val selectionListenerManageClass: StateFlow<Int> = _selectionListenerManageClass
 
-    private var _manageClassMessage = MutableStateFlow(ManageClassMessage.NoMessage as ManageClassMessage)
+    private var _manageClassMessage =
+        MutableStateFlow(ManageClassMessage.NoMessage as ManageClassMessage)
     val manageClassMessage: StateFlow<ManageClassMessage> = _manageClassMessage
+
+    private var _selectedClassManageClassAdmin = MutableStateFlow(null as ClassModel?)
+    val selectedClassManageClassAdmin: StateFlow<ClassModel?> = _selectedClassManageClassAdmin
+
+    private var _selectedManageClassSubsectionItem =
+        MutableStateFlow(ManageClassSubsectionItem.Students as ManageClassSubsectionItem)
+    val selectedManageClassSubsectionItem: StateFlow<ManageClassSubsectionItem> = _selectedManageClassSubsectionItem
+
+    fun onSelectedManageClassSubsectionItemChanged(item: ManageClassSubsectionItem) = effect {
+        _selectedManageClassSubsectionItem.value = item
+    }
+
+    fun onSelectedClassManageClassAdminChanged(selected: ClassModel?) = effect {
+        _selectedClassManageClassAdmin.value = selected
+    }
 
     fun onManageClassMessageChanged(message: ManageClassMessage) = effect {
         _manageClassMessage.value = message
@@ -331,13 +349,13 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAddClassToBuffer(code: String) = effect {
-        if(!_selectedClassesManageClasses.value.contains(code)) {
+        if (!_selectedClassesManageClasses.value.contains(code)) {
             _selectedClassesManageClasses.value.add(code)
         }
     }
 
     fun onRemoveClassFromBuffer(code: String) = effect {
-        if(_selectedClassesManageClasses.value.contains(code)) {
+        if (_selectedClassesManageClasses.value.contains(code)) {
             _selectedClassesManageClasses.value.remove(code)
         }
     }
@@ -349,9 +367,11 @@ class MainViewModel @Inject constructor(
     fun onClassSelectedStateManageClassesChanged(state: Boolean?) = effect {
         _classSelectedStateManageClasses.value = state
     }
+
     fun onParentAlreadyExistStateAdminChanged(state: Boolean?) = effect {
         _parentAlreadyExistStateAdmin.value = state
     }
+
     fun onEnrollParentExceptionChanged(exception: EnrollParentException) = effect {
         _enrollParentException.value = exception
     }

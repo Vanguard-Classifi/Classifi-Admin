@@ -40,6 +40,7 @@ fun ChildTopBarWithOptions(
     onOptions: () -> Unit,
     heading: String,
     elevation: Dp = 2.dp,
+    iconTint: Color = MaterialTheme.colors.primary,
     backgroundColor: Color = MaterialTheme.colors.background,
     contentColor: Color = MaterialTheme.colors.primary,
 ) {
@@ -76,7 +77,7 @@ fun ChildTopBarWithOptions(
             ) {
                 RoundedIconButton(
                     onClick = onOptions, icon = R.drawable.icon_options_vertical,
-                    tint = MaterialTheme.colors.surface,
+                    tint = iconTint,
                 )
             }
         }

@@ -16,8 +16,10 @@ import com.vanguard.classifiadmin.ui.screens.admin.ENROLL_TEACHER_ADMIN_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentAdminScreen
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentAdminScreen
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_CLASS_ADMIN_DETAIL_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_CLASS_ADMIN_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_SUBJECT_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailScreen
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminScreen
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REPORT_SCREEN
@@ -84,6 +86,7 @@ object Destinations {
     const val enrollParentAdmin = ENROLL_PARENT_ADMIN_SCREEN
     const val manageClassAdmin = MANAGE_CLASS_ADMIN_SCREEN
     const val manageSubjectAdmin = MANAGE_SUBJECT_ADMIN_SCREEN
+    const val manageClassAdminDetail = MANAGE_CLASS_ADMIN_DETAIL_SCREEN
 }
 
 
@@ -253,13 +256,20 @@ fun NavGraph(
         composable(Destinations.manageClassAdmin) {
             ManageClassAdminScreen(
                 viewModel = viewModel,
-                onBack = {navController.navigate(Destinations.account)}
+                onBack = { navController.navigate(Destinations.account) },
+                onManageClassDetail = { navController.navigate(Destinations.manageClassAdminDetail) }
             )
         }
 
         composable(Destinations.manageSubjectAdmin) {
             ManageSubjectAdminScreen(
+            )
+        }
 
+        composable(Destinations.manageClassAdminDetail) {
+            ManageClassAdminDetailScreen(
+                viewModel = viewModel,
+                onBack = {navController.navigate(Destinations.manageClassAdmin)}
             )
         }
     }

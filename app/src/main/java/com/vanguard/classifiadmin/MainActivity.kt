@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    val TAG = "MainActivity"
     private lateinit var viewModel: MainViewModel
 
     private val activityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
@@ -33,5 +35,20 @@ class MainActivity : ComponentActivity() {
             viewModel = hiltViewModel<MainViewModel>()
             ClassifiApp(viewModel = viewModel, finishActivity = { finish() })
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.e(TAG, "onPause: onPause has been called")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.e(TAG, "onStop: onStop has been called")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e(TAG, "onDestroy: onDestroy has been called")
     }
 }

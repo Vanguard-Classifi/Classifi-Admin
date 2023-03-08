@@ -30,4 +30,10 @@ data class ClassModel(
         modifiedBy = modifiedBy,
         lastModified = lastModified,
     )
+
+    companion object {
+        val Default = ClassModel(
+            classId = ""
+        )
+    }
 }
