@@ -144,4 +144,10 @@
     <string name="pending_parent">Pending Parent</string>
     <string name="user_already_exists">User Already Exists</string>
     <string name="manage_classes">Manage Classes</string>
+    <string name="import_students">Import Students</string>
+    <string name="no_students">No students available yet</string>
+    <string name="no_subjects">No subjects available yet</string>
+    <string name="add_subjects">Add subjects</string>
+    <string name="no_teachers">" No teachers available yet"</string>
+    <string name="invite_teachers">Invite Teachers</string>
 </resources>

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -33,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,19 +43,27 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
+import com.vanguard.classifiadmin.data.local.models.SubjectModel
+import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.domain.extensions.orParent
+import com.vanguard.classifiadmin.domain.extensions.orStudent
+import com.vanguard.classifiadmin.domain.extensions.orTeacher
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
-import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithOptions
-import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
+import com.vanguard.classifiadmin.ui.components.NoDataScreen
+import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -93,6 +103,7 @@ fun ManageClassAdminDetailScreen(
                     modifier = modifier.padding(it),
                     viewModel = viewModel,
                     onBack = onBack,
+                    maxHeight = maxHeight,
                 )
             }
         )
@@ -146,6 +157,7 @@ fun ManageClassAdminDetailScreen(
 fun ManageClassAdminDetailScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    maxHeight: Dp,
     onBack: () -> Unit
 ) {
     val verticalScroll = rememberScrollState()
@@ -185,16 +197,21 @@ fun ManageClassAdminDetailScreenContent(
 
                 when (selectedManageClassSubsectionItem) {
                     ManageClassSubsectionItem.Students -> {
-                        ManageClassAdminDetailScreenContentStudents()
+                        ManageClassAdminDetailScreenContentStudents(
+                            maxHeight = maxHeight
+                        )
                     }
 
                     ManageClassSubsectionItem.Teachers -> {
-                        ManageClassAdminDetailScreenContentTeachers()
+                        ManageClassAdminDetailScreenContentTeachers(
+                            maxHeight = maxHeight
+                        )
                     }
 
                     ManageClassSubsectionItem.Subjects -> {
                         ManageClassAdminDetailScreenContentSubjects(
                             viewModel = viewModel,
+                            maxHeight = maxHeight,
                         )
                     }
                 }
@@ -205,11 +222,15 @@ fun ManageClassAdminDetailScreenContent(
 
 @Composable
 fun ManageClassAdminDetailScreenContentStudents(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    maxHeight: Dp
 ) {
-    Text(
-        text = "students"
-    )
+   NoDataScreen(
+       maxHeight = maxHeight,
+       message = stringResource(id = R.string.no_students),
+       buttonLabel = stringResource(id = R.string.import_students),
+       onClick = {}
+   )
 }
 
 
@@ -217,19 +238,27 @@ fun ManageClassAdminDetailScreenContentStudents(
 fun ManageClassAdminDetailScreenContentSubjects(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    maxHeight: Dp
 ) {
-    Text(
-        text = "subjects"
+    NoDataScreen(
+        maxHeight = maxHeight,
+        message = stringResource(id = R.string.no_subjects),
+        buttonLabel = stringResource(id = R.string.add_subjects),
+        onClick = {}
     )
 }
 
 
 @Composable
 fun ManageClassAdminDetailScreenContentTeachers(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    maxHeight: Dp
 ) {
-    Text(
-        text = "teachers"
+    NoDataScreen(
+        maxHeight = maxHeight,
+        message = stringResource(id = R.string.no_teachers),
+        buttonLabel = stringResource(id = R.string.invite_teachers),
+        onClick = {}
     )
 }
 
@@ -539,6 +568,397 @@ fun ManageClassDetailSubjectOptionItem(
                 fontWeight = FontWeight.Bold,
                 modifier = modifier.padding(8.dp)
             )
+        }
+    }
+}
+
+
+@Composable
+fun VerifiedParentItem(
+    modifier: Modifier = Modifier,
+    parent: UserModel,
+    onRemove: (UserModel) -> Unit,
+) {
+    val constraints = VerifiedParentItemConstraints(8.dp)
+    val innerModifier = Modifier
+    var rowWidth by remember { mutableStateOf(0) }
+
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary
+        )
+    ) {
+        ConstraintLayout(
+            modifier = modifier
+                .onGloballyPositioned { rowWidth = it.size.width }
+                .fillMaxWidth()
+                .padding(8.dp),
+            constraintSet = constraints
+        ) {
+            StagedItemIcon(
+                modifier = innerModifier.layoutId("icon"),
+                color = Color(generateColorFromClassName(parent.email ?: "")),
+                icon = R.drawable.icon_parent
+            )
+
+
+            Text(
+                modifier = innerModifier.layoutId("name"),
+                text = parent.fullname.orParent(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary,
+            )
+
+
+            Text(
+                modifier = innerModifier
+                    .layoutId("code")
+                    .widthIn(max = with(LocalDensity.current) {
+                        rowWidth
+                            .toDp()
+                            .times(.5f)
+                    }),
+                text = parent.email ?: "",
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colors.primary,
+            )
+
+            RoundedIconButton(
+                modifier = innerModifier.layoutId("manage"),
+                onClick = { onRemove(parent) }, icon = R.drawable.icon_close,
+            )
+        }
+    }
+}
+
+private fun VerifiedParentItemConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val name = createRefFor("name")
+        val code = createRefFor("code")
+        val manage = createRefFor("manage")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin = margin)
+            top.linkTo(manage.top, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(name) {
+            top.linkTo(manage.top, margin = 0.dp)
+            start.linkTo(icon.end, margin = 8.dp)
+        }
+
+        constrain(code) {
+            top.linkTo(name.bottom, margin = 4.dp)
+            start.linkTo(name.start, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(manage) {
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
+            end.linkTo(parent.end, margin = margin)
+        }
+    }
+}
+
+
+@Composable
+fun VerifiedStudentItem(
+    modifier: Modifier = Modifier,
+    student: UserModel,
+    onRemove: (UserModel) -> Unit,
+) {
+    val constraints = VerifiedStudentItemConstraints(8.dp)
+    val innerModifier = Modifier
+    var rowWidth by remember { mutableStateOf(0) }
+
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary
+        )
+    ) {
+        ConstraintLayout(
+            modifier = modifier
+                .onGloballyPositioned { rowWidth = it.size.width }
+                .fillMaxWidth()
+                .padding(8.dp),
+            constraintSet = constraints
+        ) {
+            StagedItemIcon(
+                modifier = innerModifier.layoutId("icon"),
+                color = Color(generateColorFromClassName(student.email ?: "")),
+                icon = R.drawable.icon_student_cap
+            )
+
+
+            Text(
+                modifier = innerModifier.layoutId("name"),
+                text = student.fullname.orStudent(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary,
+            )
+
+            Text(
+                modifier = innerModifier
+                    .layoutId("code")
+                    .widthIn(max = with(LocalDensity.current) {
+                        rowWidth
+                            .toDp()
+                            .times(.5f)
+                    }),
+                text = student.email ?: "",
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colors.primary,
+            )
+
+            RoundedIconButton(
+                modifier = innerModifier.layoutId("manage"),
+                onClick = { onRemove(student) }, icon = R.drawable.icon_close,
+            )
+        }
+    }
+}
+
+private fun VerifiedStudentItemConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val name = createRefFor("name")
+        val code = createRefFor("code")
+        val manage = createRefFor("manage")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin = margin)
+            top.linkTo(manage.top, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(name) {
+            top.linkTo(manage.top, margin = 0.dp)
+            start.linkTo(icon.end, margin = 8.dp)
+        }
+
+        constrain(code) {
+            top.linkTo(name.bottom, margin = 4.dp)
+            start.linkTo(name.start, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(manage) {
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
+            end.linkTo(parent.end, margin = margin)
+        }
+    }
+}
+
+
+@Composable
+fun VerifiedTeacherItem(
+    modifier: Modifier = Modifier,
+    teacher: UserModel,
+    onRemove: (UserModel) -> Unit,
+) {
+    val constraints = VerifiedTeacherItemConstraints(8.dp)
+    val innerModifier = Modifier
+    var rowWidth by remember { mutableStateOf(0) }
+
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary
+        )
+    ) {
+        ConstraintLayout(
+            modifier = modifier
+                .onGloballyPositioned { rowWidth = it.size.width }
+                .fillMaxWidth()
+                .padding(8.dp),
+            constraintSet = constraints
+        ) {
+            StagedItemIcon(
+                modifier = innerModifier.layoutId("icon"),
+                color = Color(generateColorFromClassName(teacher.email ?: "")),
+                icon = R.drawable.icon_enroll
+            )
+
+
+            Text(
+                modifier = innerModifier.layoutId("name"),
+                text = teacher.fullname.orTeacher(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary,
+            )
+
+            Text(
+                modifier = innerModifier
+                    .layoutId("code")
+                    .widthIn(max = with(LocalDensity.current) {
+                        rowWidth
+                            .toDp()
+                            .times(.5f)
+                    }),
+                text = teacher.email ?: "",
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colors.primary,
+            )
+
+            RoundedIconButton(
+                modifier = innerModifier.layoutId("manage"),
+                onClick = { onRemove(teacher) }, icon = R.drawable.icon_close,
+            )
+        }
+    }
+}
+
+private fun VerifiedTeacherItemConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val name = createRefFor("name")
+        val code = createRefFor("code")
+        val manage = createRefFor("manage")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin = margin)
+            top.linkTo(manage.top, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(name) {
+            top.linkTo(manage.top, margin = 0.dp)
+            start.linkTo(icon.end, margin = 8.dp)
+        }
+
+        constrain(code) {
+            top.linkTo(name.bottom, margin = 4.dp)
+            start.linkTo(name.start, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(manage) {
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
+            end.linkTo(parent.end, margin = margin)
+        }
+    }
+}
+
+@Composable
+fun VerifiedSubjectItem(
+    modifier: Modifier = Modifier,
+    subject: SubjectModel,
+    onRemove: (SubjectModel) -> Unit,
+) {
+    val constraints = VerifiedSubjectItemConstraints(8.dp)
+    val innerModifier = Modifier
+    var rowWidth by remember { mutableStateOf(0) }
+
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary
+        )
+    ) {
+        ConstraintLayout(
+            modifier = modifier
+                .onGloballyPositioned { rowWidth = it.size.width }
+                .fillMaxWidth()
+                .padding(8.dp),
+            constraintSet = constraints
+        ) {
+            StagedItemIcon(
+                modifier = innerModifier.layoutId("icon"),
+                color = Color(generateColorFromClassName(subject.subjectName ?: "")),
+            )
+
+
+            Text(
+                modifier = innerModifier.layoutId("name"),
+                text = subject.subjectName.orEmpty(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary,
+            )
+
+            Text(
+                modifier = innerModifier
+                    .layoutId("code")
+                    .widthIn(max = with(LocalDensity.current) {
+                        rowWidth
+                            .toDp()
+                            .times(.5f)
+                    }),
+                text = subject.subjectCode ?: "",
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colors.primary,
+            )
+
+            RoundedIconButton(
+                modifier = innerModifier.layoutId("manage"),
+                onClick = { onRemove(subject) }, icon = R.drawable.icon_close,
+            )
+        }
+    }
+}
+
+private fun VerifiedSubjectItemConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val name = createRefFor("name")
+        val code = createRefFor("code")
+        val manage = createRefFor("manage")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin = margin)
+            top.linkTo(manage.top, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(name) {
+            top.linkTo(manage.top, margin = 0.dp)
+            start.linkTo(icon.end, margin = 8.dp)
+        }
+
+        constrain(code) {
+            top.linkTo(name.bottom, margin = 4.dp)
+            start.linkTo(name.start, margin = 0.dp)
+            bottom.linkTo(manage.bottom, margin = 0.dp)
+        }
+
+        constrain(manage) {
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
+            end.linkTo(parent.end, margin = margin)
         }
     }
 }
