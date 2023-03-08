@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -32,6 +31,58 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+
+
+@Composable
+fun ChildTopBarWithOptions(
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit,
+    onOptions: () -> Unit,
+    heading: String,
+    elevation: Dp = 2.dp,
+    backgroundColor: Color = MaterialTheme.colors.background,
+    contentColor: Color = MaterialTheme.colors.primary,
+) {
+    Card(modifier = modifier, elevation = elevation, backgroundColor = backgroundColor) {
+        Box(
+            modifier = modifier
+                .padding(12.dp)
+                .fillMaxWidth(), contentAlignment = Alignment.CenterStart
+        ) {
+            RoundedIconButtonTopBar(
+                icon = R.drawable.icon_back,
+                onClick = onBack,
+                size = 20.dp,
+                tint = contentColor,
+            )
+
+            Box(
+                modifier = modifier
+                    .fillMaxWidth(), contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = heading,
+                    color = contentColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = modifier,
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+            Box(
+                modifier = modifier
+                    .fillMaxWidth(), contentAlignment = Alignment.CenterEnd
+            ) {
+                RoundedIconButton(
+                    onClick = onOptions, icon = R.drawable.icon_options_vertical,
+                    tint = MaterialTheme.colors.surface,
+                )
+            }
+        }
+    }
+}
+
 
 
 @Composable

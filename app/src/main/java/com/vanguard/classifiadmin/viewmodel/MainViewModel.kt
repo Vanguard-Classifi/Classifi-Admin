@@ -307,6 +307,42 @@ class MainViewModel @Inject constructor(
     private var _parentAlreadyExistStateAdmin = MutableStateFlow(null as Boolean?)
     val parentAlreadyExistStateAdmin: StateFlow<Boolean?> = _parentAlreadyExistStateAdmin
 
+    private var _classSelectedStateManageClasses = MutableStateFlow(false as Boolean?)
+    var classSelectedStateManageClasses: StateFlow<Boolean?> = _classSelectedStateManageClasses
+
+    private var _selectedClassesManageClasses = MutableStateFlow(mutableListOf<String>())
+    val selectedClassesManageClasses: StateFlow<List<String>> = _selectedClassesManageClasses
+
+    private var _selectionListenerManageClass = MutableStateFlow(0)
+    val selectionListenerManageClass: StateFlow<Int> = _selectionListenerManageClass
+
+    fun onIncSelectionListenerManageClass() = effect {
+        _selectionListenerManageClass.value++
+    }
+
+    fun onDecSelectionListenerManageClass() = effect {
+        _selectionListenerManageClass.value--
+    }
+
+    fun onAddClassToBuffer(code: String) = effect {
+        if(!_selectedClassesManageClasses.value.contains(code)) {
+            _selectedClassesManageClasses.value.add(code)
+        }
+    }
+
+    fun onRemoveClassFromBuffer(code: String) = effect {
+        if(_selectedClassesManageClasses.value.contains(code)) {
+            _selectedClassesManageClasses.value.remove(code)
+        }
+    }
+
+    fun onClearBuffer() = effect {
+        _selectedClassesManageClasses.value.clear()
+    }
+
+    fun onClassSelectedStateManageClassesChanged(state: Boolean?) = effect {
+        _classSelectedStateManageClasses.value = state
+    }
     fun onParentAlreadyExistStateAdminChanged(state: Boolean?) = effect {
         _parentAlreadyExistStateAdmin.value = state
     }

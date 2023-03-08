@@ -143,4 +143,5 @@
     <string name="parent_already_exist">Parent Already Exists</string>
     <string name="pending_parent">Pending Parent</string>
     <string name="user_already_exists">User Already Exists</string>
+    <string name="manage_classes">Manage Classes</string>
 </resources>

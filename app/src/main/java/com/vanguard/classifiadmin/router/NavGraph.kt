@@ -252,7 +252,8 @@ fun NavGraph(
 
         composable(Destinations.manageClassAdmin) {
             ManageClassAdminScreen(
-
+                viewModel = viewModel,
+                onBack = {navController.navigate(Destinations.account)}
             )
         }
 
