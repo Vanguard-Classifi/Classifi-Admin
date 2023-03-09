@@ -29,6 +29,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,8 +61,10 @@ import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.extensions.orParent
 import com.vanguard.classifiadmin.domain.extensions.orStudent
 import com.vanguard.classifiadmin.domain.extensions.orTeacher
+import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithOptions
+import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
@@ -77,6 +80,9 @@ fun ManageClassAdminDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    onAddSubject: () -> Unit,
+    onImportStudent: () -> Unit,
+    onInviteTeachers: () -> Unit,
 ) {
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
@@ -104,6 +110,9 @@ fun ManageClassAdminDetailScreen(
                     viewModel = viewModel,
                     onBack = onBack,
                     maxHeight = maxHeight,
+                    onAddSubject = onAddSubject,
+                    onImportStudent = onImportStudent,
+                    onInviteTeachers = onInviteTeachers,
                 )
             }
         )
@@ -158,7 +167,10 @@ fun ManageClassAdminDetailScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     maxHeight: Dp,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onAddSubject: () -> Unit,
+    onImportStudent: () -> Unit,
+    onInviteTeachers: () -> Unit,
 ) {
     val verticalScroll = rememberScrollState()
     val selectedClassManageClass by viewModel.selectedClassManageClassAdmin.collectAsState()
@@ -198,13 +210,19 @@ fun ManageClassAdminDetailScreenContent(
                 when (selectedManageClassSubsectionItem) {
                     ManageClassSubsectionItem.Students -> {
                         ManageClassAdminDetailScreenContentStudents(
-                            maxHeight = maxHeight
+                            maxHeight = maxHeight,
+                            viewModel = viewModel,
+                            onBack = onBack,
+                            onImportStudent = onImportStudent,
                         )
                     }
 
                     ManageClassSubsectionItem.Teachers -> {
                         ManageClassAdminDetailScreenContentTeachers(
-                            maxHeight = maxHeight
+                            maxHeight = maxHeight,
+                            viewModel = viewModel,
+                            onInviteTeachers = onInviteTeachers,
+                            onBack = onBack
                         )
                     }
 
@@ -212,6 +230,8 @@ fun ManageClassAdminDetailScreenContent(
                         ManageClassAdminDetailScreenContentSubjects(
                             viewModel = viewModel,
                             maxHeight = maxHeight,
+                            onBack = onBack,
+                            onAddSubject = onAddSubject
                         )
                     }
                 }
@@ -220,17 +240,68 @@ fun ManageClassAdminDetailScreenContent(
     }
 }
 
+
 @Composable
 fun ManageClassAdminDetailScreenContentStudents(
     modifier: Modifier = Modifier,
-    maxHeight: Dp
+    viewModel: MainViewModel,
+    maxHeight: Dp,
+    onBack: () -> Unit,
+    onImportStudent: () -> Unit,
 ) {
-   NoDataScreen(
-       maxHeight = maxHeight,
-       message = stringResource(id = R.string.no_students),
-       buttonLabel = stringResource(id = R.string.import_students),
-       onClick = {}
-   )
+    val verifiedStudentsUnderClassNetwork by viewModel.verifiedStudentsUnderClassNetwork.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
+
+
+    LaunchedEffect(key1 = Unit, block = {
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getVerifiedStudentsUnderClassNetwork(
+            classId = selectedClassManageClassAdmin?.classId.orEmpty(),
+            schoolId = currentSchoolIdPref.orEmpty(),
+        )
+    })
+
+    when (verifiedStudentsUnderClassNetwork) {
+        is Resource.Loading -> {
+            LoadingScreen(maxHeight = maxHeight)
+        }
+
+        is Resource.Success -> {
+            if (verifiedStudentsUnderClassNetwork.data?.isNotEmpty() == true) {
+                //do your thing
+                Column(modifier = modifier) {
+                    verifiedStudentsUnderClassNetwork.data?.forEach { student ->
+                        VerifiedStudentItem(student = student.toLocal(), viewDetails = {
+                            //todo: on view details
+                        })
+                    }
+                }
+
+            } else {
+                NoDataScreen(
+                    maxHeight = maxHeight,
+                    message = stringResource(id = R.string.no_students),
+                    buttonLabel = stringResource(id = R.string.import_students),
+                    onClick = onImportStudent
+                )
+            }
+        }
+
+
+        is Resource.Error -> {
+            NoDataScreen(
+                maxHeight = maxHeight,
+                message = stringResource(id = R.string.error_occurred_students),
+                buttonLabel = stringResource(id = R.string.go_back),
+                onClick = onBack,
+            )
+        }
+
+        else -> {
+            LoadingScreen(maxHeight = maxHeight)
+        }
+    }
 }
 
 
@@ -238,28 +309,126 @@ fun ManageClassAdminDetailScreenContentStudents(
 fun ManageClassAdminDetailScreenContentSubjects(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    maxHeight: Dp
+    maxHeight: Dp,
+    onBack: () -> Unit,
+    onAddSubject: () -> Unit,
 ) {
-    NoDataScreen(
-        maxHeight = maxHeight,
-        message = stringResource(id = R.string.no_subjects),
-        buttonLabel = stringResource(id = R.string.add_subjects),
-        onClick = {}
-    )
+    val verifiedSubjectsUnderClassNetwork by viewModel.verifiedSubjectsUnderClassNetwork.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
+
+
+    LaunchedEffect(key1 = Unit, block = {
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getVerifiedSubjectsUnderClassNetwork(
+            classId = selectedClassManageClassAdmin?.classId.orEmpty(),
+            schoolId = currentSchoolIdPref.orEmpty(),
+        )
+    })
+
+    when (verifiedSubjectsUnderClassNetwork) {
+        is Resource.Loading -> {
+            LoadingScreen(maxHeight = maxHeight)
+        }
+
+        is Resource.Success -> {
+            if (verifiedSubjectsUnderClassNetwork.data?.isNotEmpty() == true) {
+               //do your thing
+               Column(modifier = modifier) {
+                   verifiedSubjectsUnderClassNetwork.data?.forEach { subject ->
+                       VerifiedSubjectItem(subject = subject.toLocal(), viewDetails = {
+                           //todo: on view details
+                       })
+                   }
+               }
+
+            } else {
+                NoDataScreen(
+                    maxHeight = maxHeight,
+                    message = stringResource(id = R.string.no_subjects),
+                    buttonLabel = stringResource(id = R.string.add_subjects),
+                    onClick = onAddSubject
+                )
+            }
+        }
+
+        is Resource.Error -> {
+            NoDataScreen(
+                maxHeight = maxHeight,
+                message = stringResource(id = R.string.error_occurred_subjects),
+                buttonLabel = stringResource(id = R.string.go_back),
+                onClick = onBack,
+            )
+        }
+
+        else -> {
+            LoadingScreen(maxHeight = maxHeight)
+        }
+    }
 }
 
 
 @Composable
 fun ManageClassAdminDetailScreenContentTeachers(
     modifier: Modifier = Modifier,
-    maxHeight: Dp
+    viewModel: MainViewModel,
+    maxHeight: Dp,
+    onInviteTeachers: () -> Unit,
+    onBack: () -> Unit,
 ) {
-    NoDataScreen(
-        maxHeight = maxHeight,
-        message = stringResource(id = R.string.no_teachers),
-        buttonLabel = stringResource(id = R.string.invite_teachers),
-        onClick = {}
-    )
+    val verifiedTeachersUnderClassNetwork by viewModel.verifiedTeachersUnderClassNetwork.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
+
+    LaunchedEffect(key1 = Unit, block = {
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getVerifiedTeachersUnderClassNetwork(
+            classId = selectedClassManageClassAdmin?.classId.orEmpty(),
+            schoolId = currentSchoolIdPref.orEmpty(),
+        )
+    })
+
+
+    when (verifiedTeachersUnderClassNetwork) {
+        is Resource.Loading -> {
+            LoadingScreen(maxHeight = maxHeight)
+        }
+
+        is Resource.Success -> {
+            if (verifiedTeachersUnderClassNetwork.data?.isNotEmpty() == true) {
+                //do your thing
+                Column(modifier = modifier) {
+                    verifiedTeachersUnderClassNetwork.data?.forEach { teacher ->
+                        VerifiedTeacherItem(teacher = teacher.toLocal(), viewDetails = {
+                            //todo: on view details
+                        })
+                    }
+                }
+
+            } else {
+                NoDataScreen(
+                    maxHeight = maxHeight,
+                    message = stringResource(id = R.string.no_teachers),
+                    buttonLabel = stringResource(id = R.string.invite_teachers),
+                    onClick = onInviteTeachers
+                )
+            }
+        }
+
+        is Resource.Error -> {
+            NoDataScreen(
+                maxHeight = maxHeight,
+                message = stringResource(id = R.string.error_occurred_teachers),
+                buttonLabel = stringResource(id = R.string.go_back),
+                onClick = onBack
+            )
+        }
+
+        else -> {
+            LoadingScreen(maxHeight = maxHeight)
+        }
+    }
+
 }
 
 
@@ -676,7 +845,7 @@ private fun VerifiedParentItemConstraints(margin: Dp): ConstraintSet {
 fun VerifiedStudentItem(
     modifier: Modifier = Modifier,
     student: UserModel,
-    onRemove: (UserModel) -> Unit,
+    viewDetails: (UserModel) -> Unit,
 ) {
     val constraints = VerifiedStudentItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -696,7 +865,8 @@ fun VerifiedStudentItem(
             modifier = modifier
                 .onGloballyPositioned { rowWidth = it.size.width }
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(8.dp)
+                .clickable { viewDetails(student) },
             constraintSet = constraints
         ) {
             StagedItemIcon(
@@ -729,10 +899,6 @@ fun VerifiedStudentItem(
                 color = MaterialTheme.colors.primary,
             )
 
-            RoundedIconButton(
-                modifier = innerModifier.layoutId("manage"),
-                onClick = { onRemove(student) }, icon = R.drawable.icon_close,
-            )
         }
     }
 }
@@ -742,30 +908,24 @@ private fun VerifiedStudentItemConstraints(margin: Dp): ConstraintSet {
         val icon = createRefFor("icon")
         val name = createRefFor("name")
         val code = createRefFor("code")
-        val manage = createRefFor("manage")
 
         constrain(icon) {
             start.linkTo(parent.start, margin = margin)
-            top.linkTo(manage.top, margin = 0.dp)
-            bottom.linkTo(manage.bottom, margin = 0.dp)
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
         }
 
         constrain(name) {
-            top.linkTo(manage.top, margin = 0.dp)
+            top.linkTo(icon.top, margin = 0.dp)
             start.linkTo(icon.end, margin = 8.dp)
         }
 
         constrain(code) {
             top.linkTo(name.bottom, margin = 4.dp)
             start.linkTo(name.start, margin = 0.dp)
-            bottom.linkTo(manage.bottom, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
         }
 
-        constrain(manage) {
-            top.linkTo(parent.top, margin = 0.dp)
-            bottom.linkTo(parent.bottom, margin = 0.dp)
-            end.linkTo(parent.end, margin = margin)
-        }
     }
 }
 
@@ -774,7 +934,7 @@ private fun VerifiedStudentItemConstraints(margin: Dp): ConstraintSet {
 fun VerifiedTeacherItem(
     modifier: Modifier = Modifier,
     teacher: UserModel,
-    onRemove: (UserModel) -> Unit,
+    viewDetails: (UserModel) -> Unit,
 ) {
     val constraints = VerifiedTeacherItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -794,7 +954,8 @@ fun VerifiedTeacherItem(
             modifier = modifier
                 .onGloballyPositioned { rowWidth = it.size.width }
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(8.dp)
+                .clickable { viewDetails(teacher) },
             constraintSet = constraints
         ) {
             StagedItemIcon(
@@ -827,10 +988,6 @@ fun VerifiedTeacherItem(
                 color = MaterialTheme.colors.primary,
             )
 
-            RoundedIconButton(
-                modifier = innerModifier.layoutId("manage"),
-                onClick = { onRemove(teacher) }, icon = R.drawable.icon_close,
-            )
         }
     }
 }
@@ -840,29 +997,22 @@ private fun VerifiedTeacherItemConstraints(margin: Dp): ConstraintSet {
         val icon = createRefFor("icon")
         val name = createRefFor("name")
         val code = createRefFor("code")
-        val manage = createRefFor("manage")
 
         constrain(icon) {
             start.linkTo(parent.start, margin = margin)
-            top.linkTo(manage.top, margin = 0.dp)
-            bottom.linkTo(manage.bottom, margin = 0.dp)
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
         }
 
         constrain(name) {
-            top.linkTo(manage.top, margin = 0.dp)
+            top.linkTo(icon.top, margin = 0.dp)
             start.linkTo(icon.end, margin = 8.dp)
         }
 
         constrain(code) {
             top.linkTo(name.bottom, margin = 4.dp)
             start.linkTo(name.start, margin = 0.dp)
-            bottom.linkTo(manage.bottom, margin = 0.dp)
-        }
-
-        constrain(manage) {
-            top.linkTo(parent.top, margin = 0.dp)
-            bottom.linkTo(parent.bottom, margin = 0.dp)
-            end.linkTo(parent.end, margin = margin)
+            bottom.linkTo(icon.bottom, margin = 0.dp)
         }
     }
 }
@@ -871,7 +1021,7 @@ private fun VerifiedTeacherItemConstraints(margin: Dp): ConstraintSet {
 fun VerifiedSubjectItem(
     modifier: Modifier = Modifier,
     subject: SubjectModel,
-    onRemove: (SubjectModel) -> Unit,
+    viewDetails: (SubjectModel) -> Unit,
 ) {
     val constraints = VerifiedSubjectItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -880,7 +1030,8 @@ fun VerifiedSubjectItem(
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { viewDetails(subject) },
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = 1.dp,
@@ -923,10 +1074,6 @@ fun VerifiedSubjectItem(
                 color = MaterialTheme.colors.primary,
             )
 
-            RoundedIconButton(
-                modifier = innerModifier.layoutId("manage"),
-                onClick = { onRemove(subject) }, icon = R.drawable.icon_close,
-            )
         }
     }
 }
@@ -936,30 +1083,24 @@ private fun VerifiedSubjectItemConstraints(margin: Dp): ConstraintSet {
         val icon = createRefFor("icon")
         val name = createRefFor("name")
         val code = createRefFor("code")
-        val manage = createRefFor("manage")
 
         constrain(icon) {
             start.linkTo(parent.start, margin = margin)
-            top.linkTo(manage.top, margin = 0.dp)
-            bottom.linkTo(manage.bottom, margin = 0.dp)
+            top.linkTo(parent.top, margin = 0.dp)
+            bottom.linkTo(parent.bottom, margin = 0.dp)
         }
 
         constrain(name) {
-            top.linkTo(manage.top, margin = 0.dp)
+            top.linkTo(icon.top, margin = 0.dp)
             start.linkTo(icon.end, margin = 8.dp)
         }
 
         constrain(code) {
             top.linkTo(name.bottom, margin = 4.dp)
             start.linkTo(name.start, margin = 0.dp)
-            bottom.linkTo(manage.bottom, margin = 0.dp)
+            bottom.linkTo(icon.bottom, margin = 0.dp)
         }
 
-        constrain(manage) {
-            top.linkTo(parent.top, margin = 0.dp)
-            bottom.linkTo(parent.bottom, margin = 0.dp)
-            end.linkTo(parent.end, margin = margin)
-        }
     }
 }
 

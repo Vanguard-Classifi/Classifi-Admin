@@ -63,6 +63,17 @@ interface FirestoreManager {
     suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit)
     suspend fun deleteUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit)
 
+    suspend fun getVerifiedStudentsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedTeachersUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
 
     //school
     suspend fun saveSchoolNetwork(school: SchoolNetworkModel, onResult: (Boolean) -> Unit)
@@ -178,5 +189,12 @@ interface FirestoreManager {
         subjects: List<SubjectNetworkModel>,
         onResult: (Boolean) -> Unit
     )
+
+    suspend fun getVerifiedSubjectsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    )
+
 
 }

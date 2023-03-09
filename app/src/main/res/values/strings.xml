@@ -150,4 +150,9 @@
     <string name="add_subjects">Add subjects</string>
     <string name="no_teachers">" No teachers available yet"</string>
     <string name="invite_teachers">Invite Teachers</string>
+    <string name="error_occurred_subjects">An error occurred while loading subjects</string>
+    <string name="please_wait">Please wait...</string>
+    <string name="go_back">Go Back</string>
+    <string name="error_occurred_students">An error occurred while loading students</string>
+    <string name="error_occurred_teachers">An error occurred while loading teachers</string>
 </resources>

@@ -269,7 +269,10 @@ fun NavGraph(
         composable(Destinations.manageClassAdminDetail) {
             ManageClassAdminDetailScreen(
                 viewModel = viewModel,
-                onBack = {navController.navigate(Destinations.manageClassAdmin)}
+                onBack = { navController.navigate(Destinations.manageClassAdmin) },
+                onAddSubject = {},
+                onInviteTeachers = {},
+                onImportStudent = {}
             )
         }
     }

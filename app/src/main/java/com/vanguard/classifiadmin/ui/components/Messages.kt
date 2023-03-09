@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -41,6 +42,46 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.theme.Black100
 
+@Composable
+fun LoadingScreen(
+    modifier: Modifier = Modifier,
+    maxHeight: Dp,
+) {
+    Surface(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(maxHeight.div(2f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                modifier = Modifier,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = modifier.height(16.dp))
+
+                CircularProgressIndicator(
+                    color = MaterialTheme.colors.primary,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(18.dp)
+                )
+
+                Spacer(modifier = modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(id = R.string.please_wait),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Black100.copy(.8f),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+        }
+    }
+}
 
 @Composable
 fun NoDataScreen(
@@ -273,5 +314,14 @@ private fun SuccessBarPreview() {
     SuccessBar(
         message = "Account Creation Completed!",
         maxWidth = 400.dp,
+    )
+}
+
+
+@Preview
+@Composable
+private fun LoadingScreenPreview() {
+    LoadingScreen(
+        maxHeight = 400.dp
     )
 }

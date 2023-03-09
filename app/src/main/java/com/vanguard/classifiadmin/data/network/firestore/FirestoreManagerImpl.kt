@@ -283,6 +283,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+
     override suspend fun getVerifiedParentsNetwork(
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
@@ -310,6 +311,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             onResult(Resource.Error("An error occurred"))
         }
     }
+
 
     override suspend fun getStagedParentsNetwork(
         schoolId: String,
@@ -386,6 +388,67 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .addOnFailureListener { onResult(false) }
         } catch (e: Exception) {
             onResult(false)
+        }
+    }
+
+
+    override suspend fun getVerifiedStudentsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val student = doc.toObject<UserNetworkModel>()
+                        if (student.schoolIds.contains(schoolId) &&
+                            student.verified == true &&
+                            student.roles.contains(UserRole.Student.name) &&
+                            student.classIds.contains(classId)
+                        ) {
+                            //add to container
+                            results.add(student)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
+        }
+    }
+
+    override suspend fun getVerifiedTeachersUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionUsers)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<UserNetworkModel>()
+                    for (doc in docs!!) {
+                        val teacher = doc.toObject<UserNetworkModel>()
+                        if (teacher.schoolIds.contains(schoolId) &&
+                            teacher.verified == true &&
+                            teacher.roles.contains(UserRole.Teacher.name) &&
+                            teacher.classIds.contains(classId)
+                        ) {
+                            //add to container
+                            results.add(teacher)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch students")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("An error occurred"))
         }
     }
 
@@ -569,6 +632,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+
     override suspend fun getVerifiedClassesNetwork(
         schoolId: String,
         onResult: (Resource<List<ClassNetworkModel>>) -> Unit
@@ -590,6 +654,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             onResult(Resource.Error("Something went wrong!"))
         }
     }
+
 
     override suspend fun getStagedClassesNetwork(
         schoolId: String,
@@ -649,6 +714,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             onResult(false)
         }
     }
+
 
     override suspend fun saveSubjectAsStagedNetwork(
         subject: SubjectNetworkModel,
@@ -854,6 +920,30 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             }
         } catch (e: Exception) {
             onResult(false)
+        }
+    }
+
+    override suspend fun getVerifiedSubjectsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionSubjects)
+                .whereEqualTo("verified", true)
+                .whereEqualTo("classId", classId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<SubjectNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<SubjectNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
         }
     }
 }

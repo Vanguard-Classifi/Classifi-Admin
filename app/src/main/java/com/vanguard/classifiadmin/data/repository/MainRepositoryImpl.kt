@@ -150,6 +150,26 @@ class MainRepositoryImpl @Inject constructor(
         firestoreManager.deleteUserNetwork(user, onResult)
     }
 
+    override suspend fun getVerifiedStudentsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedStudentsUnderClassNetwork(
+            classId, schoolId, onResult
+        )
+    }
+
+    override suspend fun getVerifiedTeachersUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedTeachersUnderClassNetwork(
+            classId, schoolId, onResult
+        )
+    }
+
     override suspend fun saveSchoolNetwork(
         school: SchoolNetworkModel,
         onResult: (Boolean) -> Unit
@@ -341,5 +361,15 @@ class MainRepositoryImpl @Inject constructor(
         onResult: (Boolean) -> Unit
     ) {
         firestoreManager.deleteSubjectsNetwork(subjects, onResult)
+    }
+
+    override suspend fun getVerifiedSubjectsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedSubjectsUnderClassNetwork(
+            classId, schoolId, onResult
+        )
     }
 }

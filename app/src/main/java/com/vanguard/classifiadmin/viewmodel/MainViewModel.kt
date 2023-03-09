@@ -326,7 +326,50 @@ class MainViewModel @Inject constructor(
 
     private var _selectedManageClassSubsectionItem =
         MutableStateFlow(ManageClassSubsectionItem.Students as ManageClassSubsectionItem)
-    val selectedManageClassSubsectionItem: StateFlow<ManageClassSubsectionItem> = _selectedManageClassSubsectionItem
+    val selectedManageClassSubsectionItem: StateFlow<ManageClassSubsectionItem> =
+        _selectedManageClassSubsectionItem
+
+    private var _verifiedStudentsUnderClassNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val verifiedStudentsUnderClassNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedStudentsUnderClassNetwork
+
+    private var _verifiedTeachersUnderClassNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val verifiedTeachersUnderClassNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedTeachersUnderClassNetwork
+
+    private var _verifiedSubjectsUnderClassNetwork =
+        MutableStateFlow(Resource.Loading<List<SubjectNetworkModel>>() as Resource<List<SubjectNetworkModel>>)
+    val verifiedSubjectsUnderClassNetwork: StateFlow<Resource<List<SubjectNetworkModel>>> = _verifiedSubjectsUnderClassNetwork
+
+
+    fun getVerifiedStudentsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedStudentsUnderClassNetwork(classId, schoolId) {
+            _verifiedStudentsUnderClassNetwork.value = it
+        }
+    }
+
+    fun getVerifiedTeachersUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedTeachersUnderClassNetwork(classId, schoolId) {
+            _verifiedTeachersUnderClassNetwork.value = it
+        }
+    }
+
+
+    fun getVerifiedSubjectsUnderClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedSubjectsUnderClassNetwork(classId, schoolId) {
+            _verifiedSubjectsUnderClassNetwork.value = it
+        }
+    }
+
 
     fun onSelectedManageClassSubsectionItemChanged(item: ManageClassSubsectionItem) = effect {
         _selectedManageClassSubsectionItem.value = item
