@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.admin
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -8,6 +9,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -35,11 +37,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -54,6 +58,7 @@ import androidx.compose.ui.window.Popup
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
+import androidx.work.ListenableWorker.Result.Success
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
@@ -63,13 +68,18 @@ import com.vanguard.classifiadmin.domain.extensions.orStudent
 import com.vanguard.classifiadmin.domain.extensions.orTeacher
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithOptions
 import com.vanguard.classifiadmin.ui.components.LoadingScreen
+import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
+import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 const val MANAGE_CLASS_ADMIN_DETAIL_SCREEN =
     "manage_class_admin_detail_screen"
@@ -87,6 +97,16 @@ fun ManageClassAdminDetailScreen(
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
     val optionState: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val importStudentSuccessState by viewModel.importStudentSuccessState.collectAsState()
+    val importStudentBuffer by viewModel.importStudentBuffer.collectAsState()
+
+    LaunchedEffect(importStudentSuccessState) {
+        if(importStudentSuccessState == true) {
+            delay(3000)
+            viewModel.onImportStudentSuccessStateChanged(false)
+            viewModel.clearImportStudentBuffer()
+        }
+    }
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -139,6 +159,16 @@ fun ManageClassAdminDetailScreen(
                     ManageClassSubsectionItem.Teachers -> {
                         ManageClassDetailPopupTeacherOptionsScreen(
                             onSelectOption = {
+                                when (it) {
+                                    ManageClassDetailPopupTeacherOption.Import -> {
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.ImportTeacher
+                                        )
+                                        onInviteTeachers()
+                                    }
+
+                                    else -> {}
+                                }
                                 optionState.value = false
                             }
                         )
@@ -146,18 +176,54 @@ fun ManageClassAdminDetailScreen(
 
                     ManageClassSubsectionItem.Subjects -> {
                         ManageClassDetailPopupSubjectOptionsScreen(onSelectOption = {
+                            when (it) {
+                                ManageClassDetailPopupSubjectOption.Import -> {
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.ImportSubject
+                                    )
+                                    onAddSubject()
+                                }
+
+                                else -> {}
+                            }
                             optionState.value = false
                         })
                     }
 
                     ManageClassSubsectionItem.Students -> {
                         ManageClassDetailPopupStudentOptionsScreen(onSelectOption = {
+                            when (it) {
+                                ManageClassDetailPopupStudentOption.Import -> {
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.ImportStudent
+                                    )
+                                    onImportStudent()
+                                }
+
+                                else -> {}
+                            }
                             optionState.value = false
                         })
                     }
                 }
             }
         }
+
+
+        if(importStudentSuccessState == true) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                MessageBar(
+                    message = "Imported ${importStudentBuffer.size} students successfully!", onClose = {
+                        viewModel.onImportStudentSuccessStateChanged(false)
+                    },
+                    maxWidth = maxWidth
+                )
+            }
+        }
+
     }
 }
 
@@ -172,9 +238,60 @@ fun ManageClassAdminDetailScreenContent(
     onImportStudent: () -> Unit,
     onInviteTeachers: () -> Unit,
 ) {
+    val TAG = "ManageClassAdminDetailScreenContent"
     val verticalScroll = rememberScrollState()
     val selectedClassManageClass by viewModel.selectedClassManageClassAdmin.collectAsState()
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
+    val manageClassAdminDetailFeature by viewModel.manageClassAdminDetailFeature.collectAsState()
+    val importStudentBuffer by viewModel.importStudentBuffer.collectAsState()
+    val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
+    val scope = rememberCoroutineScope()
+
+
+    LaunchedEffect(Unit) {
+        Log.e(
+            TAG,
+            "ManageClassAdminDetailScreenContent: import students buffer is ${importStudentBuffer.size}"
+        )
+        //paste the imported item
+        when (manageClassAdminDetailFeature) {
+            is ManageClassAdminDetailFeature.ImportStudent -> {
+                if (importStudentBuffer.isNotEmpty()) {
+                    scope.launch {
+                        //paste the students
+                        importStudentBuffer.map { studentId ->
+                            viewModel.getUserByIdNetwork(studentId)
+                            delay(1000)
+                            if (userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
+                                userByIdNetwork.data?.classIds?.clear()
+                                userByIdNetwork.data?.classIds?.add(
+                                    selectedClassManageClass?.classId.orEmpty()
+                                )
+                                viewModel.saveUserNetwork(userByIdNetwork.data?.toLocal()!!) {
+                                    //trigger a listener
+                                    viewModel.onIncManageClassAdminDetailListener()
+                                    //disengage the feature
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.NoFeature
+                                    )
+                                }
+                            }
+                            Log.e(TAG, "ManageClassAdminDetailScreenContent: pasting students")
+                        }
+                    }.invokeOnCompletion {
+                        runnableBlock {
+                            viewModel.onImportStudentSuccessStateChanged(true)
+                        }
+                    }
+                }
+            }
+
+            else -> {
+
+            }
+        }
+
+    }
 
     Column(
         modifier = modifier
@@ -252,6 +369,7 @@ fun ManageClassAdminDetailScreenContentStudents(
     val verifiedStudentsUnderClassNetwork by viewModel.verifiedStudentsUnderClassNetwork.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
+    val manageClassAdminDetailListener by viewModel.manageClassAdminDetailListener.collectAsState()
 
 
     LaunchedEffect(key1 = Unit, block = {
@@ -261,6 +379,14 @@ fun ManageClassAdminDetailScreenContentStudents(
             schoolId = currentSchoolIdPref.orEmpty(),
         )
     })
+
+
+    LaunchedEffect(manageClassAdminDetailListener) {
+        viewModel.getVerifiedStudentsUnderClassNetwork(
+            classId = selectedClassManageClassAdmin?.classId.orEmpty(),
+            schoolId = currentSchoolIdPref.orEmpty(),
+        )
+    }
 
     when (verifiedStudentsUnderClassNetwork) {
         is Resource.Loading -> {
@@ -272,9 +398,13 @@ fun ManageClassAdminDetailScreenContentStudents(
                 //do your thing
                 Column(modifier = modifier) {
                     verifiedStudentsUnderClassNetwork.data?.forEach { student ->
-                        VerifiedStudentItem(student = student.toLocal(), viewDetails = {
-                            //todo: on view details
-                        })
+                        VerifiedStudentItem(student = student.toLocal(),
+                            onTap = {
+                                //todo: onTap
+                            }, onHold = {
+                                //todo: onHold
+                            }
+                        )
                     }
                 }
 
@@ -296,10 +426,6 @@ fun ManageClassAdminDetailScreenContentStudents(
                 buttonLabel = stringResource(id = R.string.go_back),
                 onClick = onBack,
             )
-        }
-
-        else -> {
-            LoadingScreen(maxHeight = maxHeight)
         }
     }
 }
@@ -333,14 +459,14 @@ fun ManageClassAdminDetailScreenContentSubjects(
 
         is Resource.Success -> {
             if (verifiedSubjectsUnderClassNetwork.data?.isNotEmpty() == true) {
-               //do your thing
-               Column(modifier = modifier) {
-                   verifiedSubjectsUnderClassNetwork.data?.forEach { subject ->
-                       VerifiedSubjectItem(subject = subject.toLocal(), viewDetails = {
-                           //todo: on view details
-                       })
-                   }
-               }
+                //do your thing
+                Column(modifier = modifier) {
+                    verifiedSubjectsUnderClassNetwork.data?.forEach { subject ->
+                        VerifiedSubjectItem(subject = subject.toLocal(), viewDetails = {
+                            //todo: on view details
+                        })
+                    }
+                }
 
             } else {
                 NoDataScreen(
@@ -845,7 +971,9 @@ private fun VerifiedParentItemConstraints(margin: Dp): ConstraintSet {
 fun VerifiedStudentItem(
     modifier: Modifier = Modifier,
     student: UserModel,
-    viewDetails: (UserModel) -> Unit,
+    selected: Boolean = false,
+    onTap: (UserModel) -> Unit,
+    onHold: (UserModel) -> Unit,
 ) {
     val constraints = VerifiedStudentItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -854,19 +982,30 @@ fun VerifiedStudentItem(
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        onHold(student)
+                    },
+                    onTap = {
+                        onTap(student)
+                    }
+                )
+            },
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary
+            width = if (selected) 2.dp else 1.dp,
+            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
+                0.1f
+            )
         )
     ) {
         ConstraintLayout(
             modifier = modifier
                 .onGloballyPositioned { rowWidth = it.size.width }
                 .fillMaxWidth()
-                .padding(8.dp)
-                .clickable { viewDetails(student) },
+                .padding(8.dp),
             constraintSet = constraints
         ) {
             StagedItemIcon(
@@ -1128,3 +1267,20 @@ private fun ManageClassSubsectionItemButtonPreview() {
     )
 }
 
+
+sealed class ManageClassAdminDetailFeature {
+    object NoFeature : ManageClassAdminDetailFeature()
+    object EnrollStudent : ManageClassAdminDetailFeature()
+    object MakePrefect : ManageClassAdminDetailFeature()
+    object ImportStudent : ManageClassAdminDetailFeature()
+    object ExportStudent : ManageClassAdminDetailFeature()
+    object RemoveStudent : ManageClassAdminDetailFeature()
+    object ImportSubject : ManageClassAdminDetailFeature()
+    object ExportSubject : ManageClassAdminDetailFeature()
+    object RemoveSubject : ManageClassAdminDetailFeature()
+    object EnrollTeacher : ManageClassAdminDetailFeature()
+    object MakeFormTeacher : ManageClassAdminDetailFeature()
+    object ImportTeacher : ManageClassAdminDetailFeature()
+    object ExportTeacher : ManageClassAdminDetailFeature()
+    object RemoveTeacher : ManageClassAdminDetailFeature()
+}

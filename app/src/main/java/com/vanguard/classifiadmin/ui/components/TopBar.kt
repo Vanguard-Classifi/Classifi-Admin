@@ -34,6 +34,61 @@ import com.vanguard.classifiadmin.R
 
 
 @Composable
+fun ChildTopBarWithDone(
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit,
+    onDone: () -> Unit,
+    heading: String,
+    elevation: Dp = 2.dp,
+    showDone: Boolean = false,
+    iconTint: Color = MaterialTheme.colors.surface,
+    backgroundColor: Color = MaterialTheme.colors.background,
+    contentColor: Color = MaterialTheme.colors.primary,
+) {
+    Card(modifier = modifier, elevation = elevation, backgroundColor = backgroundColor) {
+        Box(
+            modifier = modifier
+                .padding(12.dp)
+                .fillMaxWidth(), contentAlignment = Alignment.CenterStart
+        ) {
+            RoundedIconButtonTopBar(
+                icon = R.drawable.icon_back,
+                onClick = onBack,
+                size = 20.dp,
+                tint = contentColor,
+            )
+
+            Box(
+                modifier = modifier
+                    .fillMaxWidth(), contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = heading,
+                    color = contentColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = modifier,
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+            if (showDone) {
+                Box(
+                    modifier = modifier
+                        .fillMaxWidth(), contentAlignment = Alignment.CenterEnd
+                ) {
+                    RoundedIconButton(
+                        onClick = onDone, icon = R.drawable.icon_tick,
+                        tint = contentColor,
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
 fun ChildTopBarWithOptions(
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
@@ -83,7 +138,6 @@ fun ChildTopBarWithOptions(
         }
     }
 }
-
 
 
 @Composable

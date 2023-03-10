@@ -20,6 +20,7 @@ import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
+import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailFeature
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
@@ -331,16 +332,74 @@ class MainViewModel @Inject constructor(
 
     private var _verifiedStudentsUnderClassNetwork =
         MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
-    val verifiedStudentsUnderClassNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedStudentsUnderClassNetwork
+    val verifiedStudentsUnderClassNetwork: StateFlow<Resource<List<UserNetworkModel>>> =
+        _verifiedStudentsUnderClassNetwork
 
     private var _verifiedTeachersUnderClassNetwork =
         MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
-    val verifiedTeachersUnderClassNetwork: StateFlow<Resource<List<UserNetworkModel>>> = _verifiedTeachersUnderClassNetwork
+    val verifiedTeachersUnderClassNetwork: StateFlow<Resource<List<UserNetworkModel>>> =
+        _verifiedTeachersUnderClassNetwork
 
     private var _verifiedSubjectsUnderClassNetwork =
         MutableStateFlow(Resource.Loading<List<SubjectNetworkModel>>() as Resource<List<SubjectNetworkModel>>)
-    val verifiedSubjectsUnderClassNetwork: StateFlow<Resource<List<SubjectNetworkModel>>> = _verifiedSubjectsUnderClassNetwork
+    val verifiedSubjectsUnderClassNetwork: StateFlow<Resource<List<SubjectNetworkModel>>> =
+        _verifiedSubjectsUnderClassNetwork
 
+    private var _importStudentBuffer = MutableStateFlow(mutableListOf<String>())
+    val importStudentBuffer: StateFlow<List<String>> = _importStudentBuffer
+
+    private var _importStudentBufferListener = MutableStateFlow(0)
+    val importStudentBufferListener: StateFlow<Int> = _importStudentBufferListener
+
+    private var _manageClassAdminDetailListener = MutableStateFlow(0)
+    val manageClassAdminDetailListener: StateFlow<Int> = _manageClassAdminDetailListener
+
+    private var _manageClassAdminDetailFeature =
+        MutableStateFlow(ManageClassAdminDetailFeature.NoFeature as ManageClassAdminDetailFeature)
+    val manageClassAdminDetailFeature: StateFlow<ManageClassAdminDetailFeature> = _manageClassAdminDetailFeature
+
+    private var _importStudentSuccessState = MutableStateFlow(null as Boolean?)
+    val importStudentSuccessState: StateFlow<Boolean?> = _importStudentSuccessState
+
+    fun onImportStudentSuccessStateChanged(state: Boolean?) = effect {
+        _importStudentSuccessState.value = state
+    }
+
+    fun onManageClassAdminDetailFeatureChanged(feature: ManageClassAdminDetailFeature) = effect {
+        _manageClassAdminDetailFeature.value = feature
+    }
+
+    fun onIncManageClassAdminDetailListener() = effect {
+        _manageClassAdminDetailListener.value++
+    }
+
+    fun onDecManageClassAdminDetailListener() = effect {
+        _manageClassAdminDetailListener.value--
+    }
+
+    fun onAddToImportStudentBuffer(id: String) = effect {
+        if (!_importStudentBuffer.value.contains(id)) {
+            _importStudentBuffer.value.add(id)
+        }
+    }
+
+    fun onRemoveFromImportStudentBuffer(id: String) = effect {
+        if (_importStudentBuffer.value.contains(id)) {
+            _importStudentBuffer.value.remove(id)
+        }
+    }
+
+    fun clearImportStudentBuffer() = effect {
+        _importStudentBuffer.value.clear()
+    }
+
+    fun onIncImportStudentBufferListener() = effect {
+        _importStudentBufferListener.value++
+    }
+
+    fun onDecImportStudentBufferListener() = effect {
+        _importStudentBufferListener.value--
+    }
 
     fun getVerifiedStudentsUnderClassNetwork(
         classId: String,

@@ -39,6 +39,12 @@ import com.vanguard.classifiadmin.ui.screens.dashboard.MAIN_DASHBOARD_SCREEN
 import com.vanguard.classifiadmin.ui.screens.dashboard.MainDashboardScreen
 import com.vanguard.classifiadmin.ui.screens.feeds.FEEDS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedsScreen
+import com.vanguard.classifiadmin.ui.screens.importations.IMPORT_STUDENT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.importations.IMPORT_SUBJECT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.importations.IMPORT_TEACHER_SCREEN
+import com.vanguard.classifiadmin.ui.screens.importations.ImportStudentScreen
+import com.vanguard.classifiadmin.ui.screens.importations.ImportSubjectScreen
+import com.vanguard.classifiadmin.ui.screens.importations.ImportTeacherScreen
 import com.vanguard.classifiadmin.ui.screens.profile.ACCOUNT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.profile.MyAccountScreen
 import com.vanguard.classifiadmin.ui.screens.profile.STUDENT_PROFILE_SCREEN
@@ -87,6 +93,9 @@ object Destinations {
     const val manageClassAdmin = MANAGE_CLASS_ADMIN_SCREEN
     const val manageSubjectAdmin = MANAGE_SUBJECT_ADMIN_SCREEN
     const val manageClassAdminDetail = MANAGE_CLASS_ADMIN_DETAIL_SCREEN
+    const val importSubject = IMPORT_SUBJECT_SCREEN
+    const val importTeacher = IMPORT_TEACHER_SCREEN
+    const val importStudent = IMPORT_STUDENT_SCREEN
 }
 
 
@@ -270,9 +279,28 @@ fun NavGraph(
             ManageClassAdminDetailScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageClassAdmin) },
-                onAddSubject = {},
-                onInviteTeachers = {},
-                onImportStudent = {}
+                onAddSubject = { navController.navigate(Destinations.importSubject) },
+                onInviteTeachers = { navController.navigate(Destinations.importTeacher) },
+                onImportStudent = { navController.navigate(Destinations.importStudent) }
+            )
+        }
+
+        composable(Destinations.importSubject) {
+            ImportSubjectScreen(
+            )
+        }
+
+        composable(Destinations.importStudent) {
+            ImportStudentScreen(
+                onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
+                viewModel = viewModel,
+                onEnrollStudent = { navController.navigate(Destinations.enrollStudentAdmin) },
+                onStudentImported = {navController.navigate(Destinations.manageClassAdminDetail)}
+            )
+        }
+
+        composable(Destinations.importTeacher) {
+            ImportTeacherScreen(
             )
         }
     }
