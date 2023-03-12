@@ -189,7 +189,7 @@ fun ImportSubjectScreenContent(
                 is Resource.Error -> {
                     NoDataScreen(
                         maxHeight = maxHeight,
-                        message = stringResource(id = R.string.error_occurred_students),
+                        message = stringResource(id = R.string.error_occurred_subjects),
                         buttonLabel = stringResource(id = R.string.go_back),
                         onClick = onBack,
                     )

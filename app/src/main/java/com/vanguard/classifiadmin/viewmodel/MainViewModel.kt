@@ -371,6 +371,44 @@ class MainViewModel @Inject constructor(
     private var _importSubjectSuccessState = MutableStateFlow(null as Boolean?)
     val importSubjectSuccessState: StateFlow<Boolean?> = _importSubjectSuccessState
 
+    private var _importTeacherSuccessState = MutableStateFlow(null as Boolean?)
+    val importTeacherSuccessState: StateFlow<Boolean?> = _importTeacherSuccessState
+
+    private var _importTeacherBufferListener = MutableStateFlow(0)
+    val importTeacherBufferListener: StateFlow<Int> = _importTeacherBufferListener
+
+    private var _importTeacherBuffer = MutableStateFlow(mutableListOf<String>())
+    val importTeacherBuffer: StateFlow<List<String>> = _importTeacherBuffer
+
+    fun onAddToImportTeacherBuffer(id: String) = effect {
+        if (!_importTeacherBuffer.value.contains(id)) {
+            _importTeacherBuffer.value.add(id)
+        }
+    }
+
+    fun onRemoveFromImportTeacherBuffer(id: String) = effect {
+        if (_importTeacherBuffer.value.contains(id)) {
+            _importTeacherBuffer.value.remove(id)
+        }
+    }
+
+    fun clearImportTeacherBuffer() = effect {
+        _importTeacherBuffer.value.clear()
+    }
+
+    fun onIncImportTeacherBufferListener() = effect {
+        _importTeacherBufferListener.value++
+    }
+
+    fun onDecImportTeacherBufferListener() = effect {
+        _importTeacherBufferListener.value--
+    }
+
+    fun onImportTeacherSuccessStateChanged(state: Boolean?) = effect {
+        _importTeacherSuccessState.value = state
+    }
+
+
     fun onImportSubjectSuccessStateChanged(state: Boolean?) = effect {
         _importSubjectSuccessState.value = state
     }
@@ -1131,4 +1169,8 @@ class MainViewModel @Inject constructor(
 
 
     private fun effect(block: suspend () -> Unit) = viewModelScope.launch { block() }
+
+    override fun onCleared() {
+        super.onCleared()
+    }
 }

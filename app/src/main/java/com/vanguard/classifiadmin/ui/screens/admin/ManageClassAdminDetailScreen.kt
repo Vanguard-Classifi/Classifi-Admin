@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -98,6 +99,8 @@ fun ManageClassAdminDetailScreen(
     val importStudentBuffer by viewModel.importStudentBuffer.collectAsState()
     val importSubjectSuccessState by viewModel.importSubjectSuccessState.collectAsState()
     val importSubjectBuffer by viewModel.importSubjectBuffer.collectAsState()
+    val importTeacherSuccessState by viewModel.importTeacherSuccessState.collectAsState()
+    val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
 
     LaunchedEffect(importStudentSuccessState) {
         if (importStudentSuccessState == true) {
@@ -112,6 +115,14 @@ fun ManageClassAdminDetailScreen(
             delay(3000)
             viewModel.onImportSubjectSuccessStateChanged(false)
             viewModel.clearImportSubjectBuffer()
+        }
+    }
+
+    LaunchedEffect(importTeacherSuccessState) {
+        if(importTeacherSuccessState == true) {
+            delay(3000)
+            viewModel.onImportTeacherSuccessStateChanged(false)
+            viewModel.clearImportTeacherBuffer()
         }
     }
 
@@ -253,6 +264,24 @@ fun ManageClassAdminDetailScreen(
                 )
             }
         }
+
+        if (importTeacherSuccessState == true) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                val message =
+                    if (importTeacherBuffer.size == 1) "Invited a teacher successfully!" else
+                        "Invited ${importTeacherBuffer.size} teachers successfully!"
+                MessageBar(
+                    message = message,
+                    onClose = {
+                        viewModel.onImportTeacherSuccessStateChanged(false)
+                    },
+                    maxWidth = maxWidth
+                )
+            }
+        }
     }
 }
 
@@ -278,6 +307,8 @@ fun ManageClassAdminDetailScreenContent(
     val importSubjectBuffer by viewModel.importSubjectBuffer.collectAsState()
     val subjectByCodeNetwork by viewModel.subjectByCodeNetwork.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
+
 
 
     LaunchedEffect(Unit) {
@@ -347,7 +378,35 @@ fun ManageClassAdminDetailScreenContent(
             }
 
             is ManageClassAdminDetailFeature.ImportTeacher -> {
-
+                if (importTeacherBuffer.isNotEmpty()) {
+                    scope.launch {
+                        importTeacherBuffer.map { teacherId ->
+                            viewModel.getUserByIdNetwork(teacherId)
+                            delay(1000)
+                            if (userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
+                                // import teacher to new class, if not pre-existing
+                                if (!userByIdNetwork.data?.classIds?.contains(
+                                        selectedClassManageClass?.classId.orEmpty()
+                                    )!!
+                                ) {
+                                    userByIdNetwork.data?.classIds?.add(selectedClassManageClass?.classId.orEmpty())
+                                    viewModel.saveUserNetwork(userByIdNetwork.data?.toLocal()!!) {
+                                        //trigger a listener
+                                        viewModel.onIncManageClassAdminDetailListener()
+                                        //disengage the feature
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.NoFeature
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }.invokeOnCompletion {
+                        runnableBlock {
+                            viewModel.onImportTeacherSuccessStateChanged(true)
+                        }
+                    }
+                }
             }
 
             else -> {
@@ -575,6 +634,7 @@ fun ManageClassAdminDetailScreenContentTeachers(
     val verifiedTeachersUnderClassNetwork by viewModel.verifiedTeachersUnderClassNetwork.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
+    val manageClassAdminDetailListener by viewModel.manageClassAdminDetailListener.collectAsState()
 
     LaunchedEffect(key1 = Unit, block = {
         viewModel.getCurrentSchoolIdPref()
@@ -583,6 +643,13 @@ fun ManageClassAdminDetailScreenContentTeachers(
             schoolId = currentSchoolIdPref.orEmpty(),
         )
     })
+
+    LaunchedEffect(manageClassAdminDetailListener) {
+        viewModel.getVerifiedTeachersUnderClassNetwork(
+            selectedClassManageClassAdmin?.classId.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+    }
 
 
     when (verifiedTeachersUnderClassNetwork) {
@@ -595,9 +662,16 @@ fun ManageClassAdminDetailScreenContentTeachers(
                 //do your thing
                 Column(modifier = modifier) {
                     verifiedTeachersUnderClassNetwork.data?.forEach { teacher ->
-                        VerifiedTeacherItem(teacher = teacher.toLocal(), viewDetails = {
-                            //todo: on view details
-                        })
+                        VerifiedTeacherItem(
+                            teacher = teacher.toLocal(),
+                            onTap = {
+
+                            },
+                            onHold = {
+
+                            },
+                            selected = false,
+                        )
                     }
                 }
 
@@ -618,10 +692,6 @@ fun ManageClassAdminDetailScreenContentTeachers(
                 buttonLabel = stringResource(id = R.string.go_back),
                 onClick = onBack
             )
-        }
-
-        else -> {
-            LoadingScreen(maxHeight = maxHeight)
         }
     }
 
@@ -669,7 +739,6 @@ fun ManageClassSubSectionRow(
 ) {
     val rowWidth: MutableState<Int> = remember { mutableStateOf(0) }
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
-
 
     Surface(
         modifier = modifier,
@@ -1143,7 +1212,9 @@ private fun VerifiedStudentItemConstraints(margin: Dp): ConstraintSet {
 fun VerifiedTeacherItem(
     modifier: Modifier = Modifier,
     teacher: UserModel,
-    viewDetails: (UserModel) -> Unit,
+    selected: Boolean,
+    onTap: (UserModel) -> Unit,
+    onHold: (UserModel) -> Unit,
 ) {
     val constraints = VerifiedTeacherItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -1155,8 +1226,10 @@ fun VerifiedTeacherItem(
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary
+            width = if (selected) 2.dp else 1.dp,
+            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
+                0.1f
+            )
         )
     ) {
         ConstraintLayout(
@@ -1164,7 +1237,16 @@ fun VerifiedTeacherItem(
                 .onGloballyPositioned { rowWidth = it.size.width }
                 .fillMaxWidth()
                 .padding(8.dp)
-                .clickable { viewDetails(teacher) },
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            onHold(teacher)
+                        },
+                        onTap = {
+                            onTap(teacher)
+                        }
+                    )
+                },
             constraintSet = constraints
         ) {
             StagedItemIcon(
