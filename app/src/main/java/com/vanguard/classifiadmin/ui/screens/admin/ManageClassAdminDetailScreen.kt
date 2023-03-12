@@ -91,6 +91,7 @@ fun ManageClassAdminDetailScreen(
     onImportSubject: () -> Unit,
     onImportStudent: () -> Unit,
     onInviteTeachers: () -> Unit,
+    onEnrollTeacher: () -> Unit,
 ) {
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
@@ -101,6 +102,14 @@ fun ManageClassAdminDetailScreen(
     val importSubjectBuffer by viewModel.importSubjectBuffer.collectAsState()
     val importTeacherSuccessState by viewModel.importTeacherSuccessState.collectAsState()
     val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
+    val manageClassAdminDetailTeacherBuffer by
+    viewModel.manageClassAdminDetailTeacherBuffer.collectAsState()
+    val manageClassAdminDetailStudentBuffer by
+    viewModel.manageClassAdminDetailStudentBuffer.collectAsState()
+    val manageClassAdminDetailSubjectBuffer by
+    viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
+    val manageClassAdminDetailHoldToMarkMessageState by
+            viewModel.manageClassAdminDetailHoldToMarkMessageState.collectAsState()
 
     LaunchedEffect(importStudentSuccessState) {
         if (importStudentSuccessState == true) {
@@ -119,10 +128,24 @@ fun ManageClassAdminDetailScreen(
     }
 
     LaunchedEffect(importTeacherSuccessState) {
-        if(importTeacherSuccessState == true) {
+        if (importTeacherSuccessState == true) {
             delay(3000)
             viewModel.onImportTeacherSuccessStateChanged(false)
             viewModel.clearImportTeacherBuffer()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
+        viewModel.onImportTeacherSuccessStateChanged(false)
+        viewModel.onImportStudentSuccessStateChanged(false)
+        viewModel.onImportSubjectSuccessStateChanged(false)
+    }
+
+    LaunchedEffect(manageClassAdminDetailHoldToMarkMessageState) {
+        if(manageClassAdminDetailHoldToMarkMessageState == true) {
+            delay(3000)
+            viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
         }
     }
 
@@ -185,7 +208,22 @@ fun ManageClassAdminDetailScreen(
                                         onInviteTeachers()
                                     }
 
-                                    else -> {}
+                                    ManageClassDetailPopupTeacherOption.Enroll -> {
+                                        onEnrollTeacher()
+                                    }
+
+                                    ManageClassDetailPopupTeacherOption.MakeFormTeacher -> {
+                                        /*todo: make a teacher form teacher */
+                                    }
+
+                                    ManageClassDetailPopupTeacherOption.Export -> {
+                                        /*todo: export teacher */
+                                    }
+
+                                    ManageClassDetailPopupTeacherOption.Remove -> {
+                                        /*todo: remove teacher from class */
+                                    }
+
                                 }
                                 optionState.value = false
                             }
@@ -277,6 +315,22 @@ fun ManageClassAdminDetailScreen(
                     message = message,
                     onClose = {
                         viewModel.onImportTeacherSuccessStateChanged(false)
+                    },
+                    maxWidth = maxWidth
+                )
+            }
+        }
+
+        if (manageClassAdminDetailHoldToMarkMessageState == true) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+
+                MessageBar(
+                    message = stringResource(id = R.string.long_press_to_mark),
+                    onClose = {
+                        viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
                     },
                     maxWidth = maxWidth
                 )
@@ -493,7 +547,18 @@ fun ManageClassAdminDetailScreenContentStudents(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
     val manageClassAdminDetailListener by viewModel.manageClassAdminDetailListener.collectAsState()
+    val manageClassAdminDetailStudentBuffer by
+    viewModel.manageClassAdminDetailStudentBuffer.collectAsState()
+    val scope = rememberCoroutineScope()
+    val manageClassAdminDetailStudentBufferListener by
+            viewModel.manageClassAdminDetailStudentBufferListener.collectAsState()
 
+    LaunchedEffect(manageClassAdminDetailStudentBufferListener) {
+        viewModel.getVerifiedStudentsUnderClassNetwork(
+            classId = selectedClassManageClassAdmin?.classId.orEmpty(),
+            schoolId = currentSchoolIdPref.orEmpty(),
+        )
+    }
 
     LaunchedEffect(key1 = Unit, block = {
         viewModel.getCurrentSchoolIdPref()
@@ -501,7 +566,10 @@ fun ManageClassAdminDetailScreenContentStudents(
             classId = selectedClassManageClassAdmin?.classId.orEmpty(),
             schoolId = currentSchoolIdPref.orEmpty(),
         )
+        viewModel.clearStudentBufferManageClassAdminDetail()
     })
+
+
 
 
     LaunchedEffect(manageClassAdminDetailListener) {
@@ -521,11 +589,29 @@ fun ManageClassAdminDetailScreenContentStudents(
                 //do your thing
                 Column(modifier = modifier) {
                     verifiedStudentsUnderClassNetwork.data?.forEach { student ->
-                        VerifiedStudentItem(student = student.toLocal(),
-                            onTap = {
-                                //todo: onTap
-                            }, onHold = {
-                                //todo: onHold
+                        VerifiedStudentItem(
+                            student = student.toLocal(),
+                            selected = manageClassAdminDetailStudentBuffer.contains(student.userId),
+                            onTap = { selectedStudent ->
+                                if (manageClassAdminDetailStudentBuffer.isEmpty()) {
+                                    viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(
+                                        true
+                                    )
+                                } else {
+                                    if (manageClassAdminDetailStudentBuffer.contains(selectedStudent.userId)) {
+                                        viewModel.onRemoveFromStudentBufferManageClassAdminDetail(
+                                            selectedStudent.userId
+                                        )
+                                    } else {
+                                        viewModel.onAddToStudentBufferManageClassAdminDetail(
+                                            selectedStudent.userId
+                                        )
+                                    }
+                                    viewModel.onIncManageClassAdminDetailStudentBufferListener()
+                                }
+                            }, onHold = { selectedStudent ->
+                                viewModel.onAddToStudentBufferManageClassAdminDetail(selectedStudent.userId)
+                                viewModel.onIncManageClassAdminDetailStudentBufferListener()
                             }
                         )
                     }
@@ -566,6 +652,17 @@ fun ManageClassAdminDetailScreenContentSubjects(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
     val manageClassAdminDetailListener by viewModel.manageClassAdminDetailListener.collectAsState()
+    val manageClassAdminDetailSubjectBuffer by
+    viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
+    val manageClassAdminDetailSubjectBufferListener by
+            viewModel.manageClassAdminDetailSubjectBufferListener.collectAsState()
+
+    LaunchedEffect(manageClassAdminDetailSubjectBufferListener) {
+        viewModel.getVerifiedSubjectsUnderClassNetwork(
+            classId = selectedClassManageClassAdmin?.classId.orEmpty(),
+            schoolId = currentSchoolIdPref.orEmpty(),
+        )
+    }
 
     LaunchedEffect(manageClassAdminDetailListener) {
         viewModel.getVerifiedSubjectsUnderClassNetwork(
@@ -580,6 +677,7 @@ fun ManageClassAdminDetailScreenContentSubjects(
             classId = selectedClassManageClassAdmin?.classId.orEmpty(),
             schoolId = currentSchoolIdPref.orEmpty(),
         )
+        viewModel.clearSubjectBufferManageClassAdminDetail()
     })
 
     when (verifiedSubjectsUnderClassNetwork) {
@@ -594,9 +692,31 @@ fun ManageClassAdminDetailScreenContentSubjects(
                     verifiedSubjectsUnderClassNetwork.data?.forEach { subject ->
                         VerifiedSubjectItem(
                             subject = subject.toLocal(),
-                            selected = false,
-                            onTap = {/*todo: -> */ },
-                            onHold = {/*todo: -> */ }
+                            selected = manageClassAdminDetailSubjectBuffer.contains(subject.subjectCode),
+                            onTap = { selectedSubject ->
+                                if (manageClassAdminDetailSubjectBuffer.isEmpty()) {
+                                    viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(
+                                        true
+                                    )
+                                } else {
+                                    if (manageClassAdminDetailSubjectBuffer.contains(selectedSubject.subjectCode)) {
+                                        viewModel.onRemoveFromSubjectBufferManageClassAdminDetail(
+                                            selectedSubject.subjectCode.orEmpty()
+                                        )
+                                    } else {
+                                        viewModel.onAddToSubjectBufferManageClassAdminDetail(
+                                            selectedSubject.subjectCode.orEmpty()
+                                        )
+                                    }
+                                    viewModel.onIncManageClassAdminDetailSubjectBufferListener()
+                                }
+                            },
+                            onHold = { selectedSubject ->
+                                viewModel.onAddToSubjectBufferManageClassAdminDetail(
+                                    selectedSubject.subjectCode.orEmpty()
+                                )
+                                viewModel.onIncManageClassAdminDetailSubjectBufferListener()
+                            }
                         )
                     }
                 }
@@ -635,6 +755,10 @@ fun ManageClassAdminDetailScreenContentTeachers(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
     val manageClassAdminDetailListener by viewModel.manageClassAdminDetailListener.collectAsState()
+    val manageClassAdminDetailTeacherBuffer by
+    viewModel.manageClassAdminDetailTeacherBuffer.collectAsState()
+    val manageClassAdminDetailTeacherBufferListener by
+            viewModel.manageClassAdminDetailTeacherBufferListener.collectAsState()
 
     LaunchedEffect(key1 = Unit, block = {
         viewModel.getCurrentSchoolIdPref()
@@ -642,6 +766,7 @@ fun ManageClassAdminDetailScreenContentTeachers(
             classId = selectedClassManageClassAdmin?.classId.orEmpty(),
             schoolId = currentSchoolIdPref.orEmpty(),
         )
+        viewModel.clearTeacherBufferManageClassAdminDetail()
     })
 
     LaunchedEffect(manageClassAdminDetailListener) {
@@ -651,6 +776,12 @@ fun ManageClassAdminDetailScreenContentTeachers(
         )
     }
 
+    LaunchedEffect(manageClassAdminDetailTeacherBufferListener) {
+        viewModel.getVerifiedTeachersUnderClassNetwork(
+            selectedClassManageClassAdmin?.classId.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+    }
 
     when (verifiedTeachersUnderClassNetwork) {
         is Resource.Loading -> {
@@ -664,13 +795,31 @@ fun ManageClassAdminDetailScreenContentTeachers(
                     verifiedTeachersUnderClassNetwork.data?.forEach { teacher ->
                         VerifiedTeacherItem(
                             teacher = teacher.toLocal(),
-                            onTap = {
-
+                            onTap = { selectedTeacher ->
+                                if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
+                                    viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(
+                                        true
+                                    )
+                                } else {
+                                    if (manageClassAdminDetailTeacherBuffer.contains(selectedTeacher.userId)) {
+                                        viewModel.onRemoveFromTeacherBufferManageClassAdminDetail(
+                                            selectedTeacher.userId
+                                        )
+                                    } else {
+                                        viewModel.onAddToTeacherBufferManageClassAdminDetail(
+                                            selectedTeacher.userId
+                                        )
+                                    }
+                                    viewModel.onIncManageClassAdminDetailTeacherBufferListener()
+                                }
                             },
-                            onHold = {
-
+                            onHold = { selectedTeacher ->
+                                viewModel.onAddToTeacherBufferManageClassAdminDetail(
+                                    selectedTeacher.userId
+                                )
+                                viewModel.onIncManageClassAdminDetailTeacherBufferListener()
                             },
-                            selected = false,
+                            selected = manageClassAdminDetailTeacherBuffer.contains(teacher.userId),
                         )
                     }
                 }

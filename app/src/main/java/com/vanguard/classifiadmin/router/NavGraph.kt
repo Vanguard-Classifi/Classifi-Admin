@@ -281,7 +281,8 @@ fun NavGraph(
                 onBack = { navController.navigate(Destinations.manageClassAdmin) },
                 onImportSubject = { navController.navigate(Destinations.importSubject) },
                 onInviteTeachers = { navController.navigate(Destinations.importTeacher) },
-                onImportStudent = { navController.navigate(Destinations.importStudent) }
+                onImportStudent = { navController.navigate(Destinations.importStudent) },
+                onEnrollTeacher = { navController.navigate(Destinations.enrollTeacherAdmin) }
             )
         }
 

@@ -363,7 +363,8 @@ class MainViewModel @Inject constructor(
 
     private var _manageClassAdminDetailFeature =
         MutableStateFlow(ManageClassAdminDetailFeature.NoFeature as ManageClassAdminDetailFeature)
-    val manageClassAdminDetailFeature: StateFlow<ManageClassAdminDetailFeature> = _manageClassAdminDetailFeature
+    val manageClassAdminDetailFeature: StateFlow<ManageClassAdminDetailFeature> =
+        _manageClassAdminDetailFeature
 
     private var _importStudentSuccessState = MutableStateFlow(null as Boolean?)
     val importStudentSuccessState: StateFlow<Boolean?> = _importStudentSuccessState
@@ -379,6 +380,111 @@ class MainViewModel @Inject constructor(
 
     private var _importTeacherBuffer = MutableStateFlow(mutableListOf<String>())
     val importTeacherBuffer: StateFlow<List<String>> = _importTeacherBuffer
+
+    private var _manageClassAdminDetailTeacherBuffer = MutableStateFlow(mutableListOf<String>())
+    val manageClassAdminDetailTeacherBuffer: StateFlow<List<String>> =
+        _manageClassAdminDetailTeacherBuffer
+
+    private var _manageClassAdminDetailStudentBuffer = MutableStateFlow(mutableListOf<String>())
+    val manageClassAdminDetailStudentBuffer: StateFlow<List<String>> =
+        _manageClassAdminDetailStudentBuffer
+
+    private var _manageClassAdminDetailSubjectBuffer = MutableStateFlow(mutableListOf<String>())
+    val manageClassAdminDetailSubjectBuffer: StateFlow<List<String>> =
+        _manageClassAdminDetailSubjectBuffer
+
+    private var _manageClassAdminDetailTeacherBufferListener = MutableStateFlow(0)
+    val manageClassAdminDetailTeacherBufferListener: StateFlow<Int> =
+        _manageClassAdminDetailTeacherBufferListener
+
+    private var _manageClassAdminDetailStudentBufferListener = MutableStateFlow(0)
+    val manageClassAdminDetailStudentBufferListener: StateFlow<Int> =
+        _manageClassAdminDetailStudentBufferListener
+
+    private var _manageClassAdminDetailSubjectBufferListener = MutableStateFlow(0)
+    val manageClassAdminDetailSubjectBufferListener: StateFlow<Int> =
+        _manageClassAdminDetailSubjectBufferListener
+
+    private var _manageClassAdminDetailHoldToMarkMessageState = MutableStateFlow(null as Boolean?)
+    val manageClassAdminDetailHoldToMarkMessageState: StateFlow<Boolean?> =
+        _manageClassAdminDetailHoldToMarkMessageState
+
+    fun onManageClassAdminDetailHoldToMarkMessageStateChanged(state: Boolean?) = effect {
+        _manageClassAdminDetailHoldToMarkMessageState.value = state
+    }
+
+    fun onIncManageClassAdminDetailSubjectBufferListener() = effect {
+        _manageClassAdminDetailSubjectBufferListener.value++
+    }
+
+    fun onDecManageClassAdminDetailSubjectBufferListener() = effect {
+        _manageClassAdminDetailSubjectBufferListener.value--
+    }
+
+    fun onIncManageClassAdminDetailTeacherBufferListener() = effect {
+        _manageClassAdminDetailTeacherBufferListener.value++
+    }
+
+    fun onDecManageClassAdminDetailTeacherBufferListener() = effect {
+        _manageClassAdminDetailTeacherBufferListener.value--
+    }
+
+    fun onIncManageClassAdminDetailStudentBufferListener() = effect {
+        _manageClassAdminDetailStudentBufferListener.value++
+    }
+
+    fun onDecManageClassAdminDetailStudentBufferListener() = effect {
+        _manageClassAdminDetailStudentBufferListener.value--
+    }
+
+    fun onAddToTeacherBufferManageClassAdminDetail(id: String) = effect {
+        if (!_manageClassAdminDetailTeacherBuffer.value.contains(id)) {
+            _manageClassAdminDetailTeacherBuffer.value.add(id)
+        }
+    }
+
+    fun onRemoveFromTeacherBufferManageClassAdminDetail(id: String) = effect {
+        if (_manageClassAdminDetailTeacherBuffer.value.contains(id)) {
+            _manageClassAdminDetailTeacherBuffer.value.remove(id)
+        }
+    }
+
+    fun clearTeacherBufferManageClassAdminDetail() = effect {
+        _manageClassAdminDetailTeacherBuffer.value.clear()
+    }
+
+    fun clearStudentBufferManageClassAdminDetail() = effect {
+        _manageClassAdminDetailStudentBuffer.value.clear()
+    }
+
+    fun clearSubjectBufferManageClassAdminDetail() = effect {
+        _manageClassAdminDetailSubjectBuffer.value.clear()
+    }
+
+    fun onAddToStudentBufferManageClassAdminDetail(id: String) = effect {
+        if (!_manageClassAdminDetailStudentBuffer.value.contains(id)) {
+            _manageClassAdminDetailStudentBuffer.value.add(id)
+        }
+    }
+
+    fun onRemoveFromStudentBufferManageClassAdminDetail(id: String) = effect {
+        if (_manageClassAdminDetailStudentBuffer.value.contains(id)) {
+            _manageClassAdminDetailStudentBuffer.value.remove(id)
+        }
+    }
+
+    fun onAddToSubjectBufferManageClassAdminDetail(id: String) = effect {
+        if (!_manageClassAdminDetailSubjectBuffer.value.contains(id)) {
+            _manageClassAdminDetailSubjectBuffer.value.add(id)
+        }
+    }
+
+    fun onRemoveFromSubjectBufferManageClassAdminDetail(id: String) = effect {
+        if (_manageClassAdminDetailSubjectBuffer.value.contains(id)) {
+            _manageClassAdminDetailSubjectBuffer.value.remove(id)
+        }
+    }
+
 
     fun onAddToImportTeacherBuffer(id: String) = effect {
         if (!_importTeacherBuffer.value.contains(id)) {
@@ -412,6 +518,7 @@ class MainViewModel @Inject constructor(
     fun onImportSubjectSuccessStateChanged(state: Boolean?) = effect {
         _importSubjectSuccessState.value = state
     }
+
     fun onAddToImportSubjectBuffer(id: String) = effect {
         if (!_importSubjectBuffer.value.contains(id)) {
             _importSubjectBuffer.value.add(id)
@@ -435,6 +542,7 @@ class MainViewModel @Inject constructor(
     fun onDecImportSubjectBufferListener() = effect {
         _importSubjectBufferListener.value--
     }
+
     fun onImportStudentSuccessStateChanged(state: Boolean?) = effect {
         _importStudentSuccessState.value = state
     }

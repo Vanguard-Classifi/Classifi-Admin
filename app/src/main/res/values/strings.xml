@@ -157,4 +157,5 @@
     <string name="error_occurred_teachers">An error occurred while loading teachers</string>
     <string name="import_subjects">Import Subjects</string>
     <string name="import_teachers">Import Teachers</string>
+    <string name="long_press_to_mark">Long press to mark</string>
 </resources>
