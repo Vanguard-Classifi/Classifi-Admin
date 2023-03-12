@@ -1,6 +1,5 @@
 package com.vanguard.classifiadmin.ui.screens.admin
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -58,7 +57,6 @@ import androidx.compose.ui.window.Popup
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
-import androidx.work.ListenableWorker.Result.Success
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
@@ -75,7 +73,6 @@ import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
-import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -90,7 +87,7 @@ fun ManageClassAdminDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
-    onAddSubject: () -> Unit,
+    onImportSubject: () -> Unit,
     onImportStudent: () -> Unit,
     onInviteTeachers: () -> Unit,
 ) {
@@ -99,12 +96,22 @@ fun ManageClassAdminDetailScreen(
     val optionState: MutableState<Boolean> = remember { mutableStateOf(false) }
     val importStudentSuccessState by viewModel.importStudentSuccessState.collectAsState()
     val importStudentBuffer by viewModel.importStudentBuffer.collectAsState()
+    val importSubjectSuccessState by viewModel.importSubjectSuccessState.collectAsState()
+    val importSubjectBuffer by viewModel.importSubjectBuffer.collectAsState()
 
     LaunchedEffect(importStudentSuccessState) {
-        if(importStudentSuccessState == true) {
+        if (importStudentSuccessState == true) {
             delay(3000)
             viewModel.onImportStudentSuccessStateChanged(false)
             viewModel.clearImportStudentBuffer()
+        }
+    }
+
+    LaunchedEffect(importSubjectSuccessState) {
+        if (importSubjectSuccessState == true) {
+            delay(3000)
+            viewModel.onImportSubjectSuccessStateChanged(false)
+            viewModel.clearImportSubjectBuffer()
         }
     }
 
@@ -130,7 +137,7 @@ fun ManageClassAdminDetailScreen(
                     viewModel = viewModel,
                     onBack = onBack,
                     maxHeight = maxHeight,
-                    onAddSubject = onAddSubject,
+                    onAddSubject = onImportSubject,
                     onImportStudent = onImportStudent,
                     onInviteTeachers = onInviteTeachers,
                 )
@@ -181,7 +188,7 @@ fun ManageClassAdminDetailScreen(
                                     viewModel.onManageClassAdminDetailFeatureChanged(
                                         ManageClassAdminDetailFeature.ImportSubject
                                     )
-                                    onAddSubject()
+                                    onImportSubject()
                                 }
 
                                 else -> {}
@@ -210,13 +217,17 @@ fun ManageClassAdminDetailScreen(
         }
 
 
-        if(importStudentSuccessState == true) {
+        if (importStudentSuccessState == true) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter,
             ) {
+                val message =
+                    if (importStudentBuffer.size == 1) "Imported a student successfully!" else
+                        "Imported ${importStudentBuffer.size} students successfully!"
                 MessageBar(
-                    message = "Imported ${importStudentBuffer.size} students successfully!", onClose = {
+                    message = message,
+                    onClose = {
                         viewModel.onImportStudentSuccessStateChanged(false)
                     },
                     maxWidth = maxWidth
@@ -224,6 +235,24 @@ fun ManageClassAdminDetailScreen(
             }
         }
 
+
+        if (importSubjectSuccessState == true) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                val message =
+                    if (importSubjectBuffer.size == 1) "Imported a subject successfully!" else
+                        "Imported ${importSubjectBuffer.size} subjects successfully!"
+                MessageBar(
+                    message = message,
+                    onClose = {
+                        viewModel.onImportSubjectSuccessStateChanged(false)
+                    },
+                    maxWidth = maxWidth
+                )
+            }
+        }
     }
 }
 
@@ -246,13 +275,13 @@ fun ManageClassAdminDetailScreenContent(
     val importStudentBuffer by viewModel.importStudentBuffer.collectAsState()
     val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
     val scope = rememberCoroutineScope()
+    val importSubjectBuffer by viewModel.importSubjectBuffer.collectAsState()
+    val subjectByCodeNetwork by viewModel.subjectByCodeNetwork.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
 
 
     LaunchedEffect(Unit) {
-        Log.e(
-            TAG,
-            "ManageClassAdminDetailScreenContent: import students buffer is ${importStudentBuffer.size}"
-        )
+        viewModel.getCurrentSchoolIdPref()
         //paste the imported item
         when (manageClassAdminDetailFeature) {
             is ManageClassAdminDetailFeature.ImportStudent -> {
@@ -276,7 +305,6 @@ fun ManageClassAdminDetailScreenContent(
                                     )
                                 }
                             }
-                            Log.e(TAG, "ManageClassAdminDetailScreenContent: pasting students")
                         }
                     }.invokeOnCompletion {
                         runnableBlock {
@@ -284,6 +312,42 @@ fun ManageClassAdminDetailScreenContent(
                         }
                     }
                 }
+            }
+
+            is ManageClassAdminDetailFeature.ImportSubject -> {
+                if (importSubjectBuffer.isNotEmpty()) {
+                    scope.launch {
+                        //paste the students
+                        importSubjectBuffer.map { subjectCode ->
+                            viewModel.getSubjectByCodeNetwork(
+                                subjectCode,
+                                currentSchoolIdPref.orEmpty()
+                            )
+                            delay(1000)
+                            if (subjectByCodeNetwork is Resource.Success && subjectByCodeNetwork.data != null) {
+                                subjectByCodeNetwork.data?.classId =
+                                    selectedClassManageClass?.classId
+                                //update the subject in db
+                                viewModel.saveSubjectAsVerifiedNetwork(subjectByCodeNetwork.data!!) {
+                                    //trigger a listener
+                                    viewModel.onIncManageClassAdminDetailListener()
+                                    //disengage the feature
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.NoFeature
+                                    )
+                                }
+                            }
+                        }
+                    }.invokeOnCompletion {
+                        runnableBlock {
+                            viewModel.onImportSubjectSuccessStateChanged(true)
+                        }
+                    }
+                }
+            }
+
+            is ManageClassAdminDetailFeature.ImportTeacher -> {
+
             }
 
             else -> {
@@ -442,7 +506,14 @@ fun ManageClassAdminDetailScreenContentSubjects(
     val verifiedSubjectsUnderClassNetwork by viewModel.verifiedSubjectsUnderClassNetwork.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
+    val manageClassAdminDetailListener by viewModel.manageClassAdminDetailListener.collectAsState()
 
+    LaunchedEffect(manageClassAdminDetailListener) {
+        viewModel.getVerifiedSubjectsUnderClassNetwork(
+            classId = selectedClassManageClassAdmin?.classId.orEmpty(),
+            schoolId = currentSchoolIdPref.orEmpty(),
+        )
+    }
 
     LaunchedEffect(key1 = Unit, block = {
         viewModel.getCurrentSchoolIdPref()
@@ -462,9 +533,12 @@ fun ManageClassAdminDetailScreenContentSubjects(
                 //do your thing
                 Column(modifier = modifier) {
                     verifiedSubjectsUnderClassNetwork.data?.forEach { subject ->
-                        VerifiedSubjectItem(subject = subject.toLocal(), viewDetails = {
-                            //todo: on view details
-                        })
+                        VerifiedSubjectItem(
+                            subject = subject.toLocal(),
+                            selected = false,
+                            onTap = {/*todo: -> */ },
+                            onHold = {/*todo: -> */ }
+                        )
                     }
                 }
 
@@ -485,10 +559,6 @@ fun ManageClassAdminDetailScreenContentSubjects(
                 buttonLabel = stringResource(id = R.string.go_back),
                 onClick = onBack,
             )
-        }
-
-        else -> {
-            LoadingScreen(maxHeight = maxHeight)
         }
     }
 }
@@ -1160,7 +1230,9 @@ private fun VerifiedTeacherItemConstraints(margin: Dp): ConstraintSet {
 fun VerifiedSubjectItem(
     modifier: Modifier = Modifier,
     subject: SubjectModel,
-    viewDetails: (SubjectModel) -> Unit,
+    selected: Boolean,
+    onTap: (SubjectModel) -> Unit,
+    onHold: (SubjectModel) -> Unit,
 ) {
     val constraints = VerifiedSubjectItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -1170,11 +1242,22 @@ fun VerifiedSubjectItem(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .padding(vertical = 8.dp)
-            .clickable { viewDetails(subject) },
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        onHold(subject)
+                    },
+                    onTap = {
+                        onTap(subject)
+                    }
+                )
+            },
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary
+            width = if (selected) 2.dp else 1.dp,
+            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
+                0.1f
+            )
         )
     ) {
         ConstraintLayout(

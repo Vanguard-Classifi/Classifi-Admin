@@ -279,7 +279,7 @@ fun NavGraph(
             ManageClassAdminDetailScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageClassAdmin) },
-                onAddSubject = { navController.navigate(Destinations.importSubject) },
+                onImportSubject = { navController.navigate(Destinations.importSubject) },
                 onInviteTeachers = { navController.navigate(Destinations.importTeacher) },
                 onImportStudent = { navController.navigate(Destinations.importStudent) }
             )
@@ -287,6 +287,10 @@ fun NavGraph(
 
         composable(Destinations.importSubject) {
             ImportSubjectScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
+                onSubjectImported = { navController.navigate(Destinations.manageClassAdminDetail) },
+                onAddSubject = {navController.navigate(Destinations.createSubjectAdmin)}
             )
         }
 
@@ -295,7 +299,7 @@ fun NavGraph(
                 onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
                 viewModel = viewModel,
                 onEnrollStudent = { navController.navigate(Destinations.enrollStudentAdmin) },
-                onStudentImported = {navController.navigate(Destinations.manageClassAdminDetail)}
+                onStudentImported = { navController.navigate(Destinations.manageClassAdminDetail) }
             )
         }
 

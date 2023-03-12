@@ -155,4 +155,5 @@
     <string name="go_back">Go Back</string>
     <string name="error_occurred_students">An error occurred while loading students</string>
     <string name="error_occurred_teachers">An error occurred while loading teachers</string>
+    <string name="import_subjects">Import Subjects</string>
 </resources>
