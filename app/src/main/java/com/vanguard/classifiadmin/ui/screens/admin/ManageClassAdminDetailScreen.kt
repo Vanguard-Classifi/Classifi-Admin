@@ -109,7 +109,10 @@ fun ManageClassAdminDetailScreen(
     val manageClassAdminDetailSubjectBuffer by
     viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
     val manageClassAdminDetailHoldToMarkMessageState by
-            viewModel.manageClassAdminDetailHoldToMarkMessageState.collectAsState()
+    viewModel.manageClassAdminDetailHoldToMarkMessageState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
+    val manageClassAdminDetailFormTeacherState by viewModel.manageClassAdminDetailFormTeacherState.collectAsState()
 
     LaunchedEffect(importStudentSuccessState) {
         if (importStudentSuccessState == true) {
@@ -143,11 +146,20 @@ fun ManageClassAdminDetailScreen(
     }
 
     LaunchedEffect(manageClassAdminDetailHoldToMarkMessageState) {
-        if(manageClassAdminDetailHoldToMarkMessageState == true) {
+        if (manageClassAdminDetailHoldToMarkMessageState == true) {
             delay(3000)
             viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
         }
     }
+
+    LaunchedEffect(manageClassAdminDetailFormTeacherState) {
+        if (manageClassAdminDetailFormTeacherState == true) {
+            delay(3000)
+            viewModel.clearTeacherBufferManageClassAdminDetail()
+            viewModel.onManageClassAdminDetailFormTeacherStateChanged(false)
+        }
+    }
+
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -209,18 +221,57 @@ fun ManageClassAdminDetailScreen(
                                     }
 
                                     ManageClassDetailPopupTeacherOption.Enroll -> {
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.EnrollTeacher
+                                        )
                                         onEnrollTeacher()
                                     }
 
                                     ManageClassDetailPopupTeacherOption.MakeFormTeacher -> {
-                                        /*todo: make a teacher form teacher */
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.MakeFormTeacher
+                                        )
+                                        if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
+                                            viewModel.onManageClassAdminDetailFormTeacherStateChanged(
+                                                true
+                                            )
+                                        } else if (manageClassAdminDetailTeacherBuffer.size == 1) {
+                                            scope.launch {
+                                                selectedClassManageClassAdmin?.formTeacherId =
+                                                    manageClassAdminDetailTeacherBuffer.first()
+                                                viewModel.saveClassAsVerifiedNetwork(
+                                                    selectedClassManageClassAdmin?.toNetwork()
+                                                        ?: ClassModel.Default.toNetwork(),
+                                                    onResult = {
+                                                    }
+                                                )
+                                            }.invokeOnCompletion {
+                                                runnableBlock {
+                                                    //show assigned form teacher message
+                                                    viewModel.onIncManageClassAdminDetailListener()
+                                                    viewModel.onManageClassAdminDetailFormTeacherStateChanged(
+                                                        true
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            viewModel.onManageClassAdminDetailFormTeacherStateChanged(
+                                                true
+                                            )
+                                        }
                                     }
 
                                     ManageClassDetailPopupTeacherOption.Export -> {
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.ExportTeacher
+                                        )
                                         /*todo: export teacher */
                                     }
 
                                     ManageClassDetailPopupTeacherOption.Remove -> {
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.RemoveTeacher
+                                        )
                                         /*todo: remove teacher from class */
                                     }
 
@@ -331,6 +382,33 @@ fun ManageClassAdminDetailScreen(
                     message = stringResource(id = R.string.long_press_to_mark),
                     onClose = {
                         viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
+                    },
+                    maxWidth = maxWidth
+                )
+            }
+        }
+
+        if (manageClassAdminDetailFormTeacherState == true) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                val message = when {
+                    manageClassAdminDetailTeacherBuffer.isEmpty() ->
+                        stringResource(id = R.string.select_a_teacher)
+
+                    manageClassAdminDetailTeacherBuffer.size > 1 ->
+                        stringResource(id = R.string.select_just_one_teacher)
+
+                    manageClassAdminDetailTeacherBuffer.size == 1 ->
+                        stringResource(id = R.string.teacher_assigned_as_form_teacher)
+
+                    else -> stringResource(id = R.string.select_a_teacher)
+                }
+                MessageBar(
+                    message = message,
+                    onClose = {
+                        viewModel.onManageClassAdminDetailFormTeacherStateChanged(false)
                     },
                     maxWidth = maxWidth
                 )
@@ -551,7 +629,7 @@ fun ManageClassAdminDetailScreenContentStudents(
     viewModel.manageClassAdminDetailStudentBuffer.collectAsState()
     val scope = rememberCoroutineScope()
     val manageClassAdminDetailStudentBufferListener by
-            viewModel.manageClassAdminDetailStudentBufferListener.collectAsState()
+    viewModel.manageClassAdminDetailStudentBufferListener.collectAsState()
 
     LaunchedEffect(manageClassAdminDetailStudentBufferListener) {
         viewModel.getVerifiedStudentsUnderClassNetwork(
@@ -655,7 +733,7 @@ fun ManageClassAdminDetailScreenContentSubjects(
     val manageClassAdminDetailSubjectBuffer by
     viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
     val manageClassAdminDetailSubjectBufferListener by
-            viewModel.manageClassAdminDetailSubjectBufferListener.collectAsState()
+    viewModel.manageClassAdminDetailSubjectBufferListener.collectAsState()
 
     LaunchedEffect(manageClassAdminDetailSubjectBufferListener) {
         viewModel.getVerifiedSubjectsUnderClassNetwork(
@@ -758,7 +836,7 @@ fun ManageClassAdminDetailScreenContentTeachers(
     val manageClassAdminDetailTeacherBuffer by
     viewModel.manageClassAdminDetailTeacherBuffer.collectAsState()
     val manageClassAdminDetailTeacherBufferListener by
-            viewModel.manageClassAdminDetailTeacherBufferListener.collectAsState()
+    viewModel.manageClassAdminDetailTeacherBufferListener.collectAsState()
 
     LaunchedEffect(key1 = Unit, block = {
         viewModel.getCurrentSchoolIdPref()
@@ -820,6 +898,7 @@ fun ManageClassAdminDetailScreenContentTeachers(
                                 viewModel.onIncManageClassAdminDetailTeacherBufferListener()
                             },
                             selected = manageClassAdminDetailTeacherBuffer.contains(teacher.userId),
+                            isFormTeacher = selectedClassManageClassAdmin?.formTeacherId == teacher.userId
                         )
                     }
                 }
@@ -1362,6 +1441,7 @@ fun VerifiedTeacherItem(
     modifier: Modifier = Modifier,
     teacher: UserModel,
     selected: Boolean,
+    isFormTeacher: Boolean = false,
     onTap: (UserModel) -> Unit,
     onHold: (UserModel) -> Unit,
 ) {
@@ -1374,6 +1454,7 @@ fun VerifiedTeacherItem(
             .clip(RoundedCornerShape(16.dp))
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
+        color = if (isFormTeacher) MaterialTheme.colors.primary.copy(0.1f) else Color.Transparent,
         border = BorderStroke(
             width = if (selected) 2.dp else 1.dp,
             color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(

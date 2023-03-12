@@ -409,6 +409,14 @@ class MainViewModel @Inject constructor(
     val manageClassAdminDetailHoldToMarkMessageState: StateFlow<Boolean?> =
         _manageClassAdminDetailHoldToMarkMessageState
 
+    private var _manageClassAdminDetailFormTeacherState = MutableStateFlow(null as Boolean?)
+    val manageClassAdminDetailFormTeacherState: StateFlow<Boolean?> =
+        _manageClassAdminDetailFormTeacherState
+
+    fun onManageClassAdminDetailFormTeacherStateChanged(state: Boolean?) = effect {
+        _manageClassAdminDetailFormTeacherState.value = state
+    }
+
     fun onManageClassAdminDetailHoldToMarkMessageStateChanged(state: Boolean?) = effect {
         _manageClassAdminDetailHoldToMarkMessageState.value = state
     }

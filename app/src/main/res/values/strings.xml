@@ -158,4 +158,7 @@
     <string name="import_subjects">Import Subjects</string>
     <string name="import_teachers">Import Teachers</string>
     <string name="long_press_to_mark">Long press to mark</string>
+    <string name="select_a_teacher">Please select a teacher</string>
+    <string name="select_just_one_teacher">Select just one teacher</string>
+    <string name="teacher_assigned_as_form_teacher">Teacher assigned as form teacher</string>
 </resources>
