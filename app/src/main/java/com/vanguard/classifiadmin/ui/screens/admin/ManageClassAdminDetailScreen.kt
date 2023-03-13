@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.admin
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -122,8 +123,9 @@ fun ManageClassAdminDetailScreen(
             viewModel.clearImportSubjectBuffer()
             viewModel.clearImportTeacherBuffer()
             viewModel.clearImportStudentBuffer()
-            viewModel.clearTeacherBufferManageClassAdminDetail()
             viewModel.onClearBufferManageClass()
+            viewModel.clearExportTeacherBuffer()
+            viewModel.clearTeacherBufferManageClassAdminDetail()
         }
     }
 
@@ -623,6 +625,14 @@ fun ManageClassAdminDetailScreenContent(
                                     if (!userByIdNetwork.data?.classIds?.contains(classId)!!) {
                                         userByIdNetwork.data?.classIds?.add(classId)
                                     }
+                                    //save
+                                    viewModel.saveUserNetwork(userByIdNetwork.data!!.toLocal()) {
+                                        viewModel.onIncManageClassAdminDetailListener()
+                                        //disengage the feature
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.NoFeature
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -631,8 +641,6 @@ fun ManageClassAdminDetailScreenContent(
                             viewModel.onManageClassAdminDetailMessageChanged(
                                 ManageClassAdminDetailMessage.ExportTeacher
                             )
-                            viewModel.clearExportTeacherBuffer()
-                            viewModel.clearTeacherBufferManageClassAdminDetail()
                             viewModel.onIncManageClassAdminDetailListener()
                         }
                     }
@@ -942,7 +950,7 @@ fun ManageClassAdminDetailScreenContentTeachers(
             classId = selectedClassManageClassAdmin?.classId.orEmpty(),
             schoolId = currentSchoolIdPref.orEmpty(),
         )
-        viewModel.clearTeacherBufferManageClassAdminDetail()
+        //viewModel.clearTeacherBufferManageClassAdminDetail()
     })
 
     LaunchedEffect(manageClassAdminDetailListener) {
