@@ -98,11 +98,8 @@ fun ManageClassAdminDetailScreen(
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
     val optionState: MutableState<Boolean> = remember { mutableStateOf(false) }
-    val importStudentSuccessState by viewModel.importStudentSuccessState.collectAsState()
     val importStudentBuffer by viewModel.importStudentBuffer.collectAsState()
-    val importSubjectSuccessState by viewModel.importSubjectSuccessState.collectAsState()
     val importSubjectBuffer by viewModel.importSubjectBuffer.collectAsState()
-    val importTeacherSuccessState by viewModel.importTeacherSuccessState.collectAsState()
     val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
     val manageClassAdminDetailTeacherBuffer by
     viewModel.manageClassAdminDetailTeacherBuffer.collectAsState()
@@ -110,70 +107,31 @@ fun ManageClassAdminDetailScreen(
     viewModel.manageClassAdminDetailStudentBuffer.collectAsState()
     val manageClassAdminDetailSubjectBuffer by
     viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
-    val manageClassAdminDetailHoldToMarkMessageState by
-    viewModel.manageClassAdminDetailHoldToMarkMessageState.collectAsState()
     val scope = rememberCoroutineScope()
     val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
-    val manageClassAdminDetailFormTeacherState by viewModel.manageClassAdminDetailFormTeacherState.collectAsState()
-    val manageClassAdminDetailExportTeacherState by
-    viewModel.manageClassAdminDetailExportTeacherState.collectAsState()
     val exportTeacherBuffer by viewModel.exportTeacherBuffer.collectAsState()
+    val manageClassAdminDetailMessage by viewModel.manageClassAdminDetailMessage.collectAsState()
 
-    LaunchedEffect(manageClassAdminDetailExportTeacherState) {
-        if (manageClassAdminDetailExportTeacherState == true) {
+
+    LaunchedEffect(manageClassAdminDetailMessage) {
+        if (manageClassAdminDetailMessage !is ManageClassAdminDetailMessage.NoMessage) {
             delay(3000)
-            viewModel.onManageClassAdminDetailExportTeacherStateChanged(
-                false
+            viewModel.onManageClassAdminDetailMessageChanged(
+                ManageClassAdminDetailMessage.NoMessage
             )
-        }
-    }
-
-    LaunchedEffect(importStudentSuccessState) {
-        if (importStudentSuccessState == true) {
-            delay(3000)
-            viewModel.onImportStudentSuccessStateChanged(false)
-            viewModel.clearImportStudentBuffer()
-        }
-    }
-
-    LaunchedEffect(importSubjectSuccessState) {
-        if (importSubjectSuccessState == true) {
-            delay(3000)
-            viewModel.onImportSubjectSuccessStateChanged(false)
             viewModel.clearImportSubjectBuffer()
-        }
-    }
-
-    LaunchedEffect(importTeacherSuccessState) {
-        if (importTeacherSuccessState == true) {
-            delay(3000)
-            viewModel.onImportTeacherSuccessStateChanged(false)
             viewModel.clearImportTeacherBuffer()
+            viewModel.clearImportStudentBuffer()
+            viewModel.clearTeacherBufferManageClassAdminDetail()
+            viewModel.onClearBufferManageClass()
         }
     }
 
     LaunchedEffect(Unit) {
-        viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
-        viewModel.onImportTeacherSuccessStateChanged(false)
-        viewModel.onImportStudentSuccessStateChanged(false)
-        viewModel.onImportSubjectSuccessStateChanged(false)
+        viewModel.onManageClassAdminDetailMessageChanged(
+            ManageClassAdminDetailMessage.NoMessage
+        )
     }
-
-    LaunchedEffect(manageClassAdminDetailHoldToMarkMessageState) {
-        if (manageClassAdminDetailHoldToMarkMessageState == true) {
-            delay(3000)
-            viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
-        }
-    }
-
-    LaunchedEffect(manageClassAdminDetailFormTeacherState) {
-        if (manageClassAdminDetailFormTeacherState == true) {
-            delay(3000)
-            viewModel.clearTeacherBufferManageClassAdminDetail()
-            viewModel.onManageClassAdminDetailFormTeacherStateChanged(false)
-        }
-    }
-
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -246,8 +204,8 @@ fun ManageClassAdminDetailScreen(
                                             ManageClassAdminDetailFeature.MakeFormTeacher
                                         )
                                         if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
-                                            viewModel.onManageClassAdminDetailFormTeacherStateChanged(
-                                                true
+                                            viewModel.onManageClassAdminDetailMessageChanged(
+                                                ManageClassAdminDetailMessage.MakeFormTeacher
                                             )
                                         } else if (manageClassAdminDetailTeacherBuffer.size == 1) {
                                             scope.launch {
@@ -263,14 +221,14 @@ fun ManageClassAdminDetailScreen(
                                                 runnableBlock {
                                                     //show assigned form teacher message
                                                     viewModel.onIncManageClassAdminDetailListener()
-                                                    viewModel.onManageClassAdminDetailFormTeacherStateChanged(
-                                                        true
+                                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                                        ManageClassAdminDetailMessage.MakeFormTeacher
                                                     )
                                                 }
                                             }
                                         } else {
-                                            viewModel.onManageClassAdminDetailFormTeacherStateChanged(
-                                                true
+                                            viewModel.onManageClassAdminDetailMessageChanged(
+                                                ManageClassAdminDetailMessage.MakeFormTeacher
                                             )
                                         }
                                     }
@@ -280,8 +238,8 @@ fun ManageClassAdminDetailScreen(
                                             ManageClassAdminDetailFeature.ExportTeacher
                                         )
                                         if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
-                                            viewModel.onManageClassAdminDetailExportTeacherStateChanged(
-                                                true
+                                            viewModel.onManageClassAdminDetailMessageChanged(
+                                                ManageClassAdminDetailMessage.ExportTeacher
                                             )
                                         } else {
                                             onExportTeacher()
@@ -292,11 +250,33 @@ fun ManageClassAdminDetailScreen(
                                         viewModel.onManageClassAdminDetailFeatureChanged(
                                             ManageClassAdminDetailFeature.RemoveTeacher
                                         )
-                                        /*todo: remove teacher from class */
                                         if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
-
+                                            viewModel.onManageClassAdminDetailMessageChanged(
+                                                ManageClassAdminDetailMessage.RemoveTeacher
+                                            )
                                         } else {
+                                            //remove selected teachers from class
+                                            scope.launch {
+                                                manageClassAdminDetailTeacherBuffer.map { teacherId ->
+                                                    viewModel.getUserByIdNetwork(teacherId)
+                                                    delay(1000)
+                                                    if (userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
+                                                        userByIdNetwork.data?.classIds?.remove(
+                                                            selectedClassManageClassAdmin?.classId.orEmpty()
+                                                        )
+                                                        viewModel.saveUserAsVerified(userByIdNetwork.data!!) {
 
+                                                        }
+                                                    }
+                                                }
+                                            }.invokeOnCompletion {
+                                                runnableBlock {
+                                                    viewModel.onDecManageClassAdminDetailListener()
+                                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                                        ManageClassAdminDetailMessage.RemoveTeacher
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
 
@@ -341,135 +321,152 @@ fun ManageClassAdminDetailScreen(
             }
         }
 
-
-        if (importStudentSuccessState == true) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                val message =
-                    if (importStudentBuffer.size == 1) "Imported a student successfully!" else
-                        "Imported ${importStudentBuffer.size} students successfully!"
-                MessageBar(
-                    message = message,
-                    onClose = {
-                        viewModel.onImportStudentSuccessStateChanged(false)
-                    },
-                    maxWidth = maxWidth
-                )
-            }
-        }
-
-
-        if (importSubjectSuccessState == true) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                val message =
-                    if (importSubjectBuffer.size == 1) "Imported a subject successfully!" else
-                        "Imported ${importSubjectBuffer.size} subjects successfully!"
-                MessageBar(
-                    message = message,
-                    onClose = {
-                        viewModel.onImportSubjectSuccessStateChanged(false)
-                    },
-                    maxWidth = maxWidth
-                )
-            }
-        }
-
-        if (importTeacherSuccessState == true) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                val message =
-                    if (importTeacherBuffer.size == 1) "Invited a teacher successfully!" else
-                        "Invited ${importTeacherBuffer.size} teachers successfully!"
-                MessageBar(
-                    message = message,
-                    onClose = {
-                        viewModel.onImportTeacherSuccessStateChanged(false)
-                    },
-                    maxWidth = maxWidth
-                )
-            }
-        }
-
-        if (manageClassAdminDetailHoldToMarkMessageState == true) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-
-                MessageBar(
-                    message = stringResource(id = R.string.long_press_to_mark),
-                    onClose = {
-                        viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(false)
-                    },
-                    maxWidth = maxWidth
-                )
-            }
-        }
-
-        if (manageClassAdminDetailFormTeacherState == true) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                val message = when {
-                    manageClassAdminDetailTeacherBuffer.isEmpty() ->
-                        stringResource(id = R.string.select_a_teacher)
-
-                    manageClassAdminDetailTeacherBuffer.size > 1 ->
-                        stringResource(id = R.string.select_just_one_teacher)
-
-                    manageClassAdminDetailTeacherBuffer.size == 1 ->
-                        stringResource(id = R.string.teacher_assigned_as_form_teacher)
-
-                    else -> stringResource(id = R.string.select_a_teacher)
-                }
-                MessageBar(
-                    message = message,
-                    onClose = {
-                        viewModel.onManageClassAdminDetailFormTeacherStateChanged(false)
-                    },
-                    maxWidth = maxWidth
-                )
-            }
-        }
-
-        if (manageClassAdminDetailExportTeacherState == true) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter,
-            ) {
-                val message = when {
-                    exportTeacherBuffer.isEmpty() ->
-                        stringResource(id = R.string.select_a_teacher)
-
-                    exportTeacherBuffer.size == 1 ->
-                        "Exported teacher successfully!"
-
-                    else -> "Exported ${exportTeacherBuffer.size} teachers successfully!"
+        if (manageClassAdminDetailMessage !is ManageClassAdminDetailMessage.NoMessage) {
+            when (manageClassAdminDetailMessage) {
+                ManageClassAdminDetailMessage.ImportTeacher -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message =
+                            if (importTeacherBuffer.size == 1) "Invited a teacher successfully!" else
+                                "Invited ${importTeacherBuffer.size} teachers successfully!"
+                        MessageBar(
+                            message = message,
+                            onClose = {
+                                viewModel.onManageClassAdminDetailMessageChanged(
+                                    ManageClassAdminDetailMessage.NoMessage
+                                )
+                            },
+                            maxWidth = maxWidth
+                        )
+                    }
                 }
 
-                if (exportTeacherBuffer.isEmpty()) {
-                    MessageBar(
-                        message = message,
-                        onClose = {
-                            viewModel.onManageClassAdminDetailFormTeacherStateChanged(false)
-                        },
-                        maxWidth = maxWidth
-                    )
-                } else {
-                    SuccessBar(
-                        message = message,
-                        maxWidth = maxWidth
-                    )
+                ManageClassAdminDetailMessage.ImportStudent -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message =
+                            if (importStudentBuffer.size == 1) "Imported a student successfully!" else
+                                "Imported ${importStudentBuffer.size} students successfully!"
+                        MessageBar(
+                            message = message,
+                            onClose = {
+                                viewModel.onManageClassAdminDetailMessageChanged(
+                                    ManageClassAdminDetailMessage.NoMessage
+                                )
+                            },
+                            maxWidth = maxWidth
+                        )
+                    }
                 }
 
+                ManageClassAdminDetailMessage.ImportSubject -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message =
+                            if (importSubjectBuffer.size == 1) "Imported a subject successfully!" else
+                                "Imported ${importSubjectBuffer.size} subjects successfully!"
+                        MessageBar(
+                            message = message,
+                            onClose = {
+                                viewModel.onManageClassAdminDetailMessageChanged(
+                                    ManageClassAdminDetailMessage.NoMessage
+                                )
+                            },
+                            maxWidth = maxWidth
+                        )
+                    }
+                }
+
+                ManageClassAdminDetailMessage.ExportTeacher -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message = when {
+                            exportTeacherBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_teacher)
+
+                            exportTeacherBuffer.size == 1 ->
+                                "Exported teacher successfully!"
+
+                            else -> "Exported ${exportTeacherBuffer.size} teachers successfully!"
+                        }
+
+                        if (exportTeacherBuffer.isEmpty()) {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth
+                            )
+                        } else {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth
+                            )
+                        }
+                    }
+                }
+
+                ManageClassAdminDetailMessage.HoldToMark -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+
+                        MessageBar(
+                            message = stringResource(id = R.string.long_press_to_mark),
+                            onClose = {
+                                viewModel.onManageClassAdminDetailMessageChanged(
+                                    ManageClassAdminDetailMessage.NoMessage
+                                )
+                            },
+                            maxWidth = maxWidth
+                        )
+                    }
+                }
+
+                ManageClassAdminDetailMessage.MakeFormTeacher -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message = when {
+                            manageClassAdminDetailTeacherBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_teacher)
+
+                            manageClassAdminDetailTeacherBuffer.size == 1 ->
+                                stringResource(id = R.string.teacher_assigned_as_form_teacher)
+
+                            manageClassAdminDetailTeacherBuffer.size > 1 ->
+                                stringResource(id = R.string.select_just_one_teacher)
+
+                            else -> stringResource(id = R.string.select_a_teacher)
+                        }
+                        MessageBar(
+                            message = message,
+                            onClose = {
+                                viewModel.onManageClassAdminDetailMessageChanged(
+                                    ManageClassAdminDetailMessage.NoMessage
+                                )
+                            },
+                            maxWidth = maxWidth
+                        )
+                    }
+                }
+
+                else -> {
+                    /*todo: more message formats */
+                }
             }
         }
     }
@@ -535,7 +532,9 @@ fun ManageClassAdminDetailScreenContent(
                         }
                     }.invokeOnCompletion {
                         runnableBlock {
-                            viewModel.onImportStudentSuccessStateChanged(true)
+                            viewModel.onManageClassAdminDetailMessageChanged(
+                                ManageClassAdminDetailMessage.ImportStudent
+                            )
                         }
                     }
                 }
@@ -567,7 +566,10 @@ fun ManageClassAdminDetailScreenContent(
                         }
                     }.invokeOnCompletion {
                         runnableBlock {
-                            viewModel.onImportSubjectSuccessStateChanged(true)
+                            viewModel.onManageClassAdminDetailMessageChanged(
+                                ManageClassAdminDetailMessage.ImportSubject
+                            )
+
                         }
                     }
                 }
@@ -599,7 +601,9 @@ fun ManageClassAdminDetailScreenContent(
                         }
                     }.invokeOnCompletion {
                         runnableBlock {
-                            viewModel.onImportTeacherSuccessStateChanged(true)
+                            viewModel.onManageClassAdminDetailMessageChanged(
+                                ManageClassAdminDetailMessage.ImportTeacher
+                            )
                         }
                     }
                 }
@@ -611,20 +615,22 @@ fun ManageClassAdminDetailScreenContent(
                     manageClassAdminDetailTeacherBuffer.isNotEmpty()
                 ) {
                     scope.launch {
-                       manageClassAdminDetailTeacherBuffer.map { teacherId ->
-                           viewModel.getUserByIdNetwork(teacherId)
-                           delay(1000)
-                           if(userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
-                               exportTeacherBuffer.map { classId ->
-                                   if(!userByIdNetwork.data?.classIds?.contains(classId)!!) {
-                                       userByIdNetwork.data?.classIds?.add(classId)
-                                   }
-                               }
-                           }
-                       }
+                        manageClassAdminDetailTeacherBuffer.map { teacherId ->
+                            viewModel.getUserByIdNetwork(teacherId)
+                            delay(1000)
+                            if (userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
+                                exportTeacherBuffer.map { classId ->
+                                    if (!userByIdNetwork.data?.classIds?.contains(classId)!!) {
+                                        userByIdNetwork.data?.classIds?.add(classId)
+                                    }
+                                }
+                            }
+                        }
                     }.invokeOnCompletion {
                         runnableBlock {
-                            viewModel.onManageClassAdminDetailExportTeacherStateChanged(true)
+                            viewModel.onManageClassAdminDetailMessageChanged(
+                                ManageClassAdminDetailMessage.ExportTeacher
+                            )
                             viewModel.clearExportTeacherBuffer()
                             viewModel.clearTeacherBufferManageClassAdminDetail()
                             viewModel.onIncManageClassAdminDetailListener()
@@ -764,8 +770,8 @@ fun ManageClassAdminDetailScreenContentStudents(
                             selected = manageClassAdminDetailStudentBuffer.contains(student.userId),
                             onTap = { selectedStudent ->
                                 if (manageClassAdminDetailStudentBuffer.isEmpty()) {
-                                    viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(
-                                        true
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.HoldToMark
                                     )
                                 } else {
                                     if (manageClassAdminDetailStudentBuffer.contains(selectedStudent.userId)) {
@@ -865,8 +871,8 @@ fun ManageClassAdminDetailScreenContentSubjects(
                             selected = manageClassAdminDetailSubjectBuffer.contains(subject.subjectCode),
                             onTap = { selectedSubject ->
                                 if (manageClassAdminDetailSubjectBuffer.isEmpty()) {
-                                    viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(
-                                        true
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.HoldToMark
                                     )
                                 } else {
                                     if (manageClassAdminDetailSubjectBuffer.contains(selectedSubject.subjectCode)) {
@@ -967,8 +973,8 @@ fun ManageClassAdminDetailScreenContentTeachers(
                             teacher = teacher.toLocal(),
                             onTap = { selectedTeacher ->
                                 if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
-                                    viewModel.onManageClassAdminDetailHoldToMarkMessageStateChanged(
-                                        true
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.HoldToMark
                                     )
                                 } else {
                                     if (manageClassAdminDetailTeacherBuffer.contains(selectedTeacher.userId)) {
@@ -1770,4 +1776,15 @@ sealed class ManageClassAdminDetailFeature {
     object ImportTeacher : ManageClassAdminDetailFeature()
     object ExportTeacher : ManageClassAdminDetailFeature()
     object RemoveTeacher : ManageClassAdminDetailFeature()
+}
+
+sealed class ManageClassAdminDetailMessage {
+    object ImportStudent : ManageClassAdminDetailMessage()
+    object ImportSubject : ManageClassAdminDetailMessage()
+    object ImportTeacher : ManageClassAdminDetailMessage()
+    object HoldToMark : ManageClassAdminDetailMessage()
+    object MakeFormTeacher : ManageClassAdminDetailMessage()
+    object ExportTeacher : ManageClassAdminDetailMessage()
+    object RemoveTeacher : ManageClassAdminDetailMessage()
+    object NoMessage : ManageClassAdminDetailMessage()
 }

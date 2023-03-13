@@ -21,6 +21,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailFeature
+import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
@@ -366,15 +367,6 @@ class MainViewModel @Inject constructor(
     val manageClassAdminDetailFeature: StateFlow<ManageClassAdminDetailFeature> =
         _manageClassAdminDetailFeature
 
-    private var _importStudentSuccessState = MutableStateFlow(null as Boolean?)
-    val importStudentSuccessState: StateFlow<Boolean?> = _importStudentSuccessState
-
-    private var _importSubjectSuccessState = MutableStateFlow(null as Boolean?)
-    val importSubjectSuccessState: StateFlow<Boolean?> = _importSubjectSuccessState
-
-    private var _importTeacherSuccessState = MutableStateFlow(null as Boolean?)
-    val importTeacherSuccessState: StateFlow<Boolean?> = _importTeacherSuccessState
-
     private var _importTeacherBufferListener = MutableStateFlow(0)
     val importTeacherBufferListener: StateFlow<Int> = _importTeacherBufferListener
 
@@ -405,23 +397,20 @@ class MainViewModel @Inject constructor(
     val manageClassAdminDetailSubjectBufferListener: StateFlow<Int> =
         _manageClassAdminDetailSubjectBufferListener
 
-    private var _manageClassAdminDetailHoldToMarkMessageState = MutableStateFlow(null as Boolean?)
-    val manageClassAdminDetailHoldToMarkMessageState: StateFlow<Boolean?> =
-        _manageClassAdminDetailHoldToMarkMessageState
-
-    private var _manageClassAdminDetailFormTeacherState = MutableStateFlow(null as Boolean?)
-    val manageClassAdminDetailFormTeacherState: StateFlow<Boolean?> =
-        _manageClassAdminDetailFormTeacherState
-
-    private var _manageClassAdminDetailExportTeacherState = MutableStateFlow(null as Boolean?)
-    val manageClassAdminDetailExportTeacherState: StateFlow<Boolean?> =
-        _manageClassAdminDetailExportTeacherState
-
     private var _exportTeacherBuffer = MutableStateFlow(mutableListOf<String>())
     val exportTeacherBuffer: StateFlow<List<String>> = _exportTeacherBuffer
 
     private var _exportTeacherBufferListener = MutableStateFlow(0)
     val exportTeacherBufferListener: StateFlow<Int> = _exportTeacherBufferListener
+
+    private var _manageClassAdminDetailMessage =
+        MutableStateFlow(ManageClassAdminDetailMessage.NoMessage as ManageClassAdminDetailMessage)
+    val manageClassAdminDetailMessage: StateFlow<ManageClassAdminDetailMessage> =
+        _manageClassAdminDetailMessage
+
+    fun onManageClassAdminDetailMessageChanged(message: ManageClassAdminDetailMessage) = effect {
+        _manageClassAdminDetailMessage.value = message
+    }
 
     fun onIncExportTeacherBufferListener() = effect {
         _exportTeacherBufferListener.value++
@@ -445,18 +434,6 @@ class MainViewModel @Inject constructor(
 
     fun clearExportTeacherBuffer() = effect {
         _exportTeacherBuffer.value.clear()
-    }
-
-    fun onManageClassAdminDetailExportTeacherStateChanged(state: Boolean?) = effect {
-        _manageClassAdminDetailExportTeacherState.value = state
-    }
-
-    fun onManageClassAdminDetailFormTeacherStateChanged(state: Boolean?) = effect {
-        _manageClassAdminDetailFormTeacherState.value = state
-    }
-
-    fun onManageClassAdminDetailHoldToMarkMessageStateChanged(state: Boolean?) = effect {
-        _manageClassAdminDetailHoldToMarkMessageState.value = state
     }
 
     fun onIncManageClassAdminDetailSubjectBufferListener() = effect {
@@ -556,15 +533,6 @@ class MainViewModel @Inject constructor(
         _importTeacherBufferListener.value--
     }
 
-    fun onImportTeacherSuccessStateChanged(state: Boolean?) = effect {
-        _importTeacherSuccessState.value = state
-    }
-
-
-    fun onImportSubjectSuccessStateChanged(state: Boolean?) = effect {
-        _importSubjectSuccessState.value = state
-    }
-
     fun onAddToImportSubjectBuffer(id: String) = effect {
         if (!_importSubjectBuffer.value.contains(id)) {
             _importSubjectBuffer.value.add(id)
@@ -587,10 +555,6 @@ class MainViewModel @Inject constructor(
 
     fun onDecImportSubjectBufferListener() = effect {
         _importSubjectBufferListener.value--
-    }
-
-    fun onImportStudentSuccessStateChanged(state: Boolean?) = effect {
-        _importStudentSuccessState.value = state
     }
 
     fun onManageClassAdminDetailFeatureChanged(feature: ManageClassAdminDetailFeature) = effect {
