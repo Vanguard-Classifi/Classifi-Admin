@@ -176,6 +176,13 @@ fun ImportTeacherScreenContent(
                                 )
                             }
                         }
+                    } else {
+                        NoDataScreen(
+                            maxHeight = maxHeight,
+                            message = stringResource(id = R.string.no_teachers),
+                            buttonLabel = stringResource(id = R.string.go_back),
+                            onClick = onEnrollTeacher,
+                        )
                     }
                 }
 

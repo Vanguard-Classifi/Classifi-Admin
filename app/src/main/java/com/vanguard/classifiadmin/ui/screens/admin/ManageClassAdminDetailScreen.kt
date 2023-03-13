@@ -74,6 +74,7 @@ import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
+import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -92,6 +93,7 @@ fun ManageClassAdminDetailScreen(
     onImportStudent: () -> Unit,
     onInviteTeachers: () -> Unit,
     onEnrollTeacher: () -> Unit,
+    onExportTeacher: () -> Unit,
 ) {
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
@@ -113,6 +115,18 @@ fun ManageClassAdminDetailScreen(
     val scope = rememberCoroutineScope()
     val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
     val manageClassAdminDetailFormTeacherState by viewModel.manageClassAdminDetailFormTeacherState.collectAsState()
+    val manageClassAdminDetailExportTeacherState by
+    viewModel.manageClassAdminDetailExportTeacherState.collectAsState()
+    val exportTeacherBuffer by viewModel.exportTeacherBuffer.collectAsState()
+
+    LaunchedEffect(manageClassAdminDetailExportTeacherState) {
+        if (manageClassAdminDetailExportTeacherState == true) {
+            delay(3000)
+            viewModel.onManageClassAdminDetailExportTeacherStateChanged(
+                false
+            )
+        }
+    }
 
     LaunchedEffect(importStudentSuccessState) {
         if (importStudentSuccessState == true) {
@@ -265,7 +279,13 @@ fun ManageClassAdminDetailScreen(
                                         viewModel.onManageClassAdminDetailFeatureChanged(
                                             ManageClassAdminDetailFeature.ExportTeacher
                                         )
-                                        /*todo: export teacher */
+                                        if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
+                                            viewModel.onManageClassAdminDetailExportTeacherStateChanged(
+                                                true
+                                            )
+                                        } else {
+                                            onExportTeacher()
+                                        }
                                     }
 
                                     ManageClassDetailPopupTeacherOption.Remove -> {
@@ -273,6 +293,11 @@ fun ManageClassAdminDetailScreen(
                                             ManageClassAdminDetailFeature.RemoveTeacher
                                         )
                                         /*todo: remove teacher from class */
+                                        if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
+
+                                        } else {
+
+                                        }
                                     }
 
                                 }
@@ -414,6 +439,39 @@ fun ManageClassAdminDetailScreen(
                 )
             }
         }
+
+        if (manageClassAdminDetailExportTeacherState == true) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                val message = when {
+                    exportTeacherBuffer.isEmpty() ->
+                        stringResource(id = R.string.select_a_teacher)
+
+                    exportTeacherBuffer.size == 1 ->
+                        "Exported teacher successfully!"
+
+                    else -> "Exported ${exportTeacherBuffer.size} teachers successfully!"
+                }
+
+                if (exportTeacherBuffer.isEmpty()) {
+                    MessageBar(
+                        message = message,
+                        onClose = {
+                            viewModel.onManageClassAdminDetailFormTeacherStateChanged(false)
+                        },
+                        maxWidth = maxWidth
+                    )
+                } else {
+                    SuccessBar(
+                        message = message,
+                        maxWidth = maxWidth
+                    )
+                }
+
+            }
+        }
     }
 }
 
@@ -440,6 +498,12 @@ fun ManageClassAdminDetailScreenContent(
     val subjectByCodeNetwork by viewModel.subjectByCodeNetwork.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
+    val exportTeacherBuffer by viewModel.exportTeacherBuffer.collectAsState()
+    val manageClassAdminDetailTeacherBuffer by
+    viewModel.manageClassAdminDetailTeacherBuffer.collectAsState()
+    val manageClassAdminDetailTeacherBufferListener by
+    viewModel.manageClassAdminDetailTeacherBufferListener.collectAsState()
+
 
 
 
@@ -536,6 +600,34 @@ fun ManageClassAdminDetailScreenContent(
                     }.invokeOnCompletion {
                         runnableBlock {
                             viewModel.onImportTeacherSuccessStateChanged(true)
+                        }
+                    }
+                }
+            }
+
+            is ManageClassAdminDetailFeature.ExportTeacher -> {
+                if (
+                    exportTeacherBuffer.isNotEmpty() &&
+                    manageClassAdminDetailTeacherBuffer.isNotEmpty()
+                ) {
+                    scope.launch {
+                       manageClassAdminDetailTeacherBuffer.map { teacherId ->
+                           viewModel.getUserByIdNetwork(teacherId)
+                           delay(1000)
+                           if(userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
+                               exportTeacherBuffer.map { classId ->
+                                   if(!userByIdNetwork.data?.classIds?.contains(classId)!!) {
+                                       userByIdNetwork.data?.classIds?.add(classId)
+                                   }
+                               }
+                           }
+                       }
+                    }.invokeOnCompletion {
+                        runnableBlock {
+                            viewModel.onManageClassAdminDetailExportTeacherStateChanged(true)
+                            viewModel.clearExportTeacherBuffer()
+                            viewModel.clearTeacherBufferManageClassAdminDetail()
+                            viewModel.onIncManageClassAdminDetailListener()
                         }
                     }
                 }

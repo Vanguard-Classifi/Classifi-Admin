@@ -413,6 +413,44 @@ class MainViewModel @Inject constructor(
     val manageClassAdminDetailFormTeacherState: StateFlow<Boolean?> =
         _manageClassAdminDetailFormTeacherState
 
+    private var _manageClassAdminDetailExportTeacherState = MutableStateFlow(null as Boolean?)
+    val manageClassAdminDetailExportTeacherState: StateFlow<Boolean?> =
+        _manageClassAdminDetailExportTeacherState
+
+    private var _exportTeacherBuffer = MutableStateFlow(mutableListOf<String>())
+    val exportTeacherBuffer: StateFlow<List<String>> = _exportTeacherBuffer
+
+    private var _exportTeacherBufferListener = MutableStateFlow(0)
+    val exportTeacherBufferListener: StateFlow<Int> = _exportTeacherBufferListener
+
+    fun onIncExportTeacherBufferListener() = effect {
+        _exportTeacherBufferListener.value++
+    }
+
+    fun onDecExportTeacherBufferListener() = effect {
+        _exportTeacherBufferListener.value--
+    }
+
+    fun onAddToExportTeacherBuffer(classId: String) = effect {
+        if (!_exportTeacherBuffer.value.contains(classId)) {
+            _exportTeacherBuffer.value.add(classId)
+        }
+    }
+
+    fun onRemoveFromExportTeacherBuffer(classId: String) = effect {
+        if (_exportTeacherBuffer.value.contains(classId)) {
+            _exportTeacherBuffer.value.remove(classId)
+        }
+    }
+
+    fun clearExportTeacherBuffer() = effect {
+        _exportTeacherBuffer.value.clear()
+    }
+
+    fun onManageClassAdminDetailExportTeacherStateChanged(state: Boolean?) = effect {
+        _manageClassAdminDetailExportTeacherState.value = state
+    }
+
     fun onManageClassAdminDetailFormTeacherStateChanged(state: Boolean?) = effect {
         _manageClassAdminDetailFormTeacherState.value = state
     }
