@@ -95,7 +95,10 @@ fun ManageClassAdminDetailScreen(
     onInviteTeachers: () -> Unit,
     onEnrollTeacher: () -> Unit,
     onExportTeacher: () -> Unit,
+    onExportStudent: () -> Unit,
+    onExportSubject: () -> Unit,
 ) {
+    val TAG = "ManageClassAdminDetailScreen"
     val selectedManageClassSubsectionItem by viewModel.selectedManageClassSubsectionItem.collectAsState()
     val selectedClassManageClassAdmin by viewModel.selectedClassManageClassAdmin.collectAsState()
     val optionState: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -116,7 +119,7 @@ fun ManageClassAdminDetailScreen(
 
     LaunchedEffect(manageClassAdminDetailMessage) {
         if (manageClassAdminDetailMessage !is ManageClassAdminDetailMessage.NoMessage) {
-            delay(3000)
+            delay(2000)
             viewModel.onManageClassAdminDetailMessageChanged(
                 ManageClassAdminDetailMessage.NoMessage
             )
@@ -125,7 +128,9 @@ fun ManageClassAdminDetailScreen(
             viewModel.clearImportStudentBuffer()
             viewModel.onClearBufferManageClass()
             viewModel.clearExportTeacherBuffer()
+            viewModel.clearExportSubjectBuffer()
             viewModel.clearTeacherBufferManageClassAdminDetail()
+            viewModel.clearSubjectBufferManageClassAdminDetail()
         }
     }
 
@@ -298,7 +303,23 @@ fun ManageClassAdminDetailScreen(
                                     onImportSubject()
                                 }
 
-                                else -> {}
+                                ManageClassDetailPopupSubjectOption.Export -> {
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.ExportSubject
+                                    )
+                                    if (manageClassAdminDetailSubjectBuffer.isEmpty()) {
+                                        viewModel.onManageClassAdminDetailMessageChanged(
+                                            ManageClassAdminDetailMessage.ExportSubject
+                                        )
+                                    } else {
+                                        onExportSubject()
+                                    }
+                                }
+
+                                ManageClassDetailPopupSubjectOption.Remove -> {
+                                    /*todo; on remove subject */
+                                }
+
                             }
                             optionState.value = false
                         })
@@ -314,7 +335,21 @@ fun ManageClassAdminDetailScreen(
                                     onImportStudent()
                                 }
 
-                                else -> {}
+                                ManageClassDetailPopupStudentOption.Enroll -> {
+
+                                }
+
+                                ManageClassDetailPopupStudentOption.MakePrefect -> {
+                                    /*todo: make prefect */
+                                }
+
+                                ManageClassDetailPopupStudentOption.Export -> {
+                                    /*on export student */
+                                }
+
+                                ManageClassDetailPopupStudentOption.Remove -> {
+                                    /*todo: on remove student */
+                                }
                             }
                             optionState.value = false
                         })
@@ -466,6 +501,45 @@ fun ManageClassAdminDetailScreen(
                     }
                 }
 
+
+                ManageClassAdminDetailMessage.ExportSubject -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        Log.e(
+                            TAG,
+                            "ManageClassAdminDetailScreen: subject buffer has ${manageClassAdminDetailSubjectBuffer.size} items",
+                        )
+                        val message = when {
+                            manageClassAdminDetailSubjectBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_subject)
+
+                            manageClassAdminDetailSubjectBuffer.size == 1 ->
+                                stringResource(id = R.string.one_subject_exported)
+
+                            else -> stringResource(id = R.string.exported_subjects)
+                        }
+
+                        if (manageClassAdminDetailSubjectBuffer.isEmpty()) {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth
+                            )
+                        } else {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth,
+                            )
+                        }
+                    }
+                }
+
                 else -> {
                     /*todo: more message formats */
                 }
@@ -502,7 +576,13 @@ fun ManageClassAdminDetailScreenContent(
     viewModel.manageClassAdminDetailTeacherBuffer.collectAsState()
     val manageClassAdminDetailTeacherBufferListener by
     viewModel.manageClassAdminDetailTeacherBufferListener.collectAsState()
-
+    val exportSubjectBuffer by viewModel.exportSubjectBuffer.collectAsState()
+    val exportSubjectBufferListener by viewModel.exportSubjectBufferListener.collectAsState()
+    val manageClassAdminDetailStudentBuffer by
+    viewModel.manageClassAdminDetailStudentBuffer.collectAsState()
+    val manageClassAdminDetailSubjectBuffer by
+    viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
+    val subjectByIdNetwork by viewModel.subjectByIdNetwork.collectAsState()
 
 
 
@@ -647,6 +727,44 @@ fun ManageClassAdminDetailScreenContent(
                 }
             }
 
+            is ManageClassAdminDetailFeature.ExportSubject -> {
+                if (
+                    exportSubjectBuffer.isNotEmpty() &&
+                    manageClassAdminDetailSubjectBuffer.isNotEmpty()
+                ) {
+                    scope.launch {
+                        manageClassAdminDetailSubjectBuffer.map { subjectId ->
+                            viewModel.getSubjectByIdNetwork(
+                                subjectId,
+                                currentSchoolIdPref.orEmpty()
+                            )
+                            delay(1000)
+                            if (subjectByIdNetwork is Resource.Success && subjectByIdNetwork.data != null) {
+                                exportSubjectBuffer.map { classId ->
+                                    //could only be export to one class
+                                    subjectByIdNetwork.data?.classId = classId
+                                    //save
+                                    viewModel.saveSubjectAsVerifiedNetwork(subjectByIdNetwork.data!!) {
+                                        viewModel.onIncManageClassAdminDetailListener()
+                                        //disengage the feature
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.NoFeature
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }.invokeOnCompletion {
+                        runnableBlock {
+                            viewModel.onManageClassAdminDetailMessageChanged(
+                                ManageClassAdminDetailMessage.ExportSubject
+                            )
+                            viewModel.onIncManageClassAdminDetailListener()
+                        }
+                    }
+                }
+            }
+
             else -> {
 
             }
@@ -666,7 +784,7 @@ fun ManageClassAdminDetailScreenContent(
         ) {
             Column(
                 modifier = modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(horizontal = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -750,7 +868,6 @@ fun ManageClassAdminDetailScreenContentStudents(
             classId = selectedClassManageClassAdmin?.classId.orEmpty(),
             schoolId = currentSchoolIdPref.orEmpty(),
         )
-        viewModel.clearStudentBufferManageClassAdminDetail()
     })
 
 
@@ -861,7 +978,6 @@ fun ManageClassAdminDetailScreenContentSubjects(
             classId = selectedClassManageClassAdmin?.classId.orEmpty(),
             schoolId = currentSchoolIdPref.orEmpty(),
         )
-        viewModel.clearSubjectBufferManageClassAdminDetail()
     })
 
     when (verifiedSubjectsUnderClassNetwork) {
@@ -876,20 +992,20 @@ fun ManageClassAdminDetailScreenContentSubjects(
                     verifiedSubjectsUnderClassNetwork.data?.forEach { subject ->
                         VerifiedSubjectItem(
                             subject = subject.toLocal(),
-                            selected = manageClassAdminDetailSubjectBuffer.contains(subject.subjectCode),
+                            selected = manageClassAdminDetailSubjectBuffer.contains(subject.subjectId),
                             onTap = { selectedSubject ->
                                 if (manageClassAdminDetailSubjectBuffer.isEmpty()) {
                                     viewModel.onManageClassAdminDetailMessageChanged(
                                         ManageClassAdminDetailMessage.HoldToMark
                                     )
                                 } else {
-                                    if (manageClassAdminDetailSubjectBuffer.contains(selectedSubject.subjectCode)) {
+                                    if (manageClassAdminDetailSubjectBuffer.contains(selectedSubject.subjectId)) {
                                         viewModel.onRemoveFromSubjectBufferManageClassAdminDetail(
-                                            selectedSubject.subjectCode.orEmpty()
+                                            selectedSubject.subjectId.orEmpty()
                                         )
                                     } else {
                                         viewModel.onAddToSubjectBufferManageClassAdminDetail(
-                                            selectedSubject.subjectCode.orEmpty()
+                                            selectedSubject.subjectId.orEmpty()
                                         )
                                     }
                                     viewModel.onIncManageClassAdminDetailSubjectBufferListener()
@@ -897,7 +1013,7 @@ fun ManageClassAdminDetailScreenContentSubjects(
                             },
                             onHold = { selectedSubject ->
                                 viewModel.onAddToSubjectBufferManageClassAdminDetail(
-                                    selectedSubject.subjectCode.orEmpty()
+                                    selectedSubject.subjectId.orEmpty()
                                 )
                                 viewModel.onIncManageClassAdminDetailSubjectBufferListener()
                             }
@@ -950,7 +1066,6 @@ fun ManageClassAdminDetailScreenContentTeachers(
             classId = selectedClassManageClassAdmin?.classId.orEmpty(),
             schoolId = currentSchoolIdPref.orEmpty(),
         )
-        //viewModel.clearTeacherBufferManageClassAdminDetail()
     })
 
     LaunchedEffect(manageClassAdminDetailListener) {
@@ -1794,5 +1909,9 @@ sealed class ManageClassAdminDetailMessage {
     object MakeFormTeacher : ManageClassAdminDetailMessage()
     object ExportTeacher : ManageClassAdminDetailMessage()
     object RemoveTeacher : ManageClassAdminDetailMessage()
+    object ExportStudent : ManageClassAdminDetailMessage()
+    object RemoveStudent : ManageClassAdminDetailMessage()
+    object ExportSubject : ManageClassAdminDetailMessage()
+    object RemoveSubject : ManageClassAdminDetailMessage()
     object NoMessage : ManageClassAdminDetailMessage()
 }

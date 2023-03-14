@@ -163,4 +163,9 @@
     <string name="teacher_assigned_as_form_teacher">Teacher assigned as form teacher</string>
     <string name="export_teachers">Export Teachers</string>
     <string name="error_occurred_classes">An error occurred while loading classes</string>
+    <string name="export_subjects">Export Subjects</string>
+    <string name="select_a_subject">Select a subject</string>
+    <string name="select_just_one_subject">Select just one subject</string>
+    <string name="one_subject_exported">One subject exported successfully!</string>
+    <string name="exported_subjects">Exported subjects successfully!</string>
 </resources>

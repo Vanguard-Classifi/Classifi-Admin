@@ -37,7 +37,11 @@ import com.vanguard.classifiadmin.ui.screens.classes.MANAGE_CLASS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.classes.ManageClassScreen
 import com.vanguard.classifiadmin.ui.screens.dashboard.MAIN_DASHBOARD_SCREEN
 import com.vanguard.classifiadmin.ui.screens.dashboard.MainDashboardScreen
+import com.vanguard.classifiadmin.ui.screens.exportations.EXPORT_STUDENT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.exportations.EXPORT_SUBJECT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.exportations.EXPORT_TEACHER_SCREEN
+import com.vanguard.classifiadmin.ui.screens.exportations.ExportStudentScreen
+import com.vanguard.classifiadmin.ui.screens.exportations.ExportSubjectScreen
 import com.vanguard.classifiadmin.ui.screens.exportations.ExportTeacherScreen
 import com.vanguard.classifiadmin.ui.screens.feeds.FEEDS_SCREEN
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedsScreen
@@ -99,6 +103,8 @@ object Destinations {
     const val importTeacher = IMPORT_TEACHER_SCREEN
     const val importStudent = IMPORT_STUDENT_SCREEN
     const val exportTeacher = EXPORT_TEACHER_SCREEN
+    const val exportSubject = EXPORT_SUBJECT_SCREEN
+    const val exportStudent = EXPORT_STUDENT_SCREEN
 }
 
 
@@ -286,7 +292,9 @@ fun NavGraph(
                 onInviteTeachers = { navController.navigate(Destinations.importTeacher) },
                 onImportStudent = { navController.navigate(Destinations.importStudent) },
                 onEnrollTeacher = { navController.navigate(Destinations.enrollTeacherAdmin) },
-                onExportTeacher = { navController.navigate(Destinations.exportTeacher) }
+                onExportTeacher = { navController.navigate(Destinations.exportTeacher) },
+                onExportStudent = { navController.navigate(Destinations.exportStudent) },
+                onExportSubject = { navController.navigate(Destinations.exportSubject) }
             )
         }
 
@@ -322,6 +330,22 @@ fun NavGraph(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
                 onTeacherExported = { navController.navigate(Destinations.manageClassAdminDetail) }
+            )
+        }
+
+
+        composable(Destinations.exportSubject) {
+            ExportSubjectScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
+                onSubjectExported = {navController.navigate(Destinations.manageClassAdminDetail)}
+            )
+        }
+
+        composable(Destinations.exportStudent) {
+            ExportStudentScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
             )
         }
     }

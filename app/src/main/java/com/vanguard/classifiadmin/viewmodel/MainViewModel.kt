@@ -408,6 +408,36 @@ class MainViewModel @Inject constructor(
     val manageClassAdminDetailMessage: StateFlow<ManageClassAdminDetailMessage> =
         _manageClassAdminDetailMessage
 
+    private var _exportSubjectBuffer = MutableStateFlow(mutableListOf<String>())
+    val exportSubjectBuffer: StateFlow<List<String>> = _exportSubjectBuffer
+
+    private var _exportSubjectBufferListener = MutableStateFlow(0)
+    val exportSubjectBufferListener: StateFlow<Int> = _exportSubjectBufferListener
+
+    fun onIncExportSubjectBufferListener() = effect {
+        _exportSubjectBufferListener.value++
+    }
+
+    fun onDecExportSubjectBufferListener() = effect {
+        _exportSubjectBufferListener.value--
+    }
+
+    fun onAddToExportSubjectBuffer(classId: String) = effect {
+        if (!_exportSubjectBuffer.value.contains(classId)) {
+            _exportSubjectBuffer.value.add(classId)
+        }
+    }
+
+    fun onRemoveFromExportSubjectBuffer(classId: String) = effect {
+        if (_exportSubjectBuffer.value.contains(classId)) {
+            _exportSubjectBuffer.value.remove(classId)
+        }
+    }
+
+    fun clearExportSubjectBuffer() = effect {
+        _exportSubjectBuffer.value.clear()
+    }
+
     fun onManageClassAdminDetailMessageChanged(message: ManageClassAdminDetailMessage) = effect {
         _manageClassAdminDetailMessage.value = message
     }
