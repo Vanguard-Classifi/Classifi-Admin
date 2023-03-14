@@ -428,7 +428,37 @@ fun ManageClassAdminDetailScreen(
                                 }
 
                                 ManageClassDetailPopupStudentOption.Remove -> {
-                                    /*todo: on remove student */
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.RemoveStudent
+                                    )
+                                    if (manageClassAdminDetailStudentBuffer.isEmpty()) {
+                                        viewModel.onManageClassAdminDetailMessageChanged(
+                                            ManageClassAdminDetailMessage.RemoveStudent
+                                        )
+                                    } else {
+                                        //remove selected teachers from class
+                                        scope.launch {
+                                            manageClassAdminDetailStudentBuffer.map { studentId ->
+                                                viewModel.getUserByIdNetwork(studentId)
+                                                delay(1000)
+                                                if (userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
+                                                    userByIdNetwork.data?.classIds?.remove(
+                                                        selectedClassManageClassAdmin?.classId.orEmpty()
+                                                    )
+                                                    viewModel.saveUserAsVerified(userByIdNetwork.data!!) {
+
+                                                    }
+                                                }
+                                            }
+                                        }.invokeOnCompletion {
+                                            runnableBlock {
+                                                viewModel.onDecManageClassAdminDetailListener()
+                                                viewModel.onManageClassAdminDetailMessageChanged(
+                                                    ManageClassAdminDetailMessage.RemoveStudent
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             optionState.value = false
@@ -437,6 +467,7 @@ fun ManageClassAdminDetailScreen(
                 }
             }
         }
+
 
         if (manageClassAdminDetailMessage !is ManageClassAdminDetailMessage.NoMessage) {
             when (manageClassAdminDetailMessage) {
@@ -767,6 +798,40 @@ fun ManageClassAdminDetailScreen(
                     }
                 }
 
+                ManageClassAdminDetailMessage.RemoveStudent -> {
+                    /*todo: on remove student */
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message = when {
+                            manageClassAdminDetailStudentBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_student)
+
+                            manageClassAdminDetailStudentBuffer.size == 1 ->
+                                "Removed a student successfully!"
+
+                            else -> "Removed ${manageClassAdminDetailStudentBuffer.size} students successfully!"
+                        }
+
+                        if (manageClassAdminDetailStudentBuffer.isEmpty()) {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth
+                            )
+                        } else {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth
+                            )
+                        }
+                    }
+                }
 
                 else -> {
                     /*todo: more message formats */
@@ -1030,6 +1095,11 @@ fun ManageClassAdminDetailScreenContent(
                     }
                 }
             }
+
+            is ManageClassAdminDetailFeature.RemoveStudent -> {
+
+            }
+
 
             is ManageClassAdminDetailFeature.NoFeature -> {
                 //clear all buffers
