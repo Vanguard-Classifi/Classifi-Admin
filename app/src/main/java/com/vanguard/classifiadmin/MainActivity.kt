@@ -43,6 +43,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStop() {
+        finish()
         super.onStop()
         Log.e(TAG, "onStop: onStop has been called")
     }

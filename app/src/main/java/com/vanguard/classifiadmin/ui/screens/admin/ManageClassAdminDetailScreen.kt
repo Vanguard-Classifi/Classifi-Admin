@@ -113,8 +113,10 @@ fun ManageClassAdminDetailScreen(
     viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
     val scope = rememberCoroutineScope()
     val userByIdNetwork by viewModel.userByIdNetwork.collectAsState()
+    val subjectByIdNetwork by viewModel.subjectByIdNetwork.collectAsState()
     val exportTeacherBuffer by viewModel.exportTeacherBuffer.collectAsState()
     val manageClassAdminDetailMessage by viewModel.manageClassAdminDetailMessage.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
 
 
     LaunchedEffect(manageClassAdminDetailMessage) {
@@ -135,6 +137,7 @@ fun ManageClassAdminDetailScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.getCurrentSchoolIdPref()
         viewModel.onManageClassAdminDetailMessageChanged(
             ManageClassAdminDetailMessage.NoMessage
         )
@@ -317,7 +320,35 @@ fun ManageClassAdminDetailScreen(
                                 }
 
                                 ManageClassDetailPopupSubjectOption.Remove -> {
-                                    /*todo; on remove subject */
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.RemoveSubject
+                                    )
+                                    if(manageClassAdminDetailSubjectBuffer.isEmpty()) {
+                                        viewModel.onManageClassAdminDetailMessageChanged(
+                                            ManageClassAdminDetailMessage.RemoveSubject
+                                        )
+                                    } else {
+                                        scope.launch {
+                                            manageClassAdminDetailSubjectBuffer.map {subjectId ->
+                                                viewModel.getSubjectByIdNetwork(subjectId, currentSchoolIdPref.orEmpty())
+                                                delay(1000)
+                                                if(subjectByIdNetwork is Resource.Success && subjectByIdNetwork.data != null) {
+                                                    subjectByIdNetwork.data?.classId = null
+                                                    viewModel.saveSubjectAsVerifiedNetwork(subjectByIdNetwork.data!!) {
+
+                                                    }
+                                                }
+                                            }
+
+                                        }.invokeOnCompletion{
+                                            runnableBlock {
+                                                viewModel.onDecManageClassAdminDetailListener()
+                                                viewModel.onManageClassAdminDetailMessageChanged(
+                                                    ManageClassAdminDetailMessage.RemoveSubject
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
 
                             }
@@ -454,6 +485,40 @@ fun ManageClassAdminDetailScreen(
                     }
                 }
 
+                ManageClassAdminDetailMessage.RemoveTeacher -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message = when {
+                            manageClassAdminDetailTeacherBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_teacher)
+
+                            manageClassAdminDetailTeacherBuffer.size == 1 ->
+                                "Removed a teacher successfully!"
+
+                            else -> "Removed ${manageClassAdminDetailTeacherBuffer.size} teachers successfully!"
+                        }
+
+                        if (manageClassAdminDetailTeacherBuffer.isEmpty()) {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth
+                            )
+                        } else {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth
+                            )
+                        }
+                    }
+                }
+
                 ManageClassAdminDetailMessage.HoldToMark -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -535,6 +600,40 @@ fun ManageClassAdminDetailScreen(
                             SuccessBar(
                                 message = message,
                                 maxWidth = maxWidth,
+                            )
+                        }
+                    }
+                }
+
+                ManageClassAdminDetailMessage.RemoveSubject -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message = when {
+                            manageClassAdminDetailSubjectBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_subject)
+
+                            manageClassAdminDetailSubjectBuffer.size == 1 ->
+                                "Removed a subject successfully!"
+
+                            else -> "Removed ${manageClassAdminDetailSubjectBuffer.size} subjects successfully!"
+                        }
+
+                        if (manageClassAdminDetailSubjectBuffer.isEmpty()) {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth
+                            )
+                        } else {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth
                             )
                         }
                     }
@@ -763,6 +862,18 @@ fun ManageClassAdminDetailScreenContent(
                         }
                     }
                 }
+            }
+
+            is ManageClassAdminDetailFeature.NoFeature -> {
+                //clear all buffers
+                viewModel.clearImportSubjectBuffer()
+                viewModel.clearImportStudentBuffer()
+                viewModel.clearImportTeacherBuffer()
+                viewModel.clearExportSubjectBuffer()
+                viewModel.clearExportTeacherBuffer()
+                viewModel.clearTeacherBufferManageClassAdminDetail()
+                viewModel.clearSubjectBufferManageClassAdminDetail()
+                viewModel.clearStudentBufferManageClassAdminDetail()
             }
 
             else -> {
