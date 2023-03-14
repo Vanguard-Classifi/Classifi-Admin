@@ -171,4 +171,5 @@
     <string name="student_assigned_as_class_prefect">Student assigned as class prefect</string>
     <string name="select_a_student">Please select a student</string>
     <string name="select_just_one_student">Please select just one student</string>
+    <string name="export_students">Export Students</string>
 </resources>

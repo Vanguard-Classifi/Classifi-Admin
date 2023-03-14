@@ -118,6 +118,7 @@ fun ManageClassAdminDetailScreen(
     val exportTeacherBuffer by viewModel.exportTeacherBuffer.collectAsState()
     val manageClassAdminDetailMessage by viewModel.manageClassAdminDetailMessage.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val exportStudentBuffer by viewModel.exportStudentBuffer.collectAsState()
 
 
     LaunchedEffect(manageClassAdminDetailMessage) {
@@ -414,7 +415,16 @@ fun ManageClassAdminDetailScreen(
                                 }
 
                                 ManageClassDetailPopupStudentOption.Export -> {
-                                    /*on export student */
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.ExportStudent
+                                    )
+                                    if(manageClassAdminDetailStudentBuffer.isEmpty()) {
+                                        viewModel.onManageClassAdminDetailMessageChanged(
+                                            ManageClassAdminDetailMessage.ExportStudent
+                                        )
+                                    } else {
+                                        onExportStudent()
+                                    }
                                 }
 
                                 ManageClassDetailPopupStudentOption.Remove -> {
@@ -723,6 +733,41 @@ fun ManageClassAdminDetailScreen(
                     }
                 }
 
+                ManageClassAdminDetailMessage.ExportStudent -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message = when {
+                            exportStudentBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_student)
+
+                            exportStudentBuffer.size == 1 ->
+                                "Exported student successfully!"
+
+                            else -> "Exported ${exportStudentBuffer.size} students successfully!"
+                        }
+
+                        if (exportStudentBuffer.isEmpty()) {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth
+                            )
+                        } else {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth
+                            )
+                        }
+                    }
+                }
+
+
                 else -> {
                     /*todo: more message formats */
                 }
@@ -766,7 +811,7 @@ fun ManageClassAdminDetailScreenContent(
     val manageClassAdminDetailSubjectBuffer by
     viewModel.manageClassAdminDetailSubjectBuffer.collectAsState()
     val subjectByIdNetwork by viewModel.subjectByIdNetwork.collectAsState()
-
+    val exportStudentBuffer by viewModel.exportStudentBuffer.collectAsState()
 
 
     LaunchedEffect(Unit) {
@@ -948,6 +993,44 @@ fun ManageClassAdminDetailScreenContent(
                 }
             }
 
+
+            is ManageClassAdminDetailFeature.ExportStudent -> {
+                if (
+                    exportStudentBuffer.isNotEmpty() &&
+                    manageClassAdminDetailStudentBuffer.isNotEmpty()
+                ) {
+                    scope.launch {
+                        manageClassAdminDetailStudentBuffer.map { studentId ->
+                            viewModel.getUserByIdNetwork(studentId)
+                            delay(1000)
+                            if (userByIdNetwork is Resource.Success && userByIdNetwork.data != null) {
+                                exportStudentBuffer.map { classId ->
+                                    if (!userByIdNetwork.data?.classIds?.contains(classId)!!) {
+                                        userByIdNetwork.data?.classIds?.clear()
+                                        userByIdNetwork.data?.classIds?.add(classId)
+                                    }
+                                    //save
+                                    viewModel.saveUserNetwork(userByIdNetwork.data!!.toLocal()) {
+                                        viewModel.onIncManageClassAdminDetailListener()
+                                        //disengage the feature
+                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                            ManageClassAdminDetailFeature.NoFeature
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }.invokeOnCompletion {
+                        runnableBlock {
+                            viewModel.onManageClassAdminDetailMessageChanged(
+                                ManageClassAdminDetailMessage.ExportStudent
+                            )
+                            viewModel.onIncManageClassAdminDetailListener()
+                        }
+                    }
+                }
+            }
+
             is ManageClassAdminDetailFeature.NoFeature -> {
                 //clear all buffers
                 viewModel.clearImportSubjectBuffer()
@@ -955,6 +1038,7 @@ fun ManageClassAdminDetailScreenContent(
                 viewModel.clearImportTeacherBuffer()
                 viewModel.clearExportSubjectBuffer()
                 viewModel.clearExportTeacherBuffer()
+                viewModel.clearExportStudentBuffer()
                 viewModel.clearTeacherBufferManageClassAdminDetail()
                 viewModel.clearSubjectBufferManageClassAdminDetail()
                 viewModel.clearStudentBufferManageClassAdminDetail()

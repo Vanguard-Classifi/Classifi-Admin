@@ -414,6 +414,36 @@ class MainViewModel @Inject constructor(
     private var _exportSubjectBufferListener = MutableStateFlow(0)
     val exportSubjectBufferListener: StateFlow<Int> = _exportSubjectBufferListener
 
+    private var _exportStudentBuffer = MutableStateFlow(mutableListOf<String>())
+    val exportStudentBuffer: StateFlow<List<String>> = _exportStudentBuffer
+
+    private var _exportStudentBufferListener = MutableStateFlow(0)
+    val exportStudentBufferListener: StateFlow<Int> = _exportStudentBufferListener
+
+    fun onIncExportStudentBufferListener() = effect {
+        _exportStudentBufferListener.value++
+    }
+
+    fun onDecExportStudentBufferListener() = effect {
+        _exportStudentBufferListener.value--
+    }
+
+    fun onAddToExportStudentBuffer(classId: String) = effect {
+        if(!_exportStudentBuffer.value.contains(classId)) {
+            _exportStudentBuffer.value.add(classId)
+        }
+    }
+
+    fun onRemoveFromExportStudentBuffer(classId: String) = effect {
+        if(_exportStudentBuffer.value.contains(classId)) {
+            _exportStudentBuffer.value.remove(classId)
+        }
+    }
+
+    fun clearExportStudentBuffer() = effect {
+        _exportStudentBuffer.value.clear()
+    }
+
     fun onIncExportSubjectBufferListener() = effect {
         _exportSubjectBufferListener.value++
     }

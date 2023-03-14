@@ -347,6 +347,7 @@ fun NavGraph(
             ExportStudentScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
+                onStudentExported = { navController.navigate(Destinations.manageClassAdminDetail) }
             )
         }
     }
