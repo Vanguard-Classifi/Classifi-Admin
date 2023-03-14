@@ -294,7 +294,8 @@ fun NavGraph(
                 onEnrollTeacher = { navController.navigate(Destinations.enrollTeacherAdmin) },
                 onExportTeacher = { navController.navigate(Destinations.exportTeacher) },
                 onExportStudent = { navController.navigate(Destinations.exportStudent) },
-                onExportSubject = { navController.navigate(Destinations.exportSubject) }
+                onExportSubject = { navController.navigate(Destinations.exportSubject) },
+                onEnrollStudent = { navController.navigate(Destinations.enrollStudentAdmin) }
             )
         }
 
@@ -338,7 +339,7 @@ fun NavGraph(
             ExportSubjectScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
-                onSubjectExported = {navController.navigate(Destinations.manageClassAdminDetail)}
+                onSubjectExported = { navController.navigate(Destinations.manageClassAdminDetail) }
             )
         }
 

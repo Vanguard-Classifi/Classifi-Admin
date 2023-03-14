@@ -94,6 +94,7 @@ fun ManageClassAdminDetailScreen(
     onImportStudent: () -> Unit,
     onInviteTeachers: () -> Unit,
     onEnrollTeacher: () -> Unit,
+    onEnrollStudent: () -> Unit,
     onExportTeacher: () -> Unit,
     onExportStudent: () -> Unit,
     onExportSubject: () -> Unit,
@@ -323,24 +324,29 @@ fun ManageClassAdminDetailScreen(
                                     viewModel.onManageClassAdminDetailFeatureChanged(
                                         ManageClassAdminDetailFeature.RemoveSubject
                                     )
-                                    if(manageClassAdminDetailSubjectBuffer.isEmpty()) {
+                                    if (manageClassAdminDetailSubjectBuffer.isEmpty()) {
                                         viewModel.onManageClassAdminDetailMessageChanged(
                                             ManageClassAdminDetailMessage.RemoveSubject
                                         )
                                     } else {
                                         scope.launch {
-                                            manageClassAdminDetailSubjectBuffer.map {subjectId ->
-                                                viewModel.getSubjectByIdNetwork(subjectId, currentSchoolIdPref.orEmpty())
+                                            manageClassAdminDetailSubjectBuffer.map { subjectId ->
+                                                viewModel.getSubjectByIdNetwork(
+                                                    subjectId,
+                                                    currentSchoolIdPref.orEmpty()
+                                                )
                                                 delay(1000)
-                                                if(subjectByIdNetwork is Resource.Success && subjectByIdNetwork.data != null) {
+                                                if (subjectByIdNetwork is Resource.Success && subjectByIdNetwork.data != null) {
                                                     subjectByIdNetwork.data?.classId = null
-                                                    viewModel.saveSubjectAsVerifiedNetwork(subjectByIdNetwork.data!!) {
+                                                    viewModel.saveSubjectAsVerifiedNetwork(
+                                                        subjectByIdNetwork.data!!
+                                                    ) {
 
                                                     }
                                                 }
                                             }
 
-                                        }.invokeOnCompletion{
+                                        }.invokeOnCompletion {
                                             runnableBlock {
                                                 viewModel.onDecManageClassAdminDetailListener()
                                                 viewModel.onManageClassAdminDetailMessageChanged(
@@ -367,11 +373,44 @@ fun ManageClassAdminDetailScreen(
                                 }
 
                                 ManageClassDetailPopupStudentOption.Enroll -> {
-
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.EnrollStudent
+                                    )
+                                    onEnrollStudent()
                                 }
 
                                 ManageClassDetailPopupStudentOption.MakePrefect -> {
-                                    /*todo: make prefect */
+                                    viewModel.onManageClassAdminDetailFeatureChanged(
+                                        ManageClassAdminDetailFeature.MakePrefect
+                                    )
+                                    if (manageClassAdminDetailStudentBuffer.isEmpty()) {
+                                        viewModel.onManageClassAdminDetailMessageChanged(
+                                            ManageClassAdminDetailMessage.MakePrefect
+                                        )
+                                    } else if (manageClassAdminDetailStudentBuffer.size == 1) {
+                                        scope.launch {
+                                            selectedClassManageClassAdmin?.prefectId =
+                                                manageClassAdminDetailStudentBuffer.first()
+                                            viewModel.saveClassAsVerifiedNetwork(
+                                                selectedClassManageClassAdmin?.toNetwork()
+                                                    ?: ClassModel.Default.toNetwork(),
+                                                onResult = {
+                                                }
+                                            )
+                                        }.invokeOnCompletion {
+                                            runnableBlock {
+                                                //show assigned form teacher message
+                                                viewModel.onIncManageClassAdminDetailListener()
+                                                viewModel.onManageClassAdminDetailMessageChanged(
+                                                    ManageClassAdminDetailMessage.MakePrefect
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        viewModel.onManageClassAdminDetailMessageChanged(
+                                            ManageClassAdminDetailMessage.MakePrefect
+                                        )
+                                    }
                                 }
 
                                 ManageClassDetailPopupStudentOption.Export -> {
@@ -554,15 +593,23 @@ fun ManageClassAdminDetailScreen(
 
                             else -> stringResource(id = R.string.select_a_teacher)
                         }
-                        MessageBar(
-                            message = message,
-                            onClose = {
-                                viewModel.onManageClassAdminDetailMessageChanged(
-                                    ManageClassAdminDetailMessage.NoMessage
-                                )
-                            },
-                            maxWidth = maxWidth
-                        )
+
+                        if (manageClassAdminDetailTeacherBuffer.size == 1) {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth,
+                            )
+                        } else {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth
+                            )
+                        }
                     }
                 }
 
@@ -633,6 +680,43 @@ fun ManageClassAdminDetailScreen(
                         } else {
                             SuccessBar(
                                 message = message,
+                                maxWidth = maxWidth
+                            )
+                        }
+                    }
+                }
+
+                ManageClassAdminDetailMessage.MakePrefect -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        val message = when {
+                            manageClassAdminDetailStudentBuffer.isEmpty() ->
+                                stringResource(id = R.string.select_a_student)
+
+                            manageClassAdminDetailStudentBuffer.size == 1 ->
+                                stringResource(id = R.string.student_assigned_as_class_prefect)
+
+                            manageClassAdminDetailStudentBuffer.size > 1 ->
+                                stringResource(id = R.string.select_just_one_student)
+
+                            else -> stringResource(id = R.string.select_a_student)
+                        }
+
+                        if (manageClassAdminDetailStudentBuffer.size == 1) {
+                            SuccessBar(
+                                message = message,
+                                maxWidth = maxWidth,
+                            )
+                        } else {
+                            MessageBar(
+                                message = message,
+                                onClose = {
+                                    viewModel.onManageClassAdminDetailMessageChanged(
+                                        ManageClassAdminDetailMessage.NoMessage
+                                    )
+                                },
                                 maxWidth = maxWidth
                             )
                         }
@@ -1003,6 +1087,7 @@ fun ManageClassAdminDetailScreenContentStudents(
                     verifiedStudentsUnderClassNetwork.data?.forEach { student ->
                         VerifiedStudentItem(
                             student = student.toLocal(),
+                            isPrefect = student.userId == selectedClassManageClassAdmin?.prefectId,
                             selected = manageClassAdminDetailStudentBuffer.contains(student.userId),
                             onTap = { selectedStudent ->
                                 if (manageClassAdminDetailStudentBuffer.isEmpty()) {
@@ -1041,6 +1126,15 @@ fun ManageClassAdminDetailScreenContentStudents(
 
 
         is Resource.Error -> {
+            NoDataScreen(
+                maxHeight = maxHeight,
+                message = stringResource(id = R.string.error_occurred_students),
+                buttonLabel = stringResource(id = R.string.go_back),
+                onClick = onBack,
+            )
+        }
+
+        else -> {
             NoDataScreen(
                 maxHeight = maxHeight,
                 message = stringResource(id = R.string.error_occurred_students),
@@ -1150,6 +1244,15 @@ fun ManageClassAdminDetailScreenContentSubjects(
                 onClick = onBack,
             )
         }
+
+        else -> {
+            NoDataScreen(
+                maxHeight = maxHeight,
+                message = stringResource(id = R.string.error_occurred_subjects),
+                buttonLabel = stringResource(id = R.string.go_back),
+                onClick = onBack,
+            )
+        }
     }
 }
 
@@ -1246,6 +1349,15 @@ fun ManageClassAdminDetailScreenContentTeachers(
         }
 
         is Resource.Error -> {
+            NoDataScreen(
+                maxHeight = maxHeight,
+                message = stringResource(id = R.string.error_occurred_teachers),
+                buttonLabel = stringResource(id = R.string.go_back),
+                onClick = onBack
+            )
+        }
+
+        else -> {
             NoDataScreen(
                 maxHeight = maxHeight,
                 message = stringResource(id = R.string.error_occurred_teachers),
@@ -1671,6 +1783,7 @@ fun VerifiedStudentItem(
     modifier: Modifier = Modifier,
     student: UserModel,
     selected: Boolean = false,
+    isPrefect: Boolean = false,
     onTap: (UserModel) -> Unit,
     onHold: (UserModel) -> Unit,
 ) {
@@ -1692,6 +1805,7 @@ fun VerifiedStudentItem(
                     }
                 )
             },
+        color = if (isPrefect) MaterialTheme.colors.primary.copy(0.1f) else Color.Transparent,
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = if (selected) 2.dp else 1.dp,
@@ -2024,5 +2138,6 @@ sealed class ManageClassAdminDetailMessage {
     object RemoveStudent : ManageClassAdminDetailMessage()
     object ExportSubject : ManageClassAdminDetailMessage()
     object RemoveSubject : ManageClassAdminDetailMessage()
+    object MakePrefect : ManageClassAdminDetailMessage()
     object NoMessage : ManageClassAdminDetailMessage()
 }
