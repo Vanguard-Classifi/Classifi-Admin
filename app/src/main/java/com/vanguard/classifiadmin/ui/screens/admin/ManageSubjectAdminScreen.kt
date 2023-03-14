@@ -10,12 +10,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithOptions
+import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 const val MANAGE_SUBJECT_ADMIN_SCREEN = "manage_subject_admin_screen"
 
 @Composable
 fun ManageSubjectAdminScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit,
+    viewModel: MainViewModel,
 ) {
 
     BoxWithConstraints(modifier = modifier) {
@@ -27,24 +30,21 @@ fun ManageSubjectAdminScreen(
             topBar = {
                 ChildTopBarWithOptions(
                     onBack = onBack,
-                    heading = stringResource(id = R.string.manage_classes),
+                    heading = stringResource(id = R.string.manage_subjects),
                     elevation = 0.dp,
                     backgroundColor = MaterialTheme.colors.primary,
                     contentColor = MaterialTheme.colors.onPrimary,
                     iconTint = MaterialTheme.colors.onPrimary,
                     onOptions = {
-                        optionState = !optionState
+                       // optionState = !optionState
                     },
                 )
             },
             content = {
-                ManageClassAdminScreenContent(
+                ManageSubjectAdminScreenContent(
                     modifier = modifier.padding(it),
                     viewModel = viewModel,
                     onBack = onBack,
-                    onManageClassDetail = onManageClassDetail,
-                    maxHeight = maxHeight,
-                    onAddClass = onAddClass,
                 )
             }
         )
@@ -55,7 +55,9 @@ fun ManageSubjectAdminScreen(
 
 @Composable
 fun ManageSubjectAdminScreenContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    onBack: () -> Unit
 ) {
 
 }

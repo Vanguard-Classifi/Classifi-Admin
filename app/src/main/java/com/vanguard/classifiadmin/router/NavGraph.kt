@@ -276,12 +276,14 @@ fun NavGraph(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.account) },
                 onManageClassDetail = { navController.navigate(Destinations.manageClassAdminDetail) },
-                onAddClass = {navController.navigate(Destinations.createClassAdmin)}
+                onAddClass = { navController.navigate(Destinations.createClassAdmin) }
             )
         }
 
         composable(Destinations.manageSubjectAdmin) {
             ManageSubjectAdminScreen(
+                onBack = { navController.navigate(Destinations.account) },
+                viewModel = viewModel,
             )
         }
 
