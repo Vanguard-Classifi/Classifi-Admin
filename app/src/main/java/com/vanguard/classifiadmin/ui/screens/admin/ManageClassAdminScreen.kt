@@ -56,10 +56,13 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
+import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithOptions
 import com.vanguard.classifiadmin.ui.components.ClassFilterManageButton
+import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.MessageBar
+import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -75,6 +78,7 @@ fun ManageClassAdminScreen(
     viewModel: MainViewModel,
     onBack: () -> Unit,
     onManageClassDetail: (ClassModel) -> Unit,
+    onAddClass: () -> Unit,
 ) {
     val TAG = "ManageClassAdminScreen"
     val scope = rememberCoroutineScope()
@@ -115,6 +119,7 @@ fun ManageClassAdminScreen(
                     elevation = 0.dp,
                     backgroundColor = MaterialTheme.colors.primary,
                     contentColor = MaterialTheme.colors.onPrimary,
+                    iconTint = MaterialTheme.colors.onPrimary,
                     onOptions = {
                         optionState = !optionState
                     },
@@ -126,6 +131,8 @@ fun ManageClassAdminScreen(
                     viewModel = viewModel,
                     onBack = onBack,
                     onManageClassDetail = onManageClassDetail,
+                    maxHeight = maxHeight,
+                    onAddClass = onAddClass,
                 )
             }
         )
@@ -212,7 +219,9 @@ fun ManageClassAdminScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    maxHeight: Dp,
     onManageClassDetail: (ClassModel) -> Unit,
+    onAddClass: () -> Unit,
 ) {
     val TAG = "ManageClassAdminScreenContent"
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
@@ -238,7 +247,6 @@ fun ManageClassAdminScreenContent(
         }
     )
 
-
     Column(
         modifier = modifier
     ) {
@@ -249,50 +257,74 @@ fun ManageClassAdminScreenContent(
             shape = RoundedCornerShape(16.dp),
             elevation = 2.dp,
         ) {
-            if (verifiedClassesNetwork.data?.isNotEmpty() == true) {
-                LazyColumn(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    state = rememberLazyListState(),
-                ) {
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+            when(verifiedClassesNetwork) {
+                is Resource.Loading -> {
+                    LoadingScreen(maxHeight = maxHeight)
+                }
 
-                    items(verifiedClassesNetwork.data!!) { each ->
-                        ClassListItemAdmin(
-                            myClass = each.toLocal(),
-                            selected = selectedClasses.contains(each.toLocal().classCode.orEmpty()),
-                            onManageClass = {
-                                //go to class detail
-                                viewModel.onSelectedClassManageClassAdminChanged(it)
-                                onManageClassDetail(it)
-                            },
-                            onHold = {
-                                viewModel.onAddClassToBuffer(it.classCode.orEmpty())
-                                viewModel.onIncSelectionListenerManageClass()
-                            },
-                            onTap = {
-                                //if selectedClasses not empty, if already selected, unselect
-                                // if not selected, selected
-                                if (selectedClasses.isNotEmpty()) {
-                                    if (selectedClasses.contains(it.classCode)) {
-                                        //unselect
-                                        viewModel.onRemoveClassFromBuffer(it.classCode.orEmpty())
-                                    } else {
-                                        //select
-                                        viewModel.onAddClassToBuffer(it.classCode.orEmpty())
-                                    }
-                                } else {
-                                    viewModel.onManageClassMessageChanged(ManageClassMessage.HoldToMark())
-                                }
-                                viewModel.onIncSelectionListenerManageClass()
+                is Resource.Success -> {
+                    if (verifiedClassesNetwork.data?.isNotEmpty() == true) {
+                        LazyColumn(
+                            modifier = modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 16.dp),
+                            verticalArrangement = Arrangement.Center,
+                            state = rememberLazyListState(),
+                        ) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
+
+                            items(verifiedClassesNetwork.data!!) { each ->
+                                ClassListItemAdmin(
+                                    myClass = each.toLocal(),
+                                    selected = selectedClasses.contains(each.toLocal().classCode.orEmpty()),
+                                    onManageClass = {
+                                        //go to class detail
+                                        viewModel.onSelectedClassManageClassAdminChanged(it)
+                                        onManageClassDetail(it)
+                                    },
+                                    onHold = {
+                                        viewModel.onAddClassToBuffer(it.classCode.orEmpty())
+                                        viewModel.onIncSelectionListenerManageClass()
+                                    },
+                                    onTap = {
+                                        //if selectedClasses not empty, if already selected, unselect
+                                        // if not selected, selected
+                                        if (selectedClasses.isNotEmpty()) {
+                                            if (selectedClasses.contains(it.classCode)) {
+                                                //unselect
+                                                viewModel.onRemoveClassFromBuffer(it.classCode.orEmpty())
+                                            } else {
+                                                //select
+                                                viewModel.onAddClassToBuffer(it.classCode.orEmpty())
+                                            }
+                                        } else {
+                                            viewModel.onManageClassMessageChanged(ManageClassMessage.HoldToMark())
+                                        }
+                                        viewModel.onIncSelectionListenerManageClass()
+                                    }
+                                )
+                            }
+
+                        }
+                    } else {
+                        NoDataScreen(
+                            maxHeight = maxHeight,
+                            message = stringResource(id = R.string.classes_not_available),
+                            buttonLabel = stringResource(id = R.string.add_a_class),
+                            onClick = onAddClass
                         )
                     }
+                }
 
+                is Resource.Error -> {
+                    NoDataScreen(
+                        maxHeight = maxHeight,
+                        message = stringResource(id = R.string.error_loading_classes),
+                        buttonLabel = stringResource(id = R.string.go_back),
+                        onClick = onBack
+                    )
                 }
             }
         }

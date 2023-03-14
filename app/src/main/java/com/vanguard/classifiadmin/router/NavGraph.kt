@@ -275,7 +275,8 @@ fun NavGraph(
             ManageClassAdminScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.account) },
-                onManageClassDetail = { navController.navigate(Destinations.manageClassAdminDetail) }
+                onManageClassDetail = { navController.navigate(Destinations.manageClassAdminDetail) },
+                onAddClass = {navController.navigate(Destinations.createClassAdmin)}
             )
         }
 

@@ -799,7 +799,6 @@ fun ManageClassAdminDetailScreen(
                 }
 
                 ManageClassAdminDetailMessage.RemoveStudent -> {
-                    /*todo: on remove student */
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.BottomCenter,
