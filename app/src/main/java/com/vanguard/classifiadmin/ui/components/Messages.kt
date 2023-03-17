@@ -42,6 +42,26 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.theme.Black100
 
+
+@Composable
+fun NoDataInline(
+    modifier: Modifier = Modifier,
+    message: String,
+) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = message,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.primary,
+        )
+    }
+}
+
+
 @Composable
 fun LoadingScreen(
     modifier: Modifier = Modifier,

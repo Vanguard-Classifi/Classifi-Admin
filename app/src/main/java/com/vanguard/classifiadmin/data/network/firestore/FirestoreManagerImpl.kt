@@ -599,7 +599,12 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<ClassNetworkModel>())
                     }
-                    onResult(Resource.Success(results.first()))
+                    if(results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
+                    }
+
                 }
                 .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
         } catch (e: Exception) {
@@ -624,6 +629,8 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     }
                     if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
                     }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
@@ -807,7 +814,11 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<SubjectNetworkModel>())
                     }
-                    onResult(Resource.Success(results.first()))
+                    if(results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
+                    }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
         } catch (e: Exception) {

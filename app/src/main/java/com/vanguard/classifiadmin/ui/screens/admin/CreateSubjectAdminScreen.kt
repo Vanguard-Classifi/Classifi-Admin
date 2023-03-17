@@ -79,6 +79,7 @@ import com.vanguard.classifiadmin.domain.services.SubjectCreationServiceExtras
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.components.MessageBar
+import com.vanguard.classifiadmin.ui.components.NoDataInline
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
@@ -569,7 +570,7 @@ fun CreateSubjectAdminBottomSheetContent(
 
         if (myClasses.isEmpty()) {
             //no items screen
-            Text(text = "No classes")
+            NoDataInline(message = stringResource(id = R.string.classes_not_available))
         } else {
             LazyColumn(
                 modifier = modifier.padding(bottom = 16.dp, start = 16.dp, end = 16.dp),

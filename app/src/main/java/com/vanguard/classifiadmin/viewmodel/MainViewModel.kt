@@ -25,6 +25,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailFeature
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
+import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
@@ -423,10 +424,12 @@ class MainViewModel @Inject constructor(
     val exportStudentBufferListener: StateFlow<Int> = _exportStudentBufferListener
 
     private var _selectedSubjectManageSubjectAdminBuffer = MutableStateFlow(mutableListOf<String>())
-    val selectedSubjectManageSubjectAdminBuffer: StateFlow<List<String>> = _selectedSubjectManageSubjectAdminBuffer
+    val selectedSubjectManageSubjectAdminBuffer: StateFlow<List<String>> =
+        _selectedSubjectManageSubjectAdminBuffer
 
     private var _subjectSelectionListenerManageSubject = MutableStateFlow(0)
-    val subjectSelectionListenerManageSubject: StateFlow<Int> = _subjectSelectionListenerManageSubject
+    val subjectSelectionListenerManageSubject: StateFlow<Int> =
+        _subjectSelectionListenerManageSubject
 
     private var _selectedSubjectManageSubjectAdmin = MutableStateFlow(null as SubjectModel?)
     val selectedSubjectManageSubjectAdmin: StateFlow<SubjectModel?> =
@@ -435,6 +438,37 @@ class MainViewModel @Inject constructor(
     private var _manageSubjectMessage =
         MutableStateFlow(ManageSubjectMessage.NoMessage as ManageSubjectMessage)
     val manageSubjectMessage: StateFlow<ManageSubjectMessage> = _manageSubjectMessage
+
+    private var _selectedClassManageSubjectAdminDetail = MutableStateFlow(null as ClassModel?)
+    val selectedClassManageSubjectAdminDetail: StateFlow<ClassModel?> =
+        _selectedClassManageSubjectAdminDetail
+
+    private var _subjectNameManageSubjectAdminDetail = MutableStateFlow(null as String?)
+    val subjectNameManageSubjectAdminDetail: StateFlow<String?> =
+        _subjectNameManageSubjectAdminDetail
+
+    private var _subjectCodeManageSubjectAdminDetail = MutableStateFlow(null as String?)
+    val subjectCodeManageSubjectAdminDetail: StateFlow<String?> =
+        _subjectCodeManageSubjectAdminDetail
+
+    private var _manageSubjectAdminDetailMessage =
+        MutableStateFlow(ManageSubjectAdminDetailMessage.NoMessage as ManageSubjectAdminDetailMessage)
+    val manageSubjectAdminDetailMessage: StateFlow<ManageSubjectAdminDetailMessage> = _manageSubjectAdminDetailMessage
+
+    fun onManageSubjectAdminDetailMessageChanged(message: ManageSubjectAdminDetailMessage) = effect {
+        _manageSubjectAdminDetailMessage.value = message
+    }
+    fun onSubjectNameManageSubjectAdminDetailChanged(name: String?) = effect {
+        _subjectNameManageSubjectAdminDetail.value = name
+    }
+
+    fun onSubjectCodeManageSubjectAdminDetailChanged(code: String?) = effect {
+        _subjectCodeManageSubjectAdminDetail.value = code
+    }
+
+    fun onSelectedClassManageSubjectAdminDetailChanged(myClass: ClassModel?) = effect {
+        _selectedClassManageSubjectAdminDetail.value = myClass
+    }
 
     fun onManageSubjectMessageChanged(message: ManageSubjectMessage) = effect {
         _manageSubjectMessage.value = message
