@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SchoolModel
+import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
@@ -24,6 +25,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailFeature
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
+import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
@@ -420,6 +422,53 @@ class MainViewModel @Inject constructor(
     private var _exportStudentBufferListener = MutableStateFlow(0)
     val exportStudentBufferListener: StateFlow<Int> = _exportStudentBufferListener
 
+    private var _selectedSubjectManageSubjectAdminBuffer = MutableStateFlow(mutableListOf<String>())
+    val selectedSubjectManageSubjectAdminBuffer: StateFlow<List<String>> = _selectedSubjectManageSubjectAdminBuffer
+
+    private var _subjectSelectionListenerManageSubject = MutableStateFlow(0)
+    val subjectSelectionListenerManageSubject: StateFlow<Int> = _subjectSelectionListenerManageSubject
+
+    private var _selectedSubjectManageSubjectAdmin = MutableStateFlow(null as SubjectModel?)
+    val selectedSubjectManageSubjectAdmin: StateFlow<SubjectModel?> =
+        _selectedSubjectManageSubjectAdmin
+
+    private var _manageSubjectMessage =
+        MutableStateFlow(ManageSubjectMessage.NoMessage as ManageSubjectMessage)
+    val manageSubjectMessage: StateFlow<ManageSubjectMessage> = _manageSubjectMessage
+
+    fun onManageSubjectMessageChanged(message: ManageSubjectMessage) = effect {
+        _manageSubjectMessage.value = message
+    }
+
+    fun onSelectedSubjectManageSubjectAdminChanged(subject: SubjectModel?) = effect {
+        _selectedSubjectManageSubjectAdmin.value = subject
+    }
+
+    fun onIncSubjectSelectionListenerManageSubject() = effect {
+        _subjectSelectionListenerManageSubject.value++
+    }
+
+    fun onDecSubjectSelectionListenerManageSubject() = effect {
+        _subjectSelectionListenerManageSubject.value--
+    }
+
+    fun onAddToSelectedSubjectManageSubjectBuffer(subjectId: String) = effect {
+        if (!_selectedSubjectManageSubjectAdminBuffer.value.contains(subjectId)) {
+            _selectedSubjectManageSubjectAdminBuffer.value.add(subjectId)
+        }
+    }
+
+    fun onRemoveFromSelectedSubjectManageSubjectBuffer(subjectId: String) = effect {
+        if (_selectedSubjectManageSubjectAdminBuffer.value.contains(subjectId)) {
+            _selectedSubjectManageSubjectAdminBuffer.value.remove(subjectId)
+        }
+    }
+
+    fun clearSelectedSubjectManageSubjectBuffer() = effect {
+        _selectedSubjectManageSubjectAdminBuffer.value.clear()
+    }
+
+
     fun onIncExportStudentBufferListener() = effect {
         _exportStudentBufferListener.value++
     }
@@ -429,13 +478,13 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAddToExportStudentBuffer(classId: String) = effect {
-        if(!_exportStudentBuffer.value.contains(classId)) {
+        if (!_exportStudentBuffer.value.contains(classId)) {
             _exportStudentBuffer.value.add(classId)
         }
     }
 
     fun onRemoveFromExportStudentBuffer(classId: String) = effect {
-        if(_exportStudentBuffer.value.contains(classId)) {
+        if (_exportStudentBuffer.value.contains(classId)) {
             _exportStudentBuffer.value.remove(classId)
         }
     }

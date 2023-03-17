@@ -116,9 +116,9 @@ fun MainDashboardScreen(
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentUsernamePref()
         viewModel.getCurrentUserEmail()
-       delay(3000)
-       viewModel.clearSignInFields()
-       viewModel.clearSignUpFields()
+        delay(3000)
+        viewModel.clearSignInFields()
+        viewModel.clearSignUpFields()
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -221,13 +221,15 @@ fun MainDashboardScreen(
                         AssessmentState.Published.name -> {
                             goToAssessmentReport(it)
                         }
+
                         AssessmentState.InReview.name -> {
-                           goToAssessmentReview(it)
+                            goToAssessmentReview(it)
                         }
 
                         AssessmentState.Draft.name -> {
                             goToModifyAssessment(it)
                         }
+
                         else -> {
                             goToAssessmentReport(it)
                         }
@@ -550,7 +552,7 @@ fun FeaturesBottomSheetContent(
 enum class DestinationItem(val label: String, val icon: Int, val screen: String) {
     Feed("Feed", icon = R.drawable.icon_feeds, BottomDestination.feeds),
     Students("Students", R.drawable.icon_students, BottomDestination.students),
-  //  Assessments("Assessments", R.drawable.icon_assessment, BottomDestination.assessments),
+    Assessments("Assessments", R.drawable.icon_assessment, BottomDestination.assessments),
     Reports("Reports", R.drawable.icon_reports, BottomDestination.reports)
 }
 

@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.profile
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -349,6 +350,10 @@ fun MyAccountScreenContentHeader(
         pagerState.animateScrollToPage(currentPageMyAccountScreen ?: 0)
     }
 
+    LaunchedEffect(currentPageMyAccountScreen) {
+        pagerState.animateScrollToPage(currentPageMyAccountScreen ?: 0)
+    }
+
     ScrollableTabRow(
         selectedTabIndex = currentPageMyAccountScreen ?: 0,
         backgroundColor = backgroundColor,
@@ -415,6 +420,7 @@ fun MyAccountScreenContentBody(
     pages: List<AccountPage> = AccountPage.values().toList(),
 ) {
     val TAG = "MyAccountScreenContentBody"
+    val currentPageMyAccountScreen by viewModel.currentPageMyAccountScreen.collectAsState()
 
     HorizontalPager(state = pagerState, count = pages.size, userScrollEnabled = false) { page ->
         when (page) {

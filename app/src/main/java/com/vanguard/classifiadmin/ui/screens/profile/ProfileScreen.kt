@@ -70,7 +70,6 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MyAccountScreenProfile(
@@ -145,7 +144,6 @@ fun MyAccountScreenProfile(
     }
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
-
         Card(
             modifier = modifier
                 .clip(RoundedCornerShape(16.dp))

@@ -18,9 +18,11 @@ import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentAdminScreen
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherAdminScreen
 import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_CLASS_ADMIN_DETAIL_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_CLASS_ADMIN_SCREEN
+import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_SUBJECT_ADMIN_DETAIL_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.MANAGE_SUBJECT_ADMIN_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailScreen
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminScreen
+import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailScreen
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REPORT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REVIEW_SCREEN
@@ -105,6 +107,7 @@ object Destinations {
     const val exportTeacher = EXPORT_TEACHER_SCREEN
     const val exportSubject = EXPORT_SUBJECT_SCREEN
     const val exportStudent = EXPORT_STUDENT_SCREEN
+    const val manageSubjectAdminDetail = MANAGE_SUBJECT_ADMIN_DETAIL_SCREEN
 }
 
 
@@ -284,8 +287,11 @@ fun NavGraph(
             ManageSubjectAdminScreen(
                 onBack = { navController.navigate(Destinations.account) },
                 viewModel = viewModel,
+                onAddSubject = { navController.navigate(Destinations.createSubjectAdmin) },
+                onManageSubjectDetail = { navController.navigate(Destinations.manageSubjectAdminDetail) }
             )
         }
+
 
         composable(Destinations.manageClassAdminDetail) {
             ManageClassAdminDetailScreen(
@@ -301,6 +307,7 @@ fun NavGraph(
                 onEnrollStudent = { navController.navigate(Destinations.enrollStudentAdmin) }
             )
         }
+
 
         composable(Destinations.importSubject) {
             ImportSubjectScreen(
@@ -351,6 +358,13 @@ fun NavGraph(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
                 onStudentExported = { navController.navigate(Destinations.manageClassAdminDetail) }
+            )
+        }
+
+        composable(Destinations.manageSubjectAdminDetail) {
+            ManageSubjectAdminDetailScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.manageSubjectAdmin) },
             )
         }
     }

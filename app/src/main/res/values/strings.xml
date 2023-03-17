@@ -175,4 +175,7 @@
     <string name="error_loading_classes">There was an error loading the classes</string>
     <string name="classes_not_available">Classes not available yet</string>
     <string name="add_a_class">Add a class</string>
+    <string name="error_loading_subjects">Error loading subjects</string>
+    <string name="add_a_subject">Add a subject</string>
+    <string name="subjects_not_available">Subjects not available</string>
 </resources>
