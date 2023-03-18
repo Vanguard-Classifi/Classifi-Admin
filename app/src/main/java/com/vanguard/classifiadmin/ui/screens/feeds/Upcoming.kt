@@ -5,13 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +40,8 @@ import kotlinx.coroutines.delay
 fun UpcomingActivities(
     modifier: Modifier = Modifier,
     username: String,
+    expanded: Boolean = false,
+    onToggleExpand: () -> Unit,
 ) {
     val innerModifier = Modifier
     var showUpcomingActivities by remember { mutableStateOf(false) }
@@ -50,59 +50,81 @@ fun UpcomingActivities(
 
     LaunchedEffect(showUpcomingActivities) {
         //reset upcoming activities state to off
-        if(showUpcomingActivities) {
+        if (showUpcomingActivities) {
             delay(5000)
             showUpcomingActivities = false
         }
     }
 
-
-    Card(
-        modifier = modifier
-            .wrapContentHeight()
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        backgroundColor = backgroundColor.copy(0.5f),
-        elevation = 0.dp, shape = RoundedCornerShape(16.dp)
-    ) {
-        ConstraintLayout(
-            modifier = Modifier.fillMaxWidth(),
-            constraintSet = constraints,
+    if(expanded) {
+        Card(
+            modifier = modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            backgroundColor = backgroundColor.copy(0.5f),
+            elevation = 0.dp, shape = RoundedCornerShape(16.dp)
         ) {
-            UpcomingActivitiesHeading(
-                modifier = innerModifier.layoutId("upcomingHeading"),
-                heading = stringResource(id = R.string.upcoming_activities),
-                onShow = {
-                    showUpcomingActivities = !showUpcomingActivities
-                }
-            )
+            ConstraintLayout(
+                modifier = Modifier.fillMaxWidth(),
+                constraintSet = constraints,
+            ) {
+                UpcomingActivitiesHeading(
+                    modifier = innerModifier.layoutId("upcomingHeading"),
+                    heading = stringResource(id = R.string.upcoming_activities),
+                    onShow = {
+                        showUpcomingActivities = !showUpcomingActivities
+                    },
+                    onToggleExpand = onToggleExpand,
+                )
 
-            if (showUpcomingActivities) {
-                NoUpcomingActivity(
-                    modifier = innerModifier.layoutId("activityBody"),
-                    message = stringResource(id = R.string.no_upcoming_activities)
+                if (showUpcomingActivities) {
+                    NoUpcomingActivity(
+                        modifier = innerModifier.layoutId("activityBody"),
+                        message = stringResource(id = R.string.no_upcoming_activities)
+                    )
+                }
+
+                Text(
+                    text = stringResource(id = R.string.add_students_heading),
+                    modifier = innerModifier.layoutId("addStudent"),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colors.onPrimary.copy(0.5f),
+                )
+
+                ClassLinkBar(
+                    backgroundColor = backgroundColor,
+                    onCopyLink = { /*TODO*/ },
+                    modifier = innerModifier.layoutId("classCodeBox"),
                 )
             }
-
-            Text(
-                text = stringResource(id = R.string.add_students_heading),
-                modifier = innerModifier.layoutId("addStudent"),
-                fontSize = 12.sp,
-                color = MaterialTheme.colors.onPrimary.copy(0.5f),
+        }
+    } else {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, end = 16.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            LocalIconButton(
+                onClick = onToggleExpand,
+                icon = R.drawable.icon_calendar,
+                iconTint = MaterialTheme.colors.onPrimary,
+                iconSize = 20.dp,
+                size = 28.dp,
+                contentDescription = stringResource(id = R.string.show_activities),
+                modifier = modifier,
+                onToggleExpand = onToggleExpand,
             )
-
-            ClassLinkBar(
-                backgroundColor = backgroundColor,
-                onCopyLink = { /*TODO*/ },
-                modifier = innerModifier.layoutId("classCodeBox"),
-            )
-
         }
     }
 }
 
 
-private fun upcomingActivitiesConstraint(margin: Dp, showUpcomingActivities: Boolean = false): ConstraintSet {
+private fun upcomingActivitiesConstraint(
+    margin: Dp,
+    showUpcomingActivities: Boolean = false
+): ConstraintSet {
     return ConstraintSet {
         val upcomingHeading = createRefFor("upcomingHeading")
         val activityBody = createRefFor("activityBody")
@@ -125,7 +147,7 @@ private fun upcomingActivitiesConstraint(margin: Dp, showUpcomingActivities: Boo
 
         constrain(addStudent) {
             start.linkTo(activityBody.start, margin = 0.dp)
-            if(showUpcomingActivities) {
+            if (showUpcomingActivities) {
                 top.linkTo(activityBody.bottom, margin = 8.dp)
             } else {
                 top.linkTo(upcomingHeading.bottom, margin = 8.dp)
@@ -168,6 +190,7 @@ fun UpcomingActivitiesHeading(
     modifier: Modifier = Modifier,
     heading: String,
     onShow: () -> Unit,
+    onToggleExpand: () -> Unit,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -189,6 +212,7 @@ fun UpcomingActivitiesHeading(
             size = 28.dp,
             contentDescription = stringResource(id = R.string.show_activities),
             modifier = modifier,
+            onToggleExpand = onToggleExpand,
         )
     }
 }
@@ -274,7 +298,8 @@ private fun classLinkBarConstraints(margin: Dp): ConstraintSet {
 private fun UpcomingActivitiesHeadingPreview() {
     UpcomingActivitiesHeading(
         heading = "Upcoming Activities",
-        onShow = {}
+        onShow = {},
+        onToggleExpand = {}
     )
 }
 
@@ -289,6 +314,7 @@ private fun NoUpcomingActivityPreview() {
 @Preview
 private fun UpcomingActivitiesPreview() {
     UpcomingActivities(
-        username = "Hamza Jesim"
+        username = "Hamza Jesim",
+        onToggleExpand = {}
     )
 }

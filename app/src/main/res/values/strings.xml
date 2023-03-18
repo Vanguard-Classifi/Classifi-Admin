@@ -178,4 +178,11 @@
     <string name="error_loading_subjects">Error loading subjects</string>
     <string name="add_a_subject">Add a subject</string>
     <string name="subjects_not_available">Subjects not available</string>
+    <string name="icon">Icon</string>
+    <string name="create_a_discussion_with_your_student">Create a discussion with your student</string>
+    <string name="attach">Attach</string>
+    <string name="post">POST</string>
+    <string name="start_a_discussion">Start a discussion</string>
+    <string name="discuss_something">Discuss something</string>
+    <string name="post_to">Post to:</string>
 </resources>

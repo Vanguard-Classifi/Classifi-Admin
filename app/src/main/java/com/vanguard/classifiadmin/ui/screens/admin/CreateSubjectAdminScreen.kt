@@ -117,7 +117,6 @@ fun CreateSubjectAdminScreen(
         viewModel.getVerifiedClassesNetwork(currentSchoolIdPref ?: "")
     }
 
-
     Surface(modifier = Modifier) {
         BoxWithConstraints(modifier = Modifier) {
             val maxWidth = maxWidth

@@ -453,11 +453,21 @@ class MainViewModel @Inject constructor(
 
     private var _manageSubjectAdminDetailMessage =
         MutableStateFlow(ManageSubjectAdminDetailMessage.NoMessage as ManageSubjectAdminDetailMessage)
-    val manageSubjectAdminDetailMessage: StateFlow<ManageSubjectAdminDetailMessage> = _manageSubjectAdminDetailMessage
+    val manageSubjectAdminDetailMessage: StateFlow<ManageSubjectAdminDetailMessage> =
+        _manageSubjectAdminDetailMessage
 
-    fun onManageSubjectAdminDetailMessageChanged(message: ManageSubjectAdminDetailMessage) = effect {
-        _manageSubjectAdminDetailMessage.value = message
+    private var _discussionTextCreateFeed = MutableStateFlow(null as String?)
+    val discussionTextCreateFeed: StateFlow<String?> = _discussionTextCreateFeed
+
+    fun onDiscussionTextCreateFeedChanged(text: String?) = effect {
+        _discussionTextCreateFeed.value = text
     }
+
+    fun onManageSubjectAdminDetailMessageChanged(message: ManageSubjectAdminDetailMessage) =
+        effect {
+            _manageSubjectAdminDetailMessage.value = message
+        }
+
     fun onSubjectNameManageSubjectAdminDetailChanged(name: String?) = effect {
         _subjectNameManageSubjectAdminDetail.value = name
     }
