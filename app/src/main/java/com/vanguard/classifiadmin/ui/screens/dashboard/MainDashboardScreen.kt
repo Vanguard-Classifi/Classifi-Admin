@@ -89,7 +89,7 @@ fun MainDashboardScreen(
     goToFeature: (ClassifiFeature) -> Unit,
     onSelectMenu: (DashboardMenu) -> Unit,
     onSelectProfile: () -> Unit,
-    onManageClass: (String) -> Unit,
+    onManageClass: (ClassModel) -> Unit,
     onLogin: () -> Unit = {},
     goToAssessmentReport: (Assessment) -> Unit,
     goToAssessmentReview: (Assessment) -> Unit,
@@ -311,45 +311,6 @@ fun MainDashboardScreen(
             }
         }
 
-        val classes = listOf(
-            Level(
-                name = "Grade 1",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 9",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 8",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 7",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 2",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 3",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 4",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 5",
-                code = "GRD1/FLIS"
-            ),
-            Level(
-                name = "Grade 6",
-                code = "GRD1/FLIS"
-            ),
-        )
-
         AnimatedVisibility(
             visible = filterState,
             enter = scaleIn(
@@ -370,7 +331,7 @@ fun MainDashboardScreen(
                 ClassFilterScreen(
                     viewModel = viewModel,
                     onClose = { filterState = false },
-                    assignedClasses = classes,
+                    assignedClasses = verifiedClassesSorted?.map { it.toLocal() } ?: emptyList(),
                     onManageClass = onManageClass,
                     onAddClass = {
                         /*todo*/

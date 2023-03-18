@@ -42,6 +42,7 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -51,13 +52,12 @@ fun ClassFilterScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onClose: () -> Unit,
-    onManageClass: (String) -> Unit,
+    onManageClass: (ClassModel) -> Unit,
     onAddClass: () -> Unit,
-    assignedClasses: List<Level>,
+    assignedClasses: List<ClassModel>,
 ) {
     val constraints = classFilterScreenConstraints(16.dp)
     val innerModifier = Modifier
-    val selectedClass: MutableState<Level?> = remember { mutableStateOf(null) }
 
 
     Card(
@@ -81,7 +81,7 @@ fun ClassFilterScreen(
                 )
 
                 Text(
-                    text = stringResource(id = R.string.add_remove_switch_classes),
+                    text = stringResource(id = R.string.classes_you_are_part_of),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colors.primary,
@@ -103,27 +103,14 @@ fun ClassFilterScreen(
                 ) {
                     if(assignedClasses.isEmpty()) {
                         item {
-                            Box(
-                                modifier = modifier.padding(8.dp)
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.no_classes_assigned_yet),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colors.primary,
-                                )
-                            }
+                            NoDataInline(message = stringResource(id = R.string.no_classes_assigned_yet))
                         }
                     } else {
                         items(assignedClasses) { each ->
                             ClassFilterItem(
-                                className = each.name,
-                                classCode = each.code,
-                                selected = each.name == selectedClass.value?.name,
+                                myClass = each,
                                 onSelectClass = {
-                                    selectedClass.value = each
+                                    /*todo: on Select class filter */
                                 },
                                 onManageClass = {
                                     viewModel.onSelectedClassManageClassChanged(it)
@@ -261,11 +248,9 @@ private fun addClassButtonConstraints(margin: Dp): ConstraintSet {
 @Composable
 fun ClassFilterItem(
     modifier: Modifier = Modifier,
-    className: String,
-    classCode: String,
-    selected: Boolean = false,
-    onManageClass: (String) -> Unit,
-    onSelectClass: (String) -> Unit,
+    myClass: ClassModel,
+    onManageClass: (ClassModel) -> Unit,
+    onSelectClass: (ClassModel) -> Unit,
 ) {
     val constraints = classFilterItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -274,13 +259,11 @@ fun ClassFilterItem(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .padding(vertical = 8.dp)
-            .clickable { onSelectClass(className) },
+            .clickable { onSelectClass(myClass) },
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
-            width = if (selected) 2.dp else 1.dp,
-            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
-                0.1f
-            )
+            width = 1.dp,
+            color = MaterialTheme.colors.primary
         )
     ) {
         ConstraintLayout(
@@ -291,20 +274,20 @@ fun ClassFilterItem(
         ) {
             StagedItemIcon(
                 modifier = innerModifier.layoutId("icon"),
-                color = Color(generateColorFromClassName(className)),
+                color = Color(generateColorFromClassName(myClass.className.orEmpty())),
             )
 
             Text(
                 modifier = innerModifier.layoutId("className"),
-                text = className,
+                text = myClass.className.orEmpty(),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(generateColorFromClassName(className))
+                color = Color(generateColorFromClassName(myClass.className.orEmpty()))
             )
 
             Text(
                 modifier = innerModifier.layoutId("code"),
-                text = classCode,
+                text = myClass.classCode.orEmpty(),
                 fontSize = 12.sp,
                 color = Black100.copy(0.8f)
             )
@@ -314,8 +297,8 @@ fun ClassFilterItem(
                 modifier = innerModifier.layoutId("manage"),
                 icon = R.drawable.icon_settings,
                 label = stringResource(id = R.string.manage),
-                className = className,
-                onSelect = onManageClass,
+                className = myClass.className.orEmpty(),
+                onSelect = { onManageClass(myClass) },
             )
 
         }
@@ -434,7 +417,9 @@ fun RoundedIconButton(
     surfaceColor: Color = MaterialTheme.colors.primary.copy(0.1f)
 ) {
     Surface(
-        modifier = modifier.clip(CircleShape).size(surfaceSize),
+        modifier = modifier
+            .clip(CircleShape)
+            .size(surfaceSize),
         shape = CircleShape,
         color = surfaceColor,
     ) {
@@ -466,18 +451,6 @@ private fun ClassFilterManageButtonPreview() {
 private fun ClassIconPreview() {
     StagedItemIcon(
         color = Color(0xff000000)
-    )
-}
-
-@Preview
-@Composable
-private fun ClassFilterItemPreview() {
-    ClassFilterItem(
-        className = "Grade 3",
-        classCode = "CLass/24232",
-        onManageClass = {},
-        selected = true,
-        onSelectClass = {}
     )
 }
 

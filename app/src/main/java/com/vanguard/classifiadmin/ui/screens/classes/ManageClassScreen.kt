@@ -56,6 +56,7 @@ import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 const val MANAGE_CLASS_SCREEN = "manage_class_screen"
 
+
 @Composable
 fun ManageClassScreen(
     modifier: Modifier = Modifier,
@@ -66,25 +67,10 @@ fun ManageClassScreen(
         val maxWidth = maxWidth
         val maxHeight = maxHeight
 
-        Scaffold(modifier = modifier,
-            topBar = {
-                ChildTopBar(
-                    onBack = onBack,
-                    heading = stringResource(id = R.string.manage_class)
-                )
-            },
-            content = { padding ->
-                ManageClassScreenContent(
-                    viewModel = viewModel,
-                    modifier = modifier.padding(padding),
-                    maxHeight = maxHeight,
-                    onManageSubjects = {/*TODO: */ }
-                )
-            })
     }
 }
 
-
+/**
 @Composable
 fun ManageClassScreenContent(
     modifier: Modifier = Modifier,
@@ -211,6 +197,8 @@ fun ManageClassScreenContent(
         }
     }
 }
+
+*/
 
 
 private fun manageClassScreenContentConstraints(margin: Dp): ConstraintSet {

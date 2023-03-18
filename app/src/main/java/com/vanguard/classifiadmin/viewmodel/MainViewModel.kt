@@ -57,8 +57,8 @@ class MainViewModel @Inject constructor(
     private var _selectedAcademicLevelAddClass = MutableStateFlow(null as AcademicLevel?)
     val selectedAcademicLevelAddClass: StateFlow<AcademicLevel?> = _selectedAcademicLevelAddClass
 
-    private var _selectedClassManageClass = MutableStateFlow(null as String?)
-    val selectedClassManageClass: StateFlow<String?> = _selectedClassManageClass
+    private var _selectedClassManageClass = MutableStateFlow(null as ClassModel?)
+    val selectedClassManageClass: StateFlow<ClassModel?> = _selectedClassManageClass
 
     private var _currentDashboardBottomSheetFlavor =
         MutableStateFlow(null as DashboardBottomSheetFlavor?)
@@ -1417,7 +1417,7 @@ class MainViewModel @Inject constructor(
         _currentDashboardBottomSheetFlavor.value = flavor
     }
 
-    fun onSelectedClassManageClassChanged(item: String?) = effect {
+    fun onSelectedClassManageClassChanged(item: ClassModel?) = effect {
         _selectedClassManageClass.value = item
     }
 
