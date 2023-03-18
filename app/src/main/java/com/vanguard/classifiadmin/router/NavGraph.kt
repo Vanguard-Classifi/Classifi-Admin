@@ -389,6 +389,7 @@ fun BottomNavGraph(
     onInReviewAssessmentOptions: (Assessment) -> Unit,
     onDraftAssessmentOptions: (Assessment) -> Unit,
     onSelectAssessment: (Assessment) -> Unit,
+    onSelectClasses: () -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -400,6 +401,7 @@ fun BottomNavGraph(
             FeedsScreen(
                 modifier = modifier,
                 viewModel = viewModel,
+                onSelectClasses = onSelectClasses,
             )
         }
 

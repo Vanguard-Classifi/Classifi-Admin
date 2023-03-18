@@ -88,6 +88,7 @@ fun TertiaryTextButtonWithIcon(
     label: String,
     icon: Int,
     onClick: () -> Unit,
+    iconSize: Dp = 24.dp,
     iconTint: Color = MaterialTheme.colors.primary,
     textColor: Color = MaterialTheme.colors.primary,
 ) {
@@ -108,7 +109,7 @@ fun TertiaryTextButtonWithIcon(
             tint = iconTint,
             modifier = modifier
                 .padding(horizontal = 4.dp, vertical = 0.dp)
-                .size(12.dp)
+                .size(iconSize)
         )
 
         Text(

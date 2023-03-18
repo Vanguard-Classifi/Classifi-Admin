@@ -49,7 +49,7 @@ fun NoDataInline(
     message: String,
 ) {
     Box(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().height(200.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(

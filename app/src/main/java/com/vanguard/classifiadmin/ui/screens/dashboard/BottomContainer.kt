@@ -23,6 +23,7 @@ fun BottomContainer(
     onInReviewAssessmentOptions: (Assessment) -> Unit,
     onDraftAssessmentOptions: (Assessment) -> Unit,
     onSelectAssessment: (Assessment) -> Unit,
+    onSelectClasses: () -> Unit,
 ) {
     BottomNavGraph(
         viewModel = viewModel,
@@ -33,5 +34,6 @@ fun BottomContainer(
         onPublishedAssessmentOptions = onPublishedAssessmentOptions,
         onInReviewAssessmentOptions = onInReviewAssessmentOptions,
         onDraftAssessmentOptions = onDraftAssessmentOptions,
+        onSelectClasses = onSelectClasses,
     )
 }

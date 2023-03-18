@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -51,6 +52,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.router.BottomDestination
 import com.vanguard.classifiadmin.router.BottomNavGraph
 import com.vanguard.classifiadmin.ui.components.ClassFilterScreen
@@ -59,8 +61,10 @@ import com.vanguard.classifiadmin.ui.components.DashboardMenu
 import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.FeatureListItem
 import com.vanguard.classifiadmin.ui.components.Level
+import com.vanguard.classifiadmin.ui.components.NoDataInline
 import com.vanguard.classifiadmin.ui.components.StudentOption
 import com.vanguard.classifiadmin.ui.components.StudentOptionsListItem
+import com.vanguard.classifiadmin.ui.screens.admin.CreateSubjectClassItem
 import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.DraftAssessmentBottomSheetContent
@@ -98,6 +102,7 @@ fun MainDashboardScreen(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val currentSchoolNamePref by viewModel.currentSchoolNamePref.collectAsState()
     val currentUserEmailPref by viewModel.currentUserEmailPref.collectAsState()
+    val verifiedClassesNetwork by viewModel.verifiedClassesNetwork.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -109,6 +114,9 @@ fun MainDashboardScreen(
     var menuState by remember { mutableStateOf(false) }
     var filterState by remember { mutableStateOf(false) }
     var joinClassState by remember { mutableStateOf(false) }
+    var verifiedClassesSorted = remember(verifiedClassesNetwork.data) {
+        verifiedClassesNetwork.data?.sortedBy { it.className }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentSchoolNamePref()
@@ -119,6 +127,7 @@ fun MainDashboardScreen(
         delay(3000)
         viewModel.clearSignInFields()
         viewModel.clearSignUpFields()
+        viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -183,7 +192,8 @@ fun MainDashboardScreen(
                             delay(500)
                             sheetState.hide()
                         }
-                    }
+                    },
+                    myClasses = verifiedClassesSorted?.map { it.toLocal() } ?: emptyList<ClassModel>()
                 )
             }
         ) {
@@ -256,6 +266,15 @@ fun MainDashboardScreen(
                 onDraftAssessmentOptions = {
                     viewModel.onCurrentDashboardBottomSheetFlavorChanged(
                         DashboardBottomSheetFlavor.DraftAssessment
+                    )
+                    coroutineScope.launch {
+                        showModalSheet.value = true
+                        sheetState.show()
+                    }
+                },
+                onSelectClasses = {
+                    viewModel.onCurrentDashboardBottomSheetFlavorChanged(
+                        DashboardBottomSheetFlavor.AssignedClasses
                     )
                     coroutineScope.launch {
                         showModalSheet.value = true
@@ -409,6 +428,7 @@ fun MainDashboardScreenContent(
     onInReviewAssessmentOptions: (Assessment) -> Unit,
     onDraftAssessmentOptions: (Assessment) -> Unit,
     onSelectAssessment: (Assessment) -> Unit,
+    onSelectClasses: () -> Unit,
 ) {
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -438,6 +458,7 @@ fun MainDashboardScreenContent(
                     onPublishedAssessmentOptions = onPublishedAssessmentOptions,
                     onDraftAssessmentOptions = onDraftAssessmentOptions,
                     onInReviewAssessmentOptions = onInReviewAssessmentOptions,
+                    onSelectClasses = onSelectClasses,
                 )
             }
         )
@@ -455,7 +476,8 @@ fun DashboardBottomSheetContent(
     onSelectPublishedItem: (PublishedAssessmentBottomSheetOption) -> Unit,
     onSelectInReviewItem: (InReviewAssessmentBottomSheetOption) -> Unit,
     onSelectDraftItem: (DraftAssessmentBottomSheetOption) -> Unit,
-) {
+    myClasses: List<ClassModel>,
+    ) {
 
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -510,6 +532,13 @@ fun DashboardBottomSheetContent(
                 )
             }
 
+            DashboardBottomSheetFlavor.AssignedClasses -> {
+                AssignedClassesBottomSheetContent(
+                    onSelectClass = {/*todo; on select class*/ },
+                    myClasses = myClasses,
+                )
+            }
+
             else -> {
                 FeaturesBottomSheetContent(
                     modifier = modifier,
@@ -521,6 +550,31 @@ fun DashboardBottomSheetContent(
 
     }
 }
+
+@Composable
+fun AssignedClassesBottomSheetContent(
+    modifier: Modifier = Modifier,
+    myClasses: List<ClassModel>,
+    onSelectClass: (ClassModel) -> Unit,
+) {
+    if (myClasses.isEmpty()) {
+        //no items screen
+        NoDataInline(message = stringResource(id = R.string.classes_not_available))
+    } else {
+        LazyColumn(
+            modifier = modifier.padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+            state = rememberLazyListState()
+        ) {
+            items(myClasses) { each ->
+                CreateSubjectClassItem(
+                    myClass = each,
+                    onSelect = onSelectClass,
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun StudentOptionsBottomSheetContent(
@@ -562,4 +616,5 @@ sealed class DashboardBottomSheetFlavor {
     object PublishedAssessment : DashboardBottomSheetFlavor()
     object InReviewAssessment : DashboardBottomSheetFlavor()
     object DraftAssessment : DashboardBottomSheetFlavor()
+    object AssignedClasses : DashboardBottomSheetFlavor()
 }

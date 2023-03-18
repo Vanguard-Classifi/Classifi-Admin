@@ -70,14 +70,16 @@ const val FEEDS_SCREEN = "feeds_screen"
 fun FeedsScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onSelectClasses: () -> Unit,
 ) {
-    FeedsScreenContent(viewModel = viewModel)
+    FeedsScreenContent(viewModel = viewModel, onSelectClasses = onSelectClasses)
 }
 
 @Composable
 fun FeedsScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onSelectClasses: () -> Unit,
 ) {
     var upcomingActivitiesExpanded by remember { mutableStateOf(false) }
     val verticalScroll = rememberScrollState()
@@ -100,7 +102,7 @@ fun FeedsScreenContent(
                         .fillMaxSize()
                         .verticalScroll(verticalScroll)
                 ) {
-                    DiscussionBox(viewModel = viewModel)
+                    DiscussionBox(viewModel = viewModel, onSelectClasses = onSelectClasses)
                 }
             }
 
@@ -121,10 +123,12 @@ fun FeedsScreenContent(
     }
 }
 
+
 @Composable
 fun DiscussionBox(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onSelectClasses: () -> Unit,
 ) {
     val composeDiscussionState: MutableState<Boolean> = remember { mutableStateOf(false) }
 
@@ -132,7 +136,8 @@ fun DiscussionBox(
         true -> {
             CreateDiscussionSection(
                 viewModel = viewModel, currentClassCode = "GRD001",
-                onAbort = { composeDiscussionState.value = false }
+                onAbort = { composeDiscussionState.value = false },
+                onSelectClasses = onSelectClasses,
             )
         }
 
@@ -154,6 +159,7 @@ fun CreateDiscussionSection(
     viewModel: MainViewModel,
     currentClassCode: String,
     onAbort: () -> Unit,
+    onSelectClasses: () -> Unit,
 ) {
     val discussionTextCreateFeed by viewModel.discussionTextCreateFeed.collectAsState()
 
@@ -212,7 +218,7 @@ fun CreateDiscussionSection(
                 prefix = stringResource(id = R.string.post_to),
                 text = currentClassCode,
                 icon = R.drawable.icon_dropdown,
-                onClick = { /*TODO*/ }
+                onClick = onSelectClasses,
             )
 
             CreateDiscussionBottomBar(
@@ -258,15 +264,16 @@ fun CreateDiscussionBottomBar(
                 TertiaryTextButtonWithIcon(
                     label = stringResource(id = R.string.attach), icon = R.drawable.icon_attach,
                     onClick = onAttach,
-                    modifier = innerModifier.layoutId("attach")
+                    modifier = innerModifier.layoutId("attach"),
+                    iconSize = 18.dp
                 )
 
                 RoundedIconButton(
                     modifier = innerModifier.layoutId("abortIcon"),
                     onClick = onAbort, icon = R.drawable.icon_abort,
-                    surfaceColor = Color.Transparent
+                    surfaceColor = Color.Transparent,
+                    size = 18.dp,
                 )
-
 
                 Divider(
                     modifier = innerModifier
@@ -281,13 +288,11 @@ fun CreateDiscussionBottomBar(
                         .width(1.dp)
                 )
 
-
                 PrimaryTextButton(
                     label = stringResource(id = R.string.post),
                     onClick = onPost,
                     modifier = innerModifier.layoutId("post")
                 )
-
             }
         }
     }
