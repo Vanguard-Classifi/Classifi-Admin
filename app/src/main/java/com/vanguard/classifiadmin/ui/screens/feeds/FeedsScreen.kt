@@ -64,6 +64,7 @@ import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.todayComputational
 import com.vanguard.classifiadmin.ui.components.DropdownButton
 import com.vanguard.classifiadmin.ui.components.FeedItem
+import com.vanguard.classifiadmin.ui.components.FeedItemFeature
 import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
@@ -74,6 +75,7 @@ import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardMessage
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatar
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -104,15 +106,21 @@ fun FeedsScreenContent(
     val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
     val scope = rememberCoroutineScope()
     val composeDiscussionState by viewModel.composeDiscussionState.collectAsState()
+    val feedActionListener by viewModel.feedActionListener.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentUsernamePref()
+        delay(1000)
         viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
     }
 
     LaunchedEffect(composeDiscussionState) {
+        viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
+    }
+
+    LaunchedEffect(feedActionListener) {
         viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
     }
 
@@ -191,15 +199,47 @@ fun FeedsScreenContent(
 
                             is Resource.Success -> {
                                 if (verifiedFeedsNetwork.data?.isNotEmpty() == true) {
-                                    items(verifiedFeedsNetwork.data!!) { each ->
+                                    val feedsSorted = verifiedFeedsNetwork.data?.sortedByDescending { it.lastModified }
+                                    items(feedsSorted!!) { feed ->
                                         FeedItem(
-                                            feed = each.toLocal(),
+                                            feed = feed.toLocal(),
                                             currentUserId = currentUserIdPref.orEmpty(),
-                                            onEngage = {
-                                                /*todo: on engage with feed */
+                                            onEngage = { feature ->
+                                                when (feature) {
+                                                    FeedItemFeature.Like -> {
+                                                        scope.launch {
+                                                            if(!feed.likes.contains(currentUserIdPref)) {
+                                                                //like
+                                                                feed.likes.add(currentUserIdPref.orEmpty())
+                                                            } else {
+                                                                //unlike
+                                                                feed.likes.remove(currentUserIdPref)
+                                                            }
+                                                            viewModel.saveFeedAsVerifiedNetwork(
+                                                                feed,
+                                                                onResult = {}
+                                                            )
+                                                        }.invokeOnCompletion {
+                                                            runnableBlock {
+                                                                viewModel.onIncFeedActionListener()
+                                                            }
+                                                        }
+                                                    }
+
+                                                    FeedItemFeature.Comment -> {
+                                                        /*todo; on comment */
+                                                    }
+
+                                                    FeedItemFeature.Share -> {
+                                                        /*todo; on share */
+                                                    }
+                                                }
                                             },
                                             onOptions = {
                                                 /*todo: on click options */
+                                            },
+                                            onDetails = {
+                                                /*todo: onDetails */
                                             }
                                         )
                                     }
@@ -284,7 +324,7 @@ fun DiscussionBox(
                     classFilterBufferFeeds.size > 1 -> "${classByIdNetwork.data?.classCode.orEmpty()}..[]"
                     else -> stringResource(id = R.string.select_class)
                 },
-                onAbort  = { viewModel.onComposeDiscussionStateChanged(null) },
+                onAbort = { viewModel.onComposeDiscussionStateChanged(null) },
                 onSelectClasses = onSelectClasses,
                 onPost = onPost,
                 onAttach = onAttach,
@@ -502,7 +542,7 @@ fun StartDiscussionSection(
     Card(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
-            .padding(top = 8.dp, bottom = 64.dp, start = 8.dp, end = 8.dp),
+            .padding(top = 8.dp, bottom = 16.dp, start = 8.dp, end = 8.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = 2.dp,
     ) {
@@ -570,7 +610,7 @@ fun StartDiscussionSection(
 
             Divider(
                 modifier = innerModifier.layoutId("divider"),
-                color = Black100.copy(0.5f),
+                color = Black100.copy(0.1f),
             )
 
             FeedTypeRow(

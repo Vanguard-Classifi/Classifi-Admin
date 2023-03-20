@@ -509,6 +509,17 @@ class MainViewModel @Inject constructor(
     private var _composeDiscussionState = MutableStateFlow(null as Boolean?)
     val composeDiscussionState: StateFlow<Boolean?> = _composeDiscussionState
 
+    private var _feedActionListener = MutableStateFlow(0)
+    val feedActionListener: StateFlow<Int> = _feedActionListener
+
+    fun onIncFeedActionListener() = effect {
+        _feedActionListener.value++
+    }
+
+    fun onDecFeedActionListener() = effect {
+        _feedActionListener.value--
+    }
+
     fun clearDiscussionTextField() = effect {
         _discussionTextCreateFeed.value = null
     }

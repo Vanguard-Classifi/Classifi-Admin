@@ -1,7 +1,9 @@
 package com.vanguard.classifiadmin.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
@@ -18,15 +21,23 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -50,25 +61,78 @@ fun FeedItem(
     currentUserId: String,
     onEngage: (FeedItemFeature) -> Unit,
     onOptions: () -> Unit,
+    onDetails: (FeedModel) -> Unit,
 ) {
 
     Card(
         modifier = Modifier
             .clip(RoundedCornerShape(0.dp))
-            .padding(top = 8.dp, bottom = 64.dp, start = 0.dp, end = 0.dp),
+            .clickable { onDetails(feed) }
+            .padding(top = 8.dp, bottom = 8.dp, start = 0.dp, end = 0.dp),
         shape = RoundedCornerShape(0.dp),
         elevation = 2.dp,
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            FeedItemHeader(feed = feed, onOptions = onOptions, type = feed.type?.toFeedType() ?: FeedType.Discussion)
-            Spacer(modifier = modifier.height(16.dp))
-            FeedItemFooter(feed = feed, currentUserId = currentUserId, onEngage = onEngage)
-        }
+        BoxWithConstraints(modifier = Modifier) {
+            val maxHeight = maxHeight
+            val maxWidth = maxWidth
 
+            Column(
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 0.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                FeedItemHeader(
+                    feed = feed,
+                    onOptions = onOptions,
+                    type = feed.type?.toFeedType() ?: FeedType.Discussion
+                )
+                Spacer(modifier = modifier.height(8.dp))
+                //content
+                if (feed.text?.isNotBlank() == true && feed.text != null) {
+                    Spacer(modifier = modifier.height(8.dp))
+                    Text(
+                        text = feed.text.orEmpty(),
+                        fontSize = 13.sp,
+                        color = Black100,
+                        maxLines = 10,
+                        modifier = modifier.widthIn(max = maxWidth.times(.93f)).fillMaxWidth(),
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Start,
+                    )
+                }
+                if (feed.mediaUris.isNotEmpty()) {
+                    if (feed.mediaUris.size < 3) {
+                        feed.mediaUris.map { media ->
+                            Spacer(modifier = modifier.height(8.dp))
+                            //todo: media here
+
+                        }
+                    } else {
+                        feed.mediaUris.subList(0, 2).map { media ->
+                            Spacer(modifier = modifier.height(8.dp))
+                            //todo: media here
+
+                        }
+
+                        TextButton(
+                            onClick = { onDetails(feed) },
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.see_more),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Black100,
+                                style = TextStyle(
+                                    textDecoration = TextDecoration.Underline,
+                                )
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = modifier.height(8.dp))
+                FeedItemFooter(feed = feed, currentUserId = currentUserId, onEngage = onEngage)
+            }
+        }
     }
 }
 
@@ -79,12 +143,16 @@ fun FeedItemFooter(
     feed: FeedModel,
     features: List<FeedItemFeature> = FeedItemFeature.values().toList(),
     currentUserId: String,
-    onEngage: (FeedItemFeature) -> Unit
+    onEngage: (FeedItemFeature) -> Unit,
 ) {
+    val rowWidth = remember { mutableStateOf(0) }
+
     Surface(modifier = Modifier) {
         Row(
-            modifier = Modifier,
-            horizontalArrangement = Arrangement.SpaceAround
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { rowWidth.value = it.size.width },
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             features.forEach { feature ->
                 val label = when (feature) {
@@ -105,6 +173,9 @@ fun FeedItemFooter(
                     label = label,
                     onEngage = { onEngage(feature) },
                     engaged = engaged,
+                    width = with(LocalDensity.current) {
+                        rowWidth.value.toDp().times(0.3f)
+                    },
                 )
             }
         }
@@ -120,6 +191,7 @@ fun FeedItemFeatureScreen(
     iconEngaged: Int,
     label: String,
     onEngage: () -> Unit,
+    width: Dp,
     enabled: Boolean = true,
     colorEngaged: Color = MaterialTheme.colors.primary,
 ) {
@@ -131,15 +203,18 @@ fun FeedItemFeatureScreen(
 
     TextButton(
         enabled = enabled,
-        onClick = onEngage
+        onClick = onEngage,
+        modifier = modifier
+            .width(width)
+            .padding(0.dp)
     ) {
         Icon(
             painter = painterResource(id = if (engaged) iconEngaged else icon),
             contentDescription = stringResource(id = R.string.icon),
             tint = animatedColor.value,
             modifier = modifier
-                .padding(8.dp)
-                .size(24.dp)
+                .padding(2.dp)
+                .size(18.dp)
         )
 
         Text(
@@ -172,38 +247,45 @@ fun FeedItemHeader(
     }
 
     Surface(modifier = Modifier) {
-        ConstraintLayout(modifier = Modifier.fillMaxWidth(), constraintSet = constraints) {
-            DefaultAvatar(
-                label = feed.authorName.orEmpty(),
-                onClick = { },
-                modifier = innerModifier.layoutId("avatar")
-            )
+        BoxWithConstraints(modifier = Modifier) {
+            val maxHeight = maxHeight
+            val maxWidth = maxWidth
 
-            Text(
-                text = annotatedString,
-                modifier = innerModifier
-                    .layoutId("author")
-                    .width(300.dp),
-                maxLines = 2,
-                fontSize = 12.sp,
-                color = Black100
-            )
+            ConstraintLayout(modifier = Modifier.fillMaxWidth(), constraintSet = constraints) {
+                DefaultAvatar(
+                    label = feed.authorName.orEmpty(),
+                    onClick = { },
+                    modifier = innerModifier.layoutId("avatar")
+                )
 
-            Text(
-                text = feed.lastModified?.lastModified().orEmpty(),
-                modifier = innerModifier.layoutId("lastModified"),
-                fontSize = 11.sp,
-                color = Black100.copy(0.8f)
-            )
+                Text(
+                    text = annotatedString,
+                    modifier = innerModifier
+                        .layoutId("author")
+                        .width(maxWidth.times(0.7f)),
+                    maxLines = 2,
+                    fontSize = 12.sp,
+                    color = Black100,
+                    lineHeight = 12.sp,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = feed.lastModified?.lastModified().orEmpty(),
+                    modifier = innerModifier.layoutId("lastModified"),
+                    fontSize = 11.sp,
+                    color = Black100.copy(0.8f)
+                )
 
 
-            RoundedIconButton(
-                onClick = onOptions,
-                icon = R.drawable.icon_options_horizontal,
-                modifier = innerModifier.layoutId("options"),
-                tint = Black100
-            )
+                RoundedIconButton(
+                    onClick = onOptions,
+                    icon = R.drawable.icon_options_horizontal,
+                    modifier = innerModifier.layoutId("options"),
+                    tint = Black100
+                )
 
+            }
         }
     }
 }
@@ -227,6 +309,7 @@ private fun FeedItemHeaderConstraints(margin: Dp): ConstraintSet {
         constrain(lastModified) {
             bottom.linkTo(avatar.bottom, 0.dp)
             start.linkTo(author.start, 0.dp)
+            top.linkTo(author.bottom, 2.dp)
         }
         constrain(options) {
             top.linkTo(avatar.top, 0.dp)
@@ -250,6 +333,7 @@ private fun FeedItemFeaturePreview() {
         icon = R.drawable.icon_like_outline,
         iconEngaged = R.drawable.icon_like_solid,
         onEngage = {},
-        label = "9"
+        label = "9",
+        width = 23.dp,
     )
 }
