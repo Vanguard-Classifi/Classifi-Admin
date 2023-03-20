@@ -1,6 +1,5 @@
 package com.vanguard.classifiadmin.ui.screens.feeds
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,11 +30,13 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,14 +58,24 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.FeedModel
+import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.domain.helpers.todayComputational
 import com.vanguard.classifiadmin.ui.components.DropdownButton
+import com.vanguard.classifiadmin.ui.components.FeedItem
+import com.vanguard.classifiadmin.ui.components.LoadingScreen
+import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonWithIcon
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.TertiaryTextButtonWithIcon
+import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardMessage
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatar
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 const val FEEDS_SCREEN = "feeds_screen"
 
@@ -83,6 +96,25 @@ fun FeedsScreenContent(
 ) {
     var upcomingActivitiesExpanded by remember { mutableStateOf(false) }
     val verticalScroll = rememberScrollState()
+    val verifiedFeedsNetwork by viewModel.verifiedFeedsNetwork.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val discussionTextCreateFeed by viewModel.discussionTextCreateFeed.collectAsState()
+    val classFilterBufferFeeds by viewModel.classFilterBufferFeeds.collectAsState()
+    val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
+    val scope = rememberCoroutineScope()
+    val composeDiscussionState by viewModel.composeDiscussionState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentUsernamePref()
+        viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
+    }
+
+    LaunchedEffect(composeDiscussionState) {
+        viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -92,17 +124,111 @@ fun FeedsScreenContent(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            val maxHeight = maxHeight
+            val maxWidth = maxWidth
+
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.TopCenter,
             ) {
-                //todo: news feed
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(verticalScroll)
-                ) {
-                    DiscussionBox(viewModel = viewModel, onSelectClasses = onSelectClasses)
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier,
+                        state = rememberLazyListState(),
+                    ) {
+                        item {
+                            DiscussionBox(
+                                viewModel = viewModel,
+                                onSelectClasses = onSelectClasses,
+                                onSelectFeedType = {
+                                    /*todo: on Select Feed Type : */
+                                },
+                                onPost = {
+                                    /*todo: on Post */
+                                    scope.launch {
+                                        val classIds = arrayListOf<String>()
+                                        classIds.addAll(classFilterBufferFeeds)
+
+                                        val feed = FeedModel(
+                                            feedId = UUID.randomUUID().toString(),
+                                            text = discussionTextCreateFeed,
+                                            authorId = currentUserIdPref,
+                                            authorName = currentUsernamePref,
+                                            schoolId = currentSchoolIdPref,
+                                            lastModified = todayComputational(),
+                                            classIds = classIds,
+                                            likes = arrayListOf(),
+                                            commentIds = arrayListOf(),
+                                            type = FeedType.Discussion.title,
+                                            mediaUris = arrayListOf()
+                                        )
+
+                                        viewModel.saveFeedAsVerifiedNetwork(
+                                            feed.toNetwork(),
+                                            onResult = {})
+                                    }.invokeOnCompletion {
+                                        runnableBlock {
+                                            //switch back to the start discussion box
+                                            viewModel.onComposeDiscussionStateChanged(null)
+                                            //clear the discussion text field
+                                            viewModel.clearDiscussionTextField()
+                                            viewModel.onDashboardMessageChanged(DashboardMessage.FeedCreated)
+                                        }
+                                    }
+                                },
+                                onAttach = {
+                                    /*todo: on Attach ... */
+                                }
+                            )
+                        }
+
+                        when (verifiedFeedsNetwork) {
+                            is Resource.Loading -> {
+                                item {
+                                    LoadingScreen(maxHeight = maxHeight)
+                                }
+                            }
+
+                            is Resource.Success -> {
+                                if (verifiedFeedsNetwork.data?.isNotEmpty() == true) {
+                                    items(verifiedFeedsNetwork.data!!) { each ->
+                                        FeedItem(
+                                            feed = each.toLocal(),
+                                            currentUserId = currentUserIdPref.orEmpty(),
+                                            onEngage = {
+                                                /*todo: on engage with feed */
+                                            },
+                                            onOptions = {
+                                                /*todo: on click options */
+                                            }
+                                        )
+                                    }
+                                } else {
+                                    item {
+                                        NoDataScreen(
+                                            maxHeight = maxHeight,
+                                            message = stringResource(id = R.string.no_feeds_available_yet),
+                                            buttonLabel = "",
+                                            showButton = false,
+                                            onClick = {}
+                                        )
+                                    }
+                                }
+                            }
+
+                            is Resource.Error -> {
+                                item {
+                                    NoDataScreen(
+                                        maxHeight = maxHeight,
+                                        message = stringResource(id = R.string.something_went_wrong),
+                                        buttonLabel = "",
+                                        showButton = false,
+                                        onClick = {}
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -129,25 +255,49 @@ fun DiscussionBox(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onSelectClasses: () -> Unit,
+    onSelectFeedType: (FeedType) -> Unit,
+    onPost: () -> Unit,
+    onAttach: () -> Unit,
 ) {
-    val composeDiscussionState: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val composeDiscussionState by viewModel.composeDiscussionState.collectAsState()
+    val classFilterBufferFeeds by viewModel.classFilterBufferFeeds.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val classByIdNetwork by viewModel.classByIdNetwork.collectAsState()
+    val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
 
-    when (composeDiscussionState.value) {
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentUsernamePref()
+        if (classFilterBufferFeeds.isNotEmpty()) {
+            viewModel.getCurrentSchoolIdPref()
+            val topClassId = classFilterBufferFeeds.first()
+            viewModel.getClassByIdNetwork(topClassId, currentSchoolIdPref.orEmpty())
+        }
+    }
+
+    when (composeDiscussionState) {
         true -> {
             CreateDiscussionSection(
-                viewModel = viewModel, currentClassCode = "GRD001",
-                onAbort = { composeDiscussionState.value = false },
+                viewModel = viewModel,
+                currentClassCode = when {
+                    classFilterBufferFeeds.isEmpty() -> stringResource(id = R.string.select_class)
+                    classFilterBufferFeeds.size == 1 -> classByIdNetwork.data?.classCode.orEmpty()
+                    classFilterBufferFeeds.size > 1 -> "${classByIdNetwork.data?.classCode.orEmpty()}..[]"
+                    else -> stringResource(id = R.string.select_class)
+                },
+                onAbort  = { viewModel.onComposeDiscussionStateChanged(null) },
                 onSelectClasses = onSelectClasses,
+                onPost = onPost,
+                onAttach = onAttach,
             )
         }
 
-        false -> {
+        else -> {
             StartDiscussionSection(
-                username = "Khalid Isah",
+                username = currentUsernamePref.orEmpty(),
                 onCreateDiscussion = {
-                    composeDiscussionState.value = true
+                    viewModel.onComposeDiscussionStateChanged(true)
                 },
-                onSelectFeedType = {/*todo: select feed type */ }
+                onSelectFeedType = onSelectFeedType,
             )
         }
     }
@@ -160,8 +310,14 @@ fun CreateDiscussionSection(
     currentClassCode: String,
     onAbort: () -> Unit,
     onSelectClasses: () -> Unit,
+    onPost: () -> Unit,
+    onAttach: () -> Unit,
 ) {
     val discussionTextCreateFeed by viewModel.discussionTextCreateFeed.collectAsState()
+    val postable = remember(discussionTextCreateFeed) {
+        discussionTextCreateFeed != null &&
+                discussionTextCreateFeed?.isNotBlank() == true
+    }
 
     Card(
         modifier = Modifier
@@ -223,8 +379,9 @@ fun CreateDiscussionSection(
 
             CreateDiscussionBottomBar(
                 onAbort = onAbort,
-                onPost = {},
-                onAttach = {}
+                onPost = onPost,
+                onAttach = onAttach,
+                postable = postable,
             )
         }
 
@@ -237,6 +394,7 @@ fun CreateDiscussionBottomBar(
     modifier: Modifier = Modifier,
     onAbort: () -> Unit,
     onPost: () -> Unit,
+    postable: Boolean = false,
     onAttach: () -> Unit,
 ) {
     val constraints = CreateDiscussionBottomBarConstraints(4.dp)
@@ -291,7 +449,8 @@ fun CreateDiscussionBottomBar(
                 PrimaryTextButton(
                     label = stringResource(id = R.string.post),
                     onClick = onPost,
-                    modifier = innerModifier.layoutId("post")
+                    modifier = innerModifier.layoutId("post"),
+                    enabled = postable,
                 )
             }
         }
@@ -463,7 +622,7 @@ private fun StartDiscussionSectionConstraints(margin: Dp): ConstraintSet {
 @Composable
 fun FeedTypeRow(
     modifier: Modifier = Modifier,
-    types: List<FeedType> = FeedType.values().toList(),
+    types: MutableList<FeedType> = FeedType.values().toMutableList(),
     onSelectFeedType: (FeedType) -> Unit,
 ) {
     Row(
@@ -471,7 +630,7 @@ fun FeedTypeRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        types.forEach { type ->
+        types.dropLast(1).forEach { type ->
             PrimaryTextButtonWithIcon(
                 label = type.title,
                 icon = type.icon,
@@ -485,7 +644,18 @@ fun FeedTypeRow(
 enum class FeedType(val title: String, val icon: Int) {
     Assessment("Assessment", R.drawable.icon_assessment),
     LiveClass("Live Class", R.drawable.icon_video_camera),
-    Lesson("Lesson", R.drawable.icon_subject)
+    Lesson("Lesson", R.drawable.icon_subject),
+    Discussion("Discussion", R.drawable.icon_discussion),
+}
+
+fun String.toFeedType(): FeedType {
+    return when (this) {
+        FeedType.Discussion.title -> FeedType.Discussion
+        FeedType.Assessment.title -> FeedType.Assessment
+        FeedType.LiveClass.title -> FeedType.LiveClass
+        FeedType.Lesson.title -> FeedType.Lesson
+        else -> FeedType.Discussion
+    }
 }
 
 @Composable
@@ -513,3 +683,4 @@ private fun CreateDiscussionBottomBarPreview() {
         onAttach = {}
     )
 }
+

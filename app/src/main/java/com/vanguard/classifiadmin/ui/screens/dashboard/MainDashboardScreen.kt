@@ -61,9 +61,11 @@ import com.vanguard.classifiadmin.ui.components.DashboardMenu
 import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.FeatureListItem
 import com.vanguard.classifiadmin.ui.components.Level
+import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.NoDataInline
 import com.vanguard.classifiadmin.ui.components.StudentOption
 import com.vanguard.classifiadmin.ui.components.StudentOptionsListItem
+import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.ui.screens.admin.CreateSubjectClassItem
 import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
@@ -103,6 +105,7 @@ fun MainDashboardScreen(
     val currentSchoolNamePref by viewModel.currentSchoolNamePref.collectAsState()
     val currentUserEmailPref by viewModel.currentUserEmailPref.collectAsState()
     val verifiedClassesNetwork by viewModel.verifiedClassesNetwork.collectAsState()
+    val message by viewModel.dashboardMessage.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -128,6 +131,13 @@ fun MainDashboardScreen(
         viewModel.clearSignInFields()
         viewModel.clearSignUpFields()
         viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+    }
+
+    LaunchedEffect(message) {
+        if(message !is DashboardMessage.NoMessage) {
+            delay(2000)
+            viewModel.onDashboardMessageChanged(DashboardMessage.NoMessage)
+        }
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -273,13 +283,7 @@ fun MainDashboardScreen(
                     }
                 },
                 onSelectClasses = {
-                    viewModel.onCurrentDashboardBottomSheetFlavorChanged(
-                        DashboardBottomSheetFlavor.AssignedClasses
-                    )
-                    coroutineScope.launch {
-                        showModalSheet.value = true
-                        sheetState.show()
-                    }
+                    filterState = true
                 }
             )
         }
@@ -331,14 +335,11 @@ fun MainDashboardScreen(
                 ClassFilterScreen(
                     viewModel = viewModel,
                     onClose = { filterState = false },
-                    assignedClasses = verifiedClassesSorted?.map { it.toLocal() } ?: emptyList(),
                     onManageClass = onManageClass,
                     onAddClass = {
                         /*todo*/
                         //close current dialog
                         filterState = false
-                        joinClassState = true
-                        //open add class dialog
                     }
                 )
             }
@@ -366,6 +367,20 @@ fun MainDashboardScreen(
                     onClose = {
                         joinClassState = false
                     },
+                )
+            }
+        }
+
+
+        if(message !is DashboardMessage.NoMessage) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                SuccessBar(
+                    message = message.message,
+                    maxWidth = maxWidth,
+                    modifier = modifier.padding(vertical = 16.dp, horizontal = 8.dp)
                 )
             }
         }
@@ -578,4 +593,9 @@ sealed class DashboardBottomSheetFlavor {
     object InReviewAssessment : DashboardBottomSheetFlavor()
     object DraftAssessment : DashboardBottomSheetFlavor()
     object AssignedClasses : DashboardBottomSheetFlavor()
+}
+
+sealed class DashboardMessage(val message: String){
+    object FeedCreated: DashboardMessage("Successfully created a feed!")
+    object NoMessage: DashboardMessage("")
 }

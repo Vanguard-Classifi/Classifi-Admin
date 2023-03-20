@@ -2,6 +2,7 @@ package com.vanguard.classifiadmin.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,13 +24,17 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +48,8 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
+import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -54,10 +61,79 @@ fun ClassFilterScreen(
     onClose: () -> Unit,
     onManageClass: (ClassModel) -> Unit,
     onAddClass: () -> Unit,
-    assignedClasses: List<ClassModel>,
 ) {
     val constraints = classFilterScreenConstraints(16.dp)
     val innerModifier = Modifier
+    val classFilterBufferFeeds by viewModel.classFilterBufferFeeds.collectAsState()
+    val classFilterBufferFeedsListener by viewModel.classFilterBufferFeedsListener.collectAsState()
+    val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val verifiedClassesNetwork by viewModel.verifiedClassesNetwork.collectAsState()
+    val verifiedClassesGivenTeacherNetwork by viewModel.verifiedClassesGivenTeacherNetwork.collectAsState()
+    val verifiedClassesGivenStudentNetwork by viewModel.verifiedClassesGivenStudentNetwork.collectAsState()
+
+
+    LaunchedEffect(classFilterBufferFeedsListener) {
+        when (currentUserRolePref) {
+            UserRole.Student.name -> {
+                viewModel.getVerifiedClassesGivenStudentNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Teacher.name -> {
+                viewModel.getVerifiedClassesGivenTeacherNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Admin.name -> {
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            UserRole.SuperAdmin.name -> {
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            else -> {}
+        }
+
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getCurrentUserRolePref()
+        viewModel.getCurrentUserIdPref()
+
+        when (currentUserRolePref) {
+            UserRole.Student.name -> {
+                viewModel.getVerifiedClassesGivenStudentNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Teacher.name -> {
+                viewModel.getVerifiedClassesGivenTeacherNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Admin.name -> {
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            UserRole.SuperAdmin.name -> {
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            else -> {}
+        }
+    }
 
 
     Card(
@@ -66,6 +142,9 @@ fun ClassFilterScreen(
         shape = RoundedCornerShape(16.dp)
     ) {
         BoxWithConstraints(modifier = modifier) {
+            val maxHeight = maxHeight
+            val maxWidth = maxWidth
+
             ConstraintLayout(
                 modifier = modifier
                     .padding(8.dp)
@@ -101,29 +180,268 @@ fun ClassFilterScreen(
                         .layoutId("classesColumn"),
                     state = rememberLazyListState()
                 ) {
-                    if(assignedClasses.isEmpty()) {
-                        item {
-                            NoDataInline(message = stringResource(id = R.string.no_classes_assigned_yet))
+                    when (currentUserRolePref) {
+                        UserRole.Student.name -> {
+                            when (verifiedClassesGivenStudentNetwork) {
+                                is Resource.Loading -> {
+                                    item {
+                                        LoadingScreen(maxHeight = maxHeight)
+                                    }
+                                }
+
+                                is Resource.Success -> {
+                                    if (verifiedClassesGivenStudentNetwork.data?.isNotEmpty() == true) {
+                                        // a student can only be assigned to one class
+                                        items(verifiedClassesGivenStudentNetwork.data!!) { each ->
+                                            ClassFilterItem(
+                                                myClass = each.toLocal(),
+                                                onSelectClass = {
+                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    } else {
+                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                            each.classId.orEmpty()
+                                                        )
+                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                    }
+                                                },
+                                                onManageClass = {
+                                                    viewModel.onSelectedClassManageClassChanged(it)
+                                                    onManageClass(it)
+                                                },
+                                                onLongSelectClass = {
+                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                },
+                                                selected = false,
+                                            )
+                                        }
+                                    } else {
+                                        item {
+                                            NoDataScreen(
+                                                maxHeight = maxHeight,
+                                                message = stringResource(id = R.string.not_belong_to_any_class),
+                                                buttonLabel = "",
+                                                onClick = {},
+                                                showButton = false,
+                                            )
+                                        }
+                                    }
+                                }
+
+                                is Resource.Error -> {
+                                    item {
+                                        NoDataScreen(
+                                            maxHeight = maxHeight,
+                                            message = stringResource(id = R.string.something_went_wrong),
+                                            buttonLabel = "",
+                                            onClick = {},
+                                            showButton = false,
+                                        )
+                                    }
+                                }
+                            }
                         }
-                    } else {
-                        items(assignedClasses) { each ->
-                            ClassFilterItem(
-                                myClass = each,
-                                onSelectClass = {
-                                    /*todo: on Select class filter */
-                                },
-                                onManageClass = {
-                                    viewModel.onSelectedClassManageClassChanged(it)
-                                    onManageClass(it)
-                                },
-                            )
+
+                        UserRole.Teacher.name -> {
+                            when (verifiedClassesGivenTeacherNetwork) {
+                                is Resource.Loading -> {
+                                    item {
+                                        LoadingScreen(maxHeight = maxHeight)
+                                    }
+                                }
+
+                                is Resource.Success -> {
+                                    if (verifiedClassesGivenTeacherNetwork.data?.isNotEmpty() == true) {
+                                        // a student can only be assigned to one class
+                                        items(verifiedClassesGivenTeacherNetwork.data!!) { each ->
+                                            ClassFilterItem(
+                                                myClass = each.toLocal(),
+                                                onSelectClass = {
+                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    } else {
+                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                            each.classId.orEmpty()
+                                                        )
+                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                    }
+                                                },
+                                                onManageClass = {
+                                                    viewModel.onSelectedClassManageClassChanged(it)
+                                                    onManageClass(it)
+                                                },
+                                                onLongSelectClass = {
+                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                },
+                                                selected = classFilterBufferFeeds.contains(each.classId),
+                                            )
+                                        }
+                                    } else {
+                                        item {
+                                            NoDataScreen(
+                                                maxHeight = maxHeight,
+                                                message = stringResource(id = R.string.not_belong_to_any_class),
+                                                buttonLabel = "",
+                                                onClick = {},
+                                                showButton = false,
+                                            )
+                                        }
+                                    }
+                                }
+
+                                is Resource.Error -> {
+                                    item {
+                                        NoDataScreen(
+                                            maxHeight = maxHeight,
+                                            message = stringResource(id = R.string.something_went_wrong),
+                                            buttonLabel = "",
+                                            onClick = {},
+                                            showButton = false,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        UserRole.Admin.name -> {
+                            when (verifiedClassesNetwork) {
+                                is Resource.Loading -> {
+                                    item {
+                                        LoadingScreen(maxHeight = maxHeight)
+                                    }
+                                }
+
+                                is Resource.Success -> {
+                                    if (verifiedClassesNetwork.data?.isNotEmpty() == true) {
+                                        // a student can only be assigned to one class
+                                        items(verifiedClassesNetwork.data!!) { each ->
+                                            ClassFilterItem(
+                                                myClass = each.toLocal(),
+                                                onSelectClass = {
+                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    } else {
+                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                            each.classId.orEmpty()
+                                                        )
+                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                    }
+                                                },
+                                                onManageClass = {
+                                                    viewModel.onSelectedClassManageClassChanged(it)
+                                                    onManageClass(it)
+                                                },
+                                                onLongSelectClass = {
+                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                },
+                                                selected = classFilterBufferFeeds.contains(each.classId),
+                                            )
+                                        }
+                                    } else {
+                                        item {
+                                            NoDataScreen(
+                                                maxHeight = maxHeight,
+                                                message = stringResource(id = R.string.not_belong_to_any_class),
+                                                buttonLabel = "",
+                                                onClick = {},
+                                                showButton = false,
+                                            )
+                                        }
+                                    }
+                                }
+
+                                is Resource.Error -> {
+                                    item {
+                                        NoDataScreen(
+                                            maxHeight = maxHeight,
+                                            message = stringResource(id = R.string.something_went_wrong),
+                                            buttonLabel = "",
+                                            onClick = {},
+                                            showButton = false,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        UserRole.SuperAdmin.name -> {
+                            when (verifiedClassesNetwork) {
+                                is Resource.Loading -> {
+                                    item {
+                                        LoadingScreen(maxHeight = maxHeight)
+                                    }
+                                }
+
+                                is Resource.Success -> {
+                                    if (verifiedClassesNetwork.data?.isNotEmpty() == true) {
+                                        // a student can only be assigned to one class
+                                        items(verifiedClassesNetwork.data!!) { each ->
+                                            ClassFilterItem(
+                                                myClass = each.toLocal(),
+                                                onSelectClass = {
+                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    } else {
+                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                            each.classId.orEmpty()
+                                                        )
+                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                    }
+                                                },
+                                                onManageClass = {
+                                                    viewModel.onSelectedClassManageClassChanged(it)
+                                                    onManageClass(it)
+                                                },
+                                                onLongSelectClass = {
+                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                },
+                                                selected = classFilterBufferFeeds.contains(each.classId),
+                                            )
+                                        }
+                                    } else {
+                                        item {
+                                            NoDataScreen(
+                                                maxHeight = maxHeight,
+                                                message = stringResource(id = R.string.not_belong_to_any_class),
+                                                buttonLabel = "",
+                                                onClick = {},
+                                                showButton = false,
+                                            )
+                                        }
+                                    }
+                                }
+
+                                is Resource.Error -> {
+                                    item {
+                                        NoDataScreen(
+                                            maxHeight = maxHeight,
+                                            message = stringResource(id = R.string.something_went_wrong),
+                                            buttonLabel = "",
+                                            onClick = {},
+                                            showButton = false,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
-                AddClassButton(
+                PrimaryTextButtonFillWidth(
+                    label = stringResource(id = R.string.done),
+                    onClick = {
+                        //close class filter dialog
+                        onAddClass()
+                    },
                     modifier = innerModifier.layoutId("addClass"),
-                    onAddClass = onAddClass,
                 )
             }
         }
@@ -249,8 +567,10 @@ private fun addClassButtonConstraints(margin: Dp): ConstraintSet {
 fun ClassFilterItem(
     modifier: Modifier = Modifier,
     myClass: ClassModel,
+    selected: Boolean = false,
     onManageClass: (ClassModel) -> Unit,
     onSelectClass: (ClassModel) -> Unit,
+    onLongSelectClass: (ClassModel) -> Unit,
 ) {
     val constraints = classFilterItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -259,11 +579,25 @@ fun ClassFilterItem(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .padding(vertical = 8.dp)
-            .clickable { onSelectClass(myClass) },
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        onLongSelectClass(myClass)
+                    },
+                    onLongPress = {
+                        onLongSelectClass(myClass)
+                    },
+                    onTap = {
+                        onSelectClass(myClass)
+                    }
+                )
+            },
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary
+            width = if (selected) 2.dp else 1.dp,
+            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
+                0.5f
+            )
         )
     ) {
         ConstraintLayout(

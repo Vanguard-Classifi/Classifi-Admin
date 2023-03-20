@@ -4,6 +4,7 @@ import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.firestore.FirestoreManager
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -118,14 +119,14 @@ class MainRepositoryImpl @Inject constructor(
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     ) {
-      firestoreManager.getVerifiedStudentsNetwork(schoolId, onResult)
+        firestoreManager.getVerifiedStudentsNetwork(schoolId, onResult)
     }
 
     override suspend fun getStagedStudentsNetwork(
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     ) {
-       firestoreManager.getStagedStudentsNetwork(schoolId, onResult)
+        firestoreManager.getStagedStudentsNetwork(schoolId, onResult)
     }
 
     override suspend fun getVerifiedParentsNetwork(
@@ -139,7 +140,7 @@ class MainRepositoryImpl @Inject constructor(
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     ) {
-       firestoreManager.getStagedParentsNetwork(schoolId, onResult)
+        firestoreManager.getStagedParentsNetwork(schoolId, onResult)
     }
 
     override suspend fun deleteUserByIdNetwork(userId: String, onResult: (Boolean) -> Unit) {
@@ -270,6 +271,26 @@ class MainRepositoryImpl @Inject constructor(
         firestoreManager.getVerifiedClassesNetwork(schoolId, onResult)
     }
 
+    override suspend fun getVerifiedClassesGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedClassesGivenTeacherNetwork(
+            teacherId, schoolId, onResult
+        )
+    }
+
+    override suspend fun getVerifiedClassesGivenStudentNetwork(
+        studentId: String,
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+       firestoreManager.getVerifiedClassesGivenStudentNetwork(
+           studentId, schoolId, onResult
+       )
+    }
+
     override suspend fun getStagedClassesNetwork(
         schoolId: String,
         onResult: (Resource<List<ClassNetworkModel>>) -> Unit
@@ -370,6 +391,91 @@ class MainRepositoryImpl @Inject constructor(
     ) {
         firestoreManager.getVerifiedSubjectsUnderClassNetwork(
             classId, schoolId, onResult
+        )
+    }
+
+    override suspend fun saveFeedAsStagedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveFeedAsStagedNetwork(
+            feed, onResult
+        )
+    }
+
+    override suspend fun saveFeedAsVerifiedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveFeedAsVerifiedNetwork(
+            feed, onResult
+        )
+    }
+
+    override suspend fun getFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<FeedNetworkModel?>) -> Unit
+    ) {
+        firestoreManager.getFeedByIdNetwork(
+            feedId, schoolId, onResult
+        )
+    }
+
+    override suspend fun getStagedFeedsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getStagedFeedsNetwork(
+            schoolId, onResult
+        )
+    }
+
+    override suspend fun getStagedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getStagedFeedsByClassNetwork(
+            classId, schoolId, onResult
+        )
+    }
+
+    override suspend fun getVerifiedFeedsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedFeedsNetwork(
+            schoolId, onResult
+        )
+    }
+
+    override suspend fun getVerifiedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedFeedsByClassNetwork(
+            classId, schoolId, onResult
+        )
+    }
+
+    override suspend fun deleteFeedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.deleteFeedNetwork(
+            feed, onResult
+        )
+    }
+
+    override suspend fun deleteFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.deleteFeedByIdNetwork(
+            feedId, schoolId, onResult
         )
     }
 }

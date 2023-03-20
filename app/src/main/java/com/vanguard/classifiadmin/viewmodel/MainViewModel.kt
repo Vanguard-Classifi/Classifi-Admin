@@ -10,6 +10,7 @@ import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -31,6 +32,7 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
+import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardMessage
 import com.vanguard.classifiadmin.ui.screens.profile.AccountBottomSheetState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -165,6 +167,9 @@ class MainViewModel @Inject constructor(
 
     private var _currentProfileImagePref = MutableStateFlow(null as String?)
     val currentProfileImagePref: StateFlow<String?> = _currentProfileImagePref
+
+    private var _currentUserRolePref = MutableStateFlow(null as String?)
+    val currentUserRolePref: StateFlow<String?> = _currentUserRolePref
 
     private var _classNameAdmin = MutableStateFlow(null as String?)
     val classNameAdmin: StateFlow<String?> = _classNameAdmin
@@ -458,6 +463,186 @@ class MainViewModel @Inject constructor(
 
     private var _discussionTextCreateFeed = MutableStateFlow(null as String?)
     val discussionTextCreateFeed: StateFlow<String?> = _discussionTextCreateFeed
+
+    private var _feedByIdNetwork =
+        MutableStateFlow(Resource.Loading<FeedNetworkModel?>() as Resource<FeedNetworkModel?>)
+    val feedByIdNetwork: StateFlow<Resource<FeedNetworkModel?>> = _feedByIdNetwork
+
+
+    private var _stagedFeedsNetwork =
+        MutableStateFlow(Resource.Loading<List<FeedNetworkModel>>() as Resource<List<FeedNetworkModel>>)
+    val stagedFeedsNetwork: StateFlow<Resource<List<FeedNetworkModel>>> = _stagedFeedsNetwork
+
+    private var _stagedFeedsByClassNetwork =
+        MutableStateFlow(Resource.Loading<List<FeedNetworkModel>>() as Resource<List<FeedNetworkModel>>)
+    val stagedFeedsByClassNetwork: StateFlow<Resource<List<FeedNetworkModel>>> =
+        _stagedFeedsByClassNetwork
+
+    private var _verifiedFeedsNetwork =
+        MutableStateFlow(Resource.Loading<List<FeedNetworkModel>>() as Resource<List<FeedNetworkModel>>)
+    val verifiedFeedsNetwork: StateFlow<Resource<List<FeedNetworkModel>>> = _verifiedFeedsNetwork
+
+    private var _verifiedFeedsByClassNetwork =
+        MutableStateFlow(Resource.Loading<List<FeedNetworkModel>>() as Resource<List<FeedNetworkModel>>)
+    val verifiedFeedsByClassNetwork: StateFlow<Resource<List<FeedNetworkModel>>> =
+        _verifiedFeedsByClassNetwork
+
+    private var _classFilterBufferFeeds = MutableStateFlow(mutableListOf<String>())
+    val classFilterBufferFeeds: StateFlow<List<String>> = _classFilterBufferFeeds
+
+    private var _classFilterBufferFeedsListener = MutableStateFlow(0)
+    val classFilterBufferFeedsListener: StateFlow<Int> = _classFilterBufferFeedsListener
+
+    private var _verifiedClassesGivenTeacherNetwork =
+        MutableStateFlow(Resource.Loading<List<ClassNetworkModel>>() as Resource<List<ClassNetworkModel>>)
+    val verifiedClassesGivenTeacherNetwork: StateFlow<Resource<List<ClassNetworkModel>>> =
+        _verifiedClassesGivenTeacherNetwork
+
+    private var _verifiedClassesGivenStudentNetwork =
+        MutableStateFlow(Resource.Loading<List<ClassNetworkModel>>() as Resource<List<ClassNetworkModel>>)
+    val verifiedClassesGivenStudentNetwork: StateFlow<Resource<List<ClassNetworkModel>>> =
+        _verifiedClassesGivenStudentNetwork
+
+    private var _dashboardMessage = MutableStateFlow(DashboardMessage.NoMessage as DashboardMessage)
+    val dashboardMessage: StateFlow<DashboardMessage> = _dashboardMessage
+
+    private var _composeDiscussionState = MutableStateFlow(null as Boolean?)
+    val composeDiscussionState: StateFlow<Boolean?> = _composeDiscussionState
+
+    fun clearDiscussionTextField() = effect {
+        _discussionTextCreateFeed.value = null
+    }
+    fun onComposeDiscussionStateChanged(state: Boolean?) = effect {
+        _composeDiscussionState.value = state
+    }
+
+    fun onDashboardMessageChanged(message: DashboardMessage) = effect {
+        _dashboardMessage.value = message
+    }
+
+    fun getVerifiedClassesGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedClassesGivenTeacherNetwork(teacherId, schoolId) {
+            _verifiedClassesGivenTeacherNetwork.value = it
+        }
+    }
+
+    fun getVerifiedClassesGivenStudentNetwork(
+        studentId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedClassesGivenStudentNetwork(studentId, schoolId) {
+            _verifiedClassesGivenStudentNetwork.value = it
+        }
+    }
+
+    fun onIncClassFilterBufferFeedsListener() = effect {
+        _classFilterBufferFeedsListener.value++
+    }
+
+    fun onDecClassFilterBufferFeedsListener() = effect {
+        _classFilterBufferFeedsListener.value--
+    }
+
+    fun onAddToClassFilterBufferFeeds(classId: String) = effect {
+        if (!_classFilterBufferFeeds.value.contains(classId)) {
+            _classFilterBufferFeeds.value.add(classId)
+        }
+    }
+
+    fun onRemoveFromClassFilterBufferFeeds(classId: String) = effect {
+        if (_classFilterBufferFeeds.value.contains(classId)) {
+            _classFilterBufferFeeds.value.remove(classId)
+        }
+    }
+
+    fun clearClassFilterBufferFeeds() = effect {
+        _classFilterBufferFeeds.value.clear()
+    }
+
+    // Feed
+    fun saveFeedAsStagedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveFeedAsStagedNetwork(
+            feed, onResult
+        )
+    }
+
+    fun saveFeedAsVerifiedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveFeedAsVerifiedNetwork(
+            feed, onResult
+        )
+    }
+
+    fun getFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getFeedByIdNetwork(feedId, schoolId) {
+            _feedByIdNetwork.value = it
+        }
+    }
+
+    fun getStagedFeedsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedFeedsNetwork(schoolId) {
+            _stagedFeedsNetwork.value = it
+        }
+    }
+
+    fun getStagedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getStagedFeedsByClassNetwork(classId, schoolId) {
+            _stagedFeedsByClassNetwork.value = it
+        }
+    }
+
+    fun getVerifiedFeedsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedFeedsNetwork(schoolId) {
+            _verifiedFeedsNetwork.value = it
+        }
+    }
+
+    fun getVerifiedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedFeedsByClassNetwork(classId, schoolId) {
+            _verifiedFeedsByClassNetwork.value = it
+        }
+    }
+
+    fun deleteFeedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteFeedNetwork(
+            feed, onResult
+        )
+    }
+
+    fun deleteFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteFeedByIdNetwork(
+            feedId, schoolId, onResult
+        )
+    }
+
 
     fun onDiscussionTextCreateFeedChanged(text: String?) = effect {
         _discussionTextCreateFeed.value = text
@@ -1179,7 +1364,17 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun saveCurrentProfileImage(downloadUrl: String, onResult: (Boolean) -> Unit) = effect {
+    fun getCurrentUserRolePref() = effect {
+        store.currentUserRole.collect { role ->
+            _currentUserRolePref.value = role
+        }
+    }
+
+    fun saveCurrentUserRolePref(role: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentUserRole(role, onResult)
+    }
+
+    fun saveCurrentProfileImagePref(downloadUrl: String, onResult: (Boolean) -> Unit) = effect {
         store.saveCurrentProfileImagePref(downloadUrl, onResult)
     }
 

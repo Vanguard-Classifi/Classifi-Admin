@@ -246,9 +246,11 @@ fun PrimaryTextButton(
     modifier: Modifier = Modifier,
     label: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
     TextButton(
         onClick = onClick,
+        enabled = enabled,
         shape = CircleShape,
         modifier = modifier
             .clip(CircleShape),

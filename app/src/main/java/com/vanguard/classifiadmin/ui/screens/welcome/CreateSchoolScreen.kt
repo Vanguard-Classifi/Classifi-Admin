@@ -471,7 +471,12 @@ fun CreateSchoolScreenContent(
                                                 onResult = {})
                                             viewModel.saveCurrentSchoolNamePref(
                                                 schoolNameCreateSchool ?: "",
-                                                onResult = {})
+                                                onResult = {}
+                                            )
+                                            viewModel.saveCurrentUserRolePref(
+                                                currentRole,
+                                                onResult = {}
+                                            )
                                         }
                                             .invokeOnCompletion { runnableBlock { viewModel.clearSignUpFields() } }
 

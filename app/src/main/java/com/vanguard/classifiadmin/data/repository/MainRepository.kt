@@ -3,6 +3,7 @@ package com.vanguard.classifiadmin.data.repository
 import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -140,6 +141,19 @@ interface MainRepository {
         onResult: (Resource<List<ClassNetworkModel>>) -> Unit
     )
 
+    suspend fun getVerifiedClassesGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedClassesGivenStudentNetwork(
+        studentId: String,
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    )
+
+
     suspend fun getStagedClassesNetwork(
         schoolId: String,
         onResult: (Resource<List<ClassNetworkModel>>) -> Unit
@@ -211,6 +225,55 @@ interface MainRepository {
         classId: String,
         schoolId: String,
         onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    )
+
+    // Feed
+    suspend fun saveFeedAsStagedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun saveFeedAsVerifiedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+    suspend fun getFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<FeedNetworkModel?>) -> Unit
+    )
+
+    suspend fun getStagedFeedsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    )
+
+    suspend fun getStagedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedFeedsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    )
+
+    suspend fun deleteFeedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun deleteFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
     )
 
 }

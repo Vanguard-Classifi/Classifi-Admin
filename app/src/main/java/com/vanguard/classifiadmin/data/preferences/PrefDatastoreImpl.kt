@@ -28,6 +28,7 @@ object PrefKeys {
     const val currentSchoolName = "currentSchoolName"
     const val currentUserEmail = "currentUserEmail"
     const val currentProfileImage = "currentProfileImage"
+    const val currentUserRole = "currentUserRole"
 }
 
 @Singleton
@@ -112,6 +113,18 @@ class PrefDatastoreImpl @Inject constructor(
         }
     }
 
+    override fun saveCurrentUserRole(role: String, onResult: (Boolean) -> Unit) {
+        try {
+            scope.launch {
+                store.edit { pref ->
+                    pref[stringPreferencesKey(PrefKeys.currentUserRole)] = role
+                }
+            }.invokeOnCompletion { callback { onResult(true) } }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
     override val currentUserIdPref: Flow<String?>
         get() {
             val userId = try {
@@ -168,5 +181,14 @@ class PrefDatastoreImpl @Inject constructor(
                 return flowOf("")
             }
             return profileImage
+        }
+    override val currentUserRole: Flow<String?>
+        get() {
+            val role = try {
+                store.data.map { pref -> pref[stringPreferencesKey(PrefKeys.currentUserRole)] }
+            } catch (e: Exception) {
+                return flowOf("")
+            }
+            return role
         }
 }

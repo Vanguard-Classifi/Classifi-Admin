@@ -4,6 +4,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -18,6 +19,7 @@ object Collections {
     const val collectionSchools = "collection_schools"
     const val collectionClasses = "collection_classes"
     const val collectionSubjects = "collection_subjects"
+    const val collectionFeeds = "collection_feeds"
 }
 
 
@@ -599,7 +601,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<ClassNetworkModel>())
                     }
-                    if(results.isNotEmpty()) {
+                    if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
                     } else {
                         onResult(Resource.Success(null))
@@ -653,6 +655,58 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     val results = ArrayList<ClassNetworkModel>()
                     for (doc in docs!!) {
                         results.add(doc.toObject<ClassNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
+    override suspend fun getVerifiedClassesGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionClasses)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<ClassNetworkModel>()
+                    for (doc in docs!!) {
+                        val myClass = doc.toObject<ClassNetworkModel>()
+                        if(myClass.teacherIds.contains(teacherId)) {
+                            results.add(myClass)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
+    override suspend fun getVerifiedClassesGivenStudentNetwork(
+        studentId: String,
+        schoolId: String,
+        onResult: (Resource<List<ClassNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionClasses)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<ClassNetworkModel>()
+                    for (doc in docs!!) {
+                        val myClass = doc.toObject<ClassNetworkModel>()
+                        if(myClass.studentIds.contains(studentId)) {
+                            results.add(myClass)
+                        }
                     }
                     onResult(Resource.Success(results))
                 }
@@ -814,7 +868,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     for (doc in docs!!) {
                         results.add(doc.toObject<SubjectNetworkModel>())
                     }
-                    if(results.isNotEmpty()) {
+                    if (results.isNotEmpty()) {
                         onResult(Resource.Success(results.first()))
                     } else {
                         onResult(Resource.Success(null))
@@ -955,6 +1009,208 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .addOnFailureListener { onResult(Resource.Error("Couldn't fetch resource")) }
         } catch (e: Exception) {
             onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
+    override suspend fun saveFeedAsStagedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            feed.verified = false
+            firestore.collection(Collections.collectionSchools)
+                .document(feed.schoolId.orEmpty())
+                .collection(Collections.collectionFeeds)
+                .document(feed.feedId.orEmpty())
+                .set(feed)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveFeedAsVerifiedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            feed.verified = true
+            firestore.collection(Collections.collectionSchools)
+                .document(feed.schoolId.orEmpty())
+                .collection(Collections.collectionFeeds)
+                .document(feed.feedId.orEmpty())
+                .set(feed)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun getFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<FeedNetworkModel?>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds)
+                .whereEqualTo("feedId", feedId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<FeedNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<FeedNetworkModel>())
+                    }
+                    if (results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    } else onResult(Resource.Success(null))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Could not fetch feeds"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getStagedFeedsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<FeedNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<FeedNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Could not fetch feeds"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getStagedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<FeedNetworkModel>()
+                    for (doc in docs!!) {
+                        val feed = doc.toObject<FeedNetworkModel>()
+                        if (feed.classIds.contains(classId)) {
+                            results.add(feed)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Could not fetch feeds"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedFeedsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<FeedNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<FeedNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Could not fetch feeds"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedFeedsByClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<FeedNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<FeedNetworkModel>()
+                    for (doc in docs!!) {
+                        val feed = doc.toObject<FeedNetworkModel>()
+                        if (feed.classIds.contains(classId)) {
+                            results.add(feed)
+                        }
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Could not fetch feeds"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun deleteFeedNetwork(
+        feed: FeedNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(feed.schoolId.orEmpty())
+                .collection(Collections.collectionFeeds)
+                .document(feed.feedId.orEmpty())
+                .delete()
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun deleteFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionFeeds)
+                .document(feedId)
+                .delete()
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
         }
     }
 }

@@ -40,6 +40,8 @@ class MainBackgroundService : Service() {
                     store.saveCurrentSchoolIdPref(currentUser?.currentSchoolId ?: "") {}
                     //save school name to pref
                     store.saveCurrentSchoolNamePref(currentUser?.currentSchoolName ?: "") {}
+                    //save current role
+                    store.saveCurrentUserRole(currentUser?.currentRole.orEmpty()) {}
 
                 }
             }

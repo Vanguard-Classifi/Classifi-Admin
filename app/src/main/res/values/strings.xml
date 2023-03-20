@@ -186,4 +186,7 @@
     <string name="discuss_something">Discuss something</string>
     <string name="post_to">Post to:</string>
     <string name="classes_you_are_part_of">Classes you are part of</string>
+    <string name="no_feeds_available_yet">No feeds available yet</string>
+    <string name="not_belong_to_any_class">You do not belong to any class yet</string>
+    <string name="select_class">Select class</string>
 </resources>
