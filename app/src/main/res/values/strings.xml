@@ -190,4 +190,8 @@
     <string name="not_belong_to_any_class">You do not belong to any class yet</string>
     <string name="select_class">Select class</string>
     <string name="see_more">See More</string>
+    <string name="feed">Feed</string>
+    <string name="write_your_comment">Write your comment</string>
+    <string name="could_not_load_feed">Could not load feed</string>
+    <string name="could_not_load_comments">Could not load comments</string>
 </resources>

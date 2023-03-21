@@ -4,6 +4,7 @@ import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.firestore.FirestoreManager
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
@@ -476,6 +477,52 @@ class MainRepositoryImpl @Inject constructor(
     ) {
         firestoreManager.deleteFeedByIdNetwork(
             feedId, schoolId, onResult
+        )
+    }
+
+    override suspend fun saveCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveCommentNetwork(comment, onResult)
+    }
+
+    override suspend fun getCommentByIdNetwork(
+        commentId: String,
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<CommentNetworkModel?>) -> Unit
+    ) {
+       firestoreManager.getCommentByIdNetwork(
+           commentId, feedId, schoolId, onResult
+       )
+    }
+
+    override suspend fun getCommentsByFeedNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<List<CommentNetworkModel>>) -> Unit
+    ) {
+       firestoreManager.getCommentsByFeedNetwork(
+           feedId, schoolId, onResult
+       )
+    }
+
+    override suspend fun deleteCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.deleteCommentNetwork(comment, onResult)
+    }
+
+    override suspend fun deleteCommentByIdNetwork(
+        commentId: String,
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.deleteCommentByIdNetwork(
+            commentId, feedId, schoolId, onResult
         )
     }
 }

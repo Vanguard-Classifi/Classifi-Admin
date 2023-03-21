@@ -1,5 +1,8 @@
 package com.vanguard.classifiadmin.ui.screens.feeds
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,8 +89,13 @@ fun FeedsScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onSelectClasses: () -> Unit,
+    onDetails: (FeedModel) -> Unit,
 ) {
-    FeedsScreenContent(viewModel = viewModel, onSelectClasses = onSelectClasses)
+    FeedsScreenContent(
+        viewModel = viewModel,
+        onSelectClasses = onSelectClasses,
+        onDetails = onDetails
+    )
 }
 
 @Composable
@@ -95,6 +103,7 @@ fun FeedsScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onSelectClasses: () -> Unit,
+    onDetails: (FeedModel) -> Unit,
 ) {
     var upcomingActivitiesExpanded by remember { mutableStateOf(false) }
     val verticalScroll = rememberScrollState()
@@ -199,7 +208,8 @@ fun FeedsScreenContent(
 
                             is Resource.Success -> {
                                 if (verifiedFeedsNetwork.data?.isNotEmpty() == true) {
-                                    val feedsSorted = verifiedFeedsNetwork.data?.sortedByDescending { it.lastModified }
+                                    val feedsSorted =
+                                        verifiedFeedsNetwork.data?.sortedByDescending { it.lastModified }
                                     items(feedsSorted!!) { feed ->
                                         FeedItem(
                                             feed = feed.toLocal(),
@@ -208,7 +218,10 @@ fun FeedsScreenContent(
                                                 when (feature) {
                                                     FeedItemFeature.Like -> {
                                                         scope.launch {
-                                                            if(!feed.likes.contains(currentUserIdPref)) {
+                                                            if (!feed.likes.contains(
+                                                                    currentUserIdPref
+                                                                )
+                                                            ) {
                                                                 //like
                                                                 feed.likes.add(currentUserIdPref.orEmpty())
                                                             } else {
@@ -227,7 +240,9 @@ fun FeedsScreenContent(
                                                     }
 
                                                     FeedItemFeature.Comment -> {
-                                                        /*todo; on comment */
+                                                        viewModel.onSelectedFeedChanged(feed.toLocal())
+                                                        viewModel.onFeedDetailModeChanged(FeedDetailMode.Comment)
+                                                        onDetails(feed.toLocal())
                                                     }
 
                                                     FeedItemFeature.Share -> {
@@ -239,7 +254,9 @@ fun FeedsScreenContent(
                                                 /*todo: on click options */
                                             },
                                             onDetails = {
-                                                /*todo: onDetails */
+                                                viewModel.onSelectedFeedChanged(it)
+                                                viewModel.onFeedDetailModeChanged(FeedDetailMode.Content)
+                                                onDetails(it)
                                             }
                                         )
                                     }
@@ -316,29 +333,43 @@ fun DiscussionBox(
 
     when (composeDiscussionState) {
         true -> {
-            CreateDiscussionSection(
-                viewModel = viewModel,
-                currentClassCode = when {
-                    classFilterBufferFeeds.isEmpty() -> stringResource(id = R.string.select_class)
-                    classFilterBufferFeeds.size == 1 -> classByIdNetwork.data?.classCode.orEmpty()
-                    classFilterBufferFeeds.size > 1 -> "${classByIdNetwork.data?.classCode.orEmpty()}..[]"
-                    else -> stringResource(id = R.string.select_class)
-                },
-                onAbort = { viewModel.onComposeDiscussionStateChanged(null) },
-                onSelectClasses = onSelectClasses,
-                onPost = onPost,
-                onAttach = onAttach,
-            )
+            AnimatedVisibility(
+                modifier = modifier.fillMaxWidth(),
+                visible = true,
+                enter = slideInHorizontally(),
+                exit = slideOutHorizontally()
+            ) {
+                CreateDiscussionSection(
+                    viewModel = viewModel,
+                    currentClassCode = when {
+                        classFilterBufferFeeds.isEmpty() -> stringResource(id = R.string.select_class)
+                        classFilterBufferFeeds.size == 1 -> classByIdNetwork.data?.classCode.orEmpty()
+                        classFilterBufferFeeds.size > 1 -> "${classByIdNetwork.data?.classCode.orEmpty()}..[]"
+                        else -> stringResource(id = R.string.select_class)
+                    },
+                    onAbort = { viewModel.onComposeDiscussionStateChanged(null) },
+                    onSelectClasses = onSelectClasses,
+                    onPost = onPost,
+                    onAttach = onAttach,
+                )
+            }
         }
 
         else -> {
-            StartDiscussionSection(
-                username = currentUsernamePref.orEmpty(),
-                onCreateDiscussion = {
-                    viewModel.onComposeDiscussionStateChanged(true)
-                },
-                onSelectFeedType = onSelectFeedType,
-            )
+            AnimatedVisibility(
+                modifier = modifier.fillMaxWidth(),
+                visible = true,
+                enter = slideInHorizontally(),
+                exit = slideOutHorizontally()
+            ) {
+                StartDiscussionSection(
+                    username = currentUsernamePref.orEmpty(),
+                    onCreateDiscussion = {
+                        viewModel.onComposeDiscussionStateChanged(true)
+                    },
+                    onSelectFeedType = onSelectFeedType,
+                )
+            }
         }
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -95,7 +96,10 @@ fun FeedItem(
                         fontSize = 13.sp,
                         color = Black100,
                         maxLines = 10,
-                        modifier = modifier.widthIn(max = maxWidth.times(.93f)).fillMaxWidth(),
+                        modifier = modifier
+                            .widthIn(max = maxWidth.times(.93f))
+                            .heightIn(min = 100.dp)
+                            .fillMaxWidth(),
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Start,
                     )

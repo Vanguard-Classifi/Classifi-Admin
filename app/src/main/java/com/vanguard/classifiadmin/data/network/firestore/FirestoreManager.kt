@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin.data.network.firestore
 
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
@@ -254,6 +255,37 @@ interface FirestoreManager {
     )
 
     suspend fun deleteFeedByIdNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    )
+
+    //comments
+    suspend fun saveCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun getCommentByIdNetwork(
+        commentId: String,
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<CommentNetworkModel?>) -> Unit
+    )
+
+    suspend fun getCommentsByFeedNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<List<CommentNetworkModel>>) -> Unit
+    )
+
+    suspend fun deleteCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun deleteCommentByIdNetwork(
+        commentId: String,
         feedId: String,
         schoolId: String,
         onResult: (Boolean) -> Unit

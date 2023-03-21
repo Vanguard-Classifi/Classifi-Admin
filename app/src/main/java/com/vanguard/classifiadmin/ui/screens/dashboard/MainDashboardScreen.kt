@@ -53,6 +53,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
+import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.router.BottomDestination
 import com.vanguard.classifiadmin.router.BottomNavGraph
 import com.vanguard.classifiadmin.ui.components.ClassFilterScreen
@@ -96,6 +97,7 @@ fun MainDashboardScreen(
     goToAssessmentReport: (Assessment) -> Unit,
     goToAssessmentReview: (Assessment) -> Unit,
     goToModifyAssessment: (Assessment) -> Unit,
+    onFeedDetail: (FeedModel) -> Unit,
 ) {
     val navController = rememberNavController()
     val currentBottomSheetFlavor by viewModel.currentDashboardBottomSheetFlavor.collectAsState()
@@ -284,7 +286,8 @@ fun MainDashboardScreen(
                 },
                 onSelectClasses = {
                     filterState = true
-                }
+                },
+                onFeedDetail = onFeedDetail,
             )
         }
 
@@ -405,6 +408,7 @@ fun MainDashboardScreenContent(
     onDraftAssessmentOptions: (Assessment) -> Unit,
     onSelectAssessment: (Assessment) -> Unit,
     onSelectClasses: () -> Unit,
+    onFeedDetail: (FeedModel) -> Unit,
 ) {
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -435,6 +439,7 @@ fun MainDashboardScreenContent(
                     onDraftAssessmentOptions = onDraftAssessmentOptions,
                     onInReviewAssessmentOptions = onInReviewAssessmentOptions,
                     onSelectClasses = onSelectClasses,
+                    onFeedDetail = onFeedDetail,
                 )
             }
         )

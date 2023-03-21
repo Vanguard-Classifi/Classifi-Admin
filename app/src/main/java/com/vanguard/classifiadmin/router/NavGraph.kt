@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.ui.screens.admin.CREATE_CLASS_ADMIN_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.CREATE_SUBJECT_ADMIN_SCREEN
 import com.vanguard.classifiadmin.ui.screens.admin.CreateClassAdminScreen
@@ -46,6 +47,8 @@ import com.vanguard.classifiadmin.ui.screens.exportations.ExportStudentScreen
 import com.vanguard.classifiadmin.ui.screens.exportations.ExportSubjectScreen
 import com.vanguard.classifiadmin.ui.screens.exportations.ExportTeacherScreen
 import com.vanguard.classifiadmin.ui.screens.feeds.FEEDS_SCREEN
+import com.vanguard.classifiadmin.ui.screens.feeds.FEED_DETAIL_SCREEN
+import com.vanguard.classifiadmin.ui.screens.feeds.FeedDetailScreen
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedsScreen
 import com.vanguard.classifiadmin.ui.screens.importations.IMPORT_STUDENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.importations.IMPORT_SUBJECT_SCREEN
@@ -108,6 +111,7 @@ object Destinations {
     const val exportSubject = EXPORT_SUBJECT_SCREEN
     const val exportStudent = EXPORT_STUDENT_SCREEN
     const val manageSubjectAdminDetail = MANAGE_SUBJECT_ADMIN_DETAIL_SCREEN
+    const val feedDetail = FEED_DETAIL_SCREEN
 }
 
 
@@ -134,7 +138,8 @@ fun NavGraph(
                 goToAssessmentReport = { navController.navigate(Destinations.assessmentReport) },
                 goToAssessmentReview = { navController.navigate(Destinations.assessmentReview) },
                 goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) },
-                onLogin = { navController.navigate(Destinations.login) }
+                onLogin = { navController.navigate(Destinations.login) },
+                onFeedDetail = { navController.navigate(Destinations.feedDetail) }
             )
         }
 
@@ -367,6 +372,13 @@ fun NavGraph(
                 onBack = { navController.navigate(Destinations.manageSubjectAdmin) },
             )
         }
+
+        composable(Destinations.feedDetail) {
+            FeedDetailScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.dashboard) },
+            )
+        }
     }
 }
 
@@ -390,6 +402,7 @@ fun BottomNavGraph(
     onDraftAssessmentOptions: (Assessment) -> Unit,
     onSelectAssessment: (Assessment) -> Unit,
     onSelectClasses: () -> Unit,
+    onFeedDetail: (FeedModel) -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -402,6 +415,7 @@ fun BottomNavGraph(
                 modifier = modifier,
                 viewModel = viewModel,
                 onSelectClasses = onSelectClasses,
+                onDetails = onFeedDetail,
             )
         }
 

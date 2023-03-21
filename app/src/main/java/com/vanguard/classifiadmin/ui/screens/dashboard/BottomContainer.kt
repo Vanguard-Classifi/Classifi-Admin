@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.router.BottomNavGraph
 import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -24,6 +25,7 @@ fun BottomContainer(
     onDraftAssessmentOptions: (Assessment) -> Unit,
     onSelectAssessment: (Assessment) -> Unit,
     onSelectClasses: () -> Unit,
+    onFeedDetail: (FeedModel) -> Unit,
 ) {
     BottomNavGraph(
         viewModel = viewModel,
@@ -35,5 +37,6 @@ fun BottomContainer(
         onInReviewAssessmentOptions = onInReviewAssessmentOptions,
         onDraftAssessmentOptions = onDraftAssessmentOptions,
         onSelectClasses = onSelectClasses,
+        onFeedDetail = onFeedDetail,
     )
 }

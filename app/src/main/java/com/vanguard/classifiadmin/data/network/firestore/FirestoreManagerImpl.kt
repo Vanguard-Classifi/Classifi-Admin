@@ -4,6 +4,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
@@ -20,6 +21,7 @@ object Collections {
     const val collectionClasses = "collection_classes"
     const val collectionSubjects = "collection_subjects"
     const val collectionFeeds = "collection_feeds"
+    const val collectionComments = "collection_comments"
 }
 
 
@@ -678,7 +680,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     val results = ArrayList<ClassNetworkModel>()
                     for (doc in docs!!) {
                         val myClass = doc.toObject<ClassNetworkModel>()
-                        if(myClass.teacherIds.contains(teacherId)) {
+                        if (myClass.teacherIds.contains(teacherId)) {
                             results.add(myClass)
                         }
                     }
@@ -704,7 +706,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     val results = ArrayList<ClassNetworkModel>()
                     for (doc in docs!!) {
                         val myClass = doc.toObject<ClassNetworkModel>()
-                        if(myClass.studentIds.contains(studentId)) {
+                        if (myClass.studentIds.contains(studentId)) {
                             results.add(myClass)
                         }
                     }
@@ -1206,6 +1208,115 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionFeeds)
                 .document(feedId)
+                .delete()
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(comment.schoolId.orEmpty())
+                .collection(Collections.collectionFeeds).document(comment.parentFeedId.orEmpty())
+                .collection(Collections.collectionComments)
+                .document(comment.commentId)
+                .set(comment)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun getCommentByIdNetwork(
+        commentId: String,
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<CommentNetworkModel?>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds).document(feedId)
+                .collection(Collections.collectionComments)
+                .whereEqualTo("commentId", commentId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<CommentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<CommentNetworkModel>())
+                    }
+                    if (results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
+                    }
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Could not fetch comments"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getCommentsByFeedNetwork(
+        feedId: String,
+        schoolId: String,
+        onResult: (Resource<List<CommentNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds).document(feedId)
+                .collection(Collections.collectionComments)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<CommentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<CommentNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Could not fetch comments"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun deleteCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(comment.schoolId.orEmpty())
+                .collection(Collections.collectionFeeds).document(comment.parentFeedId.orEmpty())
+                .collection(Collections.collectionComments)
+                .document(comment.commentId)
+                .delete()
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun deleteCommentByIdNetwork(
+        commentId: String,
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds).document(feedId)
+                .collection(Collections.collectionComments)
+                .document(commentId)
                 .delete()
                 .addOnSuccessListener { onResult(true) }
                 .addOnFailureListener { onResult(false) }

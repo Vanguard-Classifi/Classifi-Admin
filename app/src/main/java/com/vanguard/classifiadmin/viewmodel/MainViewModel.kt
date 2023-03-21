@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.local.models.ClassModel
+import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
+import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
@@ -33,6 +35,7 @@ import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardMessage
+import com.vanguard.classifiadmin.ui.screens.feeds.FeedDetailMode
 import com.vanguard.classifiadmin.ui.screens.profile.AccountBottomSheetState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -512,6 +515,87 @@ class MainViewModel @Inject constructor(
     private var _feedActionListener = MutableStateFlow(0)
     val feedActionListener: StateFlow<Int> = _feedActionListener
 
+    private var _feedDetailMode = MutableStateFlow(FeedDetailMode.Content as FeedDetailMode)
+    val feedDetailMode: StateFlow<FeedDetailMode> = _feedDetailMode
+
+    private var _selectedFeed = MutableStateFlow(null as FeedModel?)
+    val selectedFeed: StateFlow<FeedModel?> = _selectedFeed
+
+    private var _commentTextFieldState = MutableStateFlow(null as Boolean?)
+    val commentTextFieldState: StateFlow<Boolean?> = _commentTextFieldState
+
+    private var _commentTextFeed = MutableStateFlow(null as String?)
+    val commentTextFeed: StateFlow<String?> = _commentTextFeed
+
+    private var _commentByIdNetwork =
+        MutableStateFlow(Resource.Loading<CommentNetworkModel?>() as Resource<CommentNetworkModel?>)
+    val commentByIdNetwork: StateFlow<Resource<CommentNetworkModel?>> = _commentByIdNetwork
+
+    private var _commentsByFeedNetwork =
+        MutableStateFlow(Resource.Loading<List<CommentNetworkModel>>() as Resource<List<CommentNetworkModel>>)
+    val commentsByFeedNetwork: StateFlow<Resource<List<CommentNetworkModel>>> =
+        _commentsByFeedNetwork
+
+
+    //comments
+    fun saveCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveCommentNetwork(comment, onResult)
+    }
+
+    fun getCommentByIdNetwork(
+        commentId: String,
+        feedId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getCommentByIdNetwork(
+            commentId, feedId, schoolId
+        ) {
+            _commentByIdNetwork.value = it
+        }
+    }
+
+    fun getCommentsByFeedNetwork(
+        feedId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getCommentsByFeedNetwork(feedId, schoolId) {
+            _commentsByFeedNetwork.value = it
+        }
+    }
+
+    fun deleteCommentNetwork(
+        comment: CommentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteCommentNetwork(comment, onResult)
+    }
+
+    fun deleteCommentByIdNetwork(
+        commentId: String,
+        feedId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteCommentByIdNetwork(
+            commentId, feedId, schoolId, onResult
+        )
+    }
+
+    fun onCommentTextFeedChanged(comment: String?) = effect {
+        _commentTextFeed.value = comment
+    }
+
+    fun onCommentTextFieldStateChanged(state: Boolean?) = effect {
+        _commentTextFieldState.value = state
+    }
+
+    fun onSelectedFeedChanged(feed: FeedModel?) = effect { _selectedFeed.value = feed }
+
+    fun onFeedDetailModeChanged(mode: FeedDetailMode) = effect { _feedDetailMode.value = mode }
+
     fun onIncFeedActionListener() = effect {
         _feedActionListener.value++
     }
@@ -523,6 +607,7 @@ class MainViewModel @Inject constructor(
     fun clearDiscussionTextField() = effect {
         _discussionTextCreateFeed.value = null
     }
+
     fun onComposeDiscussionStateChanged(state: Boolean?) = effect {
         _composeDiscussionState.value = state
     }

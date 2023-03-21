@@ -31,4 +31,10 @@ data class FeedModel(
             verified = verified,
             mediaUris = mediaUris,
         )
+
+    companion object {
+        val Default = FeedModel(
+            feedId = "",
+        )
+    }
 }
