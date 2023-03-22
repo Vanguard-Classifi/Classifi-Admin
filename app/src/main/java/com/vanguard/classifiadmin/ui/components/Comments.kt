@@ -32,12 +32,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.CommentModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
+import com.vanguard.classifiadmin.domain.helpers.lastModified
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatar
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedType
 import com.vanguard.classifiadmin.ui.screens.feeds.toFeedType
@@ -65,8 +67,8 @@ fun CommentItem(
         Card(
             modifier = Modifier
                 .clip(RoundedCornerShape(0.dp))
-                .padding(top = 8.dp, bottom = 8.dp, start = 0.dp, end = 0.dp),
-            shape = RoundedCornerShape(0.dp),
+                .padding(top = 0.dp, bottom = 8.dp, start = 4.dp, end = 4.dp),
+            shape = RoundedCornerShape(8.dp),
             elevation = 2.dp,
         ) {
             BoxWithConstraints(modifier = Modifier) {
@@ -74,9 +76,14 @@ fun CommentItem(
                 val maxWidth = maxWidth
 
                 Column(
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 0.dp),
+                    modifier = Modifier.padding(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = 4.dp,
+                        bottom = 0.dp
+                    ),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     Text(
                         text = comment.authorName.orEmpty().uppercase(),
@@ -87,6 +94,13 @@ fun CommentItem(
                         color = Black100,
                         lineHeight = 12.sp,
                         overflow = TextOverflow.Ellipsis,
+                    )
+
+                    Text(
+                        text = comment.lastModified?.lastModified().orEmpty(),
+                        modifier = modifier,
+                        fontSize = 11.sp,
+                        color = Black100.copy(0.8f)
                     )
 
                     Spacer(modifier = modifier.height(8.dp))
@@ -136,15 +150,10 @@ fun CommentItemFooter(
 ) {
     val rowWidth = remember { mutableStateOf(0) }
     val commentFeatures = ArrayList<FeedItemFeature>()
-
-    LaunchedEffect(Unit) {
-        features.map { feature ->
-            if(feature != FeedItemFeature.Comment) {
-                commentFeatures.add(feature)
-            }
-        }
+    features.map { feature ->
+        if (feature != FeedItemFeature.Comment)
+            commentFeatures.add(feature)
     }
-
 
     Surface(modifier = Modifier) {
         Row(
@@ -171,10 +180,27 @@ fun CommentItemFooter(
                     onEngage = { onEngage(feature) },
                     engaged = engaged,
                     width = with(LocalDensity.current) {
-                        rowWidth.value.toDp().times(0.3f)
+                        rowWidth.value.toDp().times(0.5f)
                     },
                 )
             }
         }
     }
+}
+
+
+@Composable
+@Preview
+private fun CommentItemPreview() {
+    CommentItem(
+        comment = CommentModel(
+            commentId = "fenfekgfndfd",
+            parentFeedId = null,
+            text = "Brilliant",
+            authorId = null,
+            authorName = "Khalid Isah"
+        ),
+        currentUserId = "fjfdfgdfgd",
+        onEngage = { _, _ -> },
+    )
 }

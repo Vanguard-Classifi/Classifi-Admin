@@ -405,7 +405,7 @@ fun FeedDetailItem(
                 when (commentsByFeedNetwork) {
                     is Resource.Success -> {
                         if (commentsByFeedNetwork.data?.isNotEmpty() == true) {
-                            val commentsSorted = commentsByFeedNetwork.data?.sortedByDescending {
+                            val commentsSorted = commentsByFeedNetwork.data?.sortedBy {
                                 it.lastModified
                             }
                             commentsSorted?.forEach { comment ->
