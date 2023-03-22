@@ -34,9 +34,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -63,11 +66,16 @@ fun TopBar(
     username: String,
     profileEnabled: Boolean = true,
 ) {
+    val rowWidth = remember { mutableStateOf(0) }
+
     Card(modifier = modifier, elevation = 2.dp) {
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(8.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(8.dp)
+                .onGloballyPositioned {
+                    rowWidth.value = it.size.width
+                }, verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.icon_branding_big),
@@ -82,7 +90,10 @@ fun TopBar(
                 label = filterLabel,
                 onClick = onFilter,
                 enabled = filterEnabled,
-                activated = filterActivated
+                activated = filterActivated,
+                maxWidth = with(LocalDensity.current) {
+                    rowWidth.value.toDp()
+                }
             )
 
             Spacer(modifier = modifier.weight(1f))
@@ -99,6 +110,7 @@ fun SelectionButton(
     onClick: (String) -> Unit,
     enabled: Boolean = true,
     activated: Boolean = false,
+    maxWidth: Dp,
 ) {
     TextButton(
         onClick = { onClick(label) }, enabled = enabled, shape = RoundedCornerShape(12.dp),
@@ -108,12 +120,16 @@ fun SelectionButton(
             contentColor = MaterialTheme.colors.primary,
             disabledBackgroundColor = White100.copy(0.5f)
         ),
-        modifier = modifier.padding(horizontal = 12.dp)
+        modifier = modifier
+            .padding(horizontal = 12.dp)
+            .width(maxWidth.times(0.5f))
     ) {
         Text(
             text = label,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = modifier.padding(4.dp),
             color = MaterialTheme.colors.primary,
         )
@@ -172,13 +188,13 @@ fun DefaultAvatarBig(
     fontSize: TextUnit = 14.sp,
     size: Dp = 42.dp,
 ) {
-    var first by remember { mutableStateOf("")}
-    var second by remember { mutableStateOf("")}
-    var colorHex by remember { mutableStateOf(0xFF000000)}
-    var avatar by remember { mutableStateOf("")}
+    var first by remember { mutableStateOf("") }
+    var second by remember { mutableStateOf("") }
+    var colorHex by remember { mutableStateOf(0xFF000000) }
+    var avatar by remember { mutableStateOf("") }
 
     LaunchedEffect(label) {
-        if(label.isNotBlank()) {
+        if (label.isNotBlank()) {
             val labelSplit = label.lowercase().splitWithSpace()
             first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
             second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
@@ -218,13 +234,13 @@ fun DefaultAvatar(
     onClick: () -> Unit,
     enabled: Boolean = true,
 ) {
-    var first by remember { mutableStateOf("")}
-    var second by remember { mutableStateOf("")}
-    var colorHex by remember { mutableStateOf(0xFF000000)}
-    var avatar by remember { mutableStateOf("")}
+    var first by remember { mutableStateOf("") }
+    var second by remember { mutableStateOf("") }
+    var colorHex by remember { mutableStateOf(0xFF000000) }
+    var avatar by remember { mutableStateOf("") }
 
     LaunchedEffect(label) {
-        if(label.isNotBlank()) {
+        if (label.isNotBlank()) {
             val labelSplit = label.lowercase().splitWithSpace()
             first = if (labelSplit.isNotEmpty()) labelSplit.first()[0].toString() else ""
             second = if (labelSplit.size > 1) labelSplit[1][0].toString() else ""
@@ -283,6 +299,7 @@ private fun SheetsButtonPreview() {
 private fun SelectionButtonPreview() {
     SelectionButton(
         label = "Year 11 Benin",
-        onClick = {}
+        onClick = {},
+        maxWidth = 200.dp
     )
 }

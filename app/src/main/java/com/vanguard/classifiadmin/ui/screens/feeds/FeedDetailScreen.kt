@@ -43,6 +43,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -140,12 +142,20 @@ fun FeedDetailScreenContent(
     val feedActionListener by viewModel.feedActionListener.collectAsState()
     val commentTextFieldState by viewModel.commentTextFieldState.collectAsState()
     val columnHeight = remember { mutableStateOf(0) }
+    val feedDetailMode by viewModel.feedDetailMode.collectAsState()
+    val commentFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentUsernamePref()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getFeedByIdNetwork(selectedFeed?.feedId.orEmpty(), currentSchoolIdPref.orEmpty())
+        if(feedDetailMode == FeedDetailMode.Comment) {
+            // focus comment text field
+            viewModel.onCommentTextFieldStateChanged(true)
+        } else {
+            viewModel.onCommentTextFieldStateChanged(null)
+        }
     }
 
     LaunchedEffect(feedActionListener) {
@@ -286,7 +296,8 @@ fun FeedDetailScreenContent(
 
                                 else -> {}
                             }
-                        }
+                        },
+                        focusRequester = commentFocusRequester
                     )
                 } else {
                     NoDataScreen(
@@ -325,6 +336,7 @@ fun FeedDetailItem(
     onOptions: () -> Unit,
     onAttach: () -> Unit,
     onPostComment: (String) -> Unit,
+    focusRequester: FocusRequester,
 ) {
     val commentsByFeedNetwork by viewModel.commentsByFeedNetwork.collectAsState()
     val commentTextFeedState by viewModel.commentTextFieldState.collectAsState()
@@ -401,6 +413,7 @@ fun FeedDetailItem(
                     currentUsername = currentUsername,
                     onAttach = onAttach,
                     onPostComment = onPostComment,
+                    focusRequester = focusRequester,
                 )
 
                 Divider(
@@ -444,6 +457,7 @@ fun ComposeCommentScreen(
     currentUsername: String,
     onAttach: () -> Unit,
     onPostComment: (String) -> Unit,
+    focusRequester: FocusRequester,
 ) {
     val avatarHeight = remember { mutableStateOf(0) }
     val commentTextFeedState by viewModel.commentTextFieldState.collectAsState()
@@ -477,7 +491,8 @@ fun ComposeCommentScreen(
             onAbortComment = {
                 viewModel.onCommentTextFieldStateChanged(null)
             },
-            onPostComment = onPostComment
+            onPostComment = onPostComment,
+            focusRequester = focusRequester,
         )
     }
 }
@@ -492,6 +507,7 @@ fun CommentTextFieldScreen(
     onAttach: () -> Unit,
     onAbortComment: () -> Unit,
     onPostComment: (String) -> Unit,
+    focusRequester: FocusRequester,
 ) {
     val commentTextFieldState by viewModel.commentTextFieldState.collectAsState()
     val commentTextFeed by viewModel.commentTextFeed.collectAsState()
@@ -513,7 +529,8 @@ fun CommentTextFieldScreen(
                         OutlinedTextField(
                             enabled = true,
                             modifier = Modifier
-                                .heightIn(min = height.times(4f)),
+                                .heightIn(min = height.times(4f))
+                                .focusRequester(focusRequester),
                             value = commentTextFeed.orEmpty(),
                             onValueChange = viewModel::onCommentTextFeedChanged,
                             label = {
