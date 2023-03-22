@@ -588,6 +588,10 @@ class MainViewModel @Inject constructor(
         _commentTextFeed.value = comment
     }
 
+    fun clearCommentTextField() = effect {
+        _commentTextFeed.value = null
+    }
+
     fun onCommentTextFieldStateChanged(state: Boolean?) = effect {
         _commentTextFieldState.value = state
     }

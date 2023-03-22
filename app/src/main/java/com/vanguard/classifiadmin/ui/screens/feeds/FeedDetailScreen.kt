@@ -61,10 +61,13 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.CommentModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.domain.helpers.todayComputational
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
+import com.vanguard.classifiadmin.ui.components.CommentItem
 import com.vanguard.classifiadmin.ui.components.FeedItem
 import com.vanguard.classifiadmin.ui.components.FeedItemFeature
 import com.vanguard.classifiadmin.ui.components.FeedItemFooter
@@ -80,6 +83,7 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 const val FEED_DETAIL_SCREEN = "feed_detail_screen"
 
@@ -134,6 +138,7 @@ fun FeedDetailScreenContent(
     val feedByIdNetwork by viewModel.feedByIdNetwork.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val feedActionListener by viewModel.feedActionListener.collectAsState()
+    val commentTextFieldState by viewModel.commentTextFieldState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -143,6 +148,10 @@ fun FeedDetailScreenContent(
     }
 
     LaunchedEffect(feedActionListener) {
+        viewModel.getFeedByIdNetwork(selectedFeed?.feedId.orEmpty(), currentSchoolIdPref.orEmpty())
+    }
+
+    LaunchedEffect(commentTextFieldState) {
         viewModel.getFeedByIdNetwork(selectedFeed?.feedId.orEmpty(), currentSchoolIdPref.orEmpty())
     }
 
@@ -159,7 +168,7 @@ fun FeedDetailScreenContent(
             is Resource.Success -> {
                 if (feedByIdNetwork.data != null) {
                     FeedDetailItem(
-                        feed = (selectedFeed ?: FeedModel.Default),
+                        feed = feedByIdNetwork.data?.toLocal()!!,
                         currentUserId = currentUserIdPref.orEmpty(),
                         onEngage = { feature ->
                             when (feature) {
@@ -207,8 +216,67 @@ fun FeedDetailScreenContent(
                         onAttach = {
                             /*todo: on Attach */
                         },
-                        onPostComment = {
-                            /*todo: on post  comment */
+                        onPostComment = { text ->
+                            if (text.isNotBlank()) {
+                                scope.launch {
+                                    val commentId = UUID.randomUUID().toString()
+                                        viewModel.saveCommentNetwork(
+                                        CommentModel(
+                                            commentId = commentId,
+                                            parentFeedId = selectedFeed?.feedId.orEmpty(),
+                                            text = text,
+                                            authorId = currentUserIdPref,
+                                            authorName = currentUsernamePref,
+                                            schoolId = currentSchoolIdPref,
+                                            lastModified = todayComputational(),
+                                        ).toNetwork(),
+                                        onResult = {}
+                                    )
+                                    //add to comments under feed
+                                    if(!feedByIdNetwork.data?.commentIds!!.contains(commentId)) {
+                                        feedByIdNetwork.data?.commentIds!!.add(commentId)
+                                        //update feed
+                                        viewModel.saveFeedAsVerifiedNetwork(
+                                            feedByIdNetwork.data!!,
+                                            onResult = {}
+                                        )
+                                    }
+                                }.invokeOnCompletion {
+                                    runnableBlock {
+                                        //close compose comment screen
+                                        viewModel.onCommentTextFieldStateChanged(null)
+                                        //clear comment field
+                                        viewModel.clearCommentTextField()
+                                    }
+                                }
+                            }
+                        },
+                        onEngageComment = { feature, comment ->
+                            when (feature) {
+                                FeedItemFeature.Like -> {
+                                    scope.launch {
+                                        if (!comment.likes.contains(currentUserIdPref)) {
+                                            comment.likes.add(currentUserIdPref.orEmpty())
+                                        } else {
+                                            comment.likes.remove(currentUserIdPref)
+                                        }
+                                        viewModel.saveCommentNetwork(
+                                            comment.toNetwork(),
+                                            onResult = {}
+                                        )
+                                    }.invokeOnCompletion {
+                                        runnableBlock {
+                                            viewModel.onIncFeedActionListener()
+                                        }
+                                    }
+                                }
+
+                                FeedItemFeature.Share -> {
+                                    /*todo on share comment */
+                                }
+
+                                else -> {}
+                            }
                         }
                     )
                 } else {
@@ -244,9 +312,10 @@ fun FeedDetailItem(
     currentUserId: String,
     currentUsername: String,
     onEngage: (FeedItemFeature) -> Unit,
+    onEngageComment: (FeedItemFeature, CommentModel) -> Unit,
     onOptions: () -> Unit,
     onAttach: () -> Unit,
-    onPostComment: () -> Unit,
+    onPostComment: (String) -> Unit,
 ) {
     val commentsByFeedNetwork by viewModel.commentsByFeedNetwork.collectAsState()
     val commentTextFeedState by viewModel.commentTextFieldState.collectAsState()
@@ -325,26 +394,34 @@ fun FeedDetailItem(
                     onPostComment = onPostComment,
                 )
 
-                //todo; previous comments
-                when(commentsByFeedNetwork) {
-                    is Resource.Loading -> {
-                        LoadingScreen(maxHeight = maxHeight)
-                    }
+                Divider(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    color = Black100.copy(0.1f)
+                )
+                Spacer(modifier = modifier.height(8.dp))
+
+                when (commentsByFeedNetwork) {
                     is Resource.Success -> {
-                        if(commentsByFeedNetwork.data?.isNotEmpty() == true) {
-                            /* todo: list of comments*/
+                        if (commentsByFeedNetwork.data?.isNotEmpty() == true) {
+                            val commentsSorted = commentsByFeedNetwork.data?.sortedByDescending {
+                                it.lastModified
+                            }
+                            commentsSorted?.forEach { comment ->
+                                CommentItem(
+                                    comment = comment.toLocal(),
+                                    currentUserId = currentUserId,
+                                    onEngage = onEngageComment,
+                                )
+                                Spacer(modifier = modifier.height(8.dp))
+                            }
                         }
                     }
-                    is Resource.Error -> {
-                        NoDataScreen(
-                            maxHeight = maxHeight,
-                            message = stringResource(id = R.string.could_not_load_comments),
-                            buttonLabel = "",
-                            showButton = false,
-                            onClick = {}
-                        )
-                    }
+                    else -> {}
                 }
+
+                Spacer(modifier = modifier.height(16.dp))
             }
         }
     }
@@ -356,7 +433,7 @@ fun ComposeCommentScreen(
     viewModel: MainViewModel,
     currentUsername: String,
     onAttach: () -> Unit,
-    onPostComment: () -> Unit,
+    onPostComment: (String) -> Unit,
 ) {
     val avatarHeight = remember { mutableStateOf(0) }
     val commentTextFeedState by viewModel.commentTextFieldState.collectAsState()
@@ -404,7 +481,7 @@ fun CommentTextFieldScreen(
     height: Dp,
     onAttach: () -> Unit,
     onAbortComment: () -> Unit,
-    onPostComment: () -> Unit,
+    onPostComment: (String) -> Unit,
 ) {
     val commentTextFieldState by viewModel.commentTextFieldState.collectAsState()
     val commentTextFeed by viewModel.commentTextFeed.collectAsState()
@@ -450,7 +527,7 @@ fun CommentTextFieldScreen(
 
                         ComposeCommentBottomBar(
                             onAbort = onAbortComment,
-                            onPost = onPostComment,
+                            onPost = { onPostComment(commentTextFeed.orEmpty()) },
                             onAttach = onAttach,
                             postable = commentTextFeed != null && commentTextFeed?.isNotBlank() == true,
                         )

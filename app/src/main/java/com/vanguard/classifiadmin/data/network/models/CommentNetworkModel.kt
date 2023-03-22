@@ -3,7 +3,7 @@ package com.vanguard.classifiadmin.data.network.models
 import com.vanguard.classifiadmin.data.local.models.CommentModel
 
 data class CommentNetworkModel(
-    var commentId: String,
+    var commentId: String? = null,
     var parentFeedId: String? = null,
     var text: String? = null,
     var authorId: String? = null,
@@ -16,7 +16,7 @@ data class CommentNetworkModel(
     var likes: ArrayList<String> = arrayListOf(),
 ) {
     fun toLocal() = CommentModel(
-        commentId = commentId,
+        commentId = commentId.orEmpty(),
         parentFeedId = parentFeedId,
         text = text,
         authorId = authorId,

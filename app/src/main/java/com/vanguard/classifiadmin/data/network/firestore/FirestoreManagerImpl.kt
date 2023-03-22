@@ -1224,7 +1224,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             firestore.collection(Collections.collectionSchools).document(comment.schoolId.orEmpty())
                 .collection(Collections.collectionFeeds).document(comment.parentFeedId.orEmpty())
                 .collection(Collections.collectionComments)
-                .document(comment.commentId)
+                .document(comment.commentId.orEmpty())
                 .set(comment)
                 .addOnSuccessListener { onResult(true) }
                 .addOnFailureListener { onResult(false) }
@@ -1297,7 +1297,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             firestore.collection(Collections.collectionSchools).document(comment.schoolId.orEmpty())
                 .collection(Collections.collectionFeeds).document(comment.parentFeedId.orEmpty())
                 .collection(Collections.collectionComments)
-                .document(comment.commentId)
+                .document(comment.commentId.orEmpty())
                 .delete()
                 .addOnSuccessListener { onResult(true) }
                 .addOnFailureListener { onResult(false) }
