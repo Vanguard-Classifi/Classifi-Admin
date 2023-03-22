@@ -139,6 +139,7 @@ fun FeedDetailScreenContent(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val feedActionListener by viewModel.feedActionListener.collectAsState()
     val commentTextFieldState by viewModel.commentTextFieldState.collectAsState()
+    val columnHeight = remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -159,6 +160,7 @@ fun FeedDetailScreenContent(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(verticalScroll)
+            .onGloballyPositioned { columnHeight.value = it.size.height }
     ) {
         when (feedByIdNetwork) {
             is Resource.Loading -> {
@@ -199,8 +201,10 @@ fun FeedDetailScreenContent(
                                 }
 
                                 FeedItemFeature.Comment -> {
-                                    viewModel.onFeedDetailModeChanged(FeedDetailMode.Comment)
-                                    /*todo; on compose  comment */
+                                    scope.launch {
+                                        delay(500)
+                                        verticalScroll.animateScrollTo(columnHeight.value)
+                                    }
                                 }
 
                                 FeedItemFeature.Share -> {
@@ -220,7 +224,7 @@ fun FeedDetailScreenContent(
                             if (text.isNotBlank()) {
                                 scope.launch {
                                     val commentId = UUID.randomUUID().toString()
-                                        viewModel.saveCommentNetwork(
+                                    viewModel.saveCommentNetwork(
                                         CommentModel(
                                             commentId = commentId,
                                             parentFeedId = selectedFeed?.feedId.orEmpty(),
@@ -233,7 +237,7 @@ fun FeedDetailScreenContent(
                                         onResult = {}
                                     )
                                     //add to comments under feed
-                                    if(!feedByIdNetwork.data?.commentIds!!.contains(commentId)) {
+                                    if (!feedByIdNetwork.data?.commentIds!!.contains(commentId)) {
                                         feedByIdNetwork.data?.commentIds!!.add(commentId)
                                         //update feed
                                         viewModel.saveFeedAsVerifiedNetwork(
@@ -247,6 +251,11 @@ fun FeedDetailScreenContent(
                                         viewModel.onCommentTextFieldStateChanged(null)
                                         //clear comment field
                                         viewModel.clearCommentTextField()
+                                        //scroll to end of comments
+                                        scope.launch {
+                                            delay(500)
+                                            verticalScroll.animateScrollTo(columnHeight.value)
+                                        }
                                     }
                                 }
                             }
@@ -418,6 +427,7 @@ fun FeedDetailItem(
                             }
                         }
                     }
+
                     else -> {}
                 }
 
