@@ -78,36 +78,7 @@ fun ClassFilterScreen(
     val classFilterBufferReadFeedsListener by viewModel.classFilterBufferReadFeedsListener.collectAsState()
 
 
-    LaunchedEffect(classFilterBufferFeedsListener) {
-        when (currentUserRolePref) {
-            UserRole.Student.name -> {
-                viewModel.getVerifiedClassesGivenStudentNetwork(
-                    currentUserIdPref.orEmpty(),
-                    currentSchoolIdPref.orEmpty()
-                )
-            }
-
-            UserRole.Teacher.name -> {
-                viewModel.getVerifiedClassesGivenTeacherNetwork(
-                    currentUserIdPref.orEmpty(),
-                    currentSchoolIdPref.orEmpty()
-                )
-            }
-
-            UserRole.Admin.name -> {
-                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
-            }
-
-            UserRole.SuperAdmin.name -> {
-                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
-            }
-
-            else -> {}
-        }
-
-    }
-
-    LaunchedEffect(classFilterBufferReadFeedsListener) {
+    LaunchedEffect(classFilterBufferFeedsListener, classFilterBufferReadFeedsListener) {
         when (currentUserRolePref) {
             UserRole.Student.name -> {
                 viewModel.getVerifiedClassesGivenStudentNetwork(

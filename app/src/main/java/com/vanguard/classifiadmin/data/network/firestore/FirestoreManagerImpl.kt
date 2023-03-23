@@ -1216,6 +1216,32 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+    override suspend fun deleteStagedFeedsNetwork(schoolId: String, onResult: (Boolean) -> Unit) {
+        try {
+            val feedRef = firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionFeeds)
+            feedRef.whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<FeedNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<FeedNetworkModel>())
+                    }
+                    //delete each
+                    results.map { stagedFeed ->
+                        feedRef.document(stagedFeed.feedId.orEmpty())
+                            .delete()
+                            .addOnSuccessListener { onResult(true) }
+                    }
+                }
+                .addOnFailureListener {
+                    onResult(false)
+                }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
     override suspend fun saveCommentNetwork(
         comment: CommentNetworkModel,
         onResult: (Boolean) -> Unit

@@ -552,6 +552,14 @@ class MainViewModel @Inject constructor(
 
     private var _currentClassFeedPref = MutableStateFlow(null as String?)
     val currentClassFeedPref: StateFlow<String?> = _currentClassFeedPref
+
+    fun deleteStagedFeedsNetwork(
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteStagedFeedsNetwork(schoolId, onResult)
+    }
+
     fun saveCurrentClassFeedPref(classId: String, onResult: (Boolean) -> Unit) = effect {
         store.saveCurrentClassFeedPref(classId, onResult)
     }

@@ -484,6 +484,10 @@ class MainRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun deleteStagedFeedsNetwork(schoolId: String, onResult: (Boolean) -> Unit) {
+        firestoreManager.deleteStagedFeedsNetwork(schoolId, onResult)
+    }
+
     override suspend fun saveCommentNetwork(
         comment: CommentNetworkModel,
         onResult: (Boolean) -> Unit

@@ -278,6 +278,10 @@ interface MainRepository {
         schoolId: String,
         onResult: (Boolean) -> Unit
     )
+    suspend fun deleteStagedFeedsNetwork(
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    )
 
     //comments
     suspend fun saveCommentNetwork(

@@ -408,7 +408,10 @@ fun DiscussionBox(
                     classFilterBufferFeeds.size > 1 -> "${classByIdNetwork.data?.classCode.orEmpty()}..[]"
                     else -> stringResource(id = R.string.select_class)
                 },
-                onAbort = { viewModel.onComposeDiscussionStateChanged(null) },
+                onAbort = {
+                    viewModel.deleteStagedFeedsNetwork(currentSchoolIdPref.orEmpty(), onResult = {})
+                    viewModel.onComposeDiscussionStateChanged(null)
+                },
                 onSelectClasses = onSelectClasses,
                 onPost = onPost,
                 onAttach = onAttach,
