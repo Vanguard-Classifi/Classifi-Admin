@@ -4,6 +4,8 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
@@ -21,6 +23,7 @@ import com.vanguard.classifiadmin.data.repository.MainRepository
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
+import com.vanguard.classifiadmin.domain.workers.UploadFileToCacheWorker
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
@@ -33,6 +36,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
+import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardMessage
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedDetailMode
@@ -47,6 +51,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val repository: MainRepository,
     private val store: PrefDatastore,
+    private val workManager: WorkManager,
 ) : ViewModel() {
     val TAG = "MainViewModel"
 
@@ -493,6 +498,12 @@ class MainViewModel @Inject constructor(
     private var _classFilterBufferFeeds = MutableStateFlow(mutableListOf<String>())
     val classFilterBufferFeeds: StateFlow<List<String>> = _classFilterBufferFeeds
 
+    private var _classFilterBufferReadFeeds = MutableStateFlow(mutableListOf<String>())
+    val classFilterBufferReadFeeds: StateFlow<List<String>> = _classFilterBufferReadFeeds
+
+    private var _classFilterBufferReadFeedsListener = MutableStateFlow(0)
+    val classFilterBufferReadFeedsListener: StateFlow<Int> = _classFilterBufferReadFeedsListener
+
     private var _classFilterBufferFeedsListener = MutableStateFlow(0)
     val classFilterBufferFeedsListener: StateFlow<Int> = _classFilterBufferFeedsListener
 
@@ -536,6 +547,56 @@ class MainViewModel @Inject constructor(
     val commentsByFeedNetwork: StateFlow<Resource<List<CommentNetworkModel>>> =
         _commentsByFeedNetwork
 
+    private var _classFilterMode = MutableStateFlow(ClassFilterMode.ReadFeeds as ClassFilterMode)
+    val classFilterMode: StateFlow<ClassFilterMode> = _classFilterMode
+
+    private var _currentClassFeedPref = MutableStateFlow(null as String?)
+    val currentClassFeedPref: StateFlow<String?> = _currentClassFeedPref
+    fun saveCurrentClassFeedPref(classId: String, onResult: (Boolean) -> Unit) = effect {
+        store.saveCurrentClassFeedPref(classId, onResult)
+    }
+
+    fun onAddToClassFilterBufferReadFeeds(classId: String) = effect {
+        if(!_classFilterBufferReadFeeds.value.contains(classId)) {
+            _classFilterBufferReadFeeds.value.clear()
+            _classFilterBufferReadFeeds.value.add(classId)
+        }
+    }
+
+    fun onRemoveFromClassFilterBufferReadFeeds(classId: String) = effect {
+        if(_classFilterBufferReadFeeds.value.contains(classId)) {
+            _classFilterBufferReadFeeds.value.remove(classId)
+        }
+    }
+
+    fun clearClassFilterBufferReadFeeds() = effect {
+        _classFilterBufferReadFeeds.value.clear()
+    }
+
+    fun onIncClassFilterBufferReadFeedsListener() = effect {
+        _classFilterBufferReadFeedsListener.value++
+    }
+
+    fun onDecClassFilterBufferReadFeedsListener() = effect {
+        _classFilterBufferReadFeedsListener.value--
+    }
+
+    fun getCurrentClassFeedPref() = effect {
+        store.currentClassFeedPref.collect { currentClass ->
+            _currentClassFeedPref.value = currentClass
+        }
+    }
+
+    fun onClassFilterModeChanged(mode: ClassFilterMode) = effect {
+        _classFilterMode.value = mode
+    }
+
+    fun uploadFileToCache(uri: Uri) = effect {
+        val uploadFileRequest = OneTimeWorkRequestBuilder<UploadFileToCacheWorker>()
+            .setInputData(UploadFileToCacheWorker.collectUri(uri.toString()))
+            .build()
+        workManager.enqueue(uploadFileRequest)
+    }
 
     //comments
     fun saveCommentNetwork(

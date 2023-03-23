@@ -1,8 +1,10 @@
 package com.vanguard.classifiadmin.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -138,6 +140,140 @@ fun FeedItem(
             }
         }
     }
+}
+
+
+@Composable
+fun DocumentThumbnail(
+    modifier: Modifier = Modifier,
+    icon: Int,
+    filename: String,
+    fileInfo: String,
+    onOptions: () -> Unit,
+) {
+    val constraints = DocumentThumbnailConstraints(4.dp)
+    val innerModifier = Modifier
+
+    Card(
+        modifier = modifier,
+        elevation = 2.dp,
+        shape = RoundedCornerShape(4.dp),
+        border = BorderStroke(
+            width = 1.5.dp,
+            color = MaterialTheme.colors.secondary,
+        )
+    ) {
+        BoxWithConstraints(
+            modifier = Modifier,
+            contentAlignment = Alignment.Center,
+        ) {
+            val maxWidth = maxWidth
+            val maxHeight = maxHeight
+
+            ConstraintLayout(modifier = Modifier, constraintSet = constraints) {
+                DocumentIcon(
+                    icon = icon,
+                    modifier = innerModifier.layoutId("icon")
+                )
+
+                Text(
+                    text = filename,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = Black100,
+                    modifier = innerModifier
+                        .layoutId("title")
+                        .width(maxWidth.times(0.82f)),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = fileInfo,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 11.sp,
+                    color = Black100.copy(0.8f),
+                    modifier = innerModifier
+                        .layoutId("subtitle")
+                        .width(maxWidth.times(0.82f))
+                )
+
+                RoundedIconButton(
+                    onClick = onOptions,
+                    modifier = innerModifier.layoutId(""),
+                    icon = R.drawable.icon_options_horizontal,
+                )
+            }
+        }
+    }
+}
+
+private fun DocumentThumbnailConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val title = createRefFor("title")
+        val subtitle = createRefFor("subtitle")
+        val options = createRefFor("options")
+
+        constrain(icon) {
+            start.linkTo(parent.start, margin)
+            top.linkTo(parent.top, margin)
+            bottom.linkTo(parent.bottom, margin)
+        }
+        constrain(title) {
+            top.linkTo(icon.top, 2.dp)
+            start.linkTo(icon.end, 8.dp)
+        }
+        constrain(subtitle) {
+            bottom.linkTo(icon.bottom, 2.dp)
+            top.linkTo(title.bottom, 0.dp)
+            start.linkTo(title.start, 0.dp)
+        }
+        constrain(options) {
+            end.linkTo(parent.end, margin)
+            top.linkTo(icon.top, 0.dp)
+            bottom.linkTo(icon.bottom, 0.dp)
+        }
+    }
+}
+
+@Composable
+fun DocumentIcon(
+    modifier: Modifier = Modifier,
+    icon: Int,
+    surfaceColor: Color = MaterialTheme.colors.secondary.copy(0.5f),
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(4.dp),
+        color = surfaceColor,
+    ) {
+        Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = stringResource(id = R.string.icon),
+                modifier = modifier.padding(8.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun VideoThumbnail(
+    modifier: Modifier = Modifier
+) {
+
+}
+
+@Composable
+fun AudioThumbnail(
+    modifier: Modifier = Modifier
+) {
+
 }
 
 
@@ -339,5 +475,13 @@ private fun FeedItemFeaturePreview() {
         onEngage = {},
         label = "9",
         width = 23.dp,
+    )
+}
+
+@Composable
+@Preview
+private fun DocumentIconPreview() {
+    DocumentIcon(
+        icon = R.drawable.icon_pdf_file,
     )
 }

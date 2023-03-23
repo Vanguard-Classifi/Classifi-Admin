@@ -25,9 +25,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     val TAG = "MainActivity"
     private lateinit var viewModel: MainViewModel
-
-    private val activityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
-
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -43,12 +40,13 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStop() {
-        finish()
+        //finish()
         super.onStop()
         Log.e(TAG, "onStop: onStop has been called")
     }
 
     override fun onDestroy() {
+        finish()
         super.onDestroy()
         Log.e(TAG, "onDestroy: onDestroy has been called")
     }

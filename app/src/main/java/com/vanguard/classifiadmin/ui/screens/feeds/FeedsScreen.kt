@@ -1,8 +1,14 @@
 package com.vanguard.classifiadmin.ui.screens.feeds
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,6 +69,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.FeedModel
+import com.vanguard.classifiadmin.domain.helpers.MimeType
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.todayComputational
@@ -117,6 +124,16 @@ fun FeedsScreenContent(
     val scope = rememberCoroutineScope()
     val composeDiscussionState by viewModel.composeDiscussionState.collectAsState()
     val feedActionListener by viewModel.feedActionListener.collectAsState()
+    val stagedFeedsByClassNetwork by viewModel.stagedFeedsByClassNetwork.collectAsState()
+    val fileLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { fileUri ->
+            /**
+            if (fileUri != null)
+            viewModel.uploadFileToCache(fileUri)
+             */
+        }
+    )
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentSchoolIdPref()
@@ -128,6 +145,33 @@ fun FeedsScreenContent(
 
     LaunchedEffect(composeDiscussionState) {
         viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
+        if (composeDiscussionState == true) {
+            //create a blank feed on stage
+            scope.launch {
+                val classIds = arrayListOf<String>()
+                classIds.addAll(classFilterBufferFeeds)
+
+                val feed = FeedModel(
+                    feedId = UUID.randomUUID().toString(),
+                    authorId = currentUserIdPref,
+                    authorName = currentUsernamePref,
+                    schoolId = currentSchoolIdPref,
+                    lastModified = todayComputational(),
+                    classIds = classIds,
+                    likes = arrayListOf(),
+                    commentIds = arrayListOf(),
+                    type = FeedType.Discussion.title,
+                    mediaUris = arrayListOf()
+                )
+
+                viewModel.saveFeedAsStagedNetwork(
+                    feed.toNetwork(), onResult = {}
+                )
+            }
+        } else {
+            //todo; delete all staged feeds
+        }
+
     }
 
     LaunchedEffect(feedActionListener) {
@@ -146,12 +190,14 @@ fun FeedsScreenContent(
             val maxWidth = maxWidth
 
             Box(
-                modifier = Modifier.fillMaxSize().imePadding(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding(),
                 contentAlignment = Alignment.TopCenter,
             ) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(
-                        modifier = Modifier,
+                        modifier = Modifier.padding(bottom = 72.dp),
                         state = rememberLazyListState(),
                     ) {
                         item {
@@ -162,28 +208,27 @@ fun FeedsScreenContent(
                                     /*todo: on Select Feed Type : */
                                 },
                                 onPost = {
-                                    /*todo: on Post */
                                     scope.launch {
-                                        val classIds = arrayListOf<String>()
-                                        classIds.addAll(classFilterBufferFeeds)
+                                        if (classFilterBufferFeeds.isNotEmpty()) {
+                                            viewModel.getStagedFeedsByClassNetwork(
+                                                classFilterBufferFeeds.first(),
+                                                currentSchoolIdPref.orEmpty()
+                                            )
+                                            delay(1000)
+                                            if (stagedFeedsByClassNetwork is Resource.Success &&
+                                                stagedFeedsByClassNetwork.data?.isNotEmpty() == true
+                                            ) {
+                                                stagedFeedsByClassNetwork.data!!.first().text =
+                                                    discussionTextCreateFeed
+                                                stagedFeedsByClassNetwork.data!!.first().lastModified =
+                                                    todayComputational()
+                                                viewModel.saveFeedAsVerifiedNetwork(
+                                                    stagedFeedsByClassNetwork.data!!.first(),
+                                                    onResult = {}
+                                                )
+                                            }
+                                        }
 
-                                        val feed = FeedModel(
-                                            feedId = UUID.randomUUID().toString(),
-                                            text = discussionTextCreateFeed,
-                                            authorId = currentUserIdPref,
-                                            authorName = currentUsernamePref,
-                                            schoolId = currentSchoolIdPref,
-                                            lastModified = todayComputational(),
-                                            classIds = classIds,
-                                            likes = arrayListOf(),
-                                            commentIds = arrayListOf(),
-                                            type = FeedType.Discussion.title,
-                                            mediaUris = arrayListOf()
-                                        )
-
-                                        viewModel.saveFeedAsVerifiedNetwork(
-                                            feed.toNetwork(),
-                                            onResult = {})
                                     }.invokeOnCompletion {
                                         runnableBlock {
                                             //switch back to the start discussion box
@@ -195,7 +240,9 @@ fun FeedsScreenContent(
                                     }
                                 },
                                 onAttach = {
-                                    /*todo: on Attach ... */
+                                    fileLauncher.launch(
+                                        MimeType.images()
+                                    )
                                 }
                             )
                         }
@@ -242,7 +289,9 @@ fun FeedsScreenContent(
 
                                                     FeedItemFeature.Comment -> {
                                                         viewModel.onSelectedFeedChanged(feed.toLocal())
-                                                        viewModel.onFeedDetailModeChanged(FeedDetailMode.Comment)
+                                                        viewModel.onFeedDetailModeChanged(
+                                                            FeedDetailMode.Comment
+                                                        )
                                                         onDetails(feed.toLocal())
                                                     }
 
@@ -322,6 +371,7 @@ fun DiscussionBox(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val classByIdNetwork by viewModel.classByIdNetwork.collectAsState()
     val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
+    val classFilterBufferFeedsListener by viewModel.classFilterBufferFeedsListener.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUsernamePref()
@@ -332,45 +382,52 @@ fun DiscussionBox(
         }
     }
 
-    when (composeDiscussionState) {
-        true -> {
-            AnimatedVisibility(
-                modifier = modifier.fillMaxWidth(),
-                visible = true,
-                enter = slideInHorizontally(),
-                exit = slideOutHorizontally()
-            ) {
-                CreateDiscussionSection(
-                    viewModel = viewModel,
-                    currentClassCode = when {
-                        classFilterBufferFeeds.isEmpty() -> stringResource(id = R.string.select_class)
-                        classFilterBufferFeeds.size == 1 -> classByIdNetwork.data?.classCode.orEmpty()
-                        classFilterBufferFeeds.size > 1 -> "${classByIdNetwork.data?.classCode.orEmpty()}..[]"
-                        else -> stringResource(id = R.string.select_class)
-                    },
-                    onAbort = { viewModel.onComposeDiscussionStateChanged(null) },
-                    onSelectClasses = onSelectClasses,
-                    onPost = onPost,
-                    onAttach = onAttach,
-                )
-            }
+    LaunchedEffect(classFilterBufferFeedsListener) {
+        if (classFilterBufferFeeds.isNotEmpty()) {
+            viewModel.getCurrentSchoolIdPref()
+            val topClassId = classFilterBufferFeeds.first()
+            viewModel.getClassByIdNetwork(topClassId, currentSchoolIdPref.orEmpty())
+        }
+    }
+
+    Box(
+        modifier = Modifier,
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        AnimatedVisibility(
+            modifier = modifier.fillMaxWidth(),
+            visible = composeDiscussionState == true,
+            enter = fadeIn(initialAlpha = 0.9f),
+            exit = fadeOut(targetAlpha = 0.9f)
+        ) {
+            CreateDiscussionSection(
+                viewModel = viewModel,
+                currentClassCode = when {
+                    classFilterBufferFeeds.isEmpty() -> stringResource(id = R.string.select_class)
+                    classFilterBufferFeeds.size == 1 -> classByIdNetwork.data?.classCode.orEmpty()
+                    classFilterBufferFeeds.size > 1 -> "${classByIdNetwork.data?.classCode.orEmpty()}..[]"
+                    else -> stringResource(id = R.string.select_class)
+                },
+                onAbort = { viewModel.onComposeDiscussionStateChanged(null) },
+                onSelectClasses = onSelectClasses,
+                onPost = onPost,
+                onAttach = onAttach,
+            )
         }
 
-        else -> {
-            AnimatedVisibility(
-                modifier = modifier.fillMaxWidth(),
-                visible = true,
-                enter = slideInHorizontally(),
-                exit = slideOutHorizontally()
-            ) {
-                StartDiscussionSection(
-                    username = currentUsernamePref.orEmpty(),
-                    onCreateDiscussion = {
-                        viewModel.onComposeDiscussionStateChanged(true)
-                    },
-                    onSelectFeedType = onSelectFeedType,
-                )
-            }
+        AnimatedVisibility(
+            modifier = modifier.fillMaxWidth(),
+            visible = composeDiscussionState != true,
+            enter = fadeIn(initialAlpha = 0.9f),
+            exit = fadeOut(targetAlpha = 0.9f)
+        ) {
+            StartDiscussionSection(
+                username = currentUsernamePref.orEmpty(),
+                onCreateDiscussion = {
+                    viewModel.onComposeDiscussionStateChanged(true)
+                },
+                onSelectFeedType = onSelectFeedType,
+            )
         }
     }
 }
@@ -438,7 +495,7 @@ fun CreateDiscussionSection(
                 ),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Default,
+                    imeAction = ImeAction.Done,
                 ),
             )
 

@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.data.repository
 
+import android.graphics.Bitmap
 import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
@@ -10,6 +11,7 @@ import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import java.io.File
 
 interface MainRepository {
     val currentUser: Resource<FirebaseUser?>
@@ -307,4 +309,16 @@ interface MainRepository {
         schoolId: String,
         onResult: (Boolean) -> Unit
     )
+
+    suspend fun saveImageFile(bitmap: Bitmap, filename: String): File?
+
+    suspend fun saveImageFileAndReturnUri(bitmap: Bitmap): Uri?
+
+    suspend fun saveImageFileAndReturnUri(bitmap: Bitmap, filename: String): Uri?
+
+    suspend fun getUriFromFilename(filename: String): Uri?
+
+    suspend fun getContentType(uri: Uri): String?
+
+    suspend fun getBitmapFromUri(uri: Uri): Bitmap?
 }

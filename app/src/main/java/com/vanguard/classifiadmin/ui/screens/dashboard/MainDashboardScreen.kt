@@ -54,6 +54,7 @@ import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
+import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.router.BottomDestination
 import com.vanguard.classifiadmin.router.BottomNavGraph
 import com.vanguard.classifiadmin.ui.components.ClassFilterScreen
@@ -108,6 +109,8 @@ fun MainDashboardScreen(
     val currentUserEmailPref by viewModel.currentUserEmailPref.collectAsState()
     val verifiedClassesNetwork by viewModel.verifiedClassesNetwork.collectAsState()
     val message by viewModel.dashboardMessage.collectAsState()
+    val currentClassFeedPref by viewModel.currentClassFeedPref.collectAsState()
+    val classByIdNetwork by viewModel.classByIdNetwork.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -124,19 +127,25 @@ fun MainDashboardScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.getCurrentClassFeedPref()
         viewModel.getCurrentSchoolNamePref()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentUsernamePref()
         viewModel.getCurrentUserEmail()
+        viewModel.getClassByIdNetwork(currentClassFeedPref.orEmpty(), currentSchoolIdPref.orEmpty())
         delay(3000)
         viewModel.clearSignInFields()
         viewModel.clearSignUpFields()
         viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
     }
 
+    LaunchedEffect(currentClassFeedPref) {
+        viewModel.getClassByIdNetwork(currentClassFeedPref.orEmpty(), currentSchoolIdPref.orEmpty())
+    }
+
     LaunchedEffect(message) {
-        if(message !is DashboardMessage.NoMessage) {
+        if (message !is DashboardMessage.NoMessage) {
             delay(2000)
             viewModel.onDashboardMessageChanged(DashboardMessage.NoMessage)
         }
@@ -205,7 +214,8 @@ fun MainDashboardScreen(
                             sheetState.hide()
                         }
                     },
-                    myClasses = verifiedClassesSorted?.map { it.toLocal() } ?: emptyList<ClassModel>()
+                    myClasses = verifiedClassesSorted?.map { it.toLocal() }
+                        ?: emptyList<ClassModel>()
                 )
             }
         ) {
@@ -214,9 +224,14 @@ fun MainDashboardScreen(
                 viewModel = viewModel,
                 onLogin = onLogin,
                 navController = navController,
-                filterLabel = currentUsernamePref ?: "",
+                filterLabel = if (classByIdNetwork is Resource.Success && classByIdNetwork.data != null)
+                    classByIdNetwork.data?.classCode.orEmpty() else "",
                 filterState = filterState,
-                onFilter = { filterState = !filterState },
+                onFilter = {
+                    filterState = !filterState
+                    //select class to show feeds
+                    viewModel.onClassFilterModeChanged(ClassFilterMode.ReadFeeds)
+                },
                 openProfile = { menuState = !menuState },
                 openSheet = {
                     viewModel.onCurrentDashboardBottomSheetFlavorChanged(
@@ -286,6 +301,8 @@ fun MainDashboardScreen(
                 },
                 onSelectClasses = {
                     filterState = true
+                    //select classes to post
+                    viewModel.onClassFilterModeChanged(ClassFilterMode.Post)
                 },
                 onFeedDetail = onFeedDetail,
             )
@@ -340,8 +357,6 @@ fun MainDashboardScreen(
                     onClose = { filterState = false },
                     onManageClass = onManageClass,
                     onAddClass = {
-                        /*todo*/
-                        //close current dialog
                         filterState = false
                     }
                 )
@@ -375,7 +390,7 @@ fun MainDashboardScreen(
         }
 
 
-        if(message !is DashboardMessage.NoMessage) {
+        if (message !is DashboardMessage.NoMessage) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
@@ -458,7 +473,7 @@ fun DashboardBottomSheetContent(
     onSelectInReviewItem: (InReviewAssessmentBottomSheetOption) -> Unit,
     onSelectDraftItem: (DraftAssessmentBottomSheetOption) -> Unit,
     myClasses: List<ClassModel>,
-    ) {
+) {
 
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -600,7 +615,12 @@ sealed class DashboardBottomSheetFlavor {
     object AssignedClasses : DashboardBottomSheetFlavor()
 }
 
-sealed class DashboardMessage(val message: String){
-    object FeedCreated: DashboardMessage("Successfully created a feed!")
-    object NoMessage: DashboardMessage("")
+sealed class DashboardMessage(val message: String) {
+    object FeedCreated : DashboardMessage("Successfully created a feed!")
+    object NoMessage : DashboardMessage("")
+}
+
+sealed class ClassFilterMode {
+    object Post : ClassFilterMode()
+    object ReadFeeds : ClassFilterMode()
 }

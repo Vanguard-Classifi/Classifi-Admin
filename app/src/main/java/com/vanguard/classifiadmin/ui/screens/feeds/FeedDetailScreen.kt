@@ -541,7 +541,7 @@ fun CommentTextFieldScreen(
                             ),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Default,
+                                imeAction = ImeAction.Done,
                             ),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 textColor = Black100,

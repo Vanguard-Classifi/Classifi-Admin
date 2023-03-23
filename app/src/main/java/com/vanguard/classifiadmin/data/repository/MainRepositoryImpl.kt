@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.data.repository
 
+import android.graphics.Bitmap
 import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.firestore.FirestoreManager
@@ -12,7 +13,9 @@ import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.data.network.storage.FirebaseStorage
 import com.vanguard.classifiadmin.domain.auth.FirebaseAuthManager
 import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
+import com.vanguard.classifiadmin.domain.helpers.CacheManager
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,6 +24,7 @@ class MainRepositoryImpl @Inject constructor(
     private val authManager: FirebaseAuthManager,
     private val firestoreManager: FirestoreManager,
     private val firebaseStorage: FirebaseStorage,
+    private val cacheManager: CacheManager,
 ) : MainRepository {
 
     override val currentUser: Resource<FirebaseUser?>
@@ -287,9 +291,9 @@ class MainRepositoryImpl @Inject constructor(
         schoolId: String,
         onResult: (Resource<List<ClassNetworkModel>>) -> Unit
     ) {
-       firestoreManager.getVerifiedClassesGivenStudentNetwork(
-           studentId, schoolId, onResult
-       )
+        firestoreManager.getVerifiedClassesGivenStudentNetwork(
+            studentId, schoolId, onResult
+        )
     }
 
     override suspend fun getStagedClassesNetwork(
@@ -493,9 +497,9 @@ class MainRepositoryImpl @Inject constructor(
         schoolId: String,
         onResult: (Resource<CommentNetworkModel?>) -> Unit
     ) {
-       firestoreManager.getCommentByIdNetwork(
-           commentId, feedId, schoolId, onResult
-       )
+        firestoreManager.getCommentByIdNetwork(
+            commentId, feedId, schoolId, onResult
+        )
     }
 
     override suspend fun getCommentsByFeedNetwork(
@@ -503,9 +507,9 @@ class MainRepositoryImpl @Inject constructor(
         schoolId: String,
         onResult: (Resource<List<CommentNetworkModel>>) -> Unit
     ) {
-       firestoreManager.getCommentsByFeedNetwork(
-           feedId, schoolId, onResult
-       )
+        firestoreManager.getCommentsByFeedNetwork(
+            feedId, schoolId, onResult
+        )
     }
 
     override suspend fun deleteCommentNetwork(
@@ -525,4 +529,30 @@ class MainRepositoryImpl @Inject constructor(
             commentId, feedId, schoolId, onResult
         )
     }
+
+    override suspend fun saveImageFile(bitmap: Bitmap, filename: String): File? {
+        return cacheManager.saveImageFile(bitmap, filename)
+    }
+
+    override suspend fun saveImageFileAndReturnUri(bitmap: Bitmap): Uri? {
+        return cacheManager.saveImageFileAndReturnUri(bitmap)
+    }
+
+    override suspend fun saveImageFileAndReturnUri(bitmap: Bitmap, filename: String): Uri? {
+        return cacheManager.saveImageFileAndReturnUri(bitmap, filename)
+    }
+
+    override suspend fun getUriFromFilename(filename: String): Uri? {
+        return cacheManager.getUriFromFilename(filename)
+    }
+
+    override suspend fun getContentType(uri: Uri): String? {
+        return cacheManager.getContentType(uri)
+    }
+
+    override suspend fun getBitmapFromUri(uri: Uri): Bitmap? {
+        return cacheManager.getBitmapFromUri(uri)
+    }
+
+
 }

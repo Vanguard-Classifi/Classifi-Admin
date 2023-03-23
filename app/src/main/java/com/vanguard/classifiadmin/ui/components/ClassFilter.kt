@@ -51,6 +51,7 @@ import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromClassName
+import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
@@ -72,9 +73,41 @@ fun ClassFilterScreen(
     val verifiedClassesNetwork by viewModel.verifiedClassesNetwork.collectAsState()
     val verifiedClassesGivenTeacherNetwork by viewModel.verifiedClassesGivenTeacherNetwork.collectAsState()
     val verifiedClassesGivenStudentNetwork by viewModel.verifiedClassesGivenStudentNetwork.collectAsState()
+    val classFilterMode by viewModel.classFilterMode.collectAsState()
+    val classFilterBufferReadFeeds by viewModel.classFilterBufferReadFeeds.collectAsState()
+    val classFilterBufferReadFeedsListener by viewModel.classFilterBufferReadFeedsListener.collectAsState()
 
 
     LaunchedEffect(classFilterBufferFeedsListener) {
+        when (currentUserRolePref) {
+            UserRole.Student.name -> {
+                viewModel.getVerifiedClassesGivenStudentNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Teacher.name -> {
+                viewModel.getVerifiedClassesGivenTeacherNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Admin.name -> {
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            UserRole.SuperAdmin.name -> {
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            else -> {}
+        }
+
+    }
+
+    LaunchedEffect(classFilterBufferReadFeedsListener) {
         when (currentUserRolePref) {
             UserRole.Student.name -> {
                 viewModel.getVerifiedClassesGivenStudentNetwork(
@@ -196,14 +229,33 @@ fun ClassFilterScreen(
                                             ClassFilterItem(
                                                 myClass = each.toLocal(),
                                                 onSelectClass = {
-                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
-                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
-                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                            viewModel.onAddToClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferFeedsListener()
+                                                        }
                                                     } else {
-                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
-                                                            each.classId.orEmpty()
-                                                        )
-                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                        if (!classFilterBufferReadFeeds.contains(
+                                                                each.classId
+                                                            )
+                                                        ) {
+                                                            viewModel.onAddToClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferReadFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferReadFeedsListener()
+                                                        }
                                                     }
                                                 },
                                                 onManageClass = {
@@ -211,10 +263,14 @@ fun ClassFilterScreen(
                                                     onManageClass(it)
                                                 },
                                                 onLongSelectClass = {
-                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
-                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    }
                                                 },
-                                                selected = false,
+                                                selected = if (classFilterMode is ClassFilterMode.Post)
+                                                    classFilterBufferFeeds.contains(each.classId)
+                                                else classFilterBufferReadFeeds.contains(each.classId),
                                             )
                                         }
                                     } else {
@@ -259,14 +315,33 @@ fun ClassFilterScreen(
                                             ClassFilterItem(
                                                 myClass = each.toLocal(),
                                                 onSelectClass = {
-                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
-                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
-                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                            viewModel.onAddToClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferFeedsListener()
+                                                        }
                                                     } else {
-                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
-                                                            each.classId.orEmpty()
-                                                        )
-                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                        if (!classFilterBufferReadFeeds.contains(
+                                                                each.classId
+                                                            )
+                                                        ) {
+                                                            viewModel.onAddToClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferReadFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferReadFeedsListener()
+                                                        }
                                                     }
                                                 },
                                                 onManageClass = {
@@ -274,10 +349,15 @@ fun ClassFilterScreen(
                                                     onManageClass(it)
                                                 },
                                                 onLongSelectClass = {
-                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
-                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    }
                                                 },
-                                                selected = classFilterBufferFeeds.contains(each.classId),
+                                                selected =
+                                                if (classFilterMode is ClassFilterMode.Post)
+                                                    classFilterBufferFeeds.contains(each.classId)
+                                                else classFilterBufferReadFeeds.contains(each.classId),
                                             )
                                         }
                                     } else {
@@ -322,14 +402,33 @@ fun ClassFilterScreen(
                                             ClassFilterItem(
                                                 myClass = each.toLocal(),
                                                 onSelectClass = {
-                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
-                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
-                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                            viewModel.onAddToClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferFeedsListener()
+                                                        }
                                                     } else {
-                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
-                                                            each.classId.orEmpty()
-                                                        )
-                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                        if (!classFilterBufferReadFeeds.contains(
+                                                                each.classId
+                                                            )
+                                                        ) {
+                                                            viewModel.onAddToClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferReadFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferReadFeedsListener()
+                                                        }
                                                     }
                                                 },
                                                 onManageClass = {
@@ -337,10 +436,14 @@ fun ClassFilterScreen(
                                                     onManageClass(it)
                                                 },
                                                 onLongSelectClass = {
-                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
-                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    }
                                                 },
-                                                selected = classFilterBufferFeeds.contains(each.classId),
+                                                selected = if (classFilterMode is ClassFilterMode.Post)
+                                                    classFilterBufferFeeds.contains(each.classId)
+                                                else classFilterBufferReadFeeds.contains(each.classId),
                                             )
                                         }
                                     } else {
@@ -385,14 +488,33 @@ fun ClassFilterScreen(
                                             ClassFilterItem(
                                                 myClass = each.toLocal(),
                                                 onSelectClass = {
-                                                    if (!classFilterBufferFeeds.contains(each.classId)) {
-                                                        viewModel.onAddToClassFilterBufferFeeds(each.classId.orEmpty())
-                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        if (!classFilterBufferFeeds.contains(each.classId)) {
+                                                            viewModel.onAddToClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferFeedsListener()
+                                                        }
                                                     } else {
-                                                        viewModel.onRemoveFromClassFilterBufferFeeds(
-                                                            each.classId.orEmpty()
-                                                        )
-                                                        viewModel.onDecClassFilterBufferFeedsListener()
+                                                        if (!classFilterBufferReadFeeds.contains(
+                                                                each.classId
+                                                            )
+                                                        ) {
+                                                            viewModel.onAddToClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onIncClassFilterBufferReadFeedsListener()
+                                                        } else {
+                                                            viewModel.onRemoveFromClassFilterBufferReadFeeds(
+                                                                each.classId.orEmpty()
+                                                            )
+                                                            viewModel.onDecClassFilterBufferReadFeedsListener()
+                                                        }
                                                     }
                                                 },
                                                 onManageClass = {
@@ -400,10 +522,14 @@ fun ClassFilterScreen(
                                                     onManageClass(it)
                                                 },
                                                 onLongSelectClass = {
-                                                    viewModel.onAddToClassFilterBufferFeeds(it.classId)
-                                                    viewModel.onIncClassFilterBufferFeedsListener()
+                                                    if (classFilterMode is ClassFilterMode.Post) {
+                                                        viewModel.onAddToClassFilterBufferFeeds(it.classId)
+                                                        viewModel.onIncClassFilterBufferFeedsListener()
+                                                    }
                                                 },
-                                                selected = classFilterBufferFeeds.contains(each.classId),
+                                                selected = if (classFilterMode is ClassFilterMode.Post)
+                                                    classFilterBufferFeeds.contains(each.classId)
+                                                else classFilterBufferReadFeeds.contains(each.classId),
                                             )
                                         }
                                     } else {
@@ -438,8 +564,22 @@ fun ClassFilterScreen(
                 PrimaryTextButtonFillWidth(
                     label = stringResource(id = R.string.done),
                     onClick = {
-                        //close class filter dialog
-                        onAddClass()
+                        if (classFilterBufferFeeds.isEmpty() && classFilterBufferReadFeeds.isEmpty()) {
+                            return@PrimaryTextButtonFillWidth
+                        }
+                        if (classFilterMode is ClassFilterMode.ReadFeeds) {
+                            //save to pref
+                            if(classFilterBufferReadFeeds.isNotEmpty()) {
+                                viewModel.saveCurrentClassFeedPref(
+                                    classFilterBufferReadFeeds.first(),
+                                    onResult = {
+                                        onAddClass()
+                                    }
+                                )
+                            }
+                        } else {
+                            onAddClass()
+                        }
                     },
                     modifier = innerModifier.layoutId("addClass"),
                 )
