@@ -1,14 +1,11 @@
 package com.vanguard.classifiadmin.ui.screens.feeds
 
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +28,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
@@ -41,7 +37,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -113,9 +108,9 @@ fun FeedsScreenContent(
     onSelectClasses: () -> Unit,
     onDetails: (FeedModel) -> Unit,
 ) {
+    val TAG = "FeedsScreenContent"
     var upcomingActivitiesExpanded by remember { mutableStateOf(false) }
     val verticalScroll = rememberScrollState()
-    val verifiedFeedsNetwork by viewModel.verifiedFeedsNetwork.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val discussionTextCreateFeed by viewModel.discussionTextCreateFeed.collectAsState()
@@ -124,7 +119,12 @@ fun FeedsScreenContent(
     val scope = rememberCoroutineScope()
     val composeDiscussionState by viewModel.composeDiscussionState.collectAsState()
     val feedActionListener by viewModel.feedActionListener.collectAsState()
-    val stagedFeedsByClassNetwork by viewModel.stagedFeedsByClassNetwork.collectAsState()
+    val stagedFeedsNetwork by viewModel.stagedFeedsNetwork.collectAsState()
+    val currentClassFeedPref by viewModel.currentClassFeedPref.collectAsState()
+    val verifiedFeedsByClassNetwork by viewModel.verifiedFeedsByClassNetwork.collectAsState()
+    val classFilterBufferReadFeedsListener by viewModel.classFilterBufferReadFeedsListener.collectAsState()
+    val classFilterBufferFeedsListener by viewModel.classFilterBufferFeedsListener.collectAsState()
+    val classFilterBufferReadFeeds by viewModel.classFilterBufferReadFeeds.collectAsState()
     val fileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { fileUri ->
@@ -135,16 +135,37 @@ fun FeedsScreenContent(
         }
     )
 
+    if(classFilterBufferReadFeeds.isNotEmpty())
+    Log.e(
+        TAG,
+        "FeedsScreenContent: class filter read buffer ${classFilterBufferReadFeeds.first()}",
+
+    )
+
     LaunchedEffect(Unit) {
+        viewModel.getCurrentClassFeedPref()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentUsernamePref()
         delay(1000)
-        viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
+       viewModel.getVerifiedFeedsByClassNetwork(
+           currentClassFeedPref.orEmpty(),
+           currentSchoolIdPref.orEmpty()
+       )
+        viewModel.getStagedFeedsNetwork(
+            currentSchoolIdPref.orEmpty()
+        )
     }
 
     LaunchedEffect(composeDiscussionState) {
-        viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
+        viewModel.getStagedFeedsNetwork(
+            currentSchoolIdPref.orEmpty()
+        )
+
+        viewModel.getVerifiedFeedsByClassNetwork(
+            currentClassFeedPref.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
         if (composeDiscussionState == true) {
             //create a blank feed on stage
             scope.launch {
@@ -174,8 +195,17 @@ fun FeedsScreenContent(
 
     }
 
-    LaunchedEffect(feedActionListener) {
-        viewModel.getVerifiedFeedsNetwork(currentSchoolIdPref.orEmpty())
+    LaunchedEffect(feedActionListener, classFilterBufferReadFeedsListener) {
+        viewModel.getVerifiedFeedsByClassNetwork(
+            currentClassFeedPref.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+    }
+
+    LaunchedEffect(classFilterBufferFeedsListener) {
+        viewModel.getStagedFeedsNetwork(
+            currentSchoolIdPref.orEmpty()
+        )
     }
 
     Surface(
@@ -209,45 +239,48 @@ fun FeedsScreenContent(
                                 },
                                 onPost = {
                                     scope.launch {
-                                        if (classFilterBufferFeeds.isNotEmpty()) {
-                                            viewModel.getStagedFeedsByClassNetwork(
-                                                classFilterBufferFeeds.first(),
-                                                currentSchoolIdPref.orEmpty()
-                                            )
-                                            delay(1000)
-                                            if (stagedFeedsByClassNetwork is Resource.Success &&
-                                                stagedFeedsByClassNetwork.data?.isNotEmpty() == true
-                                            ) {
-                                                stagedFeedsByClassNetwork.data!!.first().text =
+                                        viewModel.getStagedFeedsByClassNetwork(
+                                            classFilterBufferFeeds.first(),
+                                            currentSchoolIdPref.orEmpty()
+                                        )
+                                        delay(1000)
+                                        Log.e(TAG, "FeedsScreenContent:  staged classes is not empty ${stagedFeedsNetwork.data?.isNotEmpty()}", )
+                                        if (stagedFeedsNetwork is Resource.Success &&
+                                            stagedFeedsNetwork.data?.isNotEmpty() == true
+                                        ) {
+                                            scope.launch {
+                                                val classIds = arrayListOf<String>()
+                                                classIds.addAll(classFilterBufferFeeds)
+
+                                                stagedFeedsNetwork.data!!.first().text =
                                                     discussionTextCreateFeed
-                                                stagedFeedsByClassNetwork.data!!.first().lastModified =
+                                                stagedFeedsNetwork.data!!.first().classIds =
+                                                    classIds
+                                                stagedFeedsNetwork.data!!.first().lastModified =
                                                     todayComputational()
                                                 viewModel.saveFeedAsVerifiedNetwork(
-                                                    stagedFeedsByClassNetwork.data!!.first(),
+                                                    stagedFeedsNetwork.data!!.first(),
                                                     onResult = {}
                                                 )
+                                            }.invokeOnCompletion {
+                                                runnableBlock {
+                                                    //switch back to the start discussion box
+                                                    viewModel.onComposeDiscussionStateChanged(null)
+                                                    //clear the discussion text field
+                                                    viewModel.clearDiscussionTextField()
+                                                    viewModel.onDashboardMessageChanged(DashboardMessage.FeedCreated)
+                                                }
                                             }
-                                        }
-
-                                    }.invokeOnCompletion {
-                                        runnableBlock {
-                                            //switch back to the start discussion box
-                                            viewModel.onComposeDiscussionStateChanged(null)
-                                            //clear the discussion text field
-                                            viewModel.clearDiscussionTextField()
-                                            viewModel.onDashboardMessageChanged(DashboardMessage.FeedCreated)
                                         }
                                     }
                                 },
                                 onAttach = {
-                                    fileLauncher.launch(
-                                        MimeType.images()
-                                    )
+                                    /*todo; on Attach -> */
                                 }
                             )
                         }
 
-                        when (verifiedFeedsNetwork) {
+                        when (verifiedFeedsByClassNetwork) {
                             is Resource.Loading -> {
                                 item {
                                     LoadingScreen(maxHeight = maxHeight)
@@ -255,9 +288,9 @@ fun FeedsScreenContent(
                             }
 
                             is Resource.Success -> {
-                                if (verifiedFeedsNetwork.data?.isNotEmpty() == true) {
+                                if (verifiedFeedsByClassNetwork.data?.isNotEmpty() == true) {
                                     val feedsSorted =
-                                        verifiedFeedsNetwork.data?.sortedByDescending { it.lastModified }
+                                        verifiedFeedsByClassNetwork.data?.sortedByDescending { it.lastModified }
                                     items(feedsSorted!!) { feed ->
                                         FeedItem(
                                             feed = feed.toLocal(),
@@ -446,9 +479,23 @@ fun CreateDiscussionSection(
     onAttach: () -> Unit,
 ) {
     val discussionTextCreateFeed by viewModel.discussionTextCreateFeed.collectAsState()
-    val postable = remember(discussionTextCreateFeed) {
+    val classFilterBufferFeedsListener by viewModel.classFilterBufferFeedsListener.collectAsState()
+    val classFilterBufferFeeds by viewModel.classFilterBufferFeeds.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val postable = remember(discussionTextCreateFeed, classFilterBufferFeedsListener) {
         discussionTextCreateFeed != null &&
-                discussionTextCreateFeed?.isNotBlank() == true
+                discussionTextCreateFeed?.isNotBlank() == true &&
+                classFilterBufferFeeds.isNotEmpty()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentSchoolIdPref()
+    }
+
+    LaunchedEffect(discussionTextCreateFeed) {
+        viewModel.getStagedFeedsNetwork(
+            currentSchoolIdPref.orEmpty()
+        )
     }
 
     Card(
@@ -508,6 +555,9 @@ fun CreateDiscussionSection(
                 icon = R.drawable.icon_dropdown,
                 onClick = onSelectClasses,
             )
+
+            //assets go here
+
 
             CreateDiscussionBottomBar(
                 onAbort = onAbort,

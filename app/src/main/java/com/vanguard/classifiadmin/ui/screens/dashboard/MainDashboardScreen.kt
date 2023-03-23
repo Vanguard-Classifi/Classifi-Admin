@@ -54,6 +54,7 @@ import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
+import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.router.BottomDestination
 import com.vanguard.classifiadmin.router.BottomNavGraph
@@ -99,6 +100,7 @@ fun MainDashboardScreen(
     goToAssessmentReview: (Assessment) -> Unit,
     goToModifyAssessment: (Assessment) -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
+    onStudentDetail: (UserModel) -> Unit,
 ) {
     val navController = rememberNavController()
     val currentBottomSheetFlavor by viewModel.currentDashboardBottomSheetFlavor.collectAsState()
@@ -305,6 +307,7 @@ fun MainDashboardScreen(
                     viewModel.onClassFilterModeChanged(ClassFilterMode.Post)
                 },
                 onFeedDetail = onFeedDetail,
+                onStudentDetail = onStudentDetail
             )
         }
 
@@ -416,7 +419,8 @@ fun MainDashboardScreenContent(
     openSheet: () -> Unit,
     openProfile: () -> Unit,
     username: String,
-    onStudentOptions: () -> Unit,
+    onStudentOptions: (UserModel) -> Unit,
+    onStudentDetail: (UserModel) -> Unit,
     onLogin: () -> Unit = {},
     onPublishedAssessmentOptions: (Assessment) -> Unit,
     onInReviewAssessmentOptions: (Assessment) -> Unit,
@@ -449,6 +453,7 @@ fun MainDashboardScreenContent(
                     navController = navController,
                     modifier = Modifier.padding(padding),
                     onStudentOptions = onStudentOptions,
+                    onStudentDetail = onStudentDetail,
                     onSelectAssessment = onSelectAssessment,
                     onPublishedAssessmentOptions = onPublishedAssessmentOptions,
                     onDraftAssessmentOptions = onDraftAssessmentOptions,

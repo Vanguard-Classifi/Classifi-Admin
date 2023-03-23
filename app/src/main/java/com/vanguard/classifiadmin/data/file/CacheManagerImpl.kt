@@ -99,7 +99,7 @@ class CacheManagerImpl @Inject constructor(
 
     companion object {
         private const val IMAGE_CHILD_DIR = "images"
-        private val IMAGE_TEMP_FILE_NAME = "img/${System.currentTimeMillis()}"
+        private val IMAGE_TEMP_FILE_NAME = "img"
         private const val IMAGE_EXTENSION = ".png"
         private const val IMAGE_COMPRESS_QUALITY = 100
     }

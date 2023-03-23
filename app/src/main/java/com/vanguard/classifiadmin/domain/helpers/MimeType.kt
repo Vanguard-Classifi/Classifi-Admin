@@ -6,6 +6,6 @@ object MimeType {
     }
 
     fun images(): Array<String> {
-        return arrayOf("images/*")
+        return arrayOf("image/png", "image/jpeg")
     }
 }

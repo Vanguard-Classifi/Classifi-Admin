@@ -295,4 +295,5 @@ interface FirestoreManager {
         schoolId: String,
         onResult: (Boolean) -> Unit
     )
+
 }
