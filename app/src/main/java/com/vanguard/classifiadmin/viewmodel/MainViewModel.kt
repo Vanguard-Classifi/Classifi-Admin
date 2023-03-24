@@ -33,7 +33,8 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
-import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentOption
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
@@ -76,8 +77,8 @@ class MainViewModel @Inject constructor(
         _currentDashboardBottomSheetFlavor
 
 
-    private var _currentAssessmentOption = MutableStateFlow(null as AssessmentOption?)
-    val currentAssessmentOption: StateFlow<AssessmentOption?> = _currentAssessmentOption
+    private var _currentAssessmentOption = MutableStateFlow(null as AssessmentState?)
+    val currentAssessmentOption: StateFlow<AssessmentState?> = _currentAssessmentOption
 
     private var _currentUserFirebase =
         MutableStateFlow(Resource.Loading<FirebaseUser?>() as Resource<FirebaseUser?>)
@@ -553,6 +554,20 @@ class MainViewModel @Inject constructor(
     private var _currentClassFeedPref = MutableStateFlow(null as String?)
     val currentClassFeedPref: StateFlow<String?> = _currentClassFeedPref
 
+    private var _currentAssessmentType = MutableStateFlow(AssessmentType.HomeWork as AssessmentType)
+    val currentAssessmentType: StateFlow<AssessmentType> = _currentAssessmentType
+
+    private var _assessmentNameCreateAssessment = MutableStateFlow(null as String?)
+    val assessmentNameCreateAssessment: StateFlow<String?> = _assessmentNameCreateAssessment
+
+    fun onAssessmentNameCreateAssessmentChanged(name: String?) = effect {
+        _assessmentNameCreateAssessment.value = name
+    }
+
+    fun onCurrentAssessmentTypeChanged(type: AssessmentType) = effect {
+        _currentAssessmentType.value = type
+    }
+
     fun deleteStagedFeedsNetwork(
         schoolId: String,
         onResult: (Boolean) -> Unit
@@ -565,14 +580,14 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAddToClassFilterBufferReadFeeds(classId: String) = effect {
-        if(!_classFilterBufferReadFeeds.value.contains(classId)) {
+        if (!_classFilterBufferReadFeeds.value.contains(classId)) {
             _classFilterBufferReadFeeds.value.clear()
             _classFilterBufferReadFeeds.value.add(classId)
         }
     }
 
     fun onRemoveFromClassFilterBufferReadFeeds(classId: String) = effect {
-        if(_classFilterBufferReadFeeds.value.contains(classId)) {
+        if (_classFilterBufferReadFeeds.value.contains(classId)) {
             _classFilterBufferReadFeeds.value.remove(classId)
         }
     }
@@ -1773,7 +1788,7 @@ class MainViewModel @Inject constructor(
 
     fun signOut() = effect { repository.signOut() }
 
-    fun onCurrentAssessmentOptionChanged(option: AssessmentOption?) = effect {
+    fun onCurrentAssessmentOptionChanged(option: AssessmentState?) = effect {
         _currentAssessmentOption.value = option
     }
 

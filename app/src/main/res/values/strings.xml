@@ -195,4 +195,8 @@
     <string name="could_not_load_feed">Could not load feed</string>
     <string name="could_not_load_comments">Could not load comments</string>
     <string name="retry">Retry</string>
+    <string name="create_assessment">Create Assessment</string>
+    <string name="give_assessment_a_name">Give your assessment a name</string>
+    <string name="start_period">Start Period</string>
+    <string name="end_period">End Period</string>
 </resources>

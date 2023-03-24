@@ -9,10 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.router.BottomNavGraph
-import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 @Composable
@@ -22,12 +22,13 @@ fun BottomContainer(
     navController: NavHostController = rememberNavController(),
     onStudentOptions: (UserModel) -> Unit,
     onStudentDetail: (UserModel) -> Unit,
-    onPublishedAssessmentOptions: (Assessment) -> Unit,
-    onInReviewAssessmentOptions: (Assessment) -> Unit,
-    onDraftAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
+    onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
+    onDraftAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
     onSelectClasses: () -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
+    onCreateQuestions: () -> Unit,
 ) {
     BottomNavGraph(
         viewModel = viewModel,
@@ -41,5 +42,6 @@ fun BottomContainer(
         onSelectClasses = onSelectClasses,
         onFeedDetail = onFeedDetail,
         onStudentDetail = onStudentDetail,
+        onCreateQuestions = onCreateQuestions,
     )
 }

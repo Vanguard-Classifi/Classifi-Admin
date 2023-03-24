@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.ui.screens.admin.CREATE_CLASS_ADMIN_SCREEN
@@ -29,9 +30,9 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REPORT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REVIEW_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
-import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReviewScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.MODIFY_ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ModifyAssessmentScreen
@@ -410,12 +411,13 @@ fun BottomNavGraph(
     viewModel: MainViewModel,
     onStudentOptions: (UserModel) -> Unit,
     onStudentDetail: (UserModel) -> Unit,
-    onPublishedAssessmentOptions: (Assessment) -> Unit,
-    onInReviewAssessmentOptions: (Assessment) -> Unit,
-    onDraftAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
+    onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
+    onDraftAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
     onSelectClasses: () -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
+    onCreateQuestions: () -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -451,6 +453,7 @@ fun BottomNavGraph(
                 onPublishedAssessmentOptions = onPublishedAssessmentOptions,
                 onInReviewAssessmentOptions = onInReviewAssessmentOptions,
                 onDraftAssessmentOptions = onDraftAssessmentOptions,
+                onCreateQuestions = onCreateQuestions
             )
         }
 

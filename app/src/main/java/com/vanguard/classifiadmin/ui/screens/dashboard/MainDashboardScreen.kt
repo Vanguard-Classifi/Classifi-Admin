@@ -52,6 +52,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
@@ -60,6 +61,7 @@ import com.vanguard.classifiadmin.router.BottomDestination
 import com.vanguard.classifiadmin.router.BottomNavGraph
 import com.vanguard.classifiadmin.ui.components.ClassFilterScreen
 import com.vanguard.classifiadmin.ui.components.ClassifiFeature
+import com.vanguard.classifiadmin.ui.components.CreateAssessmentBox
 import com.vanguard.classifiadmin.ui.components.DashboardMenu
 import com.vanguard.classifiadmin.ui.components.DashboardMenuScreen
 import com.vanguard.classifiadmin.ui.components.FeatureListItem
@@ -70,7 +72,6 @@ import com.vanguard.classifiadmin.ui.components.StudentOption
 import com.vanguard.classifiadmin.ui.components.StudentOptionsListItem
 import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.ui.screens.admin.CreateSubjectClassItem
-import com.vanguard.classifiadmin.ui.screens.assessments.Assessment
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.DraftAssessmentBottomSheetContent
 import com.vanguard.classifiadmin.ui.screens.assessments.DraftAssessmentBottomSheetOption
@@ -96,9 +97,9 @@ fun MainDashboardScreen(
     onSelectProfile: () -> Unit,
     onManageClass: (ClassModel) -> Unit,
     onLogin: () -> Unit = {},
-    goToAssessmentReport: (Assessment) -> Unit,
-    goToAssessmentReview: (Assessment) -> Unit,
-    goToModifyAssessment: (Assessment) -> Unit,
+    goToAssessmentReport: (AssessmentModel) -> Unit,
+    goToAssessmentReview: (AssessmentModel) -> Unit,
+    goToModifyAssessment: (AssessmentModel) -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
     onStudentDetail: (UserModel) -> Unit,
 ) {
@@ -124,6 +125,7 @@ fun MainDashboardScreen(
     var menuState by remember { mutableStateOf(false) }
     var filterState by remember { mutableStateOf(false) }
     var joinClassState by remember { mutableStateOf(false) }
+    var createQuestionState by remember { mutableStateOf(false) }
     var verifiedClassesSorted = remember(verifiedClassesNetwork.data) {
         verifiedClassesNetwork.data?.sortedBy { it.className }
     }
@@ -307,7 +309,10 @@ fun MainDashboardScreen(
                     viewModel.onClassFilterModeChanged(ClassFilterMode.Post)
                 },
                 onFeedDetail = onFeedDetail,
-                onStudentDetail = onStudentDetail
+                onStudentDetail = onStudentDetail,
+                onCreateQuestions = {
+                    createQuestionState = true
+                }
             )
         }
 
@@ -405,6 +410,34 @@ fun MainDashboardScreen(
                 )
             }
         }
+
+
+        AnimatedVisibility(
+            visible = createQuestionState,
+            enter = scaleIn(
+                initialScale = 0.95f, animationSpec = tween(
+                    durationMillis = 20, easing = FastOutLinearInEasing
+                )
+            ),
+            exit = scaleOut(
+                targetScale = 0.95f,
+                animationSpec = tween(
+                    durationMillis = 20, easing = FastOutLinearInEasing
+                ),
+            ),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CreateAssessmentBox(
+                    viewModel = viewModel,
+                    onClose = { createQuestionState = false },
+                    parentWidth = maxWidth
+                )
+            }
+        }
+
     }
 }
 
@@ -422,12 +455,13 @@ fun MainDashboardScreenContent(
     onStudentOptions: (UserModel) -> Unit,
     onStudentDetail: (UserModel) -> Unit,
     onLogin: () -> Unit = {},
-    onPublishedAssessmentOptions: (Assessment) -> Unit,
-    onInReviewAssessmentOptions: (Assessment) -> Unit,
-    onDraftAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
+    onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
+    onDraftAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
     onSelectClasses: () -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
+    onCreateQuestions: () -> Unit,
 ) {
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -460,6 +494,7 @@ fun MainDashboardScreenContent(
                     onInReviewAssessmentOptions = onInReviewAssessmentOptions,
                     onSelectClasses = onSelectClasses,
                     onFeedDetail = onFeedDetail,
+                    onCreateQuestions = onCreateQuestions
                 )
             }
         )

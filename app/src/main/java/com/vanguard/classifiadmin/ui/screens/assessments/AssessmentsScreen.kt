@@ -39,7 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +47,7 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromAssessment
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.theme.Black100
@@ -60,10 +60,11 @@ const val ASSESSMENT_SCREEN = "assessment_screen"
 fun AssessmentsScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    onPublishedAssessmentOptions: (Assessment) -> Unit,
-    onInReviewAssessmentOptions: (Assessment) -> Unit,
-    onDraftAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
+    onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
+    onDraftAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
+    onCreateQuestions: () -> Unit,
 ) {
     AssessmentsScreenContent(
         viewModel = viewModel,
@@ -72,6 +73,7 @@ fun AssessmentsScreen(
         onSelectAssessment = onSelectAssessment,
         onInReviewAssessmentOptions = onInReviewAssessmentOptions,
         onDraftAssessmentOptions = onDraftAssessmentOptions,
+        onCreateQuestions = onCreateQuestions
     )
 }
 
@@ -80,10 +82,11 @@ fun AssessmentsScreen(
 fun AssessmentsScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    onPublishedAssessmentOptions: (Assessment) -> Unit,
-    onInReviewAssessmentOptions: (Assessment) -> Unit,
-    onDraftAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
+    onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
+    onDraftAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
+    onCreateQuestions: () -> Unit,
 ) {
     val verticalScroll = rememberLazyListState()
     val innerModifier = Modifier
@@ -110,7 +113,7 @@ fun AssessmentsScreenContent(
                 )
 
                 RoundedIconButton(
-                    onClick = { /*TODO*/ },
+                    onClick = onCreateQuestions,
                     icon = R.drawable.icon_add,
                 )
             }
@@ -121,7 +124,7 @@ fun AssessmentsScreenContent(
             )
 
             when (currentAssessmentOption) {
-                AssessmentOption.Published -> {
+                AssessmentState.Published -> {
                     AssessmentsScreenContentPublished(
                         viewModel = viewModel,
                         verticalScroll = verticalScroll,
@@ -130,7 +133,7 @@ fun AssessmentsScreenContent(
                     )
                 }
 
-                AssessmentOption.InReview -> {
+                AssessmentState.InReview -> {
                     AssessmentsScreenContentInReview(
                         viewModel = viewModel,
                         verticalScroll = verticalScroll,
@@ -139,7 +142,7 @@ fun AssessmentsScreenContent(
                     )
                 }
 
-                AssessmentOption.Draft -> {
+                AssessmentState.Draft -> {
                     AssessmentsScreenContentDraft(
                         viewModel = viewModel,
                         verticalScroll = verticalScroll,
@@ -167,41 +170,10 @@ fun AssessmentsScreenContentPublished(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     verticalScroll: LazyListState,
-    onPublishedAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
 ) {
-    val items = listOf<Assessment>(
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = true,
-            reviewing = false,
-            date = "Feb",
-            attempted = true,
-            state = AssessmentState.Published.name,
-        ),
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = false,
-            reviewing = false,
-            date = "Feb",
-            attempted = true,
-            state = AssessmentState.Published.name,
-        ),
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = true,
-            reviewing = false,
-            date = "Feb",
-            attempted = false,
-            state = AssessmentState.Published.name,
-        ),
-    )
+  /**
     LazyColumn(
         modifier = Modifier
             .padding(bottom = 72.dp),
@@ -215,6 +187,8 @@ fun AssessmentsScreenContentPublished(
             )
         }
     }
+
+    */
 }
 
 @Composable
@@ -222,41 +196,10 @@ fun AssessmentsScreenContentInReview(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     verticalScroll: LazyListState,
-    onInReviewAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
 ) {
-    val items = listOf<Assessment>(
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = false,
-            reviewing = true,
-            date = "Feb",
-            attempted = false,
-            state = AssessmentState.InReview.name,
-        ),
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = false,
-            reviewing = true,
-            date = "Feb",
-            attempted = false,
-            state = AssessmentState.InReview.name,
-        ),
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = false,
-            reviewing = true,
-            date = "Feb",
-            attempted = false,
-            state = AssessmentState.InReview.name,
-        ),
-    )
+   /**
     LazyColumn(
         modifier = Modifier
             .padding(bottom = 72.dp),
@@ -270,6 +213,7 @@ fun AssessmentsScreenContentInReview(
             )
         }
     }
+    */
 }
 
 @Composable
@@ -277,41 +221,10 @@ fun AssessmentsScreenContentDraft(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     verticalScroll: LazyListState,
-    onDraftAssessmentOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    onDraftAssessmentOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
 ) {
-    val items = listOf<Assessment>(
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = false,
-            reviewing = false,
-            date = "Feb",
-            attempted = false,
-            state = AssessmentState.Draft.name,
-        ),
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = false,
-            reviewing = false,
-            date = "Feb",
-            attempted = false,
-            state = AssessmentState.Draft.name,
-        ),
-        Assessment(
-            title = "Chemistry Exam For SS 1",
-            subject = "Chemistry",
-            type = AssessmentType.Exam.name,
-            expired = false,
-            reviewing = false,
-            date = "Feb",
-            attempted = false,
-            state = AssessmentState.Draft.name,
-        ),
-    )
+    /**
     LazyColumn(
         modifier = Modifier
             .padding(bottom = 72.dp),
@@ -325,15 +238,16 @@ fun AssessmentsScreenContentDraft(
             )
         }
     }
+    */
 }
 
 
 @Composable
 fun AssessmentItem(
     modifier: Modifier = Modifier,
-    assessment: Assessment,
-    onOptions: (Assessment) -> Unit,
-    onSelectAssessment: (Assessment) -> Unit,
+    assessment: AssessmentModel,
+    onOptions: (AssessmentModel) -> Unit,
+    onSelectAssessment: (AssessmentModel) -> Unit,
 ) {
     val constraints = assessmentItemConstraints(8.dp)
     val innerModifier = Modifier
@@ -361,19 +275,19 @@ fun AssessmentItem(
                     .layoutId("attemptStatus")
                     .width(3.dp)
                     .background(
-                        color = if (assessment.attempted) Green100 else Black100.copy(0.5f),
+                        color = if (assessment.attempts.isNotEmpty()) Green100 else Black100.copy(0.5f),
                         shape = RoundedCornerShape(16.dp)
                     )
             )
 
             DateIcon(
-                title = assessment.date,
-                subtitle = assessment.date,
+                title = assessment.endTime.orEmpty(),
+                subtitle = assessment.endTime.orEmpty(),
                 modifier = innerModifier.layoutId("dateIcon")
             )
 
             Text(
-                text = assessment.title.uppercase(),
+                text = assessment.name?.uppercase().orEmpty(),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colors.primary,
@@ -384,7 +298,7 @@ fun AssessmentItem(
                 overflow = TextOverflow.Ellipsis,
             )
 
-            if (assessment.expired) {
+            if (assessment.endTime != null) {
                 Text(
                     text = stringResource(id = R.string.closed).uppercase(),
                     fontSize = 14.sp,
@@ -395,7 +309,7 @@ fun AssessmentItem(
                 )
             }
 
-            AssessmentSubjectType(
+            AssessmentSubjectRow(
                 assessment = assessment,
                 modifier = innerModifier.layoutId("subjectAndType")
             )
@@ -499,9 +413,9 @@ fun DateIcon(
 
 
 @Composable
-fun AssessmentSubjectType(
+fun AssessmentSubjectRow(
     modifier: Modifier = Modifier,
-    assessment: Assessment,
+    assessment: AssessmentModel,
 ) {
     Row(
         modifier = modifier,
@@ -509,7 +423,7 @@ fun AssessmentSubjectType(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = assessment.subject,
+            text = assessment.subjectName.orEmpty(),
             modifier = modifier.widthIn(max = 120.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -524,7 +438,7 @@ fun AssessmentSubjectType(
         )
 
         Text(
-            text = assessment.type,
+            text = assessment.type.orEmpty(),
             fontSize = 12.sp,
             color = Color(generateColorFromAssessment(assessment))
         )
@@ -535,7 +449,7 @@ fun AssessmentSubjectType(
 fun AssessmentSelector(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    options: List<AssessmentOption> = AssessmentOption.values().toList(),
+    options: List<AssessmentState> = AssessmentState.values().toList(),
 ) {
     val currentAssessmentOption by viewModel.currentAssessmentOption.collectAsState()
 
@@ -556,10 +470,10 @@ fun AssessmentSelector(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             options.forEach { each ->
-                AssessmentOptionButton(
+                AssessmentStateButton(
                     onSelect = viewModel::onCurrentAssessmentOptionChanged,
                     option = each,
-                    selected = each == (currentAssessmentOption ?: AssessmentOption.Published)
+                    selected = each == (currentAssessmentOption ?: AssessmentState.Published)
                 )
             }
         }
@@ -568,10 +482,10 @@ fun AssessmentSelector(
 
 
 @Composable
-fun AssessmentOptionButton(
+fun AssessmentStateButton(
     modifier: Modifier = Modifier,
-    onSelect: (AssessmentOption) -> Unit,
-    option: AssessmentOption,
+    onSelect: (AssessmentState) -> Unit,
+    option: AssessmentState,
     selected: Boolean = false,
 ) {
     TextButton(
@@ -593,46 +507,32 @@ fun AssessmentOptionButton(
     }
 }
 
+enum class AssessmentType(val title: String) {
+    HomeWork("HomeWork"),
+    Quiz("Class Quiz"),
+    Exam("Exam")
+}
 
-enum class AssessmentOption(val title: String) {
+enum class AssessmentState(val title: String) {
     Published("Published"),
     InReview("In Review"),
     Draft("Draft")
 }
 
 
-data class Assessment(
-    val title: String,
-    val subject: String,
-    val type: String,
-    val state: String,
-    val expired: Boolean,
-    val reviewing: Boolean,
-    val date: String,
-    val attempted: Boolean,
-)
-
-enum class AssessmentType {
-    Quiz, Test, Exam
-}
-
-enum class AssessmentState {
-    Published, InReview, Draft
-}
-
-
 @Composable
 fun PublishedAssessmentBottomSheetContent(
     modifier: Modifier = Modifier,
-    publishedAssessmentOptions: List<PublishedAssessmentBottomSheetOption> = PublishedAssessmentBottomSheetOption.values().toList(),
+    publishedAssessmentOptions: List<PublishedAssessmentBottomSheetOption> = PublishedAssessmentBottomSheetOption.values()
+        .toList(),
     onSelectOption: (PublishedAssessmentBottomSheetOption) -> Unit,
-    ) {
+) {
     LazyColumn(modifier = modifier.padding(bottom = 16.dp), state = rememberLazyListState()) {
         items(publishedAssessmentOptions) { each ->
-           PublishedAssessmentOptionsListItem(
-               publishedAssessmentOption = each,
-               onSelect = onSelectOption
-           )
+            PublishedAssessmentOptionsListItem(
+                publishedAssessmentOption = each,
+                onSelect = onSelectOption
+            )
         }
     }
 }
@@ -821,49 +721,4 @@ enum class InReviewAssessmentBottomSheetOption(val label: String, val icon: Int)
 
 enum class DraftAssessmentBottomSheetOption(val label: String, val icon: Int) {
     AddQuestions("Add Questions", R.drawable.icon_add)
-}
-
-@Preview
-@Composable
-private fun AssessmentSubjectTypePreview() {
-    AssessmentSubjectType(
-        assessment = Assessment(
-            title = "",
-            subject = "Mathematics Education Knowledge Subject",
-            type = AssessmentType.Quiz.name,
-            expired = false,
-            reviewing = false,
-            date = "",
-            attempted = false,
-            state = AssessmentState.Published.name,
-        )
-    )
-}
-
-@Preview
-@Composable
-private fun DateIconPreview() {
-    DateIcon(
-        title = "02",
-        subtitle = "Aug"
-    )
-}
-
-@Preview
-@Composable
-private fun AssessmentItemPreview() {
-    AssessmentItem(
-        assessment = Assessment(
-            title = "Year 11 Examination",
-            subject = "Mathematics",
-            type = AssessmentType.Quiz.name,
-            expired = true,
-            reviewing = false,
-            date = "Aug",
-            attempted = false,
-            state = AssessmentState.Published.name,
-        ),
-        onOptions = {},
-        onSelectAssessment = {}
-    )
 }
