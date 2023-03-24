@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,52 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.theme.Black100
+
+@Composable
+fun SecondaryButtonWithIconRight(
+    modifier: Modifier = Modifier,
+    label: String,
+    icon: Int,
+    onClick: () -> Unit,
+    iconSize: Dp = 24.dp,
+    iconTint: Color = MaterialTheme.colors.primary,
+    textColor: Color = MaterialTheme.colors.primary,
+) {
+    TextButton(
+        onClick = onClick,
+        shape = CircleShape,
+        modifier = modifier
+            .border(
+                color = textColor,
+                width = 1.dp,
+                shape = CircleShape,
+            )
+            .clip(CircleShape),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Color.Transparent,
+            contentColor = textColor,
+            disabledBackgroundColor = Black100.copy(0.1f)
+        )
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Normal,
+            color = textColor,
+            modifier = modifier.padding(horizontal = 4.dp, vertical = 0.dp)
+        )
+
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = stringResource(id = R.string.icon),
+            tint = iconTint,
+            modifier = modifier
+                .padding(horizontal = 4.dp, vertical = 0.dp)
+                .size(iconSize)
+        )
+    }
+}
+
 
 @Composable
 fun DropdownButton(
@@ -316,5 +363,15 @@ private fun PrimaryTextButtonWithIconPreview() {
         label = "Live Class",
         onClick = {},
         icon = R.drawable.icon_video_camera,
+    )
+}
+
+@Composable
+@Preview
+private fun TertiaryTextButtonWithIconPreview() {
+    TertiaryTextButtonWithIcon(
+        label = "Click me",
+        onClick = {},
+        icon = R.drawable.icon_close,
     )
 }

@@ -2,11 +2,14 @@ package com.vanguard.classifiadmin.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,6 +33,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,13 +57,17 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
+import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.ui.screens.admin.CreateSubjectClassItem
 import com.vanguard.classifiadmin.ui.screens.admin.StagedSubjectItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -78,12 +86,13 @@ fun CreateAssessmentBox(
     }
     val coroutineScope = rememberCoroutineScope()
 
-    Surface(modifier = Modifier) {
-        BoxWithConstraints(modifier = Modifier) {
+    Surface(modifier = Modifier.fillMaxSize()) {
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             val maxHeight = maxHeight
 
             ModalBottomSheetLayout(
-                modifier = modifier
+                modifier = Modifier
                     .width(parentWidth)
                     .height(maxHeight),
                 sheetState = sheetState,
@@ -98,7 +107,7 @@ fun CreateAssessmentBox(
                 },
                 content = {
                     CreateAssessmentBoxContent(
-                        modifier = modifier,
+                        modifier = Modifier,
                         viewModel = viewModel,
                         onClose = onClose,
                         onSelectSubjectForAssessment = {
@@ -123,15 +132,55 @@ fun CreateAssessmentBoxContent(
     onSelectSubjectForAssessment: () -> Unit,
 ) {
     val innerModifier = Modifier
+    val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val constraints = CreateAssessmentBoxConstraints(8.dp)
     val assessmentNameCreateAssessment by viewModel.assessmentNameCreateAssessment.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentUserRolePref()
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentSchoolIdPref()
+        delay(1000)
+        when(currentUserRolePref) {
+            UserRole.Teacher.name -> {
+                //get subjects assigned to teacher
+
+                //get classes assigned to teacher
+                viewModel.getVerifiedClassesGivenTeacherNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty(),
+                )
+                //get students assigned to teacher
+            }
+            UserRole.SuperAdmin.name -> {
+                //get all subjects
+                viewModel.getVerifiedSubjectsNetwork(currentSchoolIdPref.orEmpty())
+                //get all classes
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+                //get all students
+                viewModel.getVerifiedStudentsNetwork(currentSchoolIdPref.orEmpty())
+            }
+            UserRole.Admin.name -> {
+                //get all subjects
+                viewModel.getVerifiedSubjectsNetwork(currentSchoolIdPref.orEmpty())
+                //get all classes
+                viewModel.getVerifiedClassesNetwork(currentSchoolIdPref.orEmpty())
+                //get all students
+                viewModel.getVerifiedStudentsNetwork(currentSchoolIdPref.orEmpty())
+            }
+            else -> {}
+        }
+
+    }
 
     Card(
         modifier = modifier.padding(horizontal = 16.dp),
         elevation = 8.dp,
         shape = RoundedCornerShape(16.dp)
     ) {
-        BoxWithConstraints(modifier = modifier) {
+        BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
             val maxHeight = maxHeight
             val maxWidth = maxWidth
 
@@ -302,6 +351,27 @@ fun CreateAssessmentBoxContent(
                     isError = false,
                 )
 
+
+                AssignedClassSectionAssessment(
+                    modifier = innerModifier.layoutId("classField"),
+                    myClasses = listOf(),
+                    onRemoveClass = {},
+                    onAssignClass = {}
+                )
+
+                AssignedStudentSectionAssessment(
+                    modifier= innerModifier.layoutId("studentField"),
+                    students = emptyList(),
+                    onRemoveStudent = {},
+                    onAssignStudent = {}
+                )
+
+
+                PrimaryTextButton(
+                    label = stringResource(id = R.string.continue_text),
+                    onClick = { /*TODO: on continue */ },
+                    modifier = innerModifier.layoutId("continueButton")
+                )
             }
         }
     }
@@ -378,6 +448,139 @@ private fun CreateAssessmentBoxConstraints(margin: Dp): ConstraintSet {
         }
     }
 }
+
+@Composable
+fun AssignedClassSectionAssessment(
+    modifier: Modifier = Modifier,
+    myClasses: List<ClassModel>,
+    onRemoveClass: (ClassModel) -> Unit,
+    onAssignClass: () -> Unit,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        OutlinedTextField(
+            enabled = false,
+            readOnly = true,
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .clickable { onAssignClass() },
+            value = "",
+            onValueChange = {},
+            label = {
+                Text(
+                    text = stringResource(id = R.string.assigned_class),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Black100.copy(0.5f),
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.icon_arrow_down),
+                    contentDescription = stringResource(id = R.string.arrow_dropdown),
+                    tint = Black100.copy(0.5f)
+                )
+            },
+            shape = RoundedCornerShape(16.dp),
+            textStyle = TextStyle(
+                color = Black100,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+            ),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done,
+            ),
+            isError = false,
+        )
+
+        Spacer(modifier = modifier.height(8.dp))
+
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            myClasses.forEach { myClass ->
+                SecondaryButtonWithIconRight(
+                    label = myClass.classCode.orEmpty(),
+                    icon = R.drawable.icon_close,
+                    onClick = { onRemoveClass(myClass) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AssignedStudentSectionAssessment(
+    modifier: Modifier = Modifier,
+    students: List<UserModel>,
+    onRemoveStudent: (UserModel) -> Unit,
+    onAssignStudent: () -> Unit,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        OutlinedTextField(
+            enabled = false,
+            readOnly = true,
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .clickable { onAssignStudent() },
+            value = "",
+            onValueChange = {},
+            label = {
+                Text(
+                    text = stringResource(id = R.string.assigned_student),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Black100.copy(0.5f),
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.icon_arrow_down),
+                    contentDescription = stringResource(id = R.string.arrow_dropdown),
+                    tint = Black100.copy(0.5f)
+                )
+            },
+            shape = RoundedCornerShape(16.dp),
+            textStyle = TextStyle(
+                color = Black100,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+            ),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done,
+            ),
+            isError = false,
+        )
+
+        Spacer(modifier = modifier.height(8.dp))
+
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            students.forEach { student ->
+                SecondaryButtonWithIconRight(
+                    label = student.fullname.orEmpty(),
+                    icon = R.drawable.icon_close,
+                    onClick = { onRemoveStudent(student) },
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun AssessmentTypeSelector(

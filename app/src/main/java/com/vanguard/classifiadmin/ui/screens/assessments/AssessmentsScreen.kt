@@ -28,6 +28,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -48,6 +49,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.AssessmentModel
+import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromAssessment
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.theme.Black100
@@ -91,6 +93,11 @@ fun AssessmentsScreenContent(
     val verticalScroll = rememberLazyListState()
     val innerModifier = Modifier
     val currentAssessmentOption by viewModel.currentAssessmentOption.collectAsState()
+    val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentUserRolePref()
+    }
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -112,10 +119,15 @@ fun AssessmentsScreenContent(
                     color = MaterialTheme.colors.primary,
                 )
 
-                RoundedIconButton(
-                    onClick = onCreateQuestions,
-                    icon = R.drawable.icon_add,
-                )
+                if (currentUserRolePref != null &&
+                    currentUserRolePref != UserRole.Student.name &&
+                    currentUserRolePref != UserRole.Parent.name
+                ) {
+                    RoundedIconButton(
+                        onClick = onCreateQuestions,
+                        icon = R.drawable.icon_add,
+                    )
+                }
             }
 
             AssessmentSelector(
@@ -173,22 +185,22 @@ fun AssessmentsScreenContentPublished(
     onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
     onSelectAssessment: (AssessmentModel) -> Unit,
 ) {
-  /**
+    /**
     LazyColumn(
-        modifier = Modifier
-            .padding(bottom = 72.dp),
-        state = verticalScroll,
+    modifier = Modifier
+    .padding(bottom = 72.dp),
+    state = verticalScroll,
     ) {
-        items(items) { each ->
-            AssessmentItem(
-                assessment = each,
-                onOptions = onPublishedAssessmentOptions,
-                onSelectAssessment = onSelectAssessment,
-            )
-        }
+    items(items) { each ->
+    AssessmentItem(
+    assessment = each,
+    onOptions = onPublishedAssessmentOptions,
+    onSelectAssessment = onSelectAssessment,
+    )
+    }
     }
 
-    */
+     */
 }
 
 @Composable
@@ -199,21 +211,21 @@ fun AssessmentsScreenContentInReview(
     onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
     onSelectAssessment: (AssessmentModel) -> Unit,
 ) {
-   /**
+    /**
     LazyColumn(
-        modifier = Modifier
-            .padding(bottom = 72.dp),
-        state = verticalScroll,
+    modifier = Modifier
+    .padding(bottom = 72.dp),
+    state = verticalScroll,
     ) {
-        items(items) { each ->
-            AssessmentItem(
-                assessment = each,
-                onOptions = onInReviewAssessmentOptions,
-                onSelectAssessment = onSelectAssessment,
-            )
-        }
+    items(items) { each ->
+    AssessmentItem(
+    assessment = each,
+    onOptions = onInReviewAssessmentOptions,
+    onSelectAssessment = onSelectAssessment,
+    )
     }
-    */
+    }
+     */
 }
 
 @Composable
@@ -226,19 +238,19 @@ fun AssessmentsScreenContentDraft(
 ) {
     /**
     LazyColumn(
-        modifier = Modifier
-            .padding(bottom = 72.dp),
-        state = verticalScroll,
+    modifier = Modifier
+    .padding(bottom = 72.dp),
+    state = verticalScroll,
     ) {
-        items(items) { each ->
-            AssessmentItem(
-                assessment = each,
-                onOptions = onDraftAssessmentOptions,
-                onSelectAssessment = onSelectAssessment,
-            )
-        }
+    items(items) { each ->
+    AssessmentItem(
+    assessment = each,
+    onOptions = onDraftAssessmentOptions,
+    onSelectAssessment = onSelectAssessment,
+    )
     }
-    */
+    }
+     */
 }
 
 
@@ -275,7 +287,9 @@ fun AssessmentItem(
                     .layoutId("attemptStatus")
                     .width(3.dp)
                     .background(
-                        color = if (assessment.attempts.isNotEmpty()) Green100 else Black100.copy(0.5f),
+                        color = if (assessment.attempts.isNotEmpty()) Green100 else Black100.copy(
+                            0.5f
+                        ),
                         shape = RoundedCornerShape(16.dp)
                     )
             )

@@ -199,4 +199,6 @@
     <string name="give_assessment_a_name">Give your assessment a name</string>
     <string name="start_period">Start Period</string>
     <string name="end_period">End Period</string>
+    <string name="assigned_class">Assigned Class</string>
+    <string name="assigned_student">Assigned Student</string>
 </resources>

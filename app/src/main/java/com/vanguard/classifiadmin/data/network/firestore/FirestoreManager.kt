@@ -42,6 +42,12 @@ interface FirestoreManager {
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     )
 
+    suspend fun getVerifiedStudentsGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
     suspend fun getStagedStudentsNetwork(
         schoolId: String,
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
@@ -186,6 +192,12 @@ interface FirestoreManager {
     )
 
     suspend fun getVerifiedSubjectsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedSubjectsGivenTeacherNetwork(
+        teacherId: String,
         schoolId: String,
         onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
     )
