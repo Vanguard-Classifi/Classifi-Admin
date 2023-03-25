@@ -601,6 +601,32 @@ class MainViewModel @Inject constructor(
     private var _studentsBufferCreateAssessmentListener = MutableStateFlow(0)
     val studentsBufferCreateAssessmentListener: StateFlow<Int> = _studentsBufferCreateAssessmentListener
 
+    private var _startTimeCreateAssessment = MutableStateFlow(null as String?)
+    val startTimeCreateAssessment: StateFlow<String?> = _startTimeCreateAssessment
+
+    private var _endTimeCreateAssessment = MutableStateFlow(null as String?)
+    val endTimeCreateAssessment: StateFlow<String?> = _endTimeCreateAssessment
+
+    private var _startDateCreateAssessment = MutableStateFlow(null as String?)
+    val startDateCreateAssessment: StateFlow<String?> = _startDateCreateAssessment
+
+    private var _endDateCreateAssessment = MutableStateFlow(null as String?)
+    val endDateCreateAssessment: StateFlow<String?> = _endDateCreateAssessment
+
+    fun onStartTimeCreateAssessmentChanged(time: String?) = effect {
+        _startTimeCreateAssessment.value = time
+    }
+    fun onEndTimeCreateAssessmentChanged(time: String?) = effect {
+        _endTimeCreateAssessment.value = time
+    }
+    fun onStartDateCreateAssessmentChanged(date: String?) = effect {
+        _startDateCreateAssessment.value = date
+    }
+
+    fun onEndDateCreateAssessmentChanged(date: String?) = effect {
+        _endDateCreateAssessment.value = date
+    }
+
     fun onIncStudentsBufferCreateAssessmentListener() = effect {
         _studentsBufferCreateAssessmentListener.value++
     }

@@ -15,13 +15,24 @@
 
     <style name="DatePickerTheme" parent="ThemeOverlay.AppCompat.Dialog">
         <item name="android:windowBackground">@color/purple_200</item>
-        <item name="colorAccent">@color/purple_100</item>
+        <item name="colorAccent">@color/purple_150</item>
         <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorControlActivated">@color/purple_100</item>
-        <item name="colorControlHighlight">@color/purple_100</item>
+        <item name="colorControlActivated">@color/purple_150</item>
+        <item name="colorControlHighlight">@color/purple_150</item>
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
         <item name="android:selectableItemBackgroundBorderless">@color/purple_200</item>
+    </style>
+
+    <style name="TimePickerTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@color/purple_150</item>
+        <item name="colorAccent">@color/purple_200</item>
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorControlActivated">@color/purple_150</item>
+        <item name="colorControlHighlight">@color/purple_150</item>
+        <item name="android:textColorPrimary">@color/purple_200</item>
+        <item name="android:textColorSecondary">@color/purple_200</item>
+        <item name="colorControlNormal">@color/purple_200</item>
     </style>
 
 </resources>

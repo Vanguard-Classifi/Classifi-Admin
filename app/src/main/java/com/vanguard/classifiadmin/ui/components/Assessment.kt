@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin.ui.components
 
-import android.util.Log
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -39,12 +40,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -65,16 +68,17 @@ import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.extensions.orStudent
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserRole
-import com.vanguard.classifiadmin.ui.screens.admin.CreateSubjectClassItem
-import com.vanguard.classifiadmin.ui.screens.admin.StagedSubjectItem
 import com.vanguard.classifiadmin.ui.screens.admin.VerifiedStudentItem
 import com.vanguard.classifiadmin.ui.screens.admin.VerifiedSubjectItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
-import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -102,6 +106,11 @@ fun CreateAssessmentBox(
     val verifiedStudentsUnderClassNetwork by viewModel.verifiedStudentsUnderClassNetwork.collectAsState()
     val studentsBufferCreateAssessment by viewModel.studentsBufferCreateAssessment.collectAsState()
     val studentsBufferCreateAssessmentListener by viewModel.studentsBufferCreateAssessmentListener.collectAsState()
+    val startDateTime = remember {
+        mutableStateOf<LocalDateTime?>(
+            LocalDateTime.now().plusDays(1)
+        )
+    }
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -127,7 +136,7 @@ fun CreateAssessmentBox(
 
             else -> {}
         }
-        if(selectedSubjectCreateAssessment != null) {
+        if (selectedSubjectCreateAssessment != null) {
             viewModel.getVerifiedStudentsUnderClassNetwork(
                 selectedSubjectCreateAssessment?.classId.orEmpty(),
                 currentSchoolIdPref.orEmpty()
@@ -136,7 +145,7 @@ fun CreateAssessmentBox(
     }
 
     LaunchedEffect(showModalSheet.value) {
-        if(selectedSubjectCreateAssessment != null) {
+        if (selectedSubjectCreateAssessment != null) {
             viewModel.getVerifiedStudentsUnderClassNetwork(
                 selectedSubjectCreateAssessment?.classId.orEmpty(),
                 currentSchoolIdPref.orEmpty()
@@ -148,11 +157,7 @@ fun CreateAssessmentBox(
         studentsBufferCreateAssessment.size,
         studentsBufferCreateAssessmentListener
     ) {
-        Log.e(
-            TAG,
-            "CreateAssessmentBox: current student buffer size is ${studentsBufferCreateAssessment.size}"
-        )
-        if(selectedSubjectCreateAssessment != null) {
+        if (selectedSubjectCreateAssessment != null) {
             viewModel.getVerifiedStudentsUnderClassNetwork(
                 selectedSubjectCreateAssessment?.classId.orEmpty(),
                 currentSchoolIdPref.orEmpty()
@@ -199,8 +204,8 @@ fun CreateAssessmentBox(
 
                             else -> emptyList()
                         }, //subjects assigned to teacher only
-                        students = if(verifiedStudentsUnderClassNetwork is Resource.Success)
-                                verifiedStudentsUnderClassNetwork.data?.map { it.toLocal() }!! else emptyList(),
+                        students = if (verifiedStudentsUnderClassNetwork is Resource.Success)
+                            verifiedStudentsUnderClassNetwork.data?.map { it.toLocal() }!! else emptyList(),
                         viewModel = viewModel,
                         onClose = {
                             coroutineScope.launch {
@@ -219,24 +224,6 @@ fun CreateAssessmentBox(
                         onSelectSubjectForAssessment = {
                             viewModel.onAssessmentBottomSheetModeChanged(
                                 AssessmentBottomSheetMode.Subjects
-                            )
-                            coroutineScope.launch {
-                                showModalSheet.value = true
-                                sheetState.show()
-                            }
-                        },
-                        onSelectEndPeriod = {
-                            viewModel.onAssessmentBottomSheetModeChanged(
-                                AssessmentBottomSheetMode.EndPeriod
-                            )
-                            coroutineScope.launch {
-                                showModalSheet.value = true
-                                sheetState.show()
-                            }
-                        },
-                        onSelectStartPeriod = {
-                            viewModel.onAssessmentBottomSheetModeChanged(
-                                AssessmentBottomSheetMode.StartPeriod
                             )
                             coroutineScope.launch {
                                 showModalSheet.value = true
@@ -267,8 +254,6 @@ fun CreateAssessmentBoxContent(
     onClose: () -> Unit,
     onSelectSubjectForAssessment: () -> Unit,
     onSelectStudentForAssessment: () -> Unit,
-    onSelectStartPeriod: () -> Unit,
-    onSelectEndPeriod: () -> Unit,
 ) {
     val innerModifier = Modifier
     val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
@@ -278,6 +263,10 @@ fun CreateAssessmentBoxContent(
     val assessmentNameCreateAssessment by viewModel.assessmentNameCreateAssessment.collectAsState()
     val selectedSubjectCreateAssessment by viewModel.selectedSubjectCreateAssessment.collectAsState()
     val studentsBufferCreateAssessment by viewModel.studentsBufferCreateAssessment.collectAsState()
+    val startTimeCreateAssessment by viewModel.startTimeCreateAssessment.collectAsState()
+    val startDateCreateAssessment by viewModel.startDateCreateAssessment.collectAsState()
+    val endTimeCreateAssessment by viewModel.endTimeCreateAssessment.collectAsState()
+    val endDateCreateAssessment by viewModel.endDateCreateAssessment.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserRolePref()
@@ -286,14 +275,11 @@ fun CreateAssessmentBoxContent(
         delay(1000)
         when (currentUserRolePref) {
             UserRole.Teacher.name -> {
-                //get subjects assigned to teacher
-
                 //get classes assigned to teacher
                 viewModel.getVerifiedClassesGivenTeacherNetwork(
                     currentUserIdPref.orEmpty(),
                     currentSchoolIdPref.orEmpty(),
                 )
-                //get students assigned to teacher
             }
 
             UserRole.SuperAdmin.name -> {
@@ -419,84 +405,31 @@ fun CreateAssessmentBoxContent(
                     isError = false,
                 )
 
-
-                OutlinedTextField(
-                    enabled = false,
-                    readOnly = true,
+                DateTimeSelection(
                     modifier = innerModifier
-                        .layoutId("startPeriodField")
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onSelectStartPeriod() },
-                    value = "",
-                    onValueChange = {},
-                    label = {
-                        Text(
-                            text = stringResource(id = R.string.start_period),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = Black100.copy(0.5f),
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_arrow_down),
-                            contentDescription = stringResource(id = R.string.arrow_dropdown),
-                            tint = Black100.copy(0.5f)
-                        )
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = TextStyle(
-                        color = Black100,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done,
-                    ),
-                    isError = false,
+                        .layoutId("startPeriodField"),
+                    timeLabel = stringResource(id = R.string.start_time),
+                    dateLabel = stringResource(id = R.string.start_date),
+                    timeValue = startTimeCreateAssessment.orEmpty(),
+                    dateValue = startDateCreateAssessment.orEmpty(),
+                    onTimeChange = viewModel::onStartTimeCreateAssessmentChanged,
+                    onDateChange = viewModel::onStartDateCreateAssessmentChanged,
                 )
 
-
-                OutlinedTextField(
-                    enabled = false,
-                    readOnly = true,
+                DateTimeSelection(
                     modifier = innerModifier
-                        .layoutId("endPeriodField")
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onSelectEndPeriod() },
-                    value = "",
-                    onValueChange = {},
-                    label = {
-                        Text(
-                            text = stringResource(id = R.string.end_period),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = Black100.copy(0.5f),
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_arrow_down),
-                            contentDescription = stringResource(id = R.string.arrow_dropdown),
-                            tint = Black100.copy(0.5f)
-                        )
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = TextStyle(
-                        color = Black100,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done,
-                    ),
-                    isError = false,
+                        .layoutId("endPeriodField"),
+                    timeLabel = stringResource(id = R.string.end_time),
+                    dateLabel = stringResource(id = R.string.end_date),
+                    timeValue = endTimeCreateAssessment.orEmpty(),
+                    dateValue = endDateCreateAssessment.orEmpty(),
+                    onTimeChange = viewModel::onEndTimeCreateAssessmentChanged,
+                    onDateChange = viewModel::onEndDateCreateAssessmentChanged,
                 )
 
                 AssignedStudentSectionAssessment(
                     modifier = innerModifier.layoutId("studentField"),
+                    viewModel = viewModel,
                     students = studentsBufferCreateAssessment,
                     onRemoveStudent = {
                         viewModel.onRemoveStudentFromAssessment(it)
@@ -582,6 +515,132 @@ private fun CreateAssessmentBoxConstraints(margin: Dp): ConstraintSet {
 }
 
 @Composable
+fun DateTimeSelection(
+    modifier: Modifier = Modifier,
+    onSetDate: () -> Unit = {},
+    onSetTime: () -> Unit = {},
+    timeValue: String,
+    dateValue: String,
+    onTimeChange: (String) -> Unit,
+    onDateChange: (String) -> Unit,
+    timeLabel: String,
+    dateLabel: String,
+    is24Hour: Boolean = true,
+) {
+    BoxWithConstraints(modifier = modifier) {
+        val rowWidth = maxWidth
+        val datePattern = "yyyy-MM-dd"
+        val timePattern = if (is24Hour) "HH:mm" else "h:mm a"
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
+        val timeFormatter = DateTimeFormatter.ofPattern(timePattern)
+        val date = if (dateValue.isNotBlank()) LocalDate.parse(dateValue, dateFormatter) else LocalDate.now()
+        val time = if (timeValue.isNotBlank()) LocalTime.parse(timeValue, timeFormatter) else LocalTime.now()
+        val datePickerDialog = DatePickerDialog(
+            LocalContext.current,
+            R.style.DatePickerTheme,
+            { _, year, month, dayOfMonth ->
+                onDateChange(LocalDate.of(year, month + 1, dayOfMonth).toString())
+            },
+            date.year,
+            date.monthValue - 1,
+            date.dayOfMonth,
+        )
+        val timePickerDialog = TimePickerDialog(
+            LocalContext.current,
+            R.style.TimePickerTheme,
+            { _, hour, minute ->
+                onTimeChange(LocalTime.of(hour, minute).toString())
+            },
+            time.hour,
+            time.minute,
+            is24Hour,
+        )
+
+        Row(
+            modifier = modifier.width(rowWidth),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            OutlinedTextField(
+                enabled = false,
+                readOnly = true,
+                modifier = modifier
+                    .width(rowWidth.times(0.48f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { datePickerDialog.show() },
+                value = dateValue,
+                onValueChange = onDateChange,
+                label = {
+                    Text(
+                        text = dateLabel,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Black100.copy(0.5f),
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_arrow_down),
+                        contentDescription = stringResource(id = R.string.arrow_dropdown),
+                        tint = Black100.copy(0.5f)
+                    )
+                },
+                shape = RoundedCornerShape(16.dp),
+                textStyle = TextStyle(
+                    color = Black100,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done,
+                ),
+                isError = false,
+            )
+
+
+            OutlinedTextField(
+                enabled = false,
+                readOnly = true,
+                modifier = modifier
+                    .width(rowWidth.times(0.48f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { timePickerDialog.show() },
+                value = timeValue,
+                onValueChange = onTimeChange,
+                label = {
+                    Text(
+                        text = timeLabel,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Black100.copy(0.5f),
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_arrow_down),
+                        contentDescription = stringResource(id = R.string.arrow_dropdown),
+                        tint = Black100.copy(0.5f)
+                    )
+                },
+                shape = RoundedCornerShape(16.dp),
+                textStyle = TextStyle(
+                    color = Black100,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done,
+                ),
+                isError = false,
+            )
+        }
+    }
+}
+
+
+@Composable
 fun AssignedClassSectionAssessment(
     modifier: Modifier = Modifier,
     myClasses: List<ClassModel>,
@@ -650,10 +709,13 @@ fun AssignedClassSectionAssessment(
 @Composable
 fun AssignedStudentSectionAssessment(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     students: List<UserModel>,
     onRemoveStudent: (UserModel) -> Unit,
     onAssignStudent: () -> Unit,
 ) {
+    val studentsBufferCreateAssessment by viewModel.studentsBufferCreateAssessment.collectAsState()
+
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.Start,
@@ -666,7 +728,7 @@ fun AssignedStudentSectionAssessment(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
                 .clickable { onAssignStudent() },
-            value = "",
+            value = if (studentsBufferCreateAssessment.isEmpty()) stringResource(id = R.string.all_students) else "",
             onValueChange = {},
             label = {
                 Text(
@@ -852,11 +914,11 @@ fun AssessmentBottomSheetContent(
                                 selected = studentsBufferCreateAssessment.contains(each),
                                 onTap = {
                                     //add to student list
-                                    if(studentsBufferCreateAssessment.isEmpty()) {
+                                    if (studentsBufferCreateAssessment.isEmpty()) {
                                         viewModel.onAddStudentToAssessment(it)
                                         onClose()
                                     } else {
-                                        if(!studentsBufferCreateAssessment.contains(it)) {
+                                        if (!studentsBufferCreateAssessment.contains(it)) {
                                             viewModel.onAddStudentToAssessment(it)
                                         } else {
                                             viewModel.onRemoveStudentFromAssessment(it)

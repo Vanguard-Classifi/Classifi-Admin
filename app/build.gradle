@@ -92,6 +92,8 @@ dependencies {
     implementation 'androidx.test.ext:junit-ktx:1.1.4'
     implementation 'androidx.room:room-runtime:2.5.0'
     implementation "androidx.compose.foundation:foundation:$compose_version"
+  //  implementation 'com.maxkeppeler.sheets-compose-dialogs:core:1.1.1'
+  //  implementation 'com.maxkeppeler.sheets-compose-dialogs:date-time:1.1.1'
     testImplementation 'androidx.room:room-testing:2.5.0'
     implementation 'androidx.room:room-ktx:2.5.0'
     kapt 'androidx.room:room-compiler:2.5.0'

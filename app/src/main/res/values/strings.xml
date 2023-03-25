@@ -203,4 +203,9 @@
     <string name="assigned_student">Assigned Student</string>
     <string name="teachers">Teachers</string>
     <string name="students_not_available">Students not available yet</string>
+    <string name="all_students">All students</string>
+    <string name="end_time">End Time</string>
+    <string name="end_date">End Date</string>
+    <string name="start_time">Start Time</string>
+    <string name="start_date">Start Date</string>
 </resources>
