@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ButtonDefaults
@@ -60,9 +62,13 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.domain.extensions.orStudent
+import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.ui.screens.admin.CreateSubjectClassItem
 import com.vanguard.classifiadmin.ui.screens.admin.StagedSubjectItem
+import com.vanguard.classifiadmin.ui.screens.admin.VerifiedStudentItem
+import com.vanguard.classifiadmin.ui.screens.admin.VerifiedSubjectItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.theme.Black100
@@ -78,6 +84,7 @@ fun CreateAssessmentBox(
     onClose: () -> Unit,
     parentWidth: Dp,
 ) {
+    val TAG = "CreateAssessmentBox"
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
@@ -85,10 +92,79 @@ fun CreateAssessmentBox(
         mutableStateOf(false)
     }
     val coroutineScope = rememberCoroutineScope()
+    val bottomSheetMode by viewModel.assessmentBottomSheetMode.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val verifiedSubjectsNetwork by viewModel.verifiedSubjectsNetwork.collectAsState()
+    val verifiedSubjectsGivenTeacherNetwork by viewModel.verifiedSubjectsGivenTeacherNetwork.collectAsState()
+    val selectedSubjectCreateAssessment by viewModel.selectedSubjectCreateAssessment.collectAsState()
+    val verifiedStudentsUnderClassNetwork by viewModel.verifiedStudentsUnderClassNetwork.collectAsState()
+    val studentsBufferCreateAssessment by viewModel.studentsBufferCreateAssessment.collectAsState()
+    val studentsBufferCreateAssessmentListener by viewModel.studentsBufferCreateAssessmentListener.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getCurrentUserRolePref()
+        delay(1000)
+        //get subjects assigned to teacher
+        when (currentUserRolePref) {
+            UserRole.Teacher.name -> {
+                viewModel.getVerifiedSubjectsGivenTeacherNetwork(
+                    currentUserIdPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Admin.name -> {
+                viewModel.getVerifiedSubjectsNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            UserRole.SuperAdmin.name -> {
+                viewModel.getVerifiedSubjectsNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            else -> {}
+        }
+        if(selectedSubjectCreateAssessment != null) {
+            viewModel.getVerifiedStudentsUnderClassNetwork(
+                selectedSubjectCreateAssessment?.classId.orEmpty(),
+                currentSchoolIdPref.orEmpty()
+            )
+        }
+    }
+
+    LaunchedEffect(showModalSheet.value) {
+        if(selectedSubjectCreateAssessment != null) {
+            viewModel.getVerifiedStudentsUnderClassNetwork(
+                selectedSubjectCreateAssessment?.classId.orEmpty(),
+                currentSchoolIdPref.orEmpty()
+            )
+        }
+    }
+
+    LaunchedEffect(
+        studentsBufferCreateAssessment.size,
+        studentsBufferCreateAssessmentListener
+    ) {
+        Log.e(
+            TAG,
+            "CreateAssessmentBox: current student buffer size is ${studentsBufferCreateAssessment.size}"
+        )
+        if(selectedSubjectCreateAssessment != null) {
+            viewModel.getVerifiedStudentsUnderClassNetwork(
+                selectedSubjectCreateAssessment?.classId.orEmpty(),
+                currentSchoolIdPref.orEmpty()
+            )
+        }
+    }
+
 
     Surface(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(
-            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        ) {
             val maxHeight = maxHeight
 
             ModalBottomSheetLayout(
@@ -102,7 +178,37 @@ fun CreateAssessmentBox(
                 sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
                 sheetContent = {
                     AssessmentBottomSheetContent(
-                        subjects = emptyList(), //subjects assigned to teacher only
+                        subjects = when (currentUserRolePref) {
+                            UserRole.Teacher.name -> {
+                                if (verifiedSubjectsGivenTeacherNetwork is Resource.Success)
+                                    verifiedSubjectsGivenTeacherNetwork.data?.map { it.toLocal() }!!
+                                else emptyList()
+                            }
+
+                            UserRole.Admin.name -> {
+                                if (verifiedSubjectsNetwork is Resource.Success)
+                                    verifiedSubjectsNetwork.data?.map { it.toLocal() }!!
+                                else emptyList()
+                            }
+
+                            UserRole.SuperAdmin.name -> {
+                                if (verifiedSubjectsNetwork is Resource.Success)
+                                    verifiedSubjectsNetwork.data?.map { it.toLocal() }!!
+                                else emptyList()
+                            }
+
+                            else -> emptyList()
+                        }, //subjects assigned to teacher only
+                        students = if(verifiedStudentsUnderClassNetwork is Resource.Success)
+                                verifiedStudentsUnderClassNetwork.data?.map { it.toLocal() }!! else emptyList(),
+                        viewModel = viewModel,
+                        onClose = {
+                            coroutineScope.launch {
+                                delay(400)
+                                showModalSheet.value = false
+                                sheetState.hide()
+                            }
+                        }
                     )
                 },
                 content = {
@@ -111,11 +217,41 @@ fun CreateAssessmentBox(
                         viewModel = viewModel,
                         onClose = onClose,
                         onSelectSubjectForAssessment = {
+                            viewModel.onAssessmentBottomSheetModeChanged(
+                                AssessmentBottomSheetMode.Subjects
+                            )
                             coroutineScope.launch {
                                 showModalSheet.value = true
                                 sheetState.show()
                             }
-                        }
+                        },
+                        onSelectEndPeriod = {
+                            viewModel.onAssessmentBottomSheetModeChanged(
+                                AssessmentBottomSheetMode.EndPeriod
+                            )
+                            coroutineScope.launch {
+                                showModalSheet.value = true
+                                sheetState.show()
+                            }
+                        },
+                        onSelectStartPeriod = {
+                            viewModel.onAssessmentBottomSheetModeChanged(
+                                AssessmentBottomSheetMode.StartPeriod
+                            )
+                            coroutineScope.launch {
+                                showModalSheet.value = true
+                                sheetState.show()
+                            }
+                        },
+                        onSelectStudentForAssessment = {
+                            viewModel.onAssessmentBottomSheetModeChanged(
+                                AssessmentBottomSheetMode.Students
+                            )
+                            coroutineScope.launch {
+                                showModalSheet.value = true
+                                sheetState.show()
+                            }
+                        },
                     )
                 }
             )
@@ -130,6 +266,9 @@ fun CreateAssessmentBoxContent(
     viewModel: MainViewModel,
     onClose: () -> Unit,
     onSelectSubjectForAssessment: () -> Unit,
+    onSelectStudentForAssessment: () -> Unit,
+    onSelectStartPeriod: () -> Unit,
+    onSelectEndPeriod: () -> Unit,
 ) {
     val innerModifier = Modifier
     val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
@@ -137,13 +276,15 @@ fun CreateAssessmentBoxContent(
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val constraints = CreateAssessmentBoxConstraints(8.dp)
     val assessmentNameCreateAssessment by viewModel.assessmentNameCreateAssessment.collectAsState()
+    val selectedSubjectCreateAssessment by viewModel.selectedSubjectCreateAssessment.collectAsState()
+    val studentsBufferCreateAssessment by viewModel.studentsBufferCreateAssessment.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserRolePref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         delay(1000)
-        when(currentUserRolePref) {
+        when (currentUserRolePref) {
             UserRole.Teacher.name -> {
                 //get subjects assigned to teacher
 
@@ -154,6 +295,7 @@ fun CreateAssessmentBoxContent(
                 )
                 //get students assigned to teacher
             }
+
             UserRole.SuperAdmin.name -> {
                 //get all subjects
                 viewModel.getVerifiedSubjectsNetwork(currentSchoolIdPref.orEmpty())
@@ -162,6 +304,7 @@ fun CreateAssessmentBoxContent(
                 //get all students
                 viewModel.getVerifiedStudentsNetwork(currentSchoolIdPref.orEmpty())
             }
+
             UserRole.Admin.name -> {
                 //get all subjects
                 viewModel.getVerifiedSubjectsNetwork(currentSchoolIdPref.orEmpty())
@@ -170,13 +313,14 @@ fun CreateAssessmentBoxContent(
                 //get all students
                 viewModel.getVerifiedStudentsNetwork(currentSchoolIdPref.orEmpty())
             }
+
             else -> {}
         }
 
     }
 
     Card(
-        modifier = modifier.padding(horizontal = 16.dp),
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 32.dp),
         elevation = 8.dp,
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -245,7 +389,7 @@ fun CreateAssessmentBoxContent(
                         .layoutId("subjectField")
                         .clip(RoundedCornerShape(16.dp))
                         .clickable { onSelectSubjectForAssessment() },
-                    value = "",
+                    value = selectedSubjectCreateAssessment?.subjectCode.orEmpty(),
                     onValueChange = {},
                     placeholder = {
                         Text(
@@ -282,7 +426,7 @@ fun CreateAssessmentBoxContent(
                     modifier = innerModifier
                         .layoutId("startPeriodField")
                         .clip(RoundedCornerShape(16.dp))
-                        .clickable { },
+                        .clickable { onSelectStartPeriod() },
                     value = "",
                     onValueChange = {},
                     label = {
@@ -320,7 +464,7 @@ fun CreateAssessmentBoxContent(
                     modifier = innerModifier
                         .layoutId("endPeriodField")
                         .clip(RoundedCornerShape(16.dp))
-                        .clickable { },
+                        .clickable { onSelectEndPeriod() },
                     value = "",
                     onValueChange = {},
                     label = {
@@ -351,19 +495,14 @@ fun CreateAssessmentBoxContent(
                     isError = false,
                 )
 
-
-                AssignedClassSectionAssessment(
-                    modifier = innerModifier.layoutId("classField"),
-                    myClasses = listOf(),
-                    onRemoveClass = {},
-                    onAssignClass = {}
-                )
-
                 AssignedStudentSectionAssessment(
-                    modifier= innerModifier.layoutId("studentField"),
-                    students = emptyList(),
-                    onRemoveStudent = {},
-                    onAssignStudent = {}
+                    modifier = innerModifier.layoutId("studentField"),
+                    students = studentsBufferCreateAssessment,
+                    onRemoveStudent = {
+                        viewModel.onRemoveStudentFromAssessment(it)
+                        viewModel.onDecStudentsBufferCreateAssessmentListener()
+                    },
+                    onAssignStudent = { onSelectStudentForAssessment() }
                 )
 
 
@@ -387,7 +526,6 @@ private fun CreateAssessmentBoxConstraints(margin: Dp): ConstraintSet {
         val subjectField = createRefFor("subjectField")
         val startPeriodField = createRefFor("startPeriodField")
         val endPeriodField = createRefFor("endPeriodField")
-        val classField = createRefFor("classField")
         val studentField = createRefFor("studentField")
         val continueButton = createRefFor("continueButton")
 
@@ -429,16 +567,10 @@ private fun CreateAssessmentBoxConstraints(margin: Dp): ConstraintSet {
             end.linkTo(startPeriodField.end, 0.dp)
             width = Dimension.fillToConstraints
         }
-        constrain(classField) {
+        constrain(studentField) {
             top.linkTo(endPeriodField.bottom, 8.dp)
             start.linkTo(endPeriodField.start, 0.dp)
             end.linkTo(endPeriodField.end, 0.dp)
-            width = Dimension.fillToConstraints
-        }
-        constrain(studentField) {
-            top.linkTo(classField.bottom, 8.dp)
-            start.linkTo(classField.start, 0.dp)
-            end.linkTo(classField.end, 0.dp)
             width = Dimension.fillToConstraints
         }
         constrain(continueButton) {
@@ -564,18 +696,21 @@ fun AssignedStudentSectionAssessment(
             isError = false,
         )
 
-        Spacer(modifier = modifier.height(8.dp))
+        Spacer(modifier = modifier.height(16.dp))
 
         Row(
-            modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
+            modifier = modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.Start,
         ) {
             students.forEach { student ->
                 SecondaryButtonWithIconRight(
-                    label = student.fullname.orEmpty(),
+                    label = student.fullname.orStudent(),
                     icon = R.drawable.icon_close,
                     onClick = { onRemoveStudent(student) },
                 )
+                Spacer(modifier = modifier.width(8.dp))
             }
         }
     }
@@ -647,8 +782,14 @@ fun AssessmentTypeButton(
 @Composable
 fun AssessmentBottomSheetContent(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     subjects: List<SubjectModel>,
+    students: List<UserModel>,
+    onClose: () -> Unit,
 ) {
+    val mode by viewModel.assessmentBottomSheetMode.collectAsState()
+    val studentsBufferCreateAssessment by viewModel.studentsBufferCreateAssessment.collectAsState()
+
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = modifier
@@ -670,25 +811,91 @@ fun AssessmentBottomSheetContent(
             }
         }
 
-
-        if (subjects.isEmpty()) {
-            //no items screen
-            NoDataInline(message = stringResource(id = R.string.subjects_not_available))
-        } else {
-            LazyColumn(
-                modifier = modifier.padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
-                state = rememberLazyListState()
-            ) {
-                items(subjects) { each ->
-                    StagedSubjectItem(
-                        subject = each,
-                        onRemove = {}
-                    )
+        when (mode) {
+            is AssessmentBottomSheetMode.Subjects -> {
+                if (subjects.isEmpty()) {
+                    //no items screen
+                    NoDataInline(message = stringResource(id = R.string.subjects_not_available))
+                } else {
+                    LazyColumn(
+                        modifier = modifier.padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+                        state = rememberLazyListState()
+                    ) {
+                        items(subjects) { each ->
+                            VerifiedSubjectItem(
+                                subject = each,
+                                selected = false,
+                                onTap = {
+                                    //on select subject
+                                    viewModel.onSelectedSubjectCreateAssessmentChanged(it)
+                                    onClose()
+                                },
+                                onHold = {}
+                            )
+                        }
+                    }
                 }
             }
-        }
 
+            is AssessmentBottomSheetMode.Students -> {
+                if (subjects.isEmpty()) {
+                    //no items screen
+                    NoDataInline(message = stringResource(id = R.string.students_not_available))
+                } else {
+                    LazyColumn(
+                        modifier = modifier.padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+                        state = rememberLazyListState()
+                    ) {
+                        items(students) { each ->
+                            VerifiedStudentItem(
+                                student = each,
+                                selected = studentsBufferCreateAssessment.contains(each),
+                                onTap = {
+                                    //add to student list
+                                    if(studentsBufferCreateAssessment.isEmpty()) {
+                                        viewModel.onAddStudentToAssessment(it)
+                                        onClose()
+                                    } else {
+                                        if(!studentsBufferCreateAssessment.contains(it)) {
+                                            viewModel.onAddStudentToAssessment(it)
+                                        } else {
+                                            viewModel.onRemoveStudentFromAssessment(it)
+                                        }
+                                    }
+                                    viewModel.onIncStudentsBufferCreateAssessmentListener()
+                                },
+                                onHold = {
+                                    viewModel.onAddStudentToAssessment(it)
+                                    viewModel.onIncStudentsBufferCreateAssessmentListener()
+                                }
+                            )
+                        }
+
+                        item {
+                            PrimaryTextButtonFillWidth(
+                                label = stringResource(id = R.string.done),
+                                onClick = onClose
+                            )
+                        }
+                    }
+                }
+            }
+
+            is AssessmentBottomSheetMode.StartPeriod -> {
+                /*todo : date and time widgets */
+            }
+
+            is AssessmentBottomSheetMode.EndPeriod -> {
+                /*todo : date and time widgets */
+            }
+        }
     }
 }
 
 
+sealed class AssessmentBottomSheetMode {
+    object Subjects : AssessmentBottomSheetMode()
+    object Students : AssessmentBottomSheetMode()
+    object StartPeriod : AssessmentBottomSheetMode()
+    object EndPeriod : AssessmentBottomSheetMode()
+}

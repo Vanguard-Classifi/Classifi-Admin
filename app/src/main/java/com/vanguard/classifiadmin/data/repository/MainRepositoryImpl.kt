@@ -408,6 +408,16 @@ class MainRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getVerifiedSubjectsGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedSubjectsGivenTeacherNetwork(
+            teacherId, schoolId, onResult
+        )
+    }
+
     override suspend fun saveFeedAsStagedNetwork(
         feed: FeedNetworkModel,
         onResult: (Boolean) -> Unit

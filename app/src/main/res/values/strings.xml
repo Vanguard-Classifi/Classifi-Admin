@@ -202,4 +202,5 @@
     <string name="assigned_class">Assigned Class</string>
     <string name="assigned_student">Assigned Student</string>
     <string name="teachers">Teachers</string>
+    <string name="students_not_available">Students not available yet</string>
 </resources>

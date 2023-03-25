@@ -235,6 +235,13 @@ interface MainRepository {
         onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
     )
 
+    suspend fun getVerifiedSubjectsGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+        onResult: (Resource<List<SubjectNetworkModel>>) -> Unit
+    )
+
+
     // Feed
     suspend fun saveFeedAsStagedNetwork(
         feed: FeedNetworkModel,

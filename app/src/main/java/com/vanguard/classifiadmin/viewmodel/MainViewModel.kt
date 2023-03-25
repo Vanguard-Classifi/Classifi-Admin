@@ -24,6 +24,7 @@ import com.vanguard.classifiadmin.domain.helpers.AuthExceptionState
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserLoginState
 import com.vanguard.classifiadmin.domain.workers.UploadFileToCacheWorker
+import com.vanguard.classifiadmin.ui.components.AssessmentBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollParentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollStudentException
 import com.vanguard.classifiadmin.ui.screens.admin.EnrollTeacherException
@@ -574,16 +575,78 @@ class MainViewModel @Inject constructor(
     var manageSubjectAdminDetailBufferListener: StateFlow<Int> =
         _manageSubjectAdminDetailBufferListener
 
-    private var _importTeacherRequest =  MutableStateFlow(null as ImportTeacherRequest?)
+    private var _importTeacherRequest = MutableStateFlow(null as ImportTeacherRequest?)
     val importTeacherRequest: StateFlow<ImportTeacherRequest?> = _importTeacherRequest
 
-    private var _manageSubjectAdminDetailFeature = MutableStateFlow(null as ManageSubjectAdminDetailFeature?)
+    private var _manageSubjectAdminDetailFeature =
+        MutableStateFlow(null as ManageSubjectAdminDetailFeature?)
     val manageSubjectAdminDetailFeature: StateFlow<ManageSubjectAdminDetailFeature?> =
         _manageSubjectAdminDetailFeature
 
-    fun onManageSubjectAdminDetailFeatureChanged(feature: ManageSubjectAdminDetailFeature?) = effect {
-        _manageSubjectAdminDetailFeature.value = feature
+    private var _assessmentBottomSheetMode =
+        MutableStateFlow(AssessmentBottomSheetMode.Students as AssessmentBottomSheetMode)
+    val assessmentBottomSheetMode: StateFlow<AssessmentBottomSheetMode> = _assessmentBottomSheetMode
+
+    private var _verifiedSubjectsGivenTeacherNetwork =
+        MutableStateFlow(Resource.Loading<List<SubjectNetworkModel>>() as Resource<List<SubjectNetworkModel>>)
+    val verifiedSubjectsGivenTeacherNetwork: StateFlow<Resource<List<SubjectNetworkModel>>> =
+        _verifiedSubjectsGivenTeacherNetwork
+
+    private var _selectedSubjectCreateAssessment = MutableStateFlow(null as SubjectModel?)
+    val selectedSubjectCreateAssessment: StateFlow<SubjectModel?> = _selectedSubjectCreateAssessment
+
+    private var _studentsBufferCreateAssessment = MutableStateFlow(mutableListOf<UserModel>())
+    val studentsBufferCreateAssessment: StateFlow<List<UserModel>> = _studentsBufferCreateAssessment
+
+    private var _studentsBufferCreateAssessmentListener = MutableStateFlow(0)
+    val studentsBufferCreateAssessmentListener: StateFlow<Int> = _studentsBufferCreateAssessmentListener
+
+    fun onIncStudentsBufferCreateAssessmentListener() = effect {
+        _studentsBufferCreateAssessmentListener.value++
     }
+
+    fun onDecStudentsBufferCreateAssessmentListener() = effect {
+        _studentsBufferCreateAssessmentListener.value--
+    }
+
+    fun onAddStudentToAssessment(student: UserModel) = effect {
+        if(!_studentsBufferCreateAssessment.value.contains(student)) {
+            _studentsBufferCreateAssessment.value.add(student)
+        }
+    }
+
+    fun onRemoveStudentFromAssessment(student: UserModel) = effect {
+        if(_studentsBufferCreateAssessment.value.contains(student)) {
+            _studentsBufferCreateAssessment.value.remove(student)
+        }
+    }
+
+    fun clearStudentBufferCreateAssessment() = effect {
+        _studentsBufferCreateAssessment.value.clear()
+    }
+
+    fun onSelectedSubjectCreateAssessmentChanged(subject: SubjectModel?) = effect {
+        _selectedSubjectCreateAssessment.value = subject
+    }
+
+    fun getVerifiedSubjectsGivenTeacherNetwork(
+        teacherId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedSubjectsGivenTeacherNetwork(teacherId, schoolId) {
+            _verifiedSubjectsGivenTeacherNetwork.value = it
+        }
+    }
+
+
+    fun onAssessmentBottomSheetModeChanged(mode: AssessmentBottomSheetMode) = effect {
+        _assessmentBottomSheetMode.value = mode
+    }
+
+    fun onManageSubjectAdminDetailFeatureChanged(feature: ManageSubjectAdminDetailFeature?) =
+        effect {
+            _manageSubjectAdminDetailFeature.value = feature
+        }
 
     fun onImportTeacherRequestChanged(request: ImportTeacherRequest?) = effect {
         _importTeacherRequest.value = request
