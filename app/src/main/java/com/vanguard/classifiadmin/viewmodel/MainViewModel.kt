@@ -31,6 +31,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailFeature
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
+import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailFeature
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
@@ -41,6 +42,7 @@ import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardBottomSheetFlavor
 import com.vanguard.classifiadmin.ui.screens.dashboard.DashboardMessage
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedDetailMode
+import com.vanguard.classifiadmin.ui.screens.importations.ImportTeacherRequest
 import com.vanguard.classifiadmin.ui.screens.profile.AccountBottomSheetState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -559,6 +561,66 @@ class MainViewModel @Inject constructor(
 
     private var _assessmentNameCreateAssessment = MutableStateFlow(null as String?)
     val assessmentNameCreateAssessment: StateFlow<String?> = _assessmentNameCreateAssessment
+
+    private var _verifiedTeachersUnderSubjectNetwork =
+        MutableStateFlow(Resource.Loading<List<UserNetworkModel>>() as Resource<List<UserNetworkModel>>)
+    val verifiedTeachersUnderSubjectNetwork: StateFlow<Resource<List<UserNetworkModel>>> =
+        _verifiedTeachersUnderSubjectNetwork
+
+    private var _manageSubjectAdminDetailBuffer = MutableStateFlow(mutableListOf<String>())
+    var manageSubjectAdminDetailBuffer: StateFlow<List<String>> = _manageSubjectAdminDetailBuffer
+
+    private var _manageSubjectAdminDetailBufferListener = MutableStateFlow(0)
+    var manageSubjectAdminDetailBufferListener: StateFlow<Int> =
+        _manageSubjectAdminDetailBufferListener
+
+    private var _importTeacherRequest =  MutableStateFlow(null as ImportTeacherRequest?)
+    val importTeacherRequest: StateFlow<ImportTeacherRequest?> = _importTeacherRequest
+
+    private var _manageSubjectAdminDetailFeature = MutableStateFlow(null as ManageSubjectAdminDetailFeature?)
+    val manageSubjectAdminDetailFeature: StateFlow<ManageSubjectAdminDetailFeature?> =
+        _manageSubjectAdminDetailFeature
+
+    fun onManageSubjectAdminDetailFeatureChanged(feature: ManageSubjectAdminDetailFeature?) = effect {
+        _manageSubjectAdminDetailFeature.value = feature
+    }
+
+    fun onImportTeacherRequestChanged(request: ImportTeacherRequest?) = effect {
+        _importTeacherRequest.value = request
+    }
+
+    fun onIncManageSubjectAdminDetailBufferListener() = effect {
+        _manageSubjectAdminDetailBufferListener.value++
+    }
+
+    fun onDecManageSubjectAdminDetailBufferListener() = effect {
+        _manageSubjectAdminDetailBufferListener.value--
+    }
+
+    fun onAddToSubjectBufferManageSubjectAdminDetail(teacherId: String) = effect {
+        if (!_manageSubjectAdminDetailBuffer.value.contains(teacherId)) {
+            _manageSubjectAdminDetailBuffer.value.add(teacherId)
+        }
+    }
+
+    fun onRemoveFromSubjectBufferManageSubjectAdminDetail(teacherId: String) = effect {
+        if (_manageSubjectAdminDetailBuffer.value.contains(teacherId)) {
+            _manageSubjectAdminDetailBuffer.value.remove(teacherId)
+        }
+    }
+
+    fun clearSubjectBufferManageSubjectAdminDetail() = effect {
+        _manageSubjectAdminDetailBuffer.value.clear()
+    }
+
+    fun getVerifiedTeachersUnderSubjectNetwork(
+        subject: SubjectNetworkModel
+    ) = effect {
+        repository.getVerifiedTeachersUnderSubjectNetwork(subject) {
+            _verifiedTeachersUnderSubjectNetwork.value = it
+        }
+    }
+
 
     fun onAssessmentNameCreateAssessmentChanged(name: String?) = effect {
         _assessmentNameCreateAssessment.value = name

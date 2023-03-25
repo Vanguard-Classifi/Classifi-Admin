@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -22,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -45,7 +43,8 @@ fun ImportTeacherScreen(
     onBack: () -> Unit,
     viewModel: MainViewModel,
     onEnrollTeacher: () -> Unit,
-    onTeacherImported: () -> Unit,
+    onTeacherImportedToClass: () -> Unit,
+    onTeacherImportedToSubject: () -> Unit,
 ) {
     val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
     val importTeacherBufferListener by viewModel.importTeacherBufferListener.collectAsState()
@@ -75,7 +74,7 @@ fun ImportTeacherScreen(
                         viewModel.onManageClassAdminDetailFeatureChanged(
                             ManageClassAdminDetailFeature.ImportTeacher
                         )
-                        onTeacherImported()
+                        onTeacherImportedToClass()
                     }
                 )
             },
@@ -86,7 +85,8 @@ fun ImportTeacherScreen(
                     onEnrollTeacher = onEnrollTeacher,
                     maxHeight = maxHeight,
                     onBack = onBack,
-                    onTeacherImported = onTeacherImported,
+                    onTeacherImportedToClass = onTeacherImportedToClass,
+                    onTeacherImportedToSubject = onTeacherImportedToSubject,
                 )
             }
         )
@@ -101,7 +101,8 @@ fun ImportTeacherScreenContent(
     onEnrollTeacher: () -> Unit,
     maxHeight: Dp,
     onBack: () -> Unit,
-    onTeacherImported: () -> Unit,
+    onTeacherImportedToClass: () -> Unit,
+    onTeacherImportedToSubject: () -> Unit,
 ) {
 
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
@@ -109,6 +110,7 @@ fun ImportTeacherScreenContent(
     val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
     val importTeacherBufferListener by viewModel.importTeacherBufferListener.collectAsState()
     val scope = rememberCoroutineScope()
+    val importTeacherRequest by viewModel.importTeacherRequest.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.clearImportTeacherBuffer()
@@ -147,10 +149,18 @@ fun ImportTeacherScreenContent(
                                     onTap = { selectedTeacher ->
                                         if (importTeacherBuffer.isEmpty()) {
                                             scope.launch {
-                                                onTeacherImported()
-                                                viewModel.onManageClassAdminDetailFeatureChanged(
-                                                    ManageClassAdminDetailFeature.ImportTeacher
-                                                )
+                                                when(importTeacherRequest) {
+                                                    is ImportTeacherRequest.ManageClassAdminDetail -> {
+                                                        onTeacherImportedToClass()
+                                                        viewModel.onManageClassAdminDetailFeatureChanged(
+                                                            ManageClassAdminDetailFeature.ImportTeacher
+                                                        )
+                                                    }
+                                                    is ImportTeacherRequest.ManageSubjectAdminDetail -> {
+                                                        onTeacherImportedToSubject()
+                                                    }
+                                                    else -> {}
+                                                }
                                             }.invokeOnCompletion {
                                                 runnableBlock {
                                                     viewModel.onAddToImportTeacherBuffer(
@@ -197,4 +207,9 @@ fun ImportTeacherScreenContent(
             }
         }
     }
+}
+
+sealed class ImportTeacherRequest {
+    object ManageClassAdminDetail : ImportTeacherRequest()
+    object ManageSubjectAdminDetail: ImportTeacherRequest()
 }

@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.data.network.firestore
 
+import android.util.Log
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
@@ -27,6 +28,7 @@ object Collections {
 
 @Singleton
 class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
+    val TAG = "FirestoreManagerImpl"
     private val firestore = Firebase.firestore
 
     override suspend fun saveUserNetwork(user: UserNetworkModel, onResult: (Boolean) -> Unit) {
@@ -500,6 +502,35 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+    override suspend fun getVerifiedTeachersUnderSubjectNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        try {
+            val teacherRef = firestore.collection(Collections.collectionUsers)
+            val teachers = ArrayList<UserNetworkModel>()
+            if(subject.teacherIds.isNotEmpty()) {
+                subject.teacherIds.map { teacherId ->
+                    teacherRef.whereEqualTo("userId", teacherId)
+                        .get()
+                        .addOnSuccessListener { docs ->
+                            for (doc in docs!!) {
+                                teachers.add(doc.toObject<UserNetworkModel>())
+                            }
+                            onResult(Resource.Success(teachers))
+                        }
+                        .addOnFailureListener {
+                            onResult(Resource.Error("Couldn't fetch resource"))
+                        }
+                }
+            } else {
+                onResult(Resource.Success(listOf()))
+            }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong!"))
+        }
+    }
+
     override suspend fun saveSchoolNetwork(
         school: SchoolNetworkModel,
         onResult: (Boolean) -> Unit
@@ -512,7 +543,6 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         } catch (e: Exception) {
             onResult(false)
         }
-
     }
 
     override suspend fun getSchoolByIdNetwork(
@@ -989,7 +1019,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     val results = ArrayList<SubjectNetworkModel>()
                     for (doc in docs!!) {
                         val subject = doc.toObject<SubjectNetworkModel>()
-                        if(subject.teacherIds.contains(teacherId)) {
+                        if (subject.teacherIds.contains(teacherId)) {
                             doc.toObject<SubjectNetworkModel>()
                         }
                     }

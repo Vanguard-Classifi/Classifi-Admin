@@ -32,7 +32,6 @@ import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REVIEW_SCREE
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReviewScreen
-import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.MODIFY_ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ModifyAssessmentScreen
@@ -145,7 +144,7 @@ fun NavGraph(
                 goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) },
                 onLogin = { navController.navigate(Destinations.login) },
                 onFeedDetail = { navController.navigate(Destinations.feedDetail) },
-                onStudentDetail = {navController.navigate(Destinations.studentDetail)}
+                onStudentDetail = { navController.navigate(Destinations.studentDetail) }
             )
         }
 
@@ -343,7 +342,8 @@ fun NavGraph(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageClassAdminDetail) },
                 onEnrollTeacher = { navController.navigate(Destinations.enrollTeacherAdmin) },
-                onTeacherImported = { navController.navigate(Destinations.manageClassAdminDetail) }
+                onTeacherImportedToClass = { navController.navigate(Destinations.manageClassAdminDetail) },
+                onTeacherImportedToSubject = { navController.navigate(Destinations.manageSubjectAdminDetail) }
             )
         }
 
@@ -376,6 +376,7 @@ fun NavGraph(
             ManageSubjectAdminDetailScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.manageSubjectAdmin) },
+                onImportTeacher = { navController.navigate(Destinations.importTeacher) }
             )
         }
 

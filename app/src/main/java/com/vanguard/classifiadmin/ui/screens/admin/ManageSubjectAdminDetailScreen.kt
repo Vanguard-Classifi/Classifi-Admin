@@ -2,6 +2,12 @@ package com.vanguard.classifiadmin.ui.screens.admin
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,21 +59,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
+import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.todayComputational
 import com.vanguard.classifiadmin.domain.services.SubjectCreationService
 import com.vanguard.classifiadmin.domain.services.SubjectCreationServiceActions
 import com.vanguard.classifiadmin.domain.services.SubjectCreationServiceExtras
 import com.vanguard.classifiadmin.ui.components.ChildTopBar
+import com.vanguard.classifiadmin.ui.components.ChildTopBarWithOptions
+import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.NoDataInline
+import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
+import com.vanguard.classifiadmin.ui.screens.importations.ImportTeacherRequest
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -76,12 +90,13 @@ import java.util.UUID
 
 const val MANAGE_SUBJECT_ADMIN_DETAIL_SCREEN = "manage_subject_admin_detail_screen"
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun ManageSubjectAdminDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    onImportTeacher: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -94,6 +109,9 @@ fun ManageSubjectAdminDetailScreen(
     val verifiedClassesNetwork by viewModel.verifiedClassesNetwork.collectAsState()
     val selectedSubjectManageSubjectAdmin by viewModel.selectedSubjectManageSubjectAdmin.collectAsState()
     val message by viewModel.manageSubjectAdminDetailMessage.collectAsState()
+    val optionState: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val manageSubjectAdminDetailBuffer by viewModel.manageSubjectAdminDetailBuffer.collectAsState()
+    val manageSubjectAdminDetailBufferListener by viewModel.manageSubjectAdminDetailBuffer.collectAsState()
 
 
     LaunchedEffect(Unit) {
@@ -150,12 +168,13 @@ fun ManageSubjectAdminDetailScreen(
                     Scaffold(
                         modifier = modifier,
                         topBar = {
-                            ChildTopBar(
+                            ChildTopBarWithOptions(
                                 onBack = onBack,
-                                elevation = 0.dp,
+                                iconTint = MaterialTheme.colors.primary,
                                 heading = selectedSubjectManageSubjectAdmin?.subjectName.orEmpty(),
-                                backgroundColor = MaterialTheme.colors.primary,
-                                contentColor = MaterialTheme.colors.onPrimary,
+                                onOptions = {
+                                    optionState.value = !optionState.value
+                                }
                             )
                         },
                         content = {
@@ -163,18 +182,82 @@ fun ManageSubjectAdminDetailScreen(
                                 modifier = modifier.padding(it),
                                 viewModel = viewModel,
                                 onBack = onBack,
+                                maxHeight = maxHeight,
                                 onSelectSubjectClass = {
                                     //show bottom sheet
                                     coroutineScope.launch {
                                         sheetState.show()
                                         showModalSheet.value = true
                                     }
-                                }
+                                },
+                                onImportTeacher = onImportTeacher
                             )
                         }
                     )
                 }
             )
+
+            AnimatedVisibility(
+                visible = optionState.value,
+                enter = scaleIn(
+                    initialScale = 0.8f, animationSpec = tween(
+                        durationMillis = 50, easing = FastOutLinearInEasing
+                    )
+                ),
+                exit = scaleOut(
+                    targetScale = 0.8f,
+                    animationSpec = tween(
+                        durationMillis = 50, easing = FastOutLinearInEasing
+                    ),
+                ),
+            ) {
+                Popup(alignment = Alignment.TopEnd,
+                    offset = IntOffset(0, 100),
+                    onDismissRequest = { optionState.value = false }) {
+                    ManageSubjectAdminDetailPopupOptionScreen(
+                        onSelectOption = {
+                            when(it) {
+                                ManageSubjectAdminDetailPopupOption.Import -> {
+                                    //open import screen
+                                    viewModel.onImportTeacherRequestChanged(
+                                        ImportTeacherRequest.ManageSubjectAdminDetail
+                                    )
+                                    viewModel.onManageSubjectAdminDetailFeatureChanged(
+                                        ManageSubjectAdminDetailFeature.ImportTeacher
+                                    )
+                                    onImportTeacher()
+                                }
+                                ManageSubjectAdminDetailPopupOption.Remove -> {
+                                    if(manageSubjectAdminDetailBuffer.isEmpty()) {
+                                        viewModel.onManageSubjectAdminDetailMessageChanged(
+                                            ManageSubjectAdminDetailMessage.NoItemSelected
+                                        )
+                                    } else {
+                                        coroutineScope.launch {
+                                            manageSubjectAdminDetailBuffer.forEach { teacherId ->
+                                                if(selectedSubjectManageSubjectAdmin?.teacherIds?.contains(teacherId) == true) {
+                                                    selectedSubjectManageSubjectAdmin?.teacherIds?.remove(teacherId)
+                                                }
+                                            }
+                                            //update subject
+                                            viewModel.saveSubjectAsVerifiedNetwork(
+                                                selectedSubjectManageSubjectAdmin?.toNetwork()!!,
+                                                onResult = {}
+                                            )
+                                        }.invokeOnCompletion {
+                                            runnableBlock {
+                                                viewModel.clearSubjectBufferManageSubjectAdminDetail()
+                                                viewModel.onDecManageSubjectAdminDetailBufferListener()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            optionState.value = false
+                        },
+                    )
+                }
+            }
 
             //message
             if (message !is ManageSubjectAdminDetailMessage.NoMessage) {
@@ -207,6 +290,8 @@ fun ManageSubjectAdminDetailScreenContent(
     viewModel: MainViewModel,
     onBack: () -> Unit,
     onSelectSubjectClass: () -> Unit,
+    maxHeight: Dp,
+    onImportTeacher: () -> Unit,
 ) {
 
     val TAG = "ManageSubjectAdminDetailScreenContent"
@@ -222,7 +307,11 @@ fun ManageSubjectAdminDetailScreenContent(
     val keyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val subjectByCodeNetwork by viewModel.subjectByCodeNetwork.collectAsState()
-
+    val verifiedTeachersUnderSubjectNetwork by viewModel.verifiedTeachersUnderSubjectNetwork.collectAsState()
+    val manageSubjectAdminDetailBuffer by viewModel.manageSubjectAdminDetailBuffer.collectAsState()
+    val manageSubjectAdminDetailBufferListener by viewModel.manageSubjectAdminDetailBuffer.collectAsState()
+    val manageSubjectAdminDetailFeature by viewModel.manageSubjectAdminDetailFeature.collectAsState()
+    val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentSchoolIdPref()
@@ -240,6 +329,42 @@ fun ManageSubjectAdminDetailScreenContent(
         viewModel.onSelectedClassManageSubjectAdminDetailChanged(
             classByIdNetwork.data?.toLocal()
         )
+        viewModel.getVerifiedTeachersUnderSubjectNetwork(
+            selectedSubjectManageSubjectAdmin?.toNetwork()!!
+        )
+
+        when(manageSubjectAdminDetailFeature) {
+            is ManageSubjectAdminDetailFeature.ImportTeacher -> {
+                if(importTeacherBuffer.isNotEmpty()) {
+                    scope.launch {
+                        importTeacherBuffer.forEach { teacherId ->
+                            if(!selectedSubjectManageSubjectAdmin?.teacherIds?.contains(teacherId)!!) {
+                                selectedSubjectManageSubjectAdmin?.teacherIds?.add(teacherId)
+                            }
+                        }
+                        viewModel.saveSubjectAsVerifiedNetwork(
+                            selectedSubjectManageSubjectAdmin?.toNetwork()!!,
+                            onResult = {}
+                        )
+                    }.invokeOnCompletion {
+                        runnableBlock {
+                            viewModel.onIncManageSubjectAdminDetailBufferListener()
+                            viewModel.clearImportTeacherBuffer()
+                            viewModel.getVerifiedTeachersUnderSubjectNetwork(
+                                selectedSubjectManageSubjectAdmin?.toNetwork()!!
+                            )
+                        }
+                    }
+                }
+            }
+            else -> {}
+        }
+    }
+
+    LaunchedEffect(manageSubjectAdminDetailBufferListener) {
+        viewModel.getVerifiedTeachersUnderSubjectNetwork(
+            selectedSubjectManageSubjectAdmin?.toNetwork()!!
+        )
     }
 
     LaunchedEffect(subjectCodeManageSubjectAdminDetail) {
@@ -250,15 +375,6 @@ fun ManageSubjectAdminDetailScreenContent(
             )
         }
     }
-
-    Log.e(
-        TAG,
-        "ManageSubjectAdminDetailScreenContent: subject name $subjectNameManageSubjectAdminDetail"
-    )
-    Log.e(
-        TAG,
-        "ManageSubjectAdminDetailScreenContent: subject name $subjectCodeManageSubjectAdminDetail"
-    )
 
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
         Card(
@@ -421,24 +537,9 @@ fun ManageSubjectAdminDetailScreenContent(
                                     selectedSubjectManageSubjectAdmin?.className =
                                         selectedClassManageSubjectAdminDetail?.className.orEmpty()
 
-                                    Log.e(
-                                        TAG,
-                                        "ManageSubjectAdminDetailScreenContent: subject new name is ${selectedSubjectManageSubjectAdmin?.subjectName}"
-                                    )
-
-                                    Log.e(
-                                        TAG,
-                                        "ManageSubjectAdminDetailScreenContent: subject new code is ${selectedSubjectManageSubjectAdmin?.subjectCode}"
-                                    )
-
                                     viewModel.saveSubjectAsVerifiedNetwork(
                                         selectedSubjectManageSubjectAdmin?.toNetwork()!!
-                                    ) {
-                                        Log.e(
-                                            TAG,
-                                            "ManageSubjectAdminDetailScreenContent: subject save state is $it"
-                                        )
-                                    }
+                                    ) {}
                                 }.invokeOnCompletion {
                                     runnableBlock {
                                         viewModel.onManageSubjectAdminDetailMessageChanged(
@@ -454,6 +555,158 @@ fun ManageSubjectAdminDetailScreenContent(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+
+        Card(
+            modifier = modifier
+                .clip(RoundedCornerShape(16.dp))
+                .padding(top = 8.dp, bottom = 64.dp, start = 8.dp, end = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            elevation = 2.dp,
+        ) {
+            Column(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(id = R.string.teachers).uppercase(),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Black100,
+                )
+
+                when (verifiedTeachersUnderSubjectNetwork) {
+                    is Resource.Loading -> {
+                        LoadingScreen(maxHeight = maxHeight)
+                    }
+
+                    is Resource.Success -> {
+                        Log.e(
+                            TAG,
+                            "ManageSubjectAdminDetailScreenContent: number of teachers is ${verifiedTeachersUnderSubjectNetwork.data?.size}",
+                        )
+                        if (verifiedTeachersUnderSubjectNetwork.data?.isNotEmpty() == true) {
+                            verifiedTeachersUnderSubjectNetwork.data?.forEach { teacher ->
+                                VerifiedTeacherItem(
+                                    teacher = teacher.toLocal(),
+                                    selected = false,
+                                    onTap = {
+                                            /*todo: on tap item */
+                                    },
+                                    onHold = {
+                                             /*todo; on hold item */
+                                    },
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                //save button
+                                PrimaryTextButtonFillWidth(
+                                    modifier = Modifier.padding(
+                                        top = 8.dp, bottom = 8.dp, start = 8.dp
+                                    ),
+                                    label = stringResource(id = R.string.save_and_exit).uppercase(),
+                                    onClick = {
+                                        keyboardController?.hide()
+
+                                        if (subjectNameManageSubjectAdminDetail == null || subjectNameManageSubjectAdminDetail!!.isBlank()
+                                        ) {
+                                            //subject name cannot be blank
+                                            viewModel.onManageSubjectAdminDetailMessageChanged(
+                                                ManageSubjectAdminDetailMessage.SubjectNameCannotBeBlank
+                                            )
+                                            return@PrimaryTextButtonFillWidth
+                                        }
+
+                                        if (subjectCodeManageSubjectAdminDetail == null
+                                            || subjectCodeManageSubjectAdminDetail!!.isBlank()
+                                        ) {
+                                            //subject code can't be blank
+                                            viewModel.onManageSubjectAdminDetailMessageChanged(
+                                                ManageSubjectAdminDetailMessage.SubjectCodeCannotBeBlank
+                                            )
+                                            return@PrimaryTextButtonFillWidth
+                                        }
+
+                                        if ((subjectNameManageSubjectAdminDetail?.isNotBlank() == true &&
+                                                    subjectCodeManageSubjectAdminDetail?.isNotBlank() == true)
+                                        ) {
+                                            scope.launch {
+                                                //save updated subject
+                                                selectedSubjectManageSubjectAdmin?.subjectName =
+                                                    subjectNameManageSubjectAdminDetail
+                                                selectedSubjectManageSubjectAdmin?.subjectCode =
+                                                    subjectCodeManageSubjectAdminDetail
+                                                selectedSubjectManageSubjectAdmin?.classId =
+                                                    selectedClassManageSubjectAdminDetail?.classId
+                                                selectedSubjectManageSubjectAdmin?.className =
+                                                    selectedClassManageSubjectAdminDetail?.className.orEmpty()
+
+                                                viewModel.saveSubjectAsVerifiedNetwork(
+                                                    selectedSubjectManageSubjectAdmin?.toNetwork()!!
+                                                ) {}
+                                            }.invokeOnCompletion {
+                                                runnableBlock {
+                                                    viewModel.onManageSubjectAdminDetailMessageChanged(
+                                                        ManageSubjectAdminDetailMessage.UpdatedSubject
+                                                    )
+                                                    //close screen
+                                                    onBack()
+                                                }
+                                            }
+                                        }
+                                    },
+                                )
+                            }
+                        } else {
+                            NoDataScreen(
+                                maxHeight = maxHeight,
+                                message = stringResource(id = R.string.no_teachers),
+                                buttonLabel = stringResource(id = R.string.import_teachers),
+                                onClick = {
+                                    //open import screen
+                                    viewModel.onImportTeacherRequestChanged(
+                                        ImportTeacherRequest.ManageSubjectAdminDetail
+                                    )
+                                    viewModel.onManageSubjectAdminDetailFeatureChanged(
+                                        ManageSubjectAdminDetailFeature.ImportTeacher
+                                    )
+                                    onImportTeacher()
+                                }
+                            )
+                        }
+                    }
+
+                    is Resource.Error -> {
+                        NoDataScreen(
+                            maxHeight = maxHeight,
+                            message = stringResource(id = R.string.something_went_wrong),
+                            buttonLabel = stringResource(id = R.string.retry),
+                            onClick = {
+                                viewModel.getVerifiedTeachersUnderSubjectNetwork(
+                                    selectedSubjectManageSubjectAdmin?.toNetwork()!!
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
     }
 }
 
@@ -523,6 +776,73 @@ sealed class ManageSubjectAdminDetailMessage(val message: String) {
 
     object SubjectCodeCannotBeBlank :
         ManageSubjectAdminDetailMessage("Subject code cannot be blank")
+    object HoldToMark: ManageSubjectAdminDetailMessage("Please hold to mark")
+    object NoItemSelected: ManageSubjectAdminDetailMessage("No Item Selected")
 
     object NoMessage : ManageSubjectAdminDetailMessage("")
+}
+
+enum class ManageSubjectAdminDetailPopupOption(val title: String) {
+    Import("Import Teacher"),
+    Remove("Remove Teacher")
+}
+
+sealed class ManageSubjectAdminDetailFeature {
+    object ImportTeacher: ManageSubjectAdminDetailFeature()
+    object RemoveTeacher : ManageSubjectAdminDetailFeature()
+}
+@Composable
+fun ManageSubjectAdminDetailPopupOptionScreen(
+    modifier: Modifier = Modifier,
+    onSelectOption: (ManageSubjectAdminDetailPopupOption) -> Unit,
+    options: List<ManageSubjectAdminDetailPopupOption> =
+        ManageSubjectAdminDetailPopupOption.values().toList()
+) {
+    Card(
+        modifier = modifier.padding(start = 92.dp, top = 8.dp, bottom = 8.dp, end = 8.dp),
+        elevation = 8.dp,
+        shape = RoundedCornerShape(8.dp),
+        backgroundColor = MaterialTheme.colors.onPrimary
+    ) {
+        Column(modifier = modifier) {
+            Spacer(modifier = modifier.height(16.dp))
+            options.forEach {
+                ManageSubjectAdminDetailPopupOptionItem(
+                    option = it,
+                    onSelect = onSelectOption
+                )
+            }
+            Spacer(modifier = modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+fun ManageSubjectAdminDetailPopupOptionItem(
+    modifier: Modifier = Modifier,
+    option: ManageSubjectAdminDetailPopupOption,
+    onSelect: (ManageSubjectAdminDetailPopupOption) -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .clickable { onSelect(option) }
+            .clip(RoundedCornerShape(2.dp)),
+        shape = RoundedCornerShape(2.dp),
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(
+                text = option.title,
+                color = MaterialTheme.colors.primary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = modifier.padding(8.dp)
+            )
+        }
+    }
 }

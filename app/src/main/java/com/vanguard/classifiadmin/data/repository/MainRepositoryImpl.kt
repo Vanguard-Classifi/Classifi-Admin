@@ -176,6 +176,15 @@ class MainRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getVerifiedTeachersUnderSubjectNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedTeachersUnderSubjectNetwork(
+            subject, onResult
+        )
+    }
+
     override suspend fun saveSchoolNetwork(
         school: SchoolNetworkModel,
         onResult: (Boolean) -> Unit

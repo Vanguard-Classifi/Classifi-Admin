@@ -76,6 +76,7 @@ import com.vanguard.classifiadmin.ui.components.NoDataScreen
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.StagedItemIcon
 import com.vanguard.classifiadmin.ui.components.SuccessBar
+import com.vanguard.classifiadmin.ui.screens.importations.ImportTeacherRequest
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -200,6 +201,9 @@ fun ManageClassAdminDetailScreen(
                                     ManageClassDetailPopupTeacherOption.Import -> {
                                         viewModel.onManageClassAdminDetailFeatureChanged(
                                             ManageClassAdminDetailFeature.ImportTeacher
+                                        )
+                                        viewModel.onImportTeacherRequestChanged(
+                                            ImportTeacherRequest.ManageClassAdminDetail
                                         )
                                         onInviteTeachers()
                                     }
@@ -1496,7 +1500,12 @@ fun ManageClassAdminDetailScreenContentTeachers(
                     maxHeight = maxHeight,
                     message = stringResource(id = R.string.no_teachers),
                     buttonLabel = stringResource(id = R.string.invite_teachers),
-                    onClick = onInviteTeachers
+                    onClick = {
+                        viewModel.onImportTeacherRequestChanged(
+                            ImportTeacherRequest.ManageClassAdminDetail
+                        )
+                        onInviteTeachers()
+                    }
                 )
             }
         }

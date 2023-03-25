@@ -86,6 +86,11 @@ interface MainRepository {
         onResult: (Resource<List<UserNetworkModel>>) -> Unit
     )
 
+    suspend fun getVerifiedTeachersUnderSubjectNetwork(
+        subject: SubjectNetworkModel,
+        onResult: (Resource<List<UserNetworkModel>>) -> Unit
+    )
+
     //school
     suspend fun saveSchoolNetwork(school: SchoolNetworkModel, onResult: (Boolean) -> Unit)
     suspend fun getSchoolByIdNetwork(schoolId: String, onResult: (Resource<SchoolNetworkModel?>) -> Unit)
