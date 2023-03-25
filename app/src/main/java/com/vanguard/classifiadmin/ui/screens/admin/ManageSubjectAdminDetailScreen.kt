@@ -248,9 +248,13 @@ fun ManageSubjectAdminDetailScreen(
                                             runnableBlock {
                                                 viewModel.clearSubjectBufferManageSubjectAdminDetail()
                                                 viewModel.onDecManageSubjectAdminDetailBufferListener()
+                                                viewModel.getVerifiedTeachersUnderSubjectNetwork(
+                                                    selectedSubjectManageSubjectAdmin?.toNetwork()!!
+                                                )
                                             }
                                         }
                                     }
+                                    viewModel.onDecManageSubjectAdminDetailBufferListener()
                                 }
                             }
                             optionState.value = false
@@ -309,7 +313,7 @@ fun ManageSubjectAdminDetailScreenContent(
     val subjectByCodeNetwork by viewModel.subjectByCodeNetwork.collectAsState()
     val verifiedTeachersUnderSubjectNetwork by viewModel.verifiedTeachersUnderSubjectNetwork.collectAsState()
     val manageSubjectAdminDetailBuffer by viewModel.manageSubjectAdminDetailBuffer.collectAsState()
-    val manageSubjectAdminDetailBufferListener by viewModel.manageSubjectAdminDetailBuffer.collectAsState()
+    val manageSubjectAdminDetailBufferListener by viewModel.manageSubjectAdminDetailBufferListener.collectAsState()
     val manageSubjectAdminDetailFeature by viewModel.manageSubjectAdminDetailFeature.collectAsState()
     val importTeacherBuffer by viewModel.importTeacherBuffer.collectAsState()
 
@@ -362,6 +366,7 @@ fun ManageSubjectAdminDetailScreenContent(
     }
 
     LaunchedEffect(manageSubjectAdminDetailBufferListener) {
+        Log.e(TAG, "ManageSubjectAdminDetailScreenContent: listener called")
         viewModel.getVerifiedTeachersUnderSubjectNetwork(
             selectedSubjectManageSubjectAdmin?.toNetwork()!!
         )
@@ -542,9 +547,6 @@ fun ManageSubjectAdminDetailScreenContent(
                                     ) {}
                                 }.invokeOnCompletion {
                                     runnableBlock {
-                                        viewModel.onManageSubjectAdminDetailMessageChanged(
-                                            ManageSubjectAdminDetailMessage.UpdatedSubject
-                                        )
                                         //close screen
                                         onBack()
                                     }
@@ -595,12 +597,24 @@ fun ManageSubjectAdminDetailScreenContent(
                             verifiedTeachersUnderSubjectNetwork.data?.forEach { teacher ->
                                 VerifiedTeacherItem(
                                     teacher = teacher.toLocal(),
-                                    selected = false,
+                                    selected = manageSubjectAdminDetailBuffer.contains(teacher.userId),
                                     onTap = {
-                                            /*todo: on tap item */
+                                           if(manageSubjectAdminDetailBuffer.isEmpty()) {
+                                               viewModel.onManageSubjectAdminDetailMessageChanged(
+                                                   ManageSubjectAdminDetailMessage.HoldToMark
+                                               )
+                                           } else {
+                                               if(manageSubjectAdminDetailBuffer.contains(it.userId)) {
+                                                   viewModel.onRemoveFromSubjectBufferManageSubjectAdminDetail(it.userId)
+                                               } else {
+                                                   viewModel.onAddToSubjectBufferManageSubjectAdminDetail(it.userId)
+                                               }
+                                           }
+                                        viewModel.onIncManageSubjectAdminDetailBufferListener()
                                     },
                                     onHold = {
-                                             /*todo; on hold item */
+                                         viewModel.onAddToSubjectBufferManageSubjectAdminDetail(it.userId)
+                                        viewModel.onIncManageSubjectAdminDetailBufferListener()
                                     },
                                 )
                             }
@@ -661,9 +675,6 @@ fun ManageSubjectAdminDetailScreenContent(
                                                 ) {}
                                             }.invokeOnCompletion {
                                                 runnableBlock {
-                                                    viewModel.onManageSubjectAdminDetailMessageChanged(
-                                                        ManageSubjectAdminDetailMessage.UpdatedSubject
-                                                    )
                                                     //close screen
                                                     onBack()
                                                 }
