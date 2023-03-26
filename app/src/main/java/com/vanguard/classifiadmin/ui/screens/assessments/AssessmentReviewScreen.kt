@@ -408,7 +408,6 @@ fun TextIconButton(
 @Composable
 fun QuestionItem(
     modifier: Modifier = Modifier,
-    question: Question,
 ) {
     val innerModifier = Modifier
     val constraints = questionItemConstraints(8.dp)
@@ -612,16 +611,6 @@ fun RoundedCharButton(
         })
     }
 }
-
-data class Question(
-    val id: String,
-    val difficulty: String,
-    val mode: String,
-    val question: String,
-    val images: ArrayList<String>,
-    val answer: String,
-    val choices: ArrayList<String>,
-)
 
 val mode: QuestionMode = QuestionMode.Essay
 val questionModeName = mode.toString()

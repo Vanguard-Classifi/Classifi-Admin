@@ -36,6 +36,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageClassSubsectionItem
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailFeature
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
@@ -628,6 +629,16 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
     val stagedAssessmentsNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
         _stagedAssessmentsNetwork
+
+    private var _assessmentCreationBottomSheetMode =
+        MutableStateFlow(AssessmentCreationBottomSheetMode.AddQuestion as AssessmentCreationBottomSheetMode)
+    val assessmentCreationBottomSheetMode: StateFlow<AssessmentCreationBottomSheetMode> =
+        _assessmentCreationBottomSheetMode
+
+    fun onAssessmentCreationBottomSheetModeChanged(mode: AssessmentCreationBottomSheetMode) =
+        effect {
+            _assessmentCreationBottomSheetMode.value = mode
+        }
 
     //assessment
     fun saveAssessmentAsStagedNetwork(

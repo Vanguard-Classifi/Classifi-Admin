@@ -1,6 +1,7 @@
 package com.vanguard.classifiadmin.domain.helpers
 
 import android.annotation.SuppressLint
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -14,6 +15,9 @@ import java.util.Locale
 
 val DateModifiedFormat = "E, dd MM yyyy HH:mm"
 val DateModifiedPatternComputational = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a")
+val AssessmentDatePattern = "yyyy-MM-dd"
+val SimpleDatePattern = "dd MMM, yyyy"
+val AssessmentTimePattern = "HH:mm"
 fun todayComputational(): String = DateModifiedPatternComputational.format(LocalDateTime.now())
 
 @SuppressLint("SimpleDateFormat")
@@ -99,8 +103,8 @@ fun String.lastModified(): String {
     val hours = hourOffset()
     val minutes = minuteOffset()
 
-    if(years == 1L) return "A year ago"
-    if(years > 1) return "$years years ago"
+    if (years == 1L) return "A year ago"
+    if (years > 1) return "$years years ago"
     if (months == 1L) return "A month ago"
     if (months > 1) return "$months months ago"
     if (weeks == 1L) return "A week ago"
@@ -113,3 +117,25 @@ fun String.lastModified(): String {
     if (minutes > 1) return "$minutes minutes ago"
     return "Just now"
 }
+
+fun String.toSimpleDate(): String {
+    try {
+        //get date string from assessment
+        val date = SimpleDateFormat(AssessmentDatePattern, Locale.getDefault())
+            .parse(this)
+        //convert to date object
+        return SimpleDateFormat(SimpleDatePattern, Locale.getDefault())
+            .format(date!!)
+        //format to new date pattern
+    } catch (e: ParseException) {
+        e.printStackTrace()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return ""
+}
+
+fun main() {
+    println("2023-03-26".toSimpleDate())
+}
+

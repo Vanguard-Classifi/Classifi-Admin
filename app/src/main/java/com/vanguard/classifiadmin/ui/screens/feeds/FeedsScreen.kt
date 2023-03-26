@@ -581,7 +581,7 @@ fun CreateDiscussionBottomBar(
             .wrapContentHeight()
             .fillMaxWidth()
             .onGloballyPositioned { rowHeight = it.size.height },
-        color = Black100.copy(0.1f),
+        color = Black100.copy(0.02f),
         shape = CircleShape,
     ) {
         Box(
