@@ -66,9 +66,9 @@ fun TimePicker(
     onValueChange: (String) -> Unit,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    is24Hour: Boolean = true,
+    is24Hour: Boolean = false,
 ) {
-    val pattern = if (is24Hour) "HH:mm" else "h:mm a"
+    val pattern = if (is24Hour) "HH:mm" else "hh:mm a"
     val formatter = DateTimeFormatter.ofPattern(pattern)
     val time = if (value.isNotBlank()) LocalTime.parse(value, formatter) else LocalTime.now()
     val dialog = TimePickerDialog(

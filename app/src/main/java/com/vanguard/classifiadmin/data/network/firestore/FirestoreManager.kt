@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.data.network.firestore
 
+import com.vanguard.classifiadmin.data.network.models.AssessmentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
@@ -313,4 +314,42 @@ interface FirestoreManager {
         onResult: (Boolean) -> Unit
     )
 
+    //assessment
+    suspend fun saveAssessmentAsStagedNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun saveAssessmentAsVerifiedNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun deleteAssessmentNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun deleteAssessmentByIdNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun getStagedAssessmentsNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedAssessmentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
+    suspend fun getAssessmentByIdNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Resource<AssessmentNetworkModel?>) -> Unit
+    )
 }

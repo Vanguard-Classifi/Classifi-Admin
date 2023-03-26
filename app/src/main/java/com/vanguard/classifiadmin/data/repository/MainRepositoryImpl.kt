@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.vanguard.classifiadmin.data.network.firestore.FirestoreManager
+import com.vanguard.classifiadmin.data.network.models.AssessmentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
@@ -577,5 +578,56 @@ class MainRepositoryImpl @Inject constructor(
         return cacheManager.getBitmapFromUri(uri)
     }
 
+    override suspend fun saveAssessmentAsStagedNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveAssessmentAsStagedNetwork(assessment, onResult)
+    }
+
+    override suspend fun saveAssessmentAsVerifiedNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+       firestoreManager.saveAssessmentAsVerifiedNetwork(assessment, onResult)
+    }
+
+    override suspend fun deleteAssessmentNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+       firestoreManager.deleteAssessmentNetwork(assessment, onResult)
+    }
+
+    override suspend fun deleteAssessmentByIdNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+      firestoreManager.deleteAssessmentByIdNetwork(assessmentId, schoolId, onResult)
+    }
+
+    override suspend fun getStagedAssessmentsNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+       firestoreManager.getStagedAssessmentsNetwork(authorId, schoolId, onResult)
+    }
+
+    override suspend fun getVerifiedAssessmentsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+      firestoreManager.getVerifiedAssessmentsNetwork(schoolId, onResult)
+    }
+
+    override suspend fun getAssessmentByIdNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Resource<AssessmentNetworkModel?>) -> Unit
+    ) {
+      firestoreManager.getAssessmentByIdNetwork(assessmentId, schoolId, onResult)
+    }
 
 }

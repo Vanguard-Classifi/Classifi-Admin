@@ -135,14 +135,7 @@ fun FeedsScreenContent(
         }
     )
 
-    if(classFilterBufferReadFeeds.isNotEmpty())
-    Log.e(
-        TAG,
-        "FeedsScreenContent: class filter read buffer ${classFilterBufferReadFeeds.first()}",
-
-    )
-
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit, classFilterBufferReadFeedsListener, currentClassFeedPref) {
         viewModel.getCurrentClassFeedPref()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserIdPref()

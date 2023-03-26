@@ -10,6 +10,8 @@ data class AssessmentNetworkModel(
     var schoolId: String? = null,
     var startTime: String? = null,
     var endTime: String? = null,
+    var startDate: String? = null,
+    var endDate: String? = null,
     var authorId: String? = null,
     var authorName: String? = null,
     var parentFeedId: String? = null,
@@ -20,6 +22,7 @@ data class AssessmentNetworkModel(
     var questionIds: ArrayList<String> = arrayListOf(),
     var attempts: ArrayList<String> = arrayListOf(),
     var lastModified: String? = null,
+    var verified: Boolean? = null,
 ) {
     fun toLocal() = AssessmentModel(
         assessmentId = assessmentId.orEmpty(),
@@ -29,6 +32,8 @@ data class AssessmentNetworkModel(
         schoolId = schoolId,
         startTime = startTime,
         endTime = endTime,
+        startDate = startDate,
+        endDate = endDate,
         authorId = authorId,
         authorName = authorName,
         parentFeedId = parentFeedId,
@@ -39,5 +44,6 @@ data class AssessmentNetworkModel(
         questionIds = questionIds,
         attempts = attempts,
         lastModified = lastModified,
+        verified = verified,
     )
 }

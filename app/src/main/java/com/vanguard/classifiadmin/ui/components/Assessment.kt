@@ -62,15 +62,20 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.data.local.models.ClassModel
+import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
 import com.vanguard.classifiadmin.domain.extensions.orStudent
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserRole
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.domain.helpers.todayComputational
 import com.vanguard.classifiadmin.ui.screens.admin.VerifiedStudentItem
 import com.vanguard.classifiadmin.ui.screens.admin.VerifiedSubjectItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
+import com.vanguard.classifiadmin.ui.screens.feeds.FeedType
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -79,6 +84,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -87,6 +93,7 @@ fun CreateAssessmentBox(
     viewModel: MainViewModel,
     onClose: () -> Unit,
     parentWidth: Dp,
+    onCreateAssessment: () -> Unit,
 ) {
     val TAG = "CreateAssessmentBox"
     val sheetState = rememberModalBottomSheetState(
@@ -106,11 +113,6 @@ fun CreateAssessmentBox(
     val verifiedStudentsUnderClassNetwork by viewModel.verifiedStudentsUnderClassNetwork.collectAsState()
     val studentsBufferCreateAssessment by viewModel.studentsBufferCreateAssessment.collectAsState()
     val studentsBufferCreateAssessmentListener by viewModel.studentsBufferCreateAssessmentListener.collectAsState()
-    val startDateTime = remember {
-        mutableStateOf<LocalDateTime?>(
-            LocalDateTime.now().plusDays(1)
-        )
-    }
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -239,6 +241,7 @@ fun CreateAssessmentBox(
                                 sheetState.show()
                             }
                         },
+                        onCreateAssessment = onCreateAssessment
                     )
                 }
             )
@@ -254,8 +257,10 @@ fun CreateAssessmentBoxContent(
     onClose: () -> Unit,
     onSelectSubjectForAssessment: () -> Unit,
     onSelectStudentForAssessment: () -> Unit,
+    onCreateAssessment: () -> Unit,
 ) {
     val innerModifier = Modifier
+    val scope = rememberCoroutineScope()
     val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
@@ -267,11 +272,32 @@ fun CreateAssessmentBoxContent(
     val startDateCreateAssessment by viewModel.startDateCreateAssessment.collectAsState()
     val endTimeCreateAssessment by viewModel.endTimeCreateAssessment.collectAsState()
     val endDateCreateAssessment by viewModel.endDateCreateAssessment.collectAsState()
+    val currentUsernamePref by viewModel.currentUsernamePref.collectAsState()
+    val currentAssessmentType by viewModel.currentAssessmentType.collectAsState()
+    val eligible = remember(
+        assessmentNameCreateAssessment,
+        selectedSubjectCreateAssessment,
+        startTimeCreateAssessment,
+        endTimeCreateAssessment,
+        startDateCreateAssessment,
+        endDateCreateAssessment,
+        currentAssessmentType,
+    ) {
+        assessmentNameCreateAssessment?.isNotBlank() == true &&
+                selectedSubjectCreateAssessment != null &&
+                startTimeCreateAssessment?.isNotBlank() == true &&
+                endTimeCreateAssessment?.isNotBlank() == true &&
+                startDateCreateAssessment?.isNotBlank() == true &&
+                endDateCreateAssessment?.isNotBlank() == true &&
+                currentAssessmentType.name.isNotBlank()
+    }
+
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserRolePref()
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
+        viewModel.getCurrentUsernamePref()
         delay(1000)
         when (currentUserRolePref) {
             UserRole.Teacher.name -> {
@@ -441,7 +467,58 @@ fun CreateAssessmentBoxContent(
 
                 PrimaryTextButton(
                     label = stringResource(id = R.string.continue_text),
-                    onClick = { /*TODO: on continue */ },
+                    enabled = eligible,
+                    onClick = {
+                        scope.launch {
+
+                            val studentIds = ArrayList<String>()
+                            studentsBufferCreateAssessment.map {
+                                studentIds.add(it.userId)
+                            }
+                            //save assessment to stage
+                            val feedId = UUID.randomUUID().toString()
+                            val feed = FeedModel(
+                                feedId = feedId,
+                                authorId = currentUserIdPref.orEmpty(),
+                                authorName = currentUsernamePref.orEmpty(),
+                                schoolId = currentSchoolIdPref.orEmpty(),
+                                lastModified = todayComputational(),
+                                type = FeedType.Assessment.name,
+                                classIds = arrayListOf(selectedSubjectCreateAssessment?.classId.orEmpty())
+                            )
+                            val assessment = AssessmentModel(
+                                assessmentId = feedId,
+                                name = assessmentNameCreateAssessment.orEmpty(),
+                                subjectId = selectedSubjectCreateAssessment?.subjectId.orEmpty(),
+                                subjectName = selectedSubjectCreateAssessment?.subjectName.orEmpty(),
+                                schoolId = currentSchoolIdPref.orEmpty(),
+                                startTime = startTimeCreateAssessment.orEmpty(),
+                                endTime = endTimeCreateAssessment.orEmpty(),
+                                startDate = startDateCreateAssessment.orEmpty(),
+                                endDate = endDateCreateAssessment.orEmpty(),
+                                authorId = currentUserIdPref.orEmpty(),
+                                authorName = currentUsernamePref.orEmpty(),
+                                verified = false,
+                                parentFeedId = feedId,
+                                type = currentAssessmentType.name.orEmpty(),
+                                assignedClasses = arrayListOf(selectedSubjectCreateAssessment?.classId.orEmpty()),
+                                assignedStudents = studentIds,
+                                lastModified = todayComputational()
+                            )
+
+                            viewModel.saveFeedAsStagedNetwork(feed.toNetwork(), onResult = {})
+                            //stage assessment
+                            viewModel.saveAssessmentAsStagedNetwork(assessment.toNetwork(), onResult = {})
+                        }.invokeOnCompletion {
+                            runnableBlock {
+                                //close dialog
+                                onClose()
+                                //proceed to more options
+                                onCreateAssessment()
+                            }
+                        }
+
+                    },
                     modifier = innerModifier.layoutId("continueButton")
                 )
             }
@@ -530,11 +607,17 @@ fun DateTimeSelection(
     BoxWithConstraints(modifier = modifier) {
         val rowWidth = maxWidth
         val datePattern = "yyyy-MM-dd"
-        val timePattern = if (is24Hour) "HH:mm" else "h:mm a"
+        val timePattern = if (is24Hour) "HH:mm" else "hh:mm a"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val timeFormatter = DateTimeFormatter.ofPattern(timePattern)
-        val date = if (dateValue.isNotBlank()) LocalDate.parse(dateValue, dateFormatter) else LocalDate.now()
-        val time = if (timeValue.isNotBlank()) LocalTime.parse(timeValue, timeFormatter) else LocalTime.now()
+        val date = if (dateValue.isNotBlank()) LocalDate.parse(
+            dateValue,
+            dateFormatter
+        ) else LocalDate.now()
+        val time = if (timeValue.isNotBlank()) LocalTime.parse(
+            timeValue,
+            timeFormatter
+        ) else LocalTime.now()
         val datePickerDialog = DatePickerDialog(
             LocalContext.current,
             R.style.DatePickerTheme,
@@ -588,7 +671,7 @@ fun DateTimeSelection(
                 shape = RoundedCornerShape(16.dp),
                 textStyle = TextStyle(
                     color = Black100,
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                 ),
                 keyboardOptions = KeyboardOptions(
@@ -626,7 +709,7 @@ fun DateTimeSelection(
                 shape = RoundedCornerShape(16.dp),
                 textStyle = TextStyle(
                     color = Black100,
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                 ),
                 keyboardOptions = KeyboardOptions(

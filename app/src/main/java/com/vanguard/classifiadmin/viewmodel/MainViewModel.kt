@@ -12,6 +12,7 @@ import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
+import com.vanguard.classifiadmin.data.network.models.AssessmentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
@@ -599,7 +600,8 @@ class MainViewModel @Inject constructor(
     val studentsBufferCreateAssessment: StateFlow<List<UserModel>> = _studentsBufferCreateAssessment
 
     private var _studentsBufferCreateAssessmentListener = MutableStateFlow(0)
-    val studentsBufferCreateAssessmentListener: StateFlow<Int> = _studentsBufferCreateAssessmentListener
+    val studentsBufferCreateAssessmentListener: StateFlow<Int> =
+        _studentsBufferCreateAssessmentListener
 
     private var _startTimeCreateAssessment = MutableStateFlow(null as String?)
     val startTimeCreateAssessment: StateFlow<String?> = _startTimeCreateAssessment
@@ -613,12 +615,85 @@ class MainViewModel @Inject constructor(
     private var _endDateCreateAssessment = MutableStateFlow(null as String?)
     val endDateCreateAssessment: StateFlow<String?> = _endDateCreateAssessment
 
+    private var _assessmentByIdNetwork =
+        MutableStateFlow(Resource.Loading<AssessmentNetworkModel?>() as Resource<AssessmentNetworkModel?>)
+    val assessmentByIdNetwork: StateFlow<Resource<AssessmentNetworkModel?>> = _assessmentByIdNetwork
+
+    private var _verifiedAssessmentsNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val verifiedAssessmentsNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _verifiedAssessmentsNetwork
+
+    private var _stagedAssessmentsNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val stagedAssessmentsNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _stagedAssessmentsNetwork
+
+    //assessment
+    fun saveAssessmentAsStagedNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveAssessmentAsStagedNetwork(assessment, onResult)
+    }
+
+    fun saveAssessmentAsVerifiedNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.saveAssessmentAsVerifiedNetwork(assessment, onResult)
+    }
+
+    fun deleteAssessmentNetwork(
+        assessment: AssessmentNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteAssessmentNetwork(assessment, onResult)
+    }
+
+    fun deleteAssessmentByIdNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteAssessmentByIdNetwork(assessmentId, schoolId, onResult)
+    }
+
+    fun getStagedAssessmentsNetwork(
+        authorId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getStagedAssessmentsNetwork(authorId, schoolId) {
+            _stagedAssessmentsNetwork.value = it
+        }
+    }
+
+    fun getVerifiedAssessmentsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedAssessmentsNetwork(schoolId) {
+            _verifiedAssessmentsNetwork.value = it
+        }
+    }
+
+    fun getAssessmentByIdNetwork(
+        assessmentId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getAssessmentByIdNetwork(assessmentId, schoolId) {
+            _assessmentByIdNetwork.value = it
+        }
+
+    }
+
     fun onStartTimeCreateAssessmentChanged(time: String?) = effect {
         _startTimeCreateAssessment.value = time
     }
+
     fun onEndTimeCreateAssessmentChanged(time: String?) = effect {
         _endTimeCreateAssessment.value = time
     }
+
     fun onStartDateCreateAssessmentChanged(date: String?) = effect {
         _startDateCreateAssessment.value = date
     }
@@ -636,13 +711,13 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAddStudentToAssessment(student: UserModel) = effect {
-        if(!_studentsBufferCreateAssessment.value.contains(student)) {
+        if (!_studentsBufferCreateAssessment.value.contains(student)) {
             _studentsBufferCreateAssessment.value.add(student)
         }
     }
 
     fun onRemoveStudentFromAssessment(student: UserModel) = effect {
-        if(_studentsBufferCreateAssessment.value.contains(student)) {
+        if (_studentsBufferCreateAssessment.value.contains(student)) {
             _studentsBufferCreateAssessment.value.remove(student)
         }
     }

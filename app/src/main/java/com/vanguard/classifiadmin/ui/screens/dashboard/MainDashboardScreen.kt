@@ -102,6 +102,7 @@ fun MainDashboardScreen(
     goToModifyAssessment: (AssessmentModel) -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
     onStudentDetail: (UserModel) -> Unit,
+    onCreateAssessment: () -> Unit,
 ) {
     val navController = rememberNavController()
     val currentBottomSheetFlavor by viewModel.currentDashboardBottomSheetFlavor.collectAsState()
@@ -433,7 +434,8 @@ fun MainDashboardScreen(
                 CreateAssessmentBox(
                     viewModel = viewModel,
                     onClose = { createQuestionState = false },
-                    parentWidth = maxWidth
+                    parentWidth = maxWidth,
+                    onCreateAssessment = onCreateAssessment
                 )
             }
         }

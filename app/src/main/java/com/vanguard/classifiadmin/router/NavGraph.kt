@@ -27,9 +27,11 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminDetailScreen
 import com.vanguard.classifiadmin.ui.screens.admin.ManageClassAdminScreen
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailScreen
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_CREATION_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REPORT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_REVIEW_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ASSESSMENT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReviewScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
@@ -116,6 +118,7 @@ object Destinations {
     const val manageSubjectAdminDetail = MANAGE_SUBJECT_ADMIN_DETAIL_SCREEN
     const val feedDetail = FEED_DETAIL_SCREEN
     const val studentDetail = STUDENT_DETAIL_SCREEN
+    const val assessmentCreation = ASSESSMENT_CREATION_SCREEN
 }
 
 
@@ -144,7 +147,8 @@ fun NavGraph(
                 goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) },
                 onLogin = { navController.navigate(Destinations.login) },
                 onFeedDetail = { navController.navigate(Destinations.feedDetail) },
-                onStudentDetail = { navController.navigate(Destinations.studentDetail) }
+                onStudentDetail = { navController.navigate(Destinations.studentDetail) },
+                onCreateAssessment = { navController.navigate(Destinations.assessmentCreation) }
             )
         }
 
@@ -389,6 +393,13 @@ fun NavGraph(
 
         composable(Destinations.studentDetail) {
             StudentDetailScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.dashboard) },
+            )
+        }
+
+        composable(Destinations.assessmentCreation) {
+            AssessmentCreationScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.dashboard) },
             )
