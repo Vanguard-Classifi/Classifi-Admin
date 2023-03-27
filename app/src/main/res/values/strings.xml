@@ -215,4 +215,13 @@
     <string name="subject">Subject</string>
     <string name="assesment_type">Assessment Type</string>
     <string name="could_not_load_assessment">Could not load assessment</string>
+    <string name="feel_free_to_create_questions">"Feel free to create questions, as many as you want. "</string>
+    <string name="type">Type</string>
+    <string name="difficulty">Difficulty</string>
+    <string name="score">Score</string>
+    <string name="duration">Duration (min)</string>
+    <string name="question_body">Question Body</string>
+    <string name="your_question">Your Question...</string>
+    <string name="mark_as_answer">Mark as Answer</string>
+    <string name="option_a">Option A</string>
 </resources>

@@ -39,6 +39,8 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
+import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionBottomSheetMode
+import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOption
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
@@ -634,6 +636,28 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(AssessmentCreationBottomSheetMode.AddQuestion as AssessmentCreationBottomSheetMode)
     val assessmentCreationBottomSheetMode: StateFlow<AssessmentCreationBottomSheetMode> =
         _assessmentCreationBottomSheetMode
+
+    private var _questionSidePanelState = MutableStateFlow(null as Boolean?)
+    val questionSidePanelState: StateFlow<Boolean?> = _questionSidePanelState
+
+    private var _createQuestionBottomSheetMode =
+        MutableStateFlow(CreateQuestionBottomSheetMode.QuestionType as CreateQuestionBottomSheetMode)
+    val createQuestionBottomSheetMode: StateFlow<CreateQuestionBottomSheetMode> = _createQuestionBottomSheetMode
+
+    private var _correctQuestionOption = MutableStateFlow(QuestionOption.OptionA as QuestionOption)
+    val correctQuestionOption: StateFlow<QuestionOption> = _correctQuestionOption
+
+    fun onCorrectQuestionOptionChanged(option: QuestionOption) = effect {
+        _correctQuestionOption.value = option
+    }
+
+    fun onCreateQuestionBottomSheetModeChanged(mode: CreateQuestionBottomSheetMode) = effect {
+        _createQuestionBottomSheetMode.value = mode
+    }
+
+    fun onQuestionSidePanelStateChanged(state: Boolean?) = effect {
+        _questionSidePanelState.value = state
+    }
 
     fun onAssessmentCreationBottomSheetModeChanged(mode: AssessmentCreationBottomSheetMode) =
         effect {

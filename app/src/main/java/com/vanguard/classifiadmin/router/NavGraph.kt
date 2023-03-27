@@ -35,6 +35,8 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationScree
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReviewScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.CREATE_QUESTION_SCREEN
+import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.MODIFY_ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ModifyAssessmentScreen
 import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN
@@ -119,6 +121,7 @@ object Destinations {
     const val feedDetail = FEED_DETAIL_SCREEN
     const val studentDetail = STUDENT_DETAIL_SCREEN
     const val assessmentCreation = ASSESSMENT_CREATION_SCREEN
+    const val createQuestion = CREATE_QUESTION_SCREEN
 }
 
 
@@ -402,6 +405,15 @@ fun NavGraph(
             AssessmentCreationScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.dashboard) },
+                onCreateQuestion = { navController.navigate(Destinations.createQuestion) },
+                onImportQuestion = {/*todo: on Import Question*/ }
+            )
+        }
+
+        composable(Destinations.createQuestion) {
+            CreateQuestionScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigate(Destinations.assessmentCreation) },
             )
         }
     }

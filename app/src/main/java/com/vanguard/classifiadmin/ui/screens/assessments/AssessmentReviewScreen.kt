@@ -367,19 +367,6 @@ fun AssessmentReviewRowItem(
     }
 }
 
-enum class QuestionMode(val fullname: String) {
-    MultipleChoice("Multiple Choice"),
-    TrueFalse("True/False"),
-    ShortAnswer("Short Answer"),
-    Essay("Essay"),
-}
-
-enum class QuestionDifficulty {
-    Easy,
-    Medium,
-    Har,
-}
-
 @Composable
 fun TextIconButton(
     modifier: Modifier = Modifier,
@@ -612,8 +599,7 @@ fun RoundedCharButton(
     }
 }
 
-val mode: QuestionMode = QuestionMode.Essay
-val questionModeName = mode.toString()
+
 
 
 @Composable
@@ -622,20 +608,6 @@ private fun AssessmentReviewRowItemPreview() {
     AssessmentReviewRowItem(
         label = "Date Created",
         value = "15th July, 2027"
-    )
-}
-
-@Composable
-@Preview
-fun AssessmentReviewCardPreview() {
-    AssessmentReviewCard(
-        subjectName = questionModeName.substring(63),
-        heading = "Grade 23",
-        questions = 23,
-        maxScore = 23,
-        dateCreated = "12th August",
-        fromClass = "Grade 23",
-        status = "Pending"
     )
 }
 

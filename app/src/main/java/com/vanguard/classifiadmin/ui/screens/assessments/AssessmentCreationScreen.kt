@@ -77,6 +77,8 @@ fun AssessmentCreationScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    onCreateQuestion: () -> Unit,
+    onImportQuestion: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -136,7 +138,11 @@ fun AssessmentCreationScreen(
                         },
                         maxHeight = maxHeight,
                         onSelect = {
-
+                            if(it == AssessmentCreationAddQuestionFeature.CreateQuestion) {
+                                onCreateQuestion()
+                            } else {
+                                onImportQuestion()
+                            }
                         },
                     )
                 },
@@ -173,7 +179,9 @@ fun AssessmentCreationScreen(
                                         showModalSheet.value = true
                                         sheetState.show()
                                     }
-                                }
+                                },
+                                onCreateQuestion = onCreateQuestion,
+                                onImportQuestion = onImportQuestion
                             )
                         },
                         bottomBar = {
@@ -200,7 +208,9 @@ fun AssessmentCreationScreen(
 @Composable
 fun AssessmentCreationScreenContent(
     modifier: Modifier = Modifier,
-    onAddQuestion: () -> Unit
+    onAddQuestion: () -> Unit,
+    onCreateQuestion: () -> Unit,
+    onImportQuestion: () -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier) {
         Column(modifier = Modifier) {
@@ -227,8 +237,8 @@ fun AssessmentCreationScreenContent(
             Divider(modifier = modifier.fillMaxWidth())
 
             NoQuestionPageAssessmentCreation(
-                onCreateQuestion = {},
-                onImportQuestion = {}
+                onCreateQuestion = onCreateQuestion,
+                onImportQuestion = onImportQuestion
             )
         }
     }
@@ -296,6 +306,7 @@ fun CreateAssessmentBottomBar(
         modifier = Modifier
             .wrapContentHeight()
             .fillMaxWidth()
+            .padding(horizontal = 8.dp)
             .onGloballyPositioned { rowHeight = it.size.height },
         color = MaterialTheme.colors.onPrimary,
         border = BorderStroke(
@@ -325,7 +336,7 @@ fun CreateAssessmentBottomBar(
                     modifier = innerModifier
                         .width(1.dp)
                         .height(
-                            with(LocalDensity.current) { rowHeight.toDp() }
+                            with(LocalDensity.current) { rowHeight.toDp().times(0.7f) }
                         )
                         .layoutId("divider")
                 )

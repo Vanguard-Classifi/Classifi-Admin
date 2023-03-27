@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -33,6 +34,66 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.theme.Black100
+
+@Composable
+fun SecondaryButtonWithIconStyled(
+    modifier: Modifier = Modifier,
+    label: String,
+    icon: Int = R.drawable.icon_mark,
+    onClick: () -> Unit,
+    iconSize: Dp = 24.dp,
+    selected: Boolean = false,
+    iconTint: Color = MaterialTheme.colors.primary.copy(0.5f),
+    textColor: Color = MaterialTheme.colors.primary.copy(0.5f),
+) {
+    val radius = animateDpAsState(targetValue = if (selected) 58.dp else 0.dp)
+
+    TextButton(
+        onClick = onClick,
+        shape = RoundedCornerShape(
+            topEnd = radius.value,
+            bottomEnd = radius.value
+        ),
+        modifier = modifier
+            .border(
+                color = if (selected) MaterialTheme.colors.primary else textColor,
+                width = if (selected) 2.dp else 1.dp,
+                shape = RoundedCornerShape(
+                    topEnd = radius.value,
+                    bottomEnd = radius.value
+                ),
+            )
+            .clip(
+                RoundedCornerShape(
+                    topEnd = radius.value,
+                    bottomEnd = radius.value
+                )
+            ),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = if(selected) MaterialTheme.colors.primary.copy(0.3f) else Color.Transparent,
+            contentColor =if (selected) MaterialTheme.colors.primary else textColor,
+            disabledBackgroundColor = Black100.copy(0.1f)
+        )
+    ) {
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = stringResource(id = R.string.icon),
+            tint = if (selected) MaterialTheme.colors.primary else iconTint,
+            modifier = modifier
+                .padding(horizontal = 4.dp, vertical = 0.dp)
+                .size(iconSize)
+        )
+
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Normal,
+            color = if (selected) MaterialTheme.colors.primary else textColor,
+            modifier = modifier.padding(horizontal = 4.dp, vertical = 0.dp)
+        )
+    }
+}
+
 
 @Composable
 fun SecondaryButtonWithIconRight(
@@ -373,5 +434,15 @@ private fun TertiaryTextButtonWithIconPreview() {
         label = "Click me",
         onClick = {},
         icon = R.drawable.icon_close,
+    )
+}
+
+@Composable
+@Preview
+private fun SecondaryButtonWithIconRightStyledPreview() {
+    SecondaryButtonWithIconStyled(
+        label = "Mark as answer",
+        onClick = {},
+        selected = true,
     )
 }
