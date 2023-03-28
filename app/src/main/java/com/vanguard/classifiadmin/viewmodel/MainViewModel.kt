@@ -642,10 +642,48 @@ class MainViewModel @Inject constructor(
 
     private var _createQuestionBottomSheetMode =
         MutableStateFlow(CreateQuestionBottomSheetMode.QuestionType as CreateQuestionBottomSheetMode)
-    val createQuestionBottomSheetMode: StateFlow<CreateQuestionBottomSheetMode> = _createQuestionBottomSheetMode
+    val createQuestionBottomSheetMode: StateFlow<CreateQuestionBottomSheetMode> =
+        _createQuestionBottomSheetMode
 
     private var _correctQuestionOption = MutableStateFlow(QuestionOption.OptionA as QuestionOption)
     val correctQuestionOption: StateFlow<QuestionOption> = _correctQuestionOption
+
+    private var _questionBodyCreateQuestion = MutableStateFlow(null as String?)
+    var questionBodyCreateQuestion: StateFlow<String?> = _questionBodyCreateQuestion
+
+    private var _questionOptionACreateQuestion = MutableStateFlow(null as String?)
+    var questionOptionACreateQuestion: StateFlow<String?> = _questionOptionACreateQuestion
+
+    private var _questionOptionBCreateQuestion = MutableStateFlow(null as String?)
+    var questionOptionBCreateQuestion: StateFlow<String?> = _questionOptionBCreateQuestion
+
+    private var _questionOptionCCreateQuestion = MutableStateFlow(null as String?)
+    var questionOptionCCreateQuestion: StateFlow<String?> = _questionOptionCCreateQuestion
+
+    private var _questionOptionDCreateQuestion = MutableStateFlow(null as String?)
+    var questionOptionDCreateQuestion: StateFlow<String?> = _questionOptionDCreateQuestion
+
+
+
+    fun onQuestionBodyCreateQuestionChanged(body: String?) = effect {
+        _questionBodyCreateQuestion.value = body
+    }
+
+    fun onQuestionOptionACreateQuestionChanged(optionA: String?) = effect {
+        _questionOptionACreateQuestion.value = optionA
+    }
+
+    fun onQuestionOptionBCreateQuestionChanged(optionC: String?) = effect {
+        _questionOptionBCreateQuestion.value = optionC
+    }
+
+    fun onQuestionOptionCCreateQuestionChanged(optionC: String?) = effect {
+        _questionOptionCCreateQuestion.value = optionC
+    }
+
+    fun onQuestionOptionDCreateQuestionChanged(optionD: String?) = effect {
+        _questionOptionDCreateQuestion.value = optionD
+    }
 
     fun onCorrectQuestionOptionChanged(option: QuestionOption) = effect {
         _correctQuestionOption.value = option

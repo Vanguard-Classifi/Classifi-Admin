@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -68,6 +69,7 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithInfo
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
+import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryButtonWithIconStyled
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
@@ -186,14 +188,22 @@ fun CreateQuestionScreenContent(
     onConfigQuestionDifficulty: () -> Unit,
     onConfigAssessmentDuration: () -> Unit,
     onConfigQuestionScore: () -> Unit,
+    questionOptions: List<QuestionOption> = QuestionOption.values().toList()
 ) {
     val verticalScroll = rememberScrollState()
     val correctQuestionOption by viewModel.correctQuestionOption.collectAsState()
+    val questionBodyCreateQuestion by viewModel.questionBodyCreateQuestion.collectAsState()
+    val questionOptionACreateQuestion by viewModel.questionOptionACreateQuestion.collectAsState()
+    val questionOptionBCreateQuestion by viewModel.questionOptionBCreateQuestion.collectAsState()
+    val questionOptionCCreateQuestion by viewModel.questionOptionCCreateQuestion.collectAsState()
+    val questionOptionDCreateQuestion by viewModel.questionOptionDCreateQuestion.collectAsState()
 
+    val localModifier = Modifier
 
     BoxWithConstraints(modifier = Modifier) {
+
         Column(
-            modifier = Modifier
+            modifier = localModifier
                 .verticalScroll(verticalScroll)
                 .padding(horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -213,10 +223,10 @@ fun CreateQuestionScreenContent(
                 fontWeight = FontWeight.Normal,
             )
 
-            Spacer(modifier = modifier.height(0.dp))
+            Spacer(modifier = localModifier.height(0.dp))
 
             Row(
-                modifier = modifier.fillMaxWidth(),
+                modifier = localModifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start,
             ) {
                 QuestionConfigBox(
@@ -226,9 +236,9 @@ fun CreateQuestionScreenContent(
                 )
             }
 
-            Spacer(modifier = modifier.height(0.dp))
+            Spacer(modifier = localModifier.height(0.dp))
             Row(
-                modifier = modifier.fillMaxWidth(),
+                modifier = localModifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 QuestionConfigBox(
@@ -236,7 +246,7 @@ fun CreateQuestionScreenContent(
                     onConfig = {
                         onConfigQuestionDifficulty()
                     },
-                    value = "",
+                    value = "Easy",
                 )
 
                 QuestionConfigBox(
@@ -244,13 +254,13 @@ fun CreateQuestionScreenContent(
                     onConfig = {
                         onConfigQuestionScore()
                     },
-                    value = "",
+                    value = "100",
                 )
             }
-            Spacer(modifier = modifier.height(0.dp))
+            Spacer(modifier = localModifier.height(0.dp))
 
             Row(
-                modifier = modifier.fillMaxWidth(),
+                modifier = localModifier.fillMaxWidth().padding(0.dp),
                 horizontalArrangement = Arrangement.Start,
             ) {
                 QuestionConfigBox(
@@ -258,22 +268,17 @@ fun CreateQuestionScreenContent(
                     onConfig = {
                         onConfigAssessmentDuration()
                     },
-                    value = "",
+                    value = "60",
                 )
             }
 
-
-            Spacer(modifier = modifier.height(8.dp))
+            Spacer(modifier = localModifier.height(8.dp))
 
             Card(
-                modifier = modifier
+                modifier = localModifier
                     .clip(RoundedCornerShape(16.dp))
                     .padding(top = 8.dp, bottom = 8.dp, start = 0.dp, end = 0.dp),
                 shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colors.primary,
-                ),
                 elevation = 2.dp,
             ) {
                 Column(
@@ -283,201 +288,209 @@ fun CreateQuestionScreenContent(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(
-                        text = stringResource(R.string.question_body).uppercase(),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Black100,
+                    QuestionBox(
+                        isOption = false,
+                        selected = false,
+                        value = questionBodyCreateQuestion.orEmpty(),
+                        onValueChange = viewModel::onQuestionBodyCreateQuestionChanged,
+                        onMark = {},
+                        label = stringResource(id = R.string.question_body)
                     )
 
-                    Spacer(modifier = modifier.height(4.dp))
-
-                    Box(
-                        modifier = modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        OutlinedTextField(
-                            enabled = false,
-                            readOnly = true,
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 180.dp)
-                                .clip(
-                                    RoundedCornerShape(
-                                        bottomStart = 16.dp,
-                                        bottomEnd = 16.dp,
-                                    )
-                                ),
-                            value = "",
-                            onValueChange = {},
-                            placeholder = {
-                                Text(
-                                    text = stringResource(id = R.string.your_question),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Normal,
-                                    color = Black100.copy(0.5f),
-                                )
+                    questionOptions.forEach { option ->
+                        QuestionBox(
+                            isOption = true,
+                            selected = correctQuestionOption == option,
+                            value = when (option) {
+                                QuestionOption.OptionA -> questionOptionACreateQuestion.orEmpty()
+                                QuestionOption.OptionB -> questionOptionBCreateQuestion.orEmpty()
+                                QuestionOption.OptionC -> questionOptionCCreateQuestion.orEmpty()
+                                QuestionOption.OptionD -> questionOptionDCreateQuestion.orEmpty()
                             },
-                            shape = RoundedCornerShape(
-                                bottomStart = 16.dp,
-                                bottomEnd = 16.dp,
-                            ),
-                            textStyle = TextStyle(
-                                color = Black100,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done,
-                            ),
-                            isError = false,
+                            onValueChange = {
+                                when (option) {
+                                    QuestionOption.OptionA -> {
+                                        viewModel.onQuestionOptionACreateQuestionChanged(it)
+                                    }
+
+                                    QuestionOption.OptionB -> {
+                                        viewModel.onQuestionOptionBCreateQuestionChanged(it)
+                                    }
+
+                                    QuestionOption.OptionC -> {
+                                        viewModel.onQuestionOptionCCreateQuestionChanged(it)
+                                    }
+
+                                    QuestionOption.OptionD -> {
+                                        viewModel.onQuestionOptionDCreateQuestionChanged(it)
+                                    }
+                                }
+                            },
+                            onMark = {
+                                viewModel.onCorrectQuestionOptionChanged(option)
+                            },
+                            label = option.title
                         )
 
-                        //top
-                        Box(
-                            modifier = modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Surface(
-                                modifier = modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(
-                                    topStart = 16.dp,
-                                    topEnd = 16.dp,
-                                ),
-                                border = BorderStroke(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colors.primary,
-                                )
-                            ) {
-                                Row(
-                                    modifier = modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "Body",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Black100.copy(0.5f),
-                                    )
-                                }
-                            }
-                        }
+                        Spacer(modifier = modifier.height(16.dp))
                     }
+
+                    //save button
+                    PrimaryTextButtonFillWidth(
+                        label = stringResource(id = R.string.save_changes),
+                        onClick = { /*TODO on save question */ }
+                    )
                 }
             }
+        }
+    }
+}
 
 
-            //option A
-            Card(
+@Composable
+fun QuestionBox(
+    modifier: Modifier = Modifier,
+    isOption: Boolean = true,
+    selected: Boolean = false,
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    onMark: () -> Unit
+) {
+    val headerOffset = remember { mutableStateOf(0) }
+    val headerWidth = remember { mutableStateOf(0) }
+    //question body
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        OutlinedTextField(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(top = with(LocalDensity.current) {
+                    headerOffset.value.toDp()
+                })
+                .heightIn(
+                    min =
+                    if (isOption) 100.dp else 180.dp
+                )
+                .clip(
+                    RoundedCornerShape(
+                        bottomStart = 16.dp,
+                        bottomEnd = 16.dp,
+                    )
+                ),
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                Text(
+                    text = label,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Black100.copy(0.5f),
+                )
+            },
+            shape = RoundedCornerShape(
+                bottomStart = 16.dp,
+                bottomEnd = 16.dp,
+            ),
+            textStyle = TextStyle(
+                color = Black100,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+            ),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done,
+            ),
+            isError = false,
+        )
+
+        //top
+        Box(
+            modifier = modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            Surface(
                 modifier = modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .padding(top = 8.dp, bottom = 8.dp, start = 0.dp, end = 0.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .fillMaxWidth()
+                    .padding(0.dp)
+                    .onGloballyPositioned {
+                        headerOffset.value = it.size.height
+                        headerWidth.value = it.size.width
+                    },
+                shape = RoundedCornerShape(
+                    topStart = if (isOption) 0.dp else 16.dp,
+                    topEnd = animateDpAsState(
+                        targetValue = when {
+                            isOption && selected -> 16.dp
+                            !isOption -> 16.dp
+                            else -> 0.dp
+                        }
+                    ).value,
+                ),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = MaterialTheme.colors.primary,
+                    color = MaterialTheme.colors.primary.copy(0.5f),
                 ),
-                elevation = 2.dp,
+                color = if(selected) MaterialTheme.colors.primary else Color.Transparent
             ) {
-                Column(
+                Row(
                     modifier = modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                        .padding(0.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Box(
-                        modifier = modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
+                        modifier = modifier
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        OutlinedTextField(
-                            enabled = false,
-                            readOnly = true,
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 100.dp)
-                                .clip(
-                                    RoundedCornerShape(
-                                        bottomStart = 16.dp,
-                                        bottomEnd = 16.dp,
-                                    )
-                                ),
-                            value = "",
-                            onValueChange = {},
-                            placeholder = {
-                                Text(
-                                    text = stringResource(id = R.string.option_a),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Normal,
-                                    color = Black100.copy(0.5f),
-                                )
-                            },
-                            shape = RoundedCornerShape(
-                                bottomStart = 16.dp,
-                                bottomEnd = 16.dp,
-                            ),
-                            textStyle = TextStyle(
-                                color = Black100,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done,
-                            ),
-                            isError = false,
+                        Text(
+                            text = label,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Black100,
                         )
+                    }
 
-                        //top
-                        Box(
-                            modifier = modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Surface(
-                                modifier = modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(
-                                    topStart =
-                                    animateDpAsState(
-                                        targetValue = if (correctQuestionOption == QuestionOption.OptionA)
-                                            16.dp else 0.dp
-                                    ).value,
-                                    topEnd = animateDpAsState(
-                                        targetValue = if (correctQuestionOption == QuestionOption.OptionA)
-                                            16.dp else 0.dp
-                                    ).value,
+                    if (isOption) {
+                        TextButton(
+                            onClick = onMark,
+                            modifier = modifier
+                                .padding(0.dp)
+                                .width(
+                                    with(LocalDensity.current) {
+                                        headerWidth.value
+                                            .toDp()
+                                            .times(0.45f)
+                                    }
                                 ),
-                                border = BorderStroke(
-                                    width = animateDpAsState(
-                                        targetValue = if(correctQuestionOption == QuestionOption.OptionA)
-                                            2.dp else 1.dp
-                                    ).value,
-                                    color = MaterialTheme.colors.primary,
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = if(selected) MaterialTheme.colors.primary else Color.Transparent,
+                            )
+                        ) {
+                            Spacer(modifier = modifier.weight(1f))
+                            Text(
+                                text = if(selected) stringResource(id = R.string.correct_answer) else
+                                stringResource(id = R.string.mark_as_answer),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
+                                    0.5f
+                                ),
+                            )
+                            Spacer(modifier = modifier.width(8.dp))
+                            if(selected) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.icon_mark),
+                                    contentDescription = stringResource(id = R.string.mark_as_answer),
+                                    tint = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
+                                        0.5f
+                                    )
                                 )
-                            ) {
-                                Row(
-                                    modifier = modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = stringResource(id = R.string.option_a),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Black100.copy(0.5f),
-                                    )
-
-                                    SecondaryButtonWithIconStyled(
-                                        label = stringResource(id = R.string.mark_as_answer),
-                                        onClick = {
-                                            viewModel.onCorrectQuestionOptionChanged(
-                                                QuestionOption.OptionA
-                                            )
-                                        },
-                                        selected = correctQuestionOption == QuestionOption.OptionA,
-                                    )
-                                }
+                                Spacer(modifier = modifier.width(8.dp))
                             }
                         }
                     }
@@ -728,7 +741,7 @@ sealed class CreateQuestionBottomSheetMode {
 enum class QuestionDifficulty {
     Easy,
     Medium,
-    Har,
+    Hard,
 }
 
 
@@ -843,11 +856,11 @@ private fun QuestionConfigBoxConstraints(margin: Dp): ConstraintSet {
     }
 }
 
-sealed class QuestionOption {
-    object OptionA : QuestionOption()
-    object OptionB : QuestionOption()
-    object OptionC : QuestionOption()
-    object OptionD : QuestionOption()
+enum class QuestionOption(val title: String) {
+    OptionA("Option A"),
+    OptionB("Option B"),
+    OptionC("Option C"),
+    OptionD("Option D")
 }
 
 @Composable
@@ -860,4 +873,3 @@ private fun QuestionConfigBoxPreview() {
         value = "60",
     )
 }
-
