@@ -15,3 +15,7 @@ fun String?.orParent(): String {
 fun String?.orTeacher(): String {
     return this ?: "Teacher"
 }
+
+fun String?.orZeroString(): String {
+    return this ?: "0"
+}

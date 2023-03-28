@@ -1,8 +1,8 @@
 package com.vanguard.classifiadmin.ui.screens.assessments
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -35,10 +34,9 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +56,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -66,16 +65,18 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.QuestionModel
+import com.vanguard.classifiadmin.domain.extensions.orZeroString
+import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
-import com.vanguard.classifiadmin.ui.components.ChildTopBarWithInfo
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
-import com.vanguard.classifiadmin.ui.components.SecondaryButtonWithIconStyled
-import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 const val CREATE_QUESTION_SCREEN = "create_question_screen"
 
@@ -117,6 +118,13 @@ fun CreateQuestionScreen(
                         onSelectQuestionDifficulty = {
 
                         },
+                        onClose = {
+                            coroutineScope.launch {
+                                delay(400)
+                                showModalSheet.value = false
+                                sheetState.hide()
+                            }
+                        }
                     )
                 },
                 content = {
@@ -197,11 +205,29 @@ fun CreateQuestionScreenContent(
     val questionOptionBCreateQuestion by viewModel.questionOptionBCreateQuestion.collectAsState()
     val questionOptionCCreateQuestion by viewModel.questionOptionCCreateQuestion.collectAsState()
     val questionOptionDCreateQuestion by viewModel.questionOptionDCreateQuestion.collectAsState()
+    val questionType by viewModel.questionTypeCreateQuestion.collectAsState()
+    val questionDifficulty by viewModel.questionDifficultyCreateQuestion.collectAsState()
+    val questionScoreCreateQuestion by viewModel.questionScoreCreateQuestion.collectAsState()
+    val questionDurationCreateQuestion by viewModel.questionDurationCreateQuestion.collectAsState()
 
     val localModifier = Modifier
+    val stagedAssessmentsNetwork by viewModel.stagedAssessmentsNetwork.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val questionAnswersCreateQuestion by viewModel.questionAnswersCreateQuestion.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentSchoolIdPref()
+        delay(1000)
+        //find the staged assessment
+        viewModel.getStagedAssessmentsNetwork(
+            currentUserIdPref.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+    }
 
     BoxWithConstraints(modifier = Modifier) {
-
         Column(
             modifier = localModifier
                 .verticalScroll(verticalScroll)
@@ -223,7 +249,7 @@ fun CreateQuestionScreenContent(
                 fontWeight = FontWeight.Normal,
             )
 
-            Spacer(modifier = localModifier.height(0.dp))
+            Spacer(modifier = localModifier.height(16.dp))
 
             Row(
                 modifier = localModifier.fillMaxWidth(),
@@ -232,11 +258,11 @@ fun CreateQuestionScreenContent(
                 QuestionConfigBox(
                     label = stringResource(id = R.string.type),
                     onConfig = { onConfigQuestionType() },
-                    value = "",
+                    value = questionType.title,
                 )
             }
 
-            Spacer(modifier = localModifier.height(0.dp))
+            Spacer(modifier = localModifier.height(2.dp))
             Row(
                 modifier = localModifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -246,7 +272,7 @@ fun CreateQuestionScreenContent(
                     onConfig = {
                         onConfigQuestionDifficulty()
                     },
-                    value = "Easy",
+                    value = questionDifficulty.name,
                 )
 
                 QuestionConfigBox(
@@ -254,13 +280,15 @@ fun CreateQuestionScreenContent(
                     onConfig = {
                         onConfigQuestionScore()
                     },
-                    value = "100",
+                    value = questionScoreCreateQuestion.orZeroString(),
                 )
             }
-            Spacer(modifier = localModifier.height(0.dp))
+            Spacer(modifier = localModifier.height(2.dp))
 
             Row(
-                modifier = localModifier.fillMaxWidth().padding(0.dp),
+                modifier = localModifier
+                    .fillMaxWidth()
+                    .padding(0.dp),
                 horizontalArrangement = Arrangement.Start,
             ) {
                 QuestionConfigBox(
@@ -268,7 +296,7 @@ fun CreateQuestionScreenContent(
                     onConfig = {
                         onConfigAssessmentDuration()
                     },
-                    value = "60",
+                    value = questionDurationCreateQuestion.orZeroString(),
                 )
             }
 
@@ -296,6 +324,7 @@ fun CreateQuestionScreenContent(
                         onMark = {},
                         label = stringResource(id = R.string.question_body)
                     )
+                    Spacer(modifier = modifier.height(8.dp))
 
                     questionOptions.forEach { option ->
                         QuestionBox(
@@ -332,13 +361,36 @@ fun CreateQuestionScreenContent(
                             label = option.title
                         )
 
-                        Spacer(modifier = modifier.height(16.dp))
+                        Spacer(modifier = modifier.height(8.dp))
                     }
 
                     //save button
                     PrimaryTextButtonFillWidth(
                         label = stringResource(id = R.string.save_changes),
-                        onClick = { /*TODO on save question */ }
+                        onClick = {
+                            val answers = ArrayList<String>()
+                            questionAnswersCreateQuestion.map { answers.add(it) }
+
+                            val question = QuestionModel(
+                                questionId = UUID.randomUUID().toString(),
+                                parentAssessmentId =
+                                if(stagedAssessmentsNetwork is Resource.Success &&
+                                    stagedAssessmentsNetwork.data?.isNotEmpty() == true){
+                                    stagedAssessmentsNetwork.data?.first()?.assessmentId.orEmpty()
+                                } else "",
+                                type = questionType.title,
+                                difficulty = questionDifficulty.name,
+                                maxScore = questionScoreCreateQuestion.orZeroString().toInt(),
+                                text = questionBodyCreateQuestion.orEmpty(),
+                                optionA = questionOptionACreateQuestion.orEmpty(),
+                                optionB = questionOptionBCreateQuestion.orEmpty(),
+                                optionC = questionOptionCCreateQuestion.orEmpty(),
+                                optionD = questionOptionDCreateQuestion.orEmpty(),
+                                answers = answers,
+                            )
+
+                            //todo: on save question
+                        }
                     )
                 }
             }
@@ -420,7 +472,13 @@ fun QuestionBox(
                         headerWidth.value = it.size.width
                     },
                 shape = RoundedCornerShape(
-                    topStart = if (isOption) 0.dp else 16.dp,
+                    topStart = animateDpAsState(
+                        targetValue = when {
+                            isOption && selected -> 16.dp
+                            !isOption -> 16.dp
+                            else -> 0.dp
+                        }
+                    ).value,
                     topEnd = animateDpAsState(
                         targetValue = when {
                             isOption && selected -> 16.dp
@@ -433,7 +491,11 @@ fun QuestionBox(
                     width = 1.dp,
                     color = MaterialTheme.colors.primary.copy(0.5f),
                 ),
-                color = if(selected) MaterialTheme.colors.primary else Color.Transparent
+                color =
+                animateColorAsState(
+                    targetValue =
+                    if (selected) MaterialTheme.colors.primary else Color.Transparent
+                ).value
             ) {
                 Row(
                     modifier = modifier
@@ -451,7 +513,12 @@ fun QuestionBox(
                             text = label,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Black100,
+                            color = animateColorAsState(
+                                targetValue =
+                                if (selected) MaterialTheme.colors.onPrimary else Black100
+                            ).value,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
 
@@ -468,13 +535,13 @@ fun QuestionBox(
                                     }
                                 ),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = if(selected) MaterialTheme.colors.primary else Color.Transparent,
+                                backgroundColor = if (selected) MaterialTheme.colors.primary else Color.Transparent,
                             )
                         ) {
                             Spacer(modifier = modifier.weight(1f))
                             Text(
-                                text = if(selected) stringResource(id = R.string.correct_answer) else
-                                stringResource(id = R.string.mark_as_answer),
+                                text = if (selected) stringResource(id = R.string.correct_answer) else
+                                    stringResource(id = R.string.mark_as_answer),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
@@ -482,7 +549,7 @@ fun QuestionBox(
                                 ),
                             )
                             Spacer(modifier = modifier.width(8.dp))
-                            if(selected) {
+                            if (selected) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.icon_mark),
                                     contentDescription = stringResource(id = R.string.mark_as_answer),
@@ -559,6 +626,7 @@ fun CreateQuestionScreenBottomSheetContent(
     viewModel: MainViewModel,
     onSelectQuestionType: (QuestionType) -> Unit,
     onSelectQuestionDifficulty: (QuestionDifficulty) -> Unit,
+    onClose: () -> Unit,
 ) {
     val mode by viewModel.createQuestionBottomSheetMode.collectAsState()
 
@@ -585,21 +653,34 @@ fun CreateQuestionScreenBottomSheetContent(
 
         when (mode) {
             is CreateQuestionBottomSheetMode.QuestionType -> {
-                QuestionTypeBottomSheetContent(onSelect = onSelectQuestionType)
+                QuestionTypeBottomSheetContent(
+                    onSelect = onSelectQuestionType,
+                    viewModel = viewModel,
+                    onClose = onClose
+                )
             }
 
             is CreateQuestionBottomSheetMode.Difficulty -> {
                 QuestionDifficultyBottomSheetContent(
                     onSelect = onSelectQuestionDifficulty,
+                    onClose = onClose,
+                    viewModel = viewModel,
                 )
             }
 
             is CreateQuestionBottomSheetMode.Score -> {
-
+                //score screen
+                QuestionScoreBottomSheetContent(
+                    viewModel = viewModel,
+                    onClose = onClose,
+                )
             }
 
             is CreateQuestionBottomSheetMode.Duration -> {
-
+                QuestionDurationBottomSheetContent(
+                    viewModel = viewModel,
+                    onClose = onClose,
+                )
             }
         }
 
@@ -612,11 +693,17 @@ fun QuestionTypeBottomSheetContent(
     modifier: Modifier = Modifier,
     questionTypes: List<QuestionType> = QuestionType.values().toList(),
     onSelect: (QuestionType) -> Unit,
+    onClose: () -> Unit,
+    viewModel: MainViewModel,
 ) {
     Surface(modifier = modifier) {
         Column(modifier = modifier) {
             questionTypes.forEach { questionType ->
-                QuestionTypeItem(type = questionType, onSelect = onSelect)
+                QuestionTypeItem(type = questionType, onSelect = {
+                    viewModel.onQuestionTypeChanged(it)
+                    onSelect(it)
+                    onClose()
+                })
             }
         }
     }
@@ -628,11 +715,17 @@ fun QuestionDifficultyBottomSheetContent(
     modifier: Modifier = Modifier,
     difficulties: List<QuestionDifficulty> = QuestionDifficulty.values().toList(),
     onSelect: (QuestionDifficulty) -> Unit,
+    onClose: () -> Unit,
+    viewModel: MainViewModel,
 ) {
     Surface(modifier = modifier) {
         Column(modifier = modifier) {
             difficulties.forEach { difficulty ->
-                QuestionDifficultyItem(difficulty = difficulty, onSelect = onSelect)
+                QuestionDifficultyItem(difficulty = difficulty, onSelect = {
+                    viewModel.onQuestionDifficultyChanged(it)
+                    onSelect(it)
+                    onClose()
+                })
             }
         }
     }
@@ -641,18 +734,111 @@ fun QuestionDifficultyBottomSheetContent(
 
 @Composable
 fun QuestionDurationBottomSheetContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    onClose: () -> Unit,
 ) {
-    Column(modifier = modifier) {
+    val questionDurationCreateQuestion by viewModel.questionDurationCreateQuestion.collectAsState()
 
+    Surface(modifier = modifier) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+        ) {
+            OutlinedTextField(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .heightIn(
+                        min = 32.dp
+                    )
+                    .clip(
+                        RoundedCornerShape(8.dp)
+                    ),
+                value = questionDurationCreateQuestion.orZeroString(),
+                onValueChange = viewModel::onQuestionDurationCreateQuestionChanged,
+                placeholder = {
+                    Text(
+                        text = stringResource(id = R.string.assessment_duration),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Black100.copy(0.5f),
+                    )
+                },
+                shape = RoundedCornerShape(8.dp),
+                textStyle = TextStyle(
+                    color = Black100,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                ),
+                isError = false,
+            )
+
+            Spacer(modifier = modifier.height(16.dp))
+
+            PrimaryTextButtonFillWidth(
+                label = stringResource(id = R.string.done), onClick = { onClose() })
+        }
     }
 }
 
+
 @Composable
 fun QuestionScoreBottomSheetContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    onClose: () -> Unit,
 ) {
+    val questionScoreCreateQuestion by viewModel.questionScoreCreateQuestion.collectAsState()
 
+    Surface(modifier = modifier) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+        ) {
+            OutlinedTextField(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .heightIn(
+                        min = 32.dp
+                    )
+                    .clip(
+                        RoundedCornerShape(8.dp)
+                    ),
+                value = questionScoreCreateQuestion.orZeroString(),
+                onValueChange = viewModel::onQuestionScoreCreateQuestionChanged,
+                placeholder = {
+                    Text(
+                        text = stringResource(id = R.string.question_score),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Black100.copy(0.5f),
+                    )
+                },
+                shape = RoundedCornerShape(8.dp),
+                textStyle = TextStyle(
+                    color = Black100,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                ),
+                isError = false,
+            )
+
+            Spacer(modifier = modifier.height(16.dp))
+
+            PrimaryTextButtonFillWidth(
+                label = stringResource(id = R.string.done), onClick = { onClose() })
+        }
+    }
 }
 
 

@@ -40,7 +40,9 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBotto
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionBottomSheetMode
+import com.vanguard.classifiadmin.ui.screens.assessments.QuestionDifficulty
 import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOption
+import com.vanguard.classifiadmin.ui.screens.assessments.QuestionType
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
@@ -664,6 +666,52 @@ class MainViewModel @Inject constructor(
     var questionOptionDCreateQuestion: StateFlow<String?> = _questionOptionDCreateQuestion
 
 
+    private var _questionDifficultyCreateQuestion = MutableStateFlow(QuestionDifficulty.Easy as QuestionDifficulty)
+    val questionDifficultyCreateQuestion: StateFlow<QuestionDifficulty> = _questionDifficultyCreateQuestion
+
+    private var _questionTypeCreateQuestion = MutableStateFlow(QuestionType.MultiChoice as QuestionType)
+    val questionTypeCreateQuestion: StateFlow<QuestionType> = _questionTypeCreateQuestion
+
+    private var _questionScoreCreateQuestion = MutableStateFlow(null as String?)
+    var questionScoreCreateQuestion: StateFlow<String?> = _questionScoreCreateQuestion
+
+    private var _questionDurationCreateQuestion = MutableStateFlow(null as String?)
+    var questionDurationCreateQuestion: StateFlow<String?> = _questionDurationCreateQuestion
+
+    private var _questionAnswersCreateQuestion = MutableStateFlow(mutableListOf<String>())
+    var questionAnswersCreateQuestion: StateFlow<List<String>> = _questionAnswersCreateQuestion
+
+    fun onAddToAnswersCreateQuestion(answer: String) = effect {
+        if(!_questionAnswersCreateQuestion.value.contains(answer)) {
+            _questionAnswersCreateQuestion.value.add(answer)
+        }
+    }
+
+    fun onRemoveAnswersCreateQuestion(answer: String) = effect {
+        if(_questionAnswersCreateQuestion.value.contains(answer)) {
+            _questionAnswersCreateQuestion.value.remove(answer)
+        }
+    }
+
+    fun clearAnswersCreateQuestion() = effect {
+        _questionAnswersCreateQuestion.value.clear()
+    }
+
+    fun onQuestionDurationCreateQuestionChanged(duration: String?) = effect {
+        _questionDurationCreateQuestion.value = duration
+    }
+
+    fun onQuestionScoreCreateQuestionChanged(score: String?) = effect {
+        _questionScoreCreateQuestion.value = score
+    }
+
+    fun onQuestionDifficultyChanged(difficulty: QuestionDifficulty) = effect {
+        _questionDifficultyCreateQuestion.value = difficulty
+    }
+
+    fun onQuestionTypeChanged(type: QuestionType) = effect {
+        _questionTypeCreateQuestion.value = type
+    }
 
     fun onQuestionBodyCreateQuestionChanged(body: String?) = effect {
         _questionBodyCreateQuestion.value = body

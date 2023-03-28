@@ -222,7 +222,9 @@
     <string name="duration">Duration (min)</string>
     <string name="question_body">Question Body</string>
     <string name="your_question">Your Question...</string>
-    <string name="mark_as_answer">Click to mark as Answer</string>
+    <string name="mark_as_answer">Mark as Answer</string>
     <string name="option_a">Option A</string>
     <string name="correct_answer">Correct Answer</string>
+    <string name="question_score">Question Score</string>
+    <string name="assessment_duration">Assessment Duration</string>
 </resources>
