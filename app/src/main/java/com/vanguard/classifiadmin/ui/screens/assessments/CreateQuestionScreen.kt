@@ -43,7 +43,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -196,7 +195,9 @@ fun CreateQuestionScreenContent(
     onConfigQuestionDifficulty: () -> Unit,
     onConfigAssessmentDuration: () -> Unit,
     onConfigQuestionScore: () -> Unit,
-    questionOptions: List<QuestionOption> = QuestionOption.values().toList()
+    questionOptions: List<QuestionOption> = QuestionOption.values().toList(),
+    questionOptionsTrueFalse: List<QuestionOptionTrueFalse> = QuestionOptionTrueFalse.values()
+        .toList(),
 ) {
     val verticalScroll = rememberScrollState()
     val correctQuestionOption by viewModel.correctQuestionOption.collectAsState()
@@ -215,6 +216,8 @@ fun CreateQuestionScreenContent(
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val questionAnswersCreateQuestion by viewModel.questionAnswersCreateQuestion.collectAsState()
+    val rowWidthTrueFalse = remember { mutableStateOf(0) }
+    val correctAnswerTrueFalse by viewModel.correctAnswerTrueFalse.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -326,42 +329,77 @@ fun CreateQuestionScreenContent(
                     )
                     Spacer(modifier = modifier.height(8.dp))
 
-                    questionOptions.forEach { option ->
-                        QuestionBox(
-                            isOption = true,
-                            selected = correctQuestionOption == option,
-                            value = when (option) {
-                                QuestionOption.OptionA -> questionOptionACreateQuestion.orEmpty()
-                                QuestionOption.OptionB -> questionOptionBCreateQuestion.orEmpty()
-                                QuestionOption.OptionC -> questionOptionCCreateQuestion.orEmpty()
-                                QuestionOption.OptionD -> questionOptionDCreateQuestion.orEmpty()
-                            },
-                            onValueChange = {
-                                when (option) {
-                                    QuestionOption.OptionA -> {
-                                        viewModel.onQuestionOptionACreateQuestionChanged(it)
-                                    }
+                    //based on question type
+                    when (questionType) {
+                        QuestionType.MultiChoice -> {
+                            questionOptions.forEach { option ->
+                                QuestionBox(
+                                    isOption = true,
+                                    selected = correctQuestionOption == option,
+                                    value = when (option) {
+                                        QuestionOption.OptionA -> questionOptionACreateQuestion.orEmpty()
+                                        QuestionOption.OptionB -> questionOptionBCreateQuestion.orEmpty()
+                                        QuestionOption.OptionC -> questionOptionCCreateQuestion.orEmpty()
+                                        QuestionOption.OptionD -> questionOptionDCreateQuestion.orEmpty()
+                                    },
+                                    onValueChange = {
+                                        when (option) {
+                                            QuestionOption.OptionA -> {
+                                                viewModel.onQuestionOptionACreateQuestionChanged(it)
+                                            }
 
-                                    QuestionOption.OptionB -> {
-                                        viewModel.onQuestionOptionBCreateQuestionChanged(it)
-                                    }
+                                            QuestionOption.OptionB -> {
+                                                viewModel.onQuestionOptionBCreateQuestionChanged(it)
+                                            }
 
-                                    QuestionOption.OptionC -> {
-                                        viewModel.onQuestionOptionCCreateQuestionChanged(it)
-                                    }
+                                            QuestionOption.OptionC -> {
+                                                viewModel.onQuestionOptionCCreateQuestionChanged(it)
+                                            }
 
-                                    QuestionOption.OptionD -> {
-                                        viewModel.onQuestionOptionDCreateQuestionChanged(it)
-                                    }
+                                            QuestionOption.OptionD -> {
+                                                viewModel.onQuestionOptionDCreateQuestionChanged(it)
+                                            }
+                                        }
+                                    },
+                                    onMark = {
+                                        viewModel.onCorrectQuestionOptionChanged(option)
+                                    },
+                                    label = option.title
+                                )
+
+                                Spacer(modifier = modifier.height(8.dp))
+                            }
+                        }
+
+                        QuestionType.Essay -> {
+
+                        }
+
+                        QuestionType.Short -> {
+
+                        }
+
+                        QuestionType.TrueFalse -> {
+                            Row(modifier = localModifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .onGloballyPositioned {
+                                    rowWidthTrueFalse.value = it.size.width
+                                }) {
+                                questionOptionsTrueFalse.forEach { option ->
+                                    QuestionBoxTrueFalse(
+                                        option = option,
+                                        onSelect = viewModel::onCorrectAnswerTrueFalseChanged,
+                                        rowWidth = with(LocalDensity.current) {
+                                            rowWidthTrueFalse.value.toDp()
+                                        },
+                                        isLeft = option == QuestionOptionTrueFalse.False,
+                                        selected = correctAnswerTrueFalse == option,
+                                    )
                                 }
-                            },
-                            onMark = {
-                                viewModel.onCorrectQuestionOptionChanged(option)
-                            },
-                            label = option.title
-                        )
-
-                        Spacer(modifier = modifier.height(8.dp))
+                            }
+                            Spacer(modifier = modifier.height(8.dp))
+                        }
                     }
 
                     //save button
@@ -374,8 +412,9 @@ fun CreateQuestionScreenContent(
                             val question = QuestionModel(
                                 questionId = UUID.randomUUID().toString(),
                                 parentAssessmentId =
-                                if(stagedAssessmentsNetwork is Resource.Success &&
-                                    stagedAssessmentsNetwork.data?.isNotEmpty() == true){
+                                if (stagedAssessmentsNetwork is Resource.Success &&
+                                    stagedAssessmentsNetwork.data?.isNotEmpty() == true
+                                ) {
                                     stagedAssessmentsNetwork.data?.first()?.assessmentId.orEmpty()
                                 } else "",
                                 type = questionType.title,
@@ -392,6 +431,91 @@ fun CreateQuestionScreenContent(
                             //todo: on save question
                         }
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuestionBoxTrueFalse(
+    modifier: Modifier = Modifier,
+    option: QuestionOptionTrueFalse,
+    onSelect: (QuestionOptionTrueFalse) -> Unit,
+    isLeft: Boolean = false,
+    selected: Boolean = false,
+    rowWidth: Dp,
+) {
+    Surface(
+        modifier = modifier
+            .padding(0.dp)
+            .width(rowWidth.times(0.45f)),
+        shape = RoundedCornerShape(
+            topStartPercent = if (isLeft) 50 else 0,
+            bottomStartPercent = if (isLeft) 50 else 0,
+            topEndPercent = if (isLeft) 0 else 50,
+            bottomEndPercent = if (isLeft) 0 else 50,
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary.copy(0.5f),
+        ),
+        color =
+        animateColorAsState(
+            targetValue =
+            if (selected) MaterialTheme.colors.primary else Color.Transparent
+        ).value
+    ) {
+        TextButton(
+            onClick = { onSelect(option) },
+            modifier = modifier
+                .padding(0.dp)
+                .width(rowWidth.times(0.45f)),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = if (selected) MaterialTheme.colors.primary else Color.Transparent,
+            )
+        ) {
+            if (isLeft) {
+                if (selected) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_mark),
+                        contentDescription = stringResource(id = R.string.mark_as_answer),
+                        tint = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
+                            0.5f
+                        )
+                    )
+                    Spacer(modifier = modifier.width(16.dp))
+                }
+                Spacer(modifier = modifier.width(16.dp))
+                Text(
+                    text = option.name,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
+                        0.5f
+                    ),
+                )
+                Spacer(modifier = modifier.weight(1f))
+            } else {
+                Spacer(modifier = modifier.weight(1f))
+                Text(
+                    text = option.name,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
+                        0.5f
+                    ),
+                )
+                Spacer(modifier = modifier.width(16.dp))
+                if (selected) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_mark),
+                        contentDescription = stringResource(id = R.string.mark_as_answer),
+                        tint = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
+                            0.5f
+                        )
+                    )
+                    Spacer(modifier = modifier.width(16.dp))
                 }
             }
         }
@@ -986,7 +1110,8 @@ fun QuestionConfigBox(
                                 rowHeight.value
                                     .toDp()
                                     .times(0.7f)
-                            }),
+                            }
+                        ),
                 )
 
                 Text(
@@ -1008,7 +1133,6 @@ fun QuestionConfigBox(
             }
         }
     }
-
 }
 
 private fun QuestionConfigBoxConstraints(margin: Dp): ConstraintSet {
@@ -1049,6 +1173,10 @@ enum class QuestionOption(val title: String) {
     OptionD("Option D")
 }
 
+enum class QuestionOptionTrueFalse {
+    False, True
+}
+
 @Composable
 @Preview
 private fun QuestionConfigBoxPreview() {
@@ -1057,5 +1185,17 @@ private fun QuestionConfigBoxPreview() {
         fieldEnabled = false,
         onConfig = {},
         value = "60",
+    )
+}
+
+@Composable
+@Preview
+private fun QuestionBoxTrueFalsePreview() {
+    QuestionBoxTrueFalse(
+        option = QuestionOptionTrueFalse.False,
+        onSelect = {},
+        rowWidth = 400.dp,
+        isLeft = true,
+        selected = true,
     )
 }

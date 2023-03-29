@@ -42,6 +42,7 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.assessments.QuestionDifficulty
 import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOption
+import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOptionTrueFalse
 import com.vanguard.classifiadmin.ui.screens.assessments.QuestionType
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
@@ -680,6 +681,13 @@ class MainViewModel @Inject constructor(
 
     private var _questionAnswersCreateQuestion = MutableStateFlow(mutableListOf<String>())
     var questionAnswersCreateQuestion: StateFlow<List<String>> = _questionAnswersCreateQuestion
+
+    private var _correctAnswerTrueFalse = MutableStateFlow(QuestionOptionTrueFalse.False)
+    val correctAnswerTrueFalse: StateFlow<QuestionOptionTrueFalse> = _correctAnswerTrueFalse
+
+    fun onCorrectAnswerTrueFalseChanged(answer: QuestionOptionTrueFalse) = effect {
+        _correctAnswerTrueFalse.value = answer
+    }
 
     fun onAddToAnswersCreateQuestion(answer: String) = effect {
         if(!_questionAnswersCreateQuestion.value.contains(answer)) {
