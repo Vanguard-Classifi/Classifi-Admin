@@ -218,6 +218,7 @@ fun CreateQuestionScreenContent(
     val questionAnswersCreateQuestion by viewModel.questionAnswersCreateQuestion.collectAsState()
     val rowWidthTrueFalse = remember { mutableStateOf(0) }
     val correctAnswerTrueFalse by viewModel.correctAnswerTrueFalse.collectAsState()
+    val questionShortAnswerCreateQuestion by viewModel.questionShortAnswerCreateQuestion.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -376,7 +377,34 @@ fun CreateQuestionScreenContent(
                         }
 
                         QuestionType.Short -> {
-
+                            OutlinedTextField(
+                                modifier = modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 100.dp)
+                                    .clip(RoundedCornerShape(16.dp)),
+                                value = questionShortAnswerCreateQuestion.orEmpty(),
+                                onValueChange = viewModel::onQuestionShortAnswerCreateQuestionChanged,
+                                placeholder = {
+                                    Text(
+                                        text = stringResource(id = R.string.short_answer),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        color = Black100.copy(0.5f),
+                                    )
+                                },
+                                shape = RoundedCornerShape(16.dp),
+                                textStyle = TextStyle(
+                                    color = Black100,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Text,
+                                    imeAction = ImeAction.Done,
+                                ),
+                                isError = false,
+                            )
+                            Spacer(modifier = modifier.height(8.dp))
                         }
 
                         QuestionType.TrueFalse -> {

@@ -685,6 +685,12 @@ class MainViewModel @Inject constructor(
     private var _correctAnswerTrueFalse = MutableStateFlow(QuestionOptionTrueFalse.False)
     val correctAnswerTrueFalse: StateFlow<QuestionOptionTrueFalse> = _correctAnswerTrueFalse
 
+    private var _questionShortAnswerCreateQuestion = MutableStateFlow(null as String?)
+    var questionShortAnswerCreateQuestion: StateFlow<String?> = _questionShortAnswerCreateQuestion
+
+    fun onQuestionShortAnswerCreateQuestionChanged(answer: String?) = effect {
+        _questionShortAnswerCreateQuestion.value = answer
+    }
     fun onCorrectAnswerTrueFalseChanged(answer: QuestionOptionTrueFalse) = effect {
         _correctAnswerTrueFalse.value = answer
     }

@@ -227,4 +227,5 @@
     <string name="correct_answer">Correct Answer</string>
     <string name="question_score">Question Score</string>
     <string name="assessment_duration">Assessment Duration</string>
+    <string name="short_answer">Short Answer</string>
 </resources>
