@@ -4,8 +4,8 @@ import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
 
 data class QuestionModel(
     val questionId: String,
-    var parentAssessmentId: String? = null,
     var type: String? = null,
+    var schoolId: String? = null,
     var difficulty: String? = null,
     var maxScore: Int? = null,
     var duration: String? = null,
@@ -14,15 +14,18 @@ data class QuestionModel(
     var optionB: String? = null,
     var optionC: String? = null,
     var optionD: String? = null,
+    var parentAssessmentIds: ArrayList<String> = arrayListOf(),
     var answers: ArrayList<String> = arrayListOf(),
     var essayWordLimit: Int? = null,
     var topicId: String? = null,
     var topicName: String? = null,
+    var verified: Boolean? = null,
+    var lastModified: String? = null,
 ) {
     fun toNetwork() = QuestionNetworkModel(
         questionId = questionId,
-        parentAssessmentId = parentAssessmentId,
         type = type,
+        schoolId = schoolId,
         difficulty = difficulty,
         maxScore = maxScore,
         duration = duration,
@@ -32,8 +35,11 @@ data class QuestionModel(
         optionC = optionC,
         optionD = optionD,
         answers = answers,
+        parentAssessmentIds = parentAssessmentIds,
         essayWordLimit = essayWordLimit,
         topicId = topicId,
         topicName = topicName,
+        verified = verified,
+        lastModified = lastModified,
     )
 }

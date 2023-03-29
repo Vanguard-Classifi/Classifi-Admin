@@ -7,6 +7,7 @@ import com.vanguard.classifiadmin.data.network.models.AssessmentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
+import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -377,5 +378,43 @@ interface MainRepository {
         assessmentId: String,
         schoolId: String,
         onResult: (Resource<AssessmentNetworkModel?>) -> Unit
+    )
+
+    //question
+    suspend fun saveQuestionAsStagedNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit,
+    )
+
+    suspend fun saveQuestionAsVerifiedNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit,
+    )
+
+    suspend fun deleteQuestionNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun deleteQuestionByIdNetwork(
+        questionId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    )
+
+    suspend fun getQuestionByIdNetwork(
+        questionId: String,
+        schoolId: String,
+        onResult: (Resource<QuestionNetworkModel?>) -> Unit,
+    )
+
+    suspend fun getVerifiedQuestionsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<QuestionNetworkModel>>) -> Unit,
+    )
+
+    suspend fun getStagedQuestionsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<QuestionNetworkModel>>) -> Unit,
     )
 }

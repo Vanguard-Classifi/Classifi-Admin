@@ -4,7 +4,7 @@ import com.vanguard.classifiadmin.data.local.models.QuestionModel
 
 data class QuestionNetworkModel(
     var questionId: String? = null,
-    var parentAssessmentId: String? = null,
+    var schoolId: String? = null,
     var type: String? = null,
     var difficulty: String? = null,
     var maxScore: Int? = null,
@@ -14,16 +14,19 @@ data class QuestionNetworkModel(
     var optionB: String? = null,
     var optionC: String? = null,
     var optionD: String? = null,
+    var parentAssessmentIds: ArrayList<String> = arrayListOf(),
     var answers: ArrayList<String> = arrayListOf(),
     var essayWordLimit: Int? = null,
     var topicId: String? = null,
     var topicName: String? = null,
+    var verified: Boolean? = null,
+    var lastModified: String? = null,
 ) {
     fun toLocal() = QuestionModel(
         questionId = questionId.orEmpty(),
-        parentAssessmentId = parentAssessmentId,
         type = type,
         difficulty = difficulty,
+        schoolId = schoolId,
         maxScore = maxScore,
         duration = duration,
         text = text,
@@ -32,6 +35,7 @@ data class QuestionNetworkModel(
         optionC = optionC,
         optionD = optionD,
         answers = answers,
+        parentAssessmentIds = parentAssessmentIds,
         essayWordLimit = essayWordLimit,
         topicId = topicId,
         topicName = topicName,

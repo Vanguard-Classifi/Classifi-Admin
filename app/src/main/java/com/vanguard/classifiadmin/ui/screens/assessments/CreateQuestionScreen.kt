@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -67,10 +68,14 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.QuestionModel
 import com.vanguard.classifiadmin.domain.extensions.orZeroString
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
+import com.vanguard.classifiadmin.domain.helpers.todayComputational
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
+import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -93,6 +98,16 @@ fun CreateQuestionScreen(
         mutableStateOf(false)
     }
     val coroutineScope = rememberCoroutineScope()
+    val message by viewModel.createQuestionMessage.collectAsState()
+
+    LaunchedEffect(message){
+        if(message !is CreateQuestionMessage.NoMessage){
+            delay(2000)
+            viewModel.onCreateQuestionMessageChanged(
+                CreateQuestionMessage.NoMessage
+            )
+        }
+    }
 
     Surface(modifier = Modifier) {
         BoxWithConstraints(modifier = Modifier) {
@@ -182,6 +197,32 @@ fun CreateQuestionScreen(
                     )
                 }
             )
+
+            if(message !is CreateQuestionMessage.NoMessage){
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                    when(message) {
+                        is CreateQuestionMessage.QuestionSaved -> {
+                            SuccessBar(message = message.message, maxWidth = maxWidth)
+                        }
+                        is CreateQuestionMessage.AddQuestionBody -> {
+                            MessageBar(
+                                message = message.message,
+                                icon = R.drawable.icon_info,
+                                onClose = {
+                                    viewModel.onCreateQuestionMessageChanged(
+                                        CreateQuestionMessage.NoMessage
+                                    )
+                                },
+                                maxWidth = maxWidth,
+                                modifier = modifier.padding(vertical = 16.dp, horizontal = 8.dp)
+                            )
+                        }
+                        else -> {
+
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -200,6 +241,7 @@ fun CreateQuestionScreenContent(
         .toList(),
 ) {
     val verticalScroll = rememberScrollState()
+    val scope = rememberCoroutineScope()
     val correctQuestionOption by viewModel.correctQuestionOption.collectAsState()
     val questionBodyCreateQuestion by viewModel.questionBodyCreateQuestion.collectAsState()
     val questionOptionACreateQuestion by viewModel.questionOptionACreateQuestion.collectAsState()
@@ -218,7 +260,7 @@ fun CreateQuestionScreenContent(
     val questionAnswersCreateQuestion by viewModel.questionAnswersCreateQuestion.collectAsState()
     val rowWidthTrueFalse = remember { mutableStateOf(0) }
     val correctAnswerTrueFalse by viewModel.correctAnswerTrueFalse.collectAsState()
-    val questionShortAnswerCreateQuestion by viewModel.questionShortAnswerCreateQuestion.collectAsState()
+    val correctShortAnswerCreateQuestion by viewModel.correctShortAnswerCreateQuestion.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -372,9 +414,7 @@ fun CreateQuestionScreenContent(
                             }
                         }
 
-                        QuestionType.Essay -> {
-
-                        }
+                        QuestionType.Essay -> {}
 
                         QuestionType.Short -> {
                             OutlinedTextField(
@@ -382,7 +422,7 @@ fun CreateQuestionScreenContent(
                                     .fillMaxWidth()
                                     .heightIn(min = 100.dp)
                                     .clip(RoundedCornerShape(16.dp)),
-                                value = questionShortAnswerCreateQuestion.orEmpty(),
+                                value = correctShortAnswerCreateQuestion.orEmpty(),
                                 onValueChange = viewModel::onQuestionShortAnswerCreateQuestionChanged,
                                 placeholder = {
                                     Text(
@@ -434,29 +474,112 @@ fun CreateQuestionScreenContent(
                     PrimaryTextButtonFillWidth(
                         label = stringResource(id = R.string.save_changes),
                         onClick = {
-                            val answers = ArrayList<String>()
-                            questionAnswersCreateQuestion.map { answers.add(it) }
+                            if (questionBodyCreateQuestion?.isBlank() == true) {
+                                viewModel.onCreateQuestionMessageChanged(
+                                    CreateQuestionMessage.AddQuestionBody
+                                )
+                                return@PrimaryTextButtonFillWidth
+                            }
 
-                            val question = QuestionModel(
-                                questionId = UUID.randomUUID().toString(),
-                                parentAssessmentId =
-                                if (stagedAssessmentsNetwork is Resource.Success &&
-                                    stagedAssessmentsNetwork.data?.isNotEmpty() == true
-                                ) {
-                                    stagedAssessmentsNetwork.data?.first()?.assessmentId.orEmpty()
-                                } else "",
-                                type = questionType.title,
-                                difficulty = questionDifficulty.name,
-                                maxScore = questionScoreCreateQuestion.orZeroString().toInt(),
-                                text = questionBodyCreateQuestion.orEmpty(),
-                                optionA = questionOptionACreateQuestion.orEmpty(),
-                                optionB = questionOptionBCreateQuestion.orEmpty(),
-                                optionC = questionOptionCCreateQuestion.orEmpty(),
-                                optionD = questionOptionDCreateQuestion.orEmpty(),
-                                answers = answers,
-                            )
+                            scope.launch {
+                                when (questionType) {
+                                    QuestionType.MultiChoice -> {
+                                        //add answer to answers buffer
+                                        when (correctQuestionOption) {
+                                            QuestionOption.OptionA -> {
+                                                viewModel.clearAnswersCreateQuestion()
+                                                viewModel.onAddToAnswersCreateQuestion(
+                                                    questionOptionACreateQuestion.orEmpty()
+                                                )
+                                            }
 
-                            //todo: on save question
+                                            QuestionOption.OptionB -> {
+                                                viewModel.clearAnswersCreateQuestion()
+                                                viewModel.onAddToAnswersCreateQuestion(
+                                                    questionOptionBCreateQuestion.orEmpty()
+                                                )
+                                            }
+
+                                            QuestionOption.OptionC -> {
+                                                viewModel.clearAnswersCreateQuestion()
+                                                viewModel.onAddToAnswersCreateQuestion(
+                                                    questionOptionCCreateQuestion.orEmpty()
+                                                )
+                                            }
+
+                                            QuestionOption.OptionD -> {
+                                                viewModel.clearAnswersCreateQuestion()
+                                                viewModel.onAddToAnswersCreateQuestion(
+                                                    questionOptionDCreateQuestion.orEmpty()
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    QuestionType.Short -> {
+                                        viewModel.clearAnswersCreateQuestion()
+                                        viewModel.onAddToAnswersCreateQuestion(
+                                            correctShortAnswerCreateQuestion.orEmpty()
+                                        )
+                                    }
+
+                                    QuestionType.TrueFalse -> {
+                                        viewModel.clearAnswersCreateQuestion()
+                                        when (correctAnswerTrueFalse) {
+                                            QuestionOptionTrueFalse.True -> {
+                                                viewModel.onAddToAnswersCreateQuestion(
+                                                    QuestionOptionTrueFalse.True.name
+                                                )
+                                            }
+
+                                            QuestionOptionTrueFalse.False -> {
+                                                viewModel.onAddToAnswersCreateQuestion(
+                                                    QuestionOptionTrueFalse.True.name
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    QuestionType.Essay -> {
+                                        viewModel.clearAnswersCreateQuestion()
+                                    }
+                                }
+
+                                val answers = ArrayList<String>()
+                                questionAnswersCreateQuestion.map { answers.add(it) }
+
+                                val parentAssessmentId =
+                                    if (stagedAssessmentsNetwork is Resource.Success &&
+                                        stagedAssessmentsNetwork.data?.isNotEmpty() == true
+                                    ) {
+                                        stagedAssessmentsNetwork.data?.first()?.assessmentId.orEmpty()
+                                    } else ""
+
+                                val question = QuestionModel(
+                                    questionId = UUID.randomUUID().toString(),
+                                    parentAssessmentIds = arrayListOf(parentAssessmentId),
+                                    schoolId = currentSchoolIdPref.orEmpty(),
+                                    type = questionType.title,
+                                    difficulty = questionDifficulty.name,
+                                    maxScore = questionScoreCreateQuestion.orZeroString().toInt(),
+                                    text = questionBodyCreateQuestion.orEmpty(),
+                                    optionA = questionOptionACreateQuestion.orEmpty(),
+                                    optionB = questionOptionBCreateQuestion.orEmpty(),
+                                    optionC = questionOptionCCreateQuestion.orEmpty(),
+                                    optionD = questionOptionDCreateQuestion.orEmpty(),
+                                    answers = answers,
+                                    lastModified = todayComputational(),
+                                )
+
+                                viewModel.saveQuestionAsStagedNetwork(question.toNetwork(),
+                                    onResult = {})
+                            }.invokeOnCompletion {
+                                runnableBlock {
+                                    viewModel.onCreateQuestionMessageChanged(
+                                        CreateQuestionMessage.QuestionSaved
+                                    )
+                                }
+                            }
                         }
                     )
                 }
@@ -1203,6 +1326,12 @@ enum class QuestionOption(val title: String) {
 
 enum class QuestionOptionTrueFalse {
     False, True
+}
+
+sealed class CreateQuestionMessage(val message: String) {
+    object QuestionSaved : CreateQuestionMessage("Question saved successfully!")
+    object AddQuestionBody : CreateQuestionMessage("Add a question body")
+    object NoMessage : CreateQuestionMessage("")
 }
 
 @Composable

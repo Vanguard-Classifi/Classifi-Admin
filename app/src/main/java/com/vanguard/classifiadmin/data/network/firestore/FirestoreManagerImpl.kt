@@ -8,6 +8,7 @@ import com.vanguard.classifiadmin.data.network.models.AssessmentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
+import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -25,6 +26,7 @@ object Collections {
     const val collectionFeeds = "collection_feeds"
     const val collectionComments = "collection_comments"
     const val collectionAssessments = "collection_assessments"
+    const val collectionQuestions = "collection_questions"
 }
 
 
@@ -1597,6 +1599,145 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     }
                 }
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch assessments")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun saveQuestionAsStagedNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            question.verified = false
+            firestore.collection(Collections.collectionSchools)
+                .document(question.schoolId.orEmpty())
+                .collection(Collections.collectionQuestions)
+                .document(question.questionId.orEmpty())
+                .set(question)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun saveQuestionAsVerifiedNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            question.verified = true
+            firestore.collection(Collections.collectionSchools)
+                .document(question.schoolId.orEmpty())
+                .collection(Collections.collectionQuestions)
+                .document(question.questionId.orEmpty())
+                .set(question)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun deleteQuestionNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(question.schoolId.orEmpty())
+                .collection(Collections.collectionQuestions).document(question.questionId.orEmpty())
+                .delete()
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun deleteQuestionByIdNetwork(
+        questionId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionQuestions).document(questionId)
+                .delete()
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun getQuestionByIdNetwork(
+        questionId: String,
+        schoolId: String,
+        onResult: (Resource<QuestionNetworkModel?>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionQuestions)
+                .whereEqualTo("questionId", questionId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<QuestionNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<QuestionNetworkModel>())
+                    }
+                    if (results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    } else {
+                        onResult(Resource.Success(null))
+                    }
+                }
+                .addOnFailureListener {onResult(Resource.Error("Could not fetch question")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedQuestionsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<QuestionNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionQuestions)
+                .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<QuestionNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<QuestionNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {onResult(Resource.Error("Could not fetch question")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getStagedQuestionsNetwork(
+        schoolId: String,
+        onResult: (Resource<List<QuestionNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionQuestions)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<QuestionNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<QuestionNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {onResult(Resource.Error("Could not fetch question")) }
         } catch (e: Exception) {
             onResult(Resource.Error("Something went wrong"))
         }

@@ -16,6 +16,7 @@ import com.vanguard.classifiadmin.data.network.models.AssessmentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
+import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -40,6 +41,7 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBotto
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionBottomSheetMode
+import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.QuestionDifficulty
 import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOption
 import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOptionTrueFalse
@@ -667,10 +669,13 @@ class MainViewModel @Inject constructor(
     var questionOptionDCreateQuestion: StateFlow<String?> = _questionOptionDCreateQuestion
 
 
-    private var _questionDifficultyCreateQuestion = MutableStateFlow(QuestionDifficulty.Easy as QuestionDifficulty)
-    val questionDifficultyCreateQuestion: StateFlow<QuestionDifficulty> = _questionDifficultyCreateQuestion
+    private var _questionDifficultyCreateQuestion =
+        MutableStateFlow(QuestionDifficulty.Easy as QuestionDifficulty)
+    val questionDifficultyCreateQuestion: StateFlow<QuestionDifficulty> =
+        _questionDifficultyCreateQuestion
 
-    private var _questionTypeCreateQuestion = MutableStateFlow(QuestionType.MultiChoice as QuestionType)
+    private var _questionTypeCreateQuestion =
+        MutableStateFlow(QuestionType.MultiChoice as QuestionType)
     val questionTypeCreateQuestion: StateFlow<QuestionType> = _questionTypeCreateQuestion
 
     private var _questionScoreCreateQuestion = MutableStateFlow(null as String?)
@@ -685,24 +690,104 @@ class MainViewModel @Inject constructor(
     private var _correctAnswerTrueFalse = MutableStateFlow(QuestionOptionTrueFalse.False)
     val correctAnswerTrueFalse: StateFlow<QuestionOptionTrueFalse> = _correctAnswerTrueFalse
 
-    private var _questionShortAnswerCreateQuestion = MutableStateFlow(null as String?)
-    var questionShortAnswerCreateQuestion: StateFlow<String?> = _questionShortAnswerCreateQuestion
+    private var _correctShortAnswerCreateQuestion = MutableStateFlow(null as String?)
+    var correctShortAnswerCreateQuestion: StateFlow<String?> = _correctShortAnswerCreateQuestion
+
+    private var _stagedQuestionsNetwork =
+        MutableStateFlow(Resource.Loading<List<QuestionNetworkModel>>() as Resource<List<QuestionNetworkModel>>)
+    val stagedQuestionsNetwork: StateFlow<Resource<List<QuestionNetworkModel>>> =
+        _stagedQuestionsNetwork
+
+    private var _verifiedQuestionsNetwork =
+        MutableStateFlow(Resource.Loading<List<QuestionNetworkModel>>() as Resource<List<QuestionNetworkModel>>)
+    val verifiedQuestionsNetwork: StateFlow<Resource<List<QuestionNetworkModel>>> =
+        _verifiedQuestionsNetwork
+
+    private var _questionByIdNetwork =
+        MutableStateFlow(Resource.Loading<QuestionNetworkModel?>() as Resource<QuestionNetworkModel?>)
+    val questionByIdNetwork: StateFlow<Resource<QuestionNetworkModel?>> =
+        _questionByIdNetwork
+
+    private var _createQuestionMessage =
+        MutableStateFlow(CreateQuestionMessage.NoMessage as CreateQuestionMessage)
+    val createQuestionMessage: StateFlow<CreateQuestionMessage> = _createQuestionMessage
+
+    fun onCreateQuestionMessageChanged(message: CreateQuestionMessage) = effect {
+        _createQuestionMessage.value = message
+    }
+
+    //question
+    fun saveQuestionAsStagedNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit,
+    ) = effect {
+        repository.saveQuestionAsStagedNetwork(question, onResult)
+    }
+
+    fun saveQuestionAsVerifiedNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit,
+    ) = effect {
+        repository.saveQuestionAsVerifiedNetwork(question, onResult)
+    }
+
+    fun deleteQuestionNetwork(
+        question: QuestionNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteQuestionNetwork(question, onResult)
+    }
+
+    fun deleteQuestionByIdNetwork(
+        questionId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteQuestionByIdNetwork(questionId, schoolId, onResult)
+    }
+
+    fun getQuestionByIdNetwork(
+        questionId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getQuestionByIdNetwork(questionId, schoolId) {
+            _questionByIdNetwork.value = it
+        }
+    }
+
+    fun getVerifiedQuestionsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedQuestionsNetwork(schoolId) {
+            _verifiedQuestionsNetwork.value = it
+        }
+    }
+
+    fun getStagedQuestionsNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getStagedQuestionsNetwork(schoolId) {
+            _stagedQuestionsNetwork.value = it
+        }
+    }
+
 
     fun onQuestionShortAnswerCreateQuestionChanged(answer: String?) = effect {
-        _questionShortAnswerCreateQuestion.value = answer
+        _correctShortAnswerCreateQuestion.value = answer
     }
+
     fun onCorrectAnswerTrueFalseChanged(answer: QuestionOptionTrueFalse) = effect {
         _correctAnswerTrueFalse.value = answer
     }
 
     fun onAddToAnswersCreateQuestion(answer: String) = effect {
-        if(!_questionAnswersCreateQuestion.value.contains(answer)) {
+        if (!_questionAnswersCreateQuestion.value.contains(answer)) {
             _questionAnswersCreateQuestion.value.add(answer)
         }
     }
 
     fun onRemoveAnswersCreateQuestion(answer: String) = effect {
-        if(_questionAnswersCreateQuestion.value.contains(answer)) {
+        if (_questionAnswersCreateQuestion.value.contains(answer)) {
             _questionAnswersCreateQuestion.value.remove(answer)
         }
     }
