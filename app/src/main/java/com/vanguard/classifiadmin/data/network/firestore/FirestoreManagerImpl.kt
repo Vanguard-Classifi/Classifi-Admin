@@ -1527,6 +1527,36 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+    override suspend fun deleteStagedAssessmentsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            val assessmentRef = firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionAssessments)
+            assessmentRef.whereEqualTo("authorId", authorId)
+                .whereEqualTo("verified", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<AssessmentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<AssessmentNetworkModel>())
+                    }
+                    results.map { assessment ->
+                        assessmentRef.document(assessment.assessmentId.orEmpty())
+                            .delete()
+                            .addOnSuccessListener { onResult(true) }
+                            .addOnFailureListener { onResult(false) }
+                    }
+                }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
     override suspend fun getStagedAssessmentsNetwork(
         authorId: String,
         schoolId: String,
@@ -1672,6 +1702,35 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
         }
     }
 
+    override suspend fun deleteStagedQuestionsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            val questionRef = firestore.collection(Collections.collectionSchools).document(schoolId)
+                .collection(Collections.collectionQuestions)
+            questionRef.whereEqualTo("verified", false)
+                .whereEqualTo("authorId", authorId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<QuestionNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<QuestionNetworkModel>())
+                    }
+                    results.map { question ->
+                        questionRef.document(question.questionId.orEmpty())
+                            .delete()
+                            .addOnSuccessListener { onResult(true) }
+                            .addOnFailureListener { onResult(false) }
+                    }
+                }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
     override suspend fun getQuestionByIdNetwork(
         questionId: String,
         schoolId: String,
@@ -1693,7 +1752,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                         onResult(Resource.Success(null))
                     }
                 }
-                .addOnFailureListener {onResult(Resource.Error("Could not fetch question")) }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch question")) }
         } catch (e: Exception) {
             onResult(Resource.Error("Something went wrong"))
         }
@@ -1715,7 +1774,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     }
                     onResult(Resource.Success(results))
                 }
-                .addOnFailureListener {onResult(Resource.Error("Could not fetch question")) }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch question")) }
         } catch (e: Exception) {
             onResult(Resource.Error("Something went wrong"))
         }
@@ -1723,12 +1782,14 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
 
     override suspend fun getStagedQuestionsNetwork(
         schoolId: String,
+        authorId: String,
         onResult: (Resource<List<QuestionNetworkModel>>) -> Unit
     ) {
         try {
             firestore.collection(Collections.collectionSchools).document(schoolId)
                 .collection(Collections.collectionQuestions)
                 .whereEqualTo("verified", false)
+                .whereEqualTo("authorId", authorId)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<QuestionNetworkModel>()
@@ -1737,7 +1798,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                     }
                     onResult(Resource.Success(results))
                 }
-                .addOnFailureListener {onResult(Resource.Error("Could not fetch question")) }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch question")) }
         } catch (e: Exception) {
             onResult(Resource.Error("Something went wrong"))
         }

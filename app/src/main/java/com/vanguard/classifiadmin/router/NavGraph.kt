@@ -35,8 +35,8 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationScree
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReportScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentReviewScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentsScreen
-import com.vanguard.classifiadmin.ui.screens.assessments.CREATE_QUESTION_SCREEN
-import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.CREATE_QUESTION_SCREEN
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.MODIFY_ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ModifyAssessmentScreen
 import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN

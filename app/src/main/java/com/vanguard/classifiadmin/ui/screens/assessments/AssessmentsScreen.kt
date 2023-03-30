@@ -52,9 +52,16 @@ import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.generateColorFromAssessment
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.screens.assessments.items.DraftAssessmentOptionsListItem
+import com.vanguard.classifiadmin.ui.screens.assessments.items.InReviewAssessmentOptionsListItem
+import com.vanguard.classifiadmin.ui.screens.assessments.items.PublishedAssessmentOptionsListItem
+import com.vanguard.classifiadmin.ui.screens.assessments.states.AssessmentsScreenContentDraft
+import com.vanguard.classifiadmin.ui.screens.assessments.states.AssessmentsScreenContentInReview
+import com.vanguard.classifiadmin.ui.screens.assessments.states.AssessmentsScreenContentPublished
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.ui.theme.Green100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
 
 const val ASSESSMENT_SCREEN = "assessment_screen"
 
@@ -94,9 +101,25 @@ fun AssessmentsScreenContent(
     val innerModifier = Modifier
     val currentAssessmentOption by viewModel.currentAssessmentOption.collectAsState()
     val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
 
     LaunchedEffect(Unit) {
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserRolePref()
+        delay(1000)
+        //delete all staged assessments
+        viewModel.deleteStagedQuestionsByUserNetwork(
+            currentUserIdPref.orEmpty(),
+            currentSchoolIdPref.orEmpty(),
+            onResult = {}
+        )
+        viewModel.deleteStagedAssessmentsByUserNetwork(
+            currentUserIdPref.orEmpty(),
+            currentSchoolIdPref.orEmpty(),
+            onResult = {}
+        )
     }
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -176,212 +199,6 @@ fun AssessmentsScreenContent(
     }
 }
 
-
-@Composable
-fun AssessmentsScreenContentPublished(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    verticalScroll: LazyListState,
-    onPublishedAssessmentOptions: (AssessmentModel) -> Unit,
-    onSelectAssessment: (AssessmentModel) -> Unit,
-) {
-    /**
-    LazyColumn(
-    modifier = Modifier
-    .padding(bottom = 72.dp),
-    state = verticalScroll,
-    ) {
-    items(items) { each ->
-    AssessmentItem(
-    assessment = each,
-    onOptions = onPublishedAssessmentOptions,
-    onSelectAssessment = onSelectAssessment,
-    )
-    }
-    }
-
-     */
-}
-
-@Composable
-fun AssessmentsScreenContentInReview(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    verticalScroll: LazyListState,
-    onInReviewAssessmentOptions: (AssessmentModel) -> Unit,
-    onSelectAssessment: (AssessmentModel) -> Unit,
-) {
-    /**
-    LazyColumn(
-    modifier = Modifier
-    .padding(bottom = 72.dp),
-    state = verticalScroll,
-    ) {
-    items(items) { each ->
-    AssessmentItem(
-    assessment = each,
-    onOptions = onInReviewAssessmentOptions,
-    onSelectAssessment = onSelectAssessment,
-    )
-    }
-    }
-     */
-}
-
-@Composable
-fun AssessmentsScreenContentDraft(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    verticalScroll: LazyListState,
-    onDraftAssessmentOptions: (AssessmentModel) -> Unit,
-    onSelectAssessment: (AssessmentModel) -> Unit,
-) {
-    /**
-    LazyColumn(
-    modifier = Modifier
-    .padding(bottom = 72.dp),
-    state = verticalScroll,
-    ) {
-    items(items) { each ->
-    AssessmentItem(
-    assessment = each,
-    onOptions = onDraftAssessmentOptions,
-    onSelectAssessment = onSelectAssessment,
-    )
-    }
-    }
-     */
-}
-
-
-@Composable
-fun AssessmentItem(
-    modifier: Modifier = Modifier,
-    assessment: AssessmentModel,
-    onOptions: (AssessmentModel) -> Unit,
-    onSelectAssessment: (AssessmentModel) -> Unit,
-) {
-    val constraints = assessmentItemConstraints(8.dp)
-    val innerModifier = Modifier
-
-    Card(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .padding(vertical = 8.dp, horizontal = 4.dp)
-            .clickable(onClick = { onSelectAssessment(assessment) }),
-        shape = RoundedCornerShape(16.dp),
-        elevation = 2.dp,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary.copy(0.1f)
-        )
-    ) {
-        ConstraintLayout(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            constraintSet = constraints
-        ) {
-            Box(
-                modifier = innerModifier
-                    .layoutId("attemptStatus")
-                    .width(3.dp)
-                    .background(
-                        color = if (assessment.attempts.isNotEmpty()) Green100 else Black100.copy(
-                            0.5f
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-            )
-
-            DateIcon(
-                title = assessment.endTime.orEmpty(),
-                subtitle = assessment.endTime.orEmpty(),
-                modifier = innerModifier.layoutId("dateIcon")
-            )
-
-            Text(
-                text = assessment.name?.uppercase().orEmpty(),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primary,
-                modifier = innerModifier
-                    .layoutId("title")
-                    .widthIn(max = 200.dp),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            if (assessment.endTime != null) {
-                Text(
-                    text = stringResource(id = R.string.closed).uppercase(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.error,
-                    modifier = innerModifier
-                        .layoutId("expiry")
-                )
-            }
-
-            AssessmentSubjectRow(
-                assessment = assessment,
-                modifier = innerModifier.layoutId("subjectAndType")
-            )
-
-
-            RoundedIconButton(
-                modifier = innerModifier.layoutId("extras"),
-                onClick = { onOptions(assessment) },
-                icon = R.drawable.icon_options_horizontal,
-            )
-        }
-    }
-}
-
-private fun assessmentItemConstraints(margin: Dp): ConstraintSet {
-    return ConstraintSet {
-        val dateIcon = createRefFor("dateIcon")
-        val attemptStatus = createRefFor("attemptStatus")
-        val title = createRefFor("title")
-        val expiry = createRefFor("expiry")
-        val subjectAndType = createRefFor("subjectAndType")
-        val extras = createRefFor("extras")
-
-        constrain(attemptStatus) {
-            top.linkTo(parent.top, margin = 0.dp)
-            bottom.linkTo(parent.bottom, margin = 0.dp)
-            start.linkTo(parent.start, margin = 0.dp)
-            height = Dimension.fillToConstraints
-        }
-
-        constrain(dateIcon) {
-            start.linkTo(attemptStatus.end, margin = 4.dp)
-            top.linkTo(title.top, margin = 0.dp)
-            bottom.linkTo(subjectAndType.bottom, margin = 0.dp)
-        }
-
-        constrain(title) {
-            top.linkTo(parent.top, margin = 4.dp)
-            start.linkTo(dateIcon.end, margin = 8.dp)
-        }
-
-        constrain(expiry) {
-            start.linkTo(title.start, margin = 0.dp)
-            top.linkTo(title.bottom, margin = 4.dp)
-        }
-
-        constrain(subjectAndType) {
-            start.linkTo(title.start, margin = 0.dp)
-            top.linkTo(expiry.bottom, margin = 4.dp)
-        }
-
-        constrain(extras) {
-            top.linkTo(parent.top, margin = 0.dp)
-            bottom.linkTo(parent.bottom, margin = 0.dp)
-            end.linkTo(parent.end, margin = 4.dp)
-        }
-    }
-}
 
 @Composable
 fun DateIcon(
@@ -568,6 +385,7 @@ fun InReviewAssessmentBottomSheetContent(
     }
 }
 
+
 @Composable
 fun DraftAssessmentBottomSheetContent(
     modifier: Modifier = Modifier,
@@ -585,143 +403,6 @@ fun DraftAssessmentBottomSheetContent(
     }
 }
 
-
-@Composable
-fun DraftAssessmentOptionsListItem(
-    modifier: Modifier = Modifier,
-    draftAssessmentOption: DraftAssessmentBottomSheetOption,
-    onSelect: (DraftAssessmentBottomSheetOption) -> Unit,
-) {
-    Surface(
-        modifier = modifier
-            .padding(8.dp)
-            .clickable { onSelect(draftAssessmentOption) }
-            .clip(RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary,
-        )
-    ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Icon(
-                painter = painterResource(id = draftAssessmentOption.icon),
-                contentDescription = draftAssessmentOption.label,
-                tint = MaterialTheme.colors.primary,
-                modifier = modifier
-                    .size(24.dp)
-                    .padding(2.dp)
-            )
-
-            Text(
-                text = draftAssessmentOption.label,
-                color = MaterialTheme.colors.primary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = modifier.padding(8.dp)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun InReviewAssessmentOptionsListItem(
-    modifier: Modifier = Modifier,
-    inReviewAssessmentOption: InReviewAssessmentBottomSheetOption,
-    onSelect: (InReviewAssessmentBottomSheetOption) -> Unit,
-) {
-    Surface(
-        modifier = modifier
-            .padding(8.dp)
-            .clickable { onSelect(inReviewAssessmentOption) }
-            .clip(RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary,
-        )
-    ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Icon(
-                painter = painterResource(id = inReviewAssessmentOption.icon),
-                contentDescription = inReviewAssessmentOption.label,
-                tint = MaterialTheme.colors.primary,
-                modifier = modifier
-                    .size(24.dp)
-                    .padding(2.dp)
-            )
-
-            Text(
-                text = inReviewAssessmentOption.label,
-                color = MaterialTheme.colors.primary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = modifier.padding(8.dp)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun PublishedAssessmentOptionsListItem(
-    modifier: Modifier = Modifier,
-    publishedAssessmentOption: PublishedAssessmentBottomSheetOption,
-    onSelect: (PublishedAssessmentBottomSheetOption) -> Unit,
-) {
-    Surface(
-        modifier = modifier
-            .padding(8.dp)
-            .clickable { onSelect(publishedAssessmentOption) }
-            .clip(RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary,
-        )
-    ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Icon(
-                painter = painterResource(id = publishedAssessmentOption.icon),
-                contentDescription = publishedAssessmentOption.label,
-                tint = MaterialTheme.colors.primary,
-                modifier = modifier
-                    .size(24.dp)
-                    .padding(2.dp)
-            )
-
-            Text(
-                text = publishedAssessmentOption.label,
-                color = MaterialTheme.colors.primary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = modifier.padding(8.dp)
-            )
-        }
-    }
-}
 
 
 enum class PublishedAssessmentBottomSheetOption(val label: String, val icon: Int) {

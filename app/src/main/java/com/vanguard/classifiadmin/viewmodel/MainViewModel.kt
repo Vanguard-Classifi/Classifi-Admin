@@ -40,12 +40,12 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
-import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionBottomSheetMode
-import com.vanguard.classifiadmin.ui.screens.assessments.CreateQuestionMessage
-import com.vanguard.classifiadmin.ui.screens.assessments.QuestionDifficulty
-import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOption
-import com.vanguard.classifiadmin.ui.screens.assessments.QuestionOptionTrueFalse
-import com.vanguard.classifiadmin.ui.screens.assessments.QuestionType
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionBottomSheetMode
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionMessage
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionDifficulty
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOption
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionType
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
@@ -712,6 +712,36 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(CreateQuestionMessage.NoMessage as CreateQuestionMessage)
     val createQuestionMessage: StateFlow<CreateQuestionMessage> = _createQuestionMessage
 
+    fun clearCreateQuestionFields() = effect {
+          _questionBodyCreateQuestion.value = null
+        _questionOptionACreateQuestion.value = null
+        _questionOptionBCreateQuestion.value = null
+        _questionOptionCCreateQuestion.value = null
+        _questionOptionDCreateQuestion.value = null
+        _questionAnswersCreateQuestion.value.clear()
+        _correctShortAnswerCreateQuestion.value = null
+    }
+
+    fun deleteStagedQuestionsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository
+            .deleteStagedQuestionsByUserNetwork(authorId, schoolId, onResult)
+    }
+
+    fun deleteStagedAssessmentsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteStagedAssessmentsByUserNetwork(
+            authorId, schoolId, onResult
+        )
+    }
+
+
     fun onCreateQuestionMessageChanged(message: CreateQuestionMessage) = effect {
         _createQuestionMessage.value = message
     }
@@ -765,8 +795,9 @@ class MainViewModel @Inject constructor(
 
     fun getStagedQuestionsNetwork(
         schoolId: String,
+        authorId: String,
     ) = effect {
-        repository.getStagedQuestionsNetwork(schoolId) {
+        repository.getStagedQuestionsNetwork(schoolId, authorId) {
             _stagedQuestionsNetwork.value = it
         }
     }

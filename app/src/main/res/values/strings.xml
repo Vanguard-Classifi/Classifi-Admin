@@ -228,4 +228,6 @@
     <string name="question_score">Question Score</string>
     <string name="assessment_duration">Assessment Duration</string>
     <string name="short_answer">Short Answer</string>
+    <string name="icon_tick">Tick Icon</string>
+    <string name="answer">Answer</string>
 </resources>

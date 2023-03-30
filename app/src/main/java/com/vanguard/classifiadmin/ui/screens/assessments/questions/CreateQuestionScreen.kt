@@ -1,7 +1,5 @@
-package com.vanguard.classifiadmin.ui.screens.assessments
+package com.vanguard.classifiadmin.ui.screens.assessments.questions
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -34,7 +31,6 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,7 +43,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -56,7 +51,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -76,6 +70,9 @@ import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SuccessBar
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.bottomsheet.CreateQuestionScreenBottomSheetContent
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.boxes.QuestionBox
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.boxes.QuestionBoxTrueFalse
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -99,9 +96,12 @@ fun CreateQuestionScreen(
     }
     val coroutineScope = rememberCoroutineScope()
     val message by viewModel.createQuestionMessage.collectAsState()
+    val addable = remember { mutableStateOf(false) }
 
-    LaunchedEffect(message){
-        if(message !is CreateQuestionMessage.NoMessage){
+    LaunchedEffect(message) {
+        if (message !is CreateQuestionMessage.NoMessage) {
+            if (message is CreateQuestionMessage.QuestionSaved)
+                addable.value = true
             delay(2000)
             viewModel.onCreateQuestionMessageChanged(
                 CreateQuestionMessage.NoMessage
@@ -192,18 +192,28 @@ fun CreateQuestionScreen(
                             )
                         },
                         bottomBar = {
-                            CreateQuestionBottomBar(viewModel = viewModel)
+                            CreateQuestionBottomBar(
+                                viewModel = viewModel,
+                                onAddQuestion = {
+                                    //go to assessment creation screen
+                                    onBack()
+                                    //clear the question fields
+                                    viewModel.clearCreateQuestionFields()
+                                },
+                                addable = addable.value,
+                            )
                         }
                     )
                 }
             )
 
-            if(message !is CreateQuestionMessage.NoMessage){
+            if (message !is CreateQuestionMessage.NoMessage) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-                    when(message) {
+                    when (message) {
                         is CreateQuestionMessage.QuestionSaved -> {
                             SuccessBar(message = message.message, maxWidth = maxWidth)
                         }
+
                         is CreateQuestionMessage.AddQuestionBody -> {
                             MessageBar(
                                 message = message.message,
@@ -217,6 +227,7 @@ fun CreateQuestionScreen(
                                 modifier = modifier.padding(vertical = 16.dp, horizontal = 8.dp)
                             )
                         }
+
                         else -> {
 
                         }
@@ -588,269 +599,40 @@ fun CreateQuestionScreenContent(
     }
 }
 
-@Composable
-fun QuestionBoxTrueFalse(
-    modifier: Modifier = Modifier,
-    option: QuestionOptionTrueFalse,
-    onSelect: (QuestionOptionTrueFalse) -> Unit,
-    isLeft: Boolean = false,
-    selected: Boolean = false,
-    rowWidth: Dp,
-) {
-    Surface(
-        modifier = modifier
-            .padding(0.dp)
-            .width(rowWidth.times(0.45f)),
-        shape = RoundedCornerShape(
-            topStartPercent = if (isLeft) 50 else 0,
-            bottomStartPercent = if (isLeft) 50 else 0,
-            topEndPercent = if (isLeft) 0 else 50,
-            bottomEndPercent = if (isLeft) 0 else 50,
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary.copy(0.5f),
-        ),
-        color =
-        animateColorAsState(
-            targetValue =
-            if (selected) MaterialTheme.colors.primary else Color.Transparent
-        ).value
-    ) {
-        TextButton(
-            onClick = { onSelect(option) },
-            modifier = modifier
-                .padding(0.dp)
-                .width(rowWidth.times(0.45f)),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = if (selected) MaterialTheme.colors.primary else Color.Transparent,
-            )
-        ) {
-            if (isLeft) {
-                if (selected) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.icon_mark),
-                        contentDescription = stringResource(id = R.string.mark_as_answer),
-                        tint = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
-                            0.5f
-                        )
-                    )
-                    Spacer(modifier = modifier.width(16.dp))
-                }
-                Spacer(modifier = modifier.width(16.dp))
-                Text(
-                    text = option.name,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
-                        0.5f
-                    ),
-                )
-                Spacer(modifier = modifier.weight(1f))
-            } else {
-                Spacer(modifier = modifier.weight(1f))
-                Text(
-                    text = option.name,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
-                        0.5f
-                    ),
-                )
-                Spacer(modifier = modifier.width(16.dp))
-                if (selected) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.icon_mark),
-                        contentDescription = stringResource(id = R.string.mark_as_answer),
-                        tint = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
-                            0.5f
-                        )
-                    )
-                    Spacer(modifier = modifier.width(16.dp))
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun QuestionBox(
-    modifier: Modifier = Modifier,
-    isOption: Boolean = true,
-    selected: Boolean = false,
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    onMark: () -> Unit
-) {
-    val headerOffset = remember { mutableStateOf(0) }
-    val headerWidth = remember { mutableStateOf(0) }
-    //question body
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.TopCenter,
-    ) {
-        OutlinedTextField(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(top = with(LocalDensity.current) {
-                    headerOffset.value.toDp()
-                })
-                .heightIn(
-                    min =
-                    if (isOption) 100.dp else 180.dp
-                )
-                .clip(
-                    RoundedCornerShape(
-                        bottomStart = 16.dp,
-                        bottomEnd = 16.dp,
-                    )
-                ),
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = label,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100.copy(0.5f),
-                )
-            },
-            shape = RoundedCornerShape(
-                bottomStart = 16.dp,
-                bottomEnd = 16.dp,
-            ),
-            textStyle = TextStyle(
-                color = Black100,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-            ),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Done,
-            ),
-            isError = false,
-        )
-
-        //top
-        Box(
-            modifier = modifier.fillMaxWidth(),
-            contentAlignment = Alignment.TopCenter,
-        ) {
-            Surface(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(0.dp)
-                    .onGloballyPositioned {
-                        headerOffset.value = it.size.height
-                        headerWidth.value = it.size.width
-                    },
-                shape = RoundedCornerShape(
-                    topStart = animateDpAsState(
-                        targetValue = when {
-                            isOption && selected -> 16.dp
-                            !isOption -> 16.dp
-                            else -> 0.dp
-                        }
-                    ).value,
-                    topEnd = animateDpAsState(
-                        targetValue = when {
-                            isOption && selected -> 16.dp
-                            !isOption -> 16.dp
-                            else -> 0.dp
-                        }
-                    ).value,
-                ),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colors.primary.copy(0.5f),
-                ),
-                color =
-                animateColorAsState(
-                    targetValue =
-                    if (selected) MaterialTheme.colors.primary else Color.Transparent
-                ).value
-            ) {
-                Row(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(0.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Box(
-                        modifier = modifier
-                            .padding(horizontal = 16.dp, vertical = 16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = animateColorAsState(
-                                targetValue =
-                                if (selected) MaterialTheme.colors.onPrimary else Black100
-                            ).value,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-
-                    if (isOption) {
-                        TextButton(
-                            onClick = onMark,
-                            modifier = modifier
-                                .padding(0.dp)
-                                .width(
-                                    with(LocalDensity.current) {
-                                        headerWidth.value
-                                            .toDp()
-                                            .times(0.45f)
-                                    }
-                                ),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = if (selected) MaterialTheme.colors.primary else Color.Transparent,
-                            )
-                        ) {
-                            Spacer(modifier = modifier.weight(1f))
-                            Text(
-                                text = if (selected) stringResource(id = R.string.correct_answer) else
-                                    stringResource(id = R.string.mark_as_answer),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
-                                    0.5f
-                                ),
-                            )
-                            Spacer(modifier = modifier.width(8.dp))
-                            if (selected) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.icon_mark),
-                                    contentDescription = stringResource(id = R.string.mark_as_answer),
-                                    tint = if (selected) MaterialTheme.colors.onPrimary else Black100.copy(
-                                        0.5f
-                                    )
-                                )
-                                Spacer(modifier = modifier.width(8.dp))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 
 @Composable
 fun CreateQuestionBottomBar(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
+    onAddQuestion: () -> Unit,
+    addable: Boolean,
 ) {
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val stagedAssessmentsNetwork by viewModel.stagedAssessmentsNetwork.collectAsState()
     val questionSidePanelState by viewModel.questionSidePanelState.collectAsState()
     val icon =
         if (questionSidePanelState == true) R.drawable.icon_double_arrow_down else R.drawable.icon_double_arrow_up
+    val assessmentType = remember(stagedAssessmentsNetwork.data) {
+        if (stagedAssessmentsNetwork is Resource.Success &&
+            stagedAssessmentsNetwork.data?.isNotEmpty() == true
+        ) {
+            "${stagedAssessmentsNetwork.data?.first()?.type}"
+        } else ""
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentSchoolIdPref()
+        delay(1000)
+        //find the staged assessment
+        viewModel.getStagedAssessmentsNetwork(
+            currentUserIdPref.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+    }
+
 
     Surface(
         modifier = Modifier
@@ -883,9 +665,10 @@ fun CreateQuestionBottomBar(
             Spacer(modifier = modifier.weight(1f))
 
             PrimaryTextButton(
-                label = "Add to Homework",
+                enabled = addable,
+                label = "Add to $assessmentType",
                 onClick = {
-                    /*todo: on Add question to homework*/
+                    onAddQuestion()
                 }
             )
 
@@ -895,300 +678,6 @@ fun CreateQuestionBottomBar(
 }
 
 
-@Composable
-fun CreateQuestionScreenBottomSheetContent(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    onSelectQuestionType: (QuestionType) -> Unit,
-    onSelectQuestionDifficulty: (QuestionDifficulty) -> Unit,
-    onClose: () -> Unit,
-) {
-    val mode by viewModel.createQuestionBottomSheetMode.collectAsState()
-
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 32.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Surface(
-                modifier = modifier,
-                shape = RoundedCornerShape(16.dp),
-                color = Black100.copy(0.5f)
-            ) {
-                Box(
-                    modifier = modifier
-                        .width(102.dp)
-                        .height(3.dp)
-                )
-            }
-        }
-
-        when (mode) {
-            is CreateQuestionBottomSheetMode.QuestionType -> {
-                QuestionTypeBottomSheetContent(
-                    onSelect = onSelectQuestionType,
-                    viewModel = viewModel,
-                    onClose = onClose
-                )
-            }
-
-            is CreateQuestionBottomSheetMode.Difficulty -> {
-                QuestionDifficultyBottomSheetContent(
-                    onSelect = onSelectQuestionDifficulty,
-                    onClose = onClose,
-                    viewModel = viewModel,
-                )
-            }
-
-            is CreateQuestionBottomSheetMode.Score -> {
-                //score screen
-                QuestionScoreBottomSheetContent(
-                    viewModel = viewModel,
-                    onClose = onClose,
-                )
-            }
-
-            is CreateQuestionBottomSheetMode.Duration -> {
-                QuestionDurationBottomSheetContent(
-                    viewModel = viewModel,
-                    onClose = onClose,
-                )
-            }
-        }
-
-    }
-}
-
-
-@Composable
-fun QuestionTypeBottomSheetContent(
-    modifier: Modifier = Modifier,
-    questionTypes: List<QuestionType> = QuestionType.values().toList(),
-    onSelect: (QuestionType) -> Unit,
-    onClose: () -> Unit,
-    viewModel: MainViewModel,
-) {
-    Surface(modifier = modifier) {
-        Column(modifier = modifier) {
-            questionTypes.forEach { questionType ->
-                QuestionTypeItem(type = questionType, onSelect = {
-                    viewModel.onQuestionTypeChanged(it)
-                    onSelect(it)
-                    onClose()
-                })
-            }
-        }
-    }
-}
-
-
-@Composable
-fun QuestionDifficultyBottomSheetContent(
-    modifier: Modifier = Modifier,
-    difficulties: List<QuestionDifficulty> = QuestionDifficulty.values().toList(),
-    onSelect: (QuestionDifficulty) -> Unit,
-    onClose: () -> Unit,
-    viewModel: MainViewModel,
-) {
-    Surface(modifier = modifier) {
-        Column(modifier = modifier) {
-            difficulties.forEach { difficulty ->
-                QuestionDifficultyItem(difficulty = difficulty, onSelect = {
-                    viewModel.onQuestionDifficultyChanged(it)
-                    onSelect(it)
-                    onClose()
-                })
-            }
-        }
-    }
-}
-
-
-@Composable
-fun QuestionDurationBottomSheetContent(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    onClose: () -> Unit,
-) {
-    val questionDurationCreateQuestion by viewModel.questionDurationCreateQuestion.collectAsState()
-
-    Surface(modifier = modifier) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        ) {
-            OutlinedTextField(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .heightIn(
-                        min = 32.dp
-                    )
-                    .clip(
-                        RoundedCornerShape(8.dp)
-                    ),
-                value = questionDurationCreateQuestion.orZeroString(),
-                onValueChange = viewModel::onQuestionDurationCreateQuestionChanged,
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.assessment_duration),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Black100.copy(0.5f),
-                    )
-                },
-                shape = RoundedCornerShape(8.dp),
-                textStyle = TextStyle(
-                    color = Black100,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done,
-                ),
-                isError = false,
-            )
-
-            Spacer(modifier = modifier.height(16.dp))
-
-            PrimaryTextButtonFillWidth(
-                label = stringResource(id = R.string.done), onClick = { onClose() })
-        }
-    }
-}
-
-
-@Composable
-fun QuestionScoreBottomSheetContent(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    onClose: () -> Unit,
-) {
-    val questionScoreCreateQuestion by viewModel.questionScoreCreateQuestion.collectAsState()
-
-    Surface(modifier = modifier) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        ) {
-            OutlinedTextField(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .heightIn(
-                        min = 32.dp
-                    )
-                    .clip(
-                        RoundedCornerShape(8.dp)
-                    ),
-                value = questionScoreCreateQuestion.orZeroString(),
-                onValueChange = viewModel::onQuestionScoreCreateQuestionChanged,
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.question_score),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Black100.copy(0.5f),
-                    )
-                },
-                shape = RoundedCornerShape(8.dp),
-                textStyle = TextStyle(
-                    color = Black100,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done,
-                ),
-                isError = false,
-            )
-
-            Spacer(modifier = modifier.height(16.dp))
-
-            PrimaryTextButtonFillWidth(
-                label = stringResource(id = R.string.done), onClick = { onClose() })
-        }
-    }
-}
-
-
-@Composable
-fun QuestionTypeItem(
-    modifier: Modifier = Modifier,
-    type: QuestionType,
-    onSelect: (QuestionType) -> Unit,
-) {
-    Surface(
-        modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { onSelect(type) },
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary.copy(0.8f),
-        ),
-        shape = RoundedCornerShape(8.dp),
-    ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Text(
-                text = type.title,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primary,
-                fontSize = 12.sp,
-                modifier = modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun QuestionDifficultyItem(
-    modifier: Modifier = Modifier,
-    onSelect: (QuestionDifficulty) -> Unit,
-    difficulty: QuestionDifficulty,
-) {
-    Surface(
-        modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { onSelect(difficulty) },
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary.copy(0.8f),
-        ),
-        shape = RoundedCornerShape(8.dp),
-    ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Text(
-                text = difficulty.name,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primary,
-                fontSize = 12.sp,
-                modifier = modifier.padding(16.dp)
-            )
-        }
-    }
-}
 
 
 sealed class CreateQuestionBottomSheetMode {
@@ -1325,7 +814,7 @@ enum class QuestionOption(val title: String) {
 }
 
 enum class QuestionOptionTrueFalse {
-    False, True
+    True, False
 }
 
 sealed class CreateQuestionMessage(val message: String) {

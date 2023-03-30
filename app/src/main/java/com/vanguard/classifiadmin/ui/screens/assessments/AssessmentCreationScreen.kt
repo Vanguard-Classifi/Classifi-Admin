@@ -1,6 +1,8 @@
 package com.vanguard.classifiadmin.ui.screens.assessments
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,8 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -39,11 +45,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -53,17 +61,18 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.AssessmentModel
-import com.vanguard.classifiadmin.data.network.models.AssessmentNetworkModel
+import com.vanguard.classifiadmin.data.local.models.QuestionModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.toSimpleDate
-import com.vanguard.classifiadmin.ui.components.AssessmentBottomSheetMode
-import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithInfo
 import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.NoDataInline
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOption
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionType
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -138,7 +147,7 @@ fun AssessmentCreationScreen(
                         },
                         maxHeight = maxHeight,
                         onSelect = {
-                            if(it == AssessmentCreationAddQuestionFeature.CreateQuestion) {
+                            if (it == AssessmentCreationAddQuestionFeature.CreateQuestion) {
                                 onCreateQuestion()
                             } else {
                                 onImportQuestion()
@@ -181,7 +190,8 @@ fun AssessmentCreationScreen(
                                     }
                                 },
                                 onCreateQuestion = onCreateQuestion,
-                                onImportQuestion = onImportQuestion
+                                onImportQuestion = onImportQuestion,
+                                viewModel = viewModel,
                             )
                         },
                         bottomBar = {
@@ -208,11 +218,31 @@ fun AssessmentCreationScreen(
 @Composable
 fun AssessmentCreationScreenContent(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     onAddQuestion: () -> Unit,
     onCreateQuestion: () -> Unit,
     onImportQuestion: () -> Unit,
 ) {
+    val TAG = "AssessmentCreationScreenContent"
+    val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val stagedQuestionsNetwork by viewModel.stagedQuestionsNetwork.collectAsState()
+
+    //get all staged questions
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentSchoolIdPref()
+        viewModel.getCurrentUserIdPref()
+        delay(1000)
+        viewModel.getStagedQuestionsNetwork(
+            currentSchoolIdPref.orEmpty(),
+            currentUserIdPref.orEmpty()
+        )
+
+    }
+
     BoxWithConstraints(modifier = Modifier) {
+        val maxHeight = maxHeight
+
         Column(modifier = Modifier) {
             Row(
                 modifier = Modifier
@@ -236,10 +266,35 @@ fun AssessmentCreationScreenContent(
 
             Divider(modifier = modifier.fillMaxWidth())
 
-            NoQuestionPageAssessmentCreation(
-                onCreateQuestion = onCreateQuestion,
-                onImportQuestion = onImportQuestion
-            )
+            when(stagedQuestionsNetwork){
+                is Resource.Loading -> {
+                    LoadingScreen(maxHeight = maxHeight)
+                }
+                is Resource.Success -> {
+                   if(stagedQuestionsNetwork.data?.isNotEmpty() == true){
+                        LazyColumn(modifier = modifier, state = rememberLazyListState()){
+                            items(stagedQuestionsNetwork.data!!){question ->
+                                QuestionItemAssessmentCreation(
+                                    question = question.toLocal(),
+                                )
+                            }
+                        }
+                   } else {
+                       Log.e(TAG, "AssessmentCreationScreenContent: no staged questions", )
+                       NoQuestionPageAssessmentCreation(
+                           onCreateQuestion = onCreateQuestion,
+                           onImportQuestion = onImportQuestion
+                       )
+                   }
+                }
+                is Resource.Error -> {
+                    Log.e(TAG, "AssessmentCreationScreenContent: an error occurred on staged questions", )
+                    NoQuestionPageAssessmentCreation(
+                        onCreateQuestion = onCreateQuestion,
+                        onImportQuestion = onImportQuestion
+                    )
+                }
+            }
         }
     }
 
@@ -336,7 +391,11 @@ fun CreateAssessmentBottomBar(
                     modifier = innerModifier
                         .width(1.dp)
                         .height(
-                            with(LocalDensity.current) { rowHeight.toDp().times(0.7f) }
+                            with(LocalDensity.current) {
+                                rowHeight
+                                    .toDp()
+                                    .times(0.7f)
+                            }
                         )
                         .layoutId("divider")
                 )
@@ -673,6 +732,235 @@ fun AssessmentCreationAddQuestionFeatureItem(
     }
 }
 
+@Composable
+fun QuestionItemAssessmentCreation(
+    modifier: Modifier = Modifier,
+    question: QuestionModel,
+) {
+    val innerModifier = Modifier
+    val constraints = QuestionItemAssessmentCreationConstraints(4.dp)
+    val answer = if(question.answers.isNotEmpty()) question.answers.first()
+    else ""
+
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        val maxWidth = maxWidth
+
+        Card(
+            modifier = modifier,
+            elevation = 2.dp,
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            ConstraintLayout(
+                modifier = modifier,
+                constraintSet = constraints,
+            ) {
+                Text(
+                    text = question.text.orEmpty(),
+                    fontSize = 12.sp,
+                    color = Black100,
+                    modifier = innerModifier.layoutId("question")
+                )
+
+                RoundedIconButton(
+                    onClick = {},
+                    tint = Black100,
+                    modifier = innerModifier.layoutId("more"),
+                    icon = R.drawable.icon_options_horizontal
+                )
+
+                //option
+                when(question.type){
+                    QuestionType.MultiChoice.name -> {
+                        MultiChoiceItem(
+                            answer = answer,
+                            contents = listOf(
+                                question.optionA.orEmpty(),
+                                question.optionB.orEmpty(),
+                                question.optionC.orEmpty(),
+                                question.optionD.orEmpty()
+                            ),
+                        )
+                    }
+                    QuestionType.TrueFalse.name -> {
+                        TrueFalseItem(
+                            answer = answer
+                        )
+                    }
+                    QuestionType.Short.name -> {
+                        ShortAnswerItem(
+                            answer = answer
+                        )
+                    }
+                    QuestionType.Essay.name -> {
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun QuestionItemAssessmentCreationConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val question = createRefFor("question")
+        val options = createRefFor("options")
+        val more = createRefFor("more")
+
+        constrain(question) {
+            start.linkTo(parent.start, 8.dp)
+            top.linkTo(parent.top, 4.dp)
+        }
+        constrain(more) {
+            top.linkTo(question.top, 0.dp)
+            end.linkTo(parent.end, 4.dp)
+        }
+        constrain(options) {
+            start.linkTo(parent.start, 0.dp)
+            end.linkTo(parent.end, 0.dp)
+            top.linkTo(question.bottom, 8.dp)
+            bottom.linkTo(parent.bottom, 4.dp)
+        }
+    }
+}
+
+@Composable
+fun MultiChoiceItem(
+    modifier: Modifier = Modifier,
+    answer: String,
+    contents: List<String> = emptyList(),
+    options: List<QuestionOption> = QuestionOption.values().toList(),
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.Start,
+    ) {
+        options.forEachIndexed { index, option ->
+            QuestionOptionItem(
+                content = contents[index],
+                option = when (option) {
+                    QuestionOption.OptionA -> "A"
+                    QuestionOption.OptionB -> "B"
+                    QuestionOption.OptionC -> "C"
+                    QuestionOption.OptionD -> "D"
+                },
+                selected = contents[index] == answer,
+            )
+        }
+    }
+}
+
+@Composable
+fun TrueFalseItem(
+    modifier: Modifier = Modifier,
+    answer: String,
+    options: List<QuestionOptionTrueFalse> = QuestionOptionTrueFalse.values().toList(),
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        options.forEach { option ->
+            QuestionOptionItem(
+                content = option.name,
+                option = if (option == QuestionOptionTrueFalse.True)
+                    "A" else "B",
+                selected = option.name == answer,
+            )
+            Spacer(modifier = modifier.width(8.dp))
+        }
+    }
+}
+
+@Composable
+fun ShortAnswerItem(
+    modifier: Modifier = Modifier,
+    answer: String,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(id = R.string.answer).uppercase(),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Black100,
+            modifier = modifier.padding(4.dp)
+        )
+
+
+        Text(
+            text = answer,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Normal,
+            color = Black100,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+            modifier = modifier.padding(4.dp)
+        )
+
+    }
+}
+
+@Composable
+fun QuestionOptionItem(
+    modifier: Modifier = Modifier,
+    content: String,
+    option: String = "A",
+    selected: Boolean = true,
+) {
+    Row(
+        modifier = modifier.padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            modifier = modifier,
+            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
+                0.1f
+            ),
+            shape = CircleShape,
+        ) {
+            Box(
+                modifier = modifier
+                    .size(22.dp)
+                    .background(
+                        color = Color.Transparent,
+                        shape = CircleShape,
+                    ), contentAlignment = Alignment.Center
+            ) {
+                if (selected) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_tick),
+                        contentDescription = stringResource(id = R.string.icon_tick),
+                        tint = MaterialTheme.colors.onPrimary,
+                        modifier = modifier.size(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = option.uppercase(),
+                        fontSize = 12.sp,
+                        color = Black100,
+                    )
+                }
+            }
+        }
+
+        Text(
+            text = content,
+            fontSize = 12.sp,
+            color = Black100,
+            modifier = modifier.padding(8.dp)
+        )
+    }
+}
+
 
 @Composable
 @Preview
@@ -681,5 +969,43 @@ private fun CreateAssessmentBottomBarPreview() {
         onClose = {},
         onDelete = {},
         onPublish = {}
+    )
+}
+
+
+@Preview
+@Composable
+private fun QuestionOptionItemPreview() {
+    QuestionOptionItem(
+        content = "Zebra",
+        option = "A"
+    )
+}
+
+
+@Preview
+@Composable
+private fun ShortAnswerItemPreview() {
+    ShortAnswerItem(
+        answer = "Khalid Isah"
+    )
+}
+
+@Preview
+@Composable
+private fun TrueFalseItemPreview() {
+    TrueFalseItem(
+        answer = QuestionOptionTrueFalse.True.name,
+    )
+}
+
+@Composable
+@Preview
+private fun MultiChoiceItem(){
+    MultiChoiceItem(
+        answer = "Choice",
+        contents = listOf(
+            "Boy", "Choice", "Baby", "Shoe"
+        ),
     )
 }

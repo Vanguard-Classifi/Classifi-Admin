@@ -337,6 +337,12 @@ interface FirestoreManager {
         onResult: (Boolean) -> Unit
     )
 
+    suspend fun deleteStagedAssessmentsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    )
+
     suspend fun getStagedAssessmentsNetwork(
         authorId: String,
         schoolId: String,
@@ -376,6 +382,12 @@ interface FirestoreManager {
         onResult: (Boolean) -> Unit
     )
 
+    suspend fun deleteStagedQuestionsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    )
+
     suspend fun getQuestionByIdNetwork(
         questionId: String,
         schoolId: String,
@@ -389,6 +401,7 @@ interface FirestoreManager {
 
     suspend fun getStagedQuestionsNetwork(
         schoolId: String,
+        authorId: String,
         onResult: (Resource<List<QuestionNetworkModel>>) -> Unit,
     )
 }

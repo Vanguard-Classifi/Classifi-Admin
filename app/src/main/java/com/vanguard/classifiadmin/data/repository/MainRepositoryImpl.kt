@@ -608,6 +608,15 @@ class MainRepositoryImpl @Inject constructor(
       firestoreManager.deleteAssessmentByIdNetwork(assessmentId, schoolId, onResult)
     }
 
+    override suspend fun deleteStagedAssessmentsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager
+            .deleteStagedAssessmentsByUserNetwork(authorId, schoolId, onResult)
+    }
+
     override suspend fun getStagedAssessmentsNetwork(
         authorId: String,
         schoolId: String,
@@ -660,6 +669,15 @@ class MainRepositoryImpl @Inject constructor(
        firestoreManager.deleteQuestionByIdNetwork(questionId, schoolId, onResult)
     }
 
+    override suspend fun deleteStagedQuestionsByUserNetwork(
+        authorId: String,
+        schoolId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager
+            .deleteStagedQuestionsByUserNetwork(authorId, schoolId, onResult)
+    }
+
     override suspend fun getQuestionByIdNetwork(
         questionId: String,
         schoolId: String,
@@ -677,9 +695,10 @@ class MainRepositoryImpl @Inject constructor(
 
     override suspend fun getStagedQuestionsNetwork(
         schoolId: String,
+        authorId: String,
         onResult: (Resource<List<QuestionNetworkModel>>) -> Unit
     ) {
-        firestoreManager.getStagedQuestionsNetwork(schoolId, onResult)
+        firestoreManager.getStagedQuestionsNetwork(schoolId, authorId, onResult)
     }
 
 }

@@ -500,7 +500,7 @@ fun CreateAssessmentBoxContent(
                                 authorName = currentUsernamePref.orEmpty(),
                                 verified = false,
                                 parentFeedId = feedId,
-                                type = currentAssessmentType.name.orEmpty(),
+                                type = currentAssessmentType.name,
                                 assignedClasses = arrayListOf(selectedSubjectCreateAssessment?.classId.orEmpty()),
                                 assignedStudents = studentIds,
                                 lastModified = todayComputational()
