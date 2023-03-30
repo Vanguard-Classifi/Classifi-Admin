@@ -70,9 +70,14 @@ import com.vanguard.classifiadmin.ui.components.NoDataInline
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.screens.assessments.bottomsheet.AssessmentCreationBottomSheetScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.items.QuestionItemAssessmentCreation
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOption
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionType
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.QuestionOptionItem
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.ShortAnswerItem
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.TrueFalseItem
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -99,6 +104,7 @@ fun AssessmentCreationScreen(
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val stagedAssessmentsNetwork by viewModel.stagedAssessmentsNetwork.collectAsState()
+    val stagedQuestionsNetwork by viewModel.stagedQuestionsNetwork.collectAsState()
     val heading = remember(stagedAssessmentsNetwork.data) {
         if (stagedAssessmentsNetwork is Resource.Success &&
             stagedAssessmentsNetwork.data?.isNotEmpty() == true
@@ -113,6 +119,7 @@ fun AssessmentCreationScreen(
             "${stagedAssessmentsNetwork.data?.first()?.startDate?.toSimpleDate()} - ${stagedAssessmentsNetwork.data?.first()?.endDate?.toSimpleDate()}"
         } else ""
     }
+    val message by viewModel.assessmentCreationMessage.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -123,6 +130,16 @@ fun AssessmentCreationScreen(
             currentUserIdPref.orEmpty(),
             currentSchoolIdPref.orEmpty()
         )
+    }
+
+    LaunchedEffect(message){
+        if(message !is AssessmentCreationMessage.NoMessage) {
+            delay(2000)
+            viewModel.onAssessmentCreationMessageChanged(
+                AssessmentCreationMessage.NoMessage
+            )
+            onBack()
+        }
     }
 
     Surface(modifier = Modifier) {
@@ -160,7 +177,37 @@ fun AssessmentCreationScreen(
                         modifier = modifier,
                         topBar = {
                             ChildTopBarWithInfo(
-                                onBack = onBack,
+                                onBack = {
+                                    if (stagedQuestionsNetwork is Resource.Success &&
+                                        stagedQuestionsNetwork.data?.isNotEmpty() == true
+                                    ) {
+                                        coroutineScope.launch {
+                                            stagedQuestionsNetwork.data?.forEach { question ->
+                                                viewModel.saveQuestionAsVerifiedNetwork(
+                                                    question,
+                                                    onResult = {}
+                                                )
+                                            }
+                                            if (stagedAssessmentsNetwork is Resource.Success &&
+                                                stagedAssessmentsNetwork.data?.isNotEmpty() == true
+                                            ) {
+                                                //save as draft
+                                                stagedAssessmentsNetwork.data?.first()!!.state =
+                                                    AssessmentState.Draft.name
+                                                viewModel.saveAssessmentAsVerifiedNetwork(
+                                                    stagedAssessmentsNetwork.data?.first()!!,
+                                                    onResult = {}
+                                                )
+                                                //show dialog message
+                                                viewModel.onAssessmentCreationMessageChanged(
+                                                    AssessmentCreationMessage.SaveAssessmentToDraft
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        onBack()
+                                    }
+                                },
                                 onInfo = {
                                     viewModel.onAssessmentCreationBottomSheetModeChanged(
                                         AssessmentCreationBottomSheetMode.Info
@@ -210,6 +257,9 @@ fun AssessmentCreationScreen(
                     )
                 }
             )
+
+            //handle all messages and prompts
+
         }
     }
 }
@@ -266,29 +316,34 @@ fun AssessmentCreationScreenContent(
 
             Divider(modifier = modifier.fillMaxWidth())
 
-            when(stagedQuestionsNetwork){
+            when (stagedQuestionsNetwork) {
                 is Resource.Loading -> {
                     LoadingScreen(maxHeight = maxHeight)
                 }
+
                 is Resource.Success -> {
-                   if(stagedQuestionsNetwork.data?.isNotEmpty() == true){
-                        LazyColumn(modifier = modifier, state = rememberLazyListState()){
-                            items(stagedQuestionsNetwork.data!!){question ->
+                    if (stagedQuestionsNetwork.data?.isNotEmpty() == true) {
+                        LazyColumn(modifier = modifier, state = rememberLazyListState()) {
+                            items(stagedQuestionsNetwork.data!!) { question ->
                                 QuestionItemAssessmentCreation(
                                     question = question.toLocal(),
                                 )
                             }
                         }
-                   } else {
-                       Log.e(TAG, "AssessmentCreationScreenContent: no staged questions", )
-                       NoQuestionPageAssessmentCreation(
-                           onCreateQuestion = onCreateQuestion,
-                           onImportQuestion = onImportQuestion
-                       )
-                   }
+                    } else {
+                        Log.e(TAG, "AssessmentCreationScreenContent: no staged questions")
+                        NoQuestionPageAssessmentCreation(
+                            onCreateQuestion = onCreateQuestion,
+                            onImportQuestion = onImportQuestion
+                        )
+                    }
                 }
+
                 is Resource.Error -> {
-                    Log.e(TAG, "AssessmentCreationScreenContent: an error occurred on staged questions", )
+                    Log.e(
+                        TAG,
+                        "AssessmentCreationScreenContent: an error occurred on staged questions",
+                    )
                     NoQuestionPageAssessmentCreation(
                         onCreateQuestion = onCreateQuestion,
                         onImportQuestion = onImportQuestion
@@ -457,510 +512,12 @@ enum class AssessmentCreationAddQuestionFeature(val title: String, val icon: Int
     ImportQuestion("Import Question", R.drawable.icon_import)
 }
 
-@Composable
-fun AssessmentCreationBottomSheetScreen(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    onDone: () -> Unit,
-    maxHeight: Dp,
-    onSelect: (AssessmentCreationAddQuestionFeature) -> Unit,
-    addQuestionFeatures: List<AssessmentCreationAddQuestionFeature> =
-        AssessmentCreationAddQuestionFeature.values().toList(),
-) {
-    val mode by viewModel.assessmentCreationBottomSheetMode.collectAsState()
-    val stagedAssessmentsNetwork by viewModel.stagedAssessmentsNetwork.collectAsState()
-
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 32.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Surface(
-                modifier = modifier,
-                shape = RoundedCornerShape(16.dp),
-                color = Black100.copy(0.5f)
-            ) {
-                Box(
-                    modifier = modifier
-                        .width(102.dp)
-                        .height(3.dp)
-                )
-            }
-        }
-
-        when (mode) {
-            is AssessmentCreationBottomSheetMode.AddQuestion -> {
-                addQuestionFeatures.forEach { feature ->
-                    AssessmentCreationAddQuestionFeatureItem(
-                        feature = feature,
-                        onSelect = onSelect,
-                    )
-                }
-            }
-
-            is AssessmentCreationBottomSheetMode.Info -> {
-                when (stagedAssessmentsNetwork) {
-                    is Resource.Loading -> {
-                        LoadingScreen(maxHeight = maxHeight)
-                    }
-
-                    is Resource.Success -> {
-                        if (stagedAssessmentsNetwork.data?.isNotEmpty() == true) {
-                            AssessmentCreationBottomSheetInfo(
-                                onDone = onDone,
-                                assessment = stagedAssessmentsNetwork.data?.first()?.toLocal()!!
-                            )
-                        } else {
-                            NoDataInline(message = stringResource(id = R.string.could_not_load_assessment))
-                        }
-                    }
-
-                    is Resource.Error -> {
-                        NoDataInline(message = stringResource(id = R.string.could_not_load_assessment))
-                    }
-                }
-            }
-        }
-    }
+sealed class AssessmentCreationMessage(val message: String){
+    object SaveAssessmentToDraft: AssessmentCreationMessage("Saving assessment to draft")
+    object AssessmentPublished: AssessmentCreationMessage("Assessment published successfully!")
+    object AssessmentDeleted: AssessmentCreationMessage("Assessment deleted successfully!")
+    object NoMessage: AssessmentCreationMessage("")
 }
-
-
-@Composable
-fun AssessmentCreationBottomSheetInfo(
-    modifier: Modifier = Modifier,
-    onDone: () -> Unit,
-    assessment: AssessmentModel,
-) {
-    BoxWithConstraints(modifier = modifier) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = assessment.name.orEmpty(),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Black100,
-            )
-
-            Text(
-                text = "Created: ${assessment.lastModified.orEmpty()}",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
-                color = Black100,
-            )
-
-            Spacer(modifier = modifier.height(32.dp))
-
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.status),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black100,
-                )
-                Spacer(modifier = modifier.width(32.dp))
-                Text(
-                    text = "OPEN",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100,
-                )
-            }
-            Spacer(modifier = modifier.height(12.dp))
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.subject),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black100,
-                )
-                Spacer(modifier = modifier.width(32.dp))
-                Text(
-                    text = assessment.subjectName.orEmpty(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100,
-                )
-            }
-            Spacer(modifier = modifier.height(12.dp))
-
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.start_date),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black100,
-                )
-                Spacer(modifier = modifier.width(32.dp))
-                Text(
-                    text = assessment.startDate?.toSimpleDate().orEmpty(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100,
-                )
-            }
-            Spacer(modifier = modifier.height(12.dp))
-
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.end_date),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black100,
-                )
-                Spacer(modifier = modifier.width(32.dp))
-                Text(
-                    text = assessment.endDate?.toSimpleDate().orEmpty(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100,
-                )
-            }
-            Spacer(modifier = modifier.height(12.dp))
-
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.assesment_type),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black100,
-                )
-                Spacer(modifier = modifier.width(32.dp))
-                Text(
-                    text = assessment.type?.uppercase().orEmpty(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100,
-                )
-            }
-            Spacer(modifier = modifier.height(12.dp))
-
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.questions),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black100,
-                )
-                Spacer(modifier = modifier.width(32.dp))
-                Text(
-                    text = "0",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Black100,
-                )
-            }
-            Spacer(modifier = modifier.height(12.dp))
-
-            PrimaryTextButtonFillWidth(label = stringResource(id = R.string.done), onClick = onDone)
-            Spacer(modifier = modifier.height(12.dp))
-        }
-    }
-}
-
-
-@Composable
-fun AssessmentCreationAddQuestionFeatureItem(
-    modifier: Modifier = Modifier,
-    onSelect: (AssessmentCreationAddQuestionFeature) -> Unit,
-    feature: AssessmentCreationAddQuestionFeature = AssessmentCreationAddQuestionFeature.CreateQuestion,
-) {
-    Surface(
-        modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { onSelect(feature) },
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.primary.copy(0.8f),
-        ),
-        shape = RoundedCornerShape(8.dp),
-    ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(id = feature.icon),
-                contentDescription = stringResource(id = R.string.icon),
-                tint = MaterialTheme.colors.primary,
-                modifier = modifier.size(24.dp)
-            )
-
-            Text(
-                text = feature.title,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primary,
-                fontSize = 12.sp,
-                modifier = modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun QuestionItemAssessmentCreation(
-    modifier: Modifier = Modifier,
-    question: QuestionModel,
-) {
-    val innerModifier = Modifier
-    val constraints = QuestionItemAssessmentCreationConstraints(4.dp)
-    val answer = if(question.answers.isNotEmpty()) question.answers.first()
-    else ""
-
-    BoxWithConstraints(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
-    ) {
-        val maxWidth = maxWidth
-
-        Card(
-            modifier = modifier,
-            elevation = 2.dp,
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            ConstraintLayout(
-                modifier = modifier,
-                constraintSet = constraints,
-            ) {
-                Text(
-                    text = question.text.orEmpty(),
-                    fontSize = 12.sp,
-                    color = Black100,
-                    modifier = innerModifier.layoutId("question")
-                )
-
-                RoundedIconButton(
-                    onClick = {},
-                    tint = Black100,
-                    modifier = innerModifier.layoutId("more"),
-                    icon = R.drawable.icon_options_horizontal
-                )
-
-                //option
-                when(question.type){
-                    QuestionType.MultiChoice.name -> {
-                        MultiChoiceItem(
-                            answer = answer,
-                            contents = listOf(
-                                question.optionA.orEmpty(),
-                                question.optionB.orEmpty(),
-                                question.optionC.orEmpty(),
-                                question.optionD.orEmpty()
-                            ),
-                        )
-                    }
-                    QuestionType.TrueFalse.name -> {
-                        TrueFalseItem(
-                            answer = answer
-                        )
-                    }
-                    QuestionType.Short.name -> {
-                        ShortAnswerItem(
-                            answer = answer
-                        )
-                    }
-                    QuestionType.Essay.name -> {
-
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun QuestionItemAssessmentCreationConstraints(margin: Dp): ConstraintSet {
-    return ConstraintSet {
-        val question = createRefFor("question")
-        val options = createRefFor("options")
-        val more = createRefFor("more")
-
-        constrain(question) {
-            start.linkTo(parent.start, 8.dp)
-            top.linkTo(parent.top, 4.dp)
-        }
-        constrain(more) {
-            top.linkTo(question.top, 0.dp)
-            end.linkTo(parent.end, 4.dp)
-        }
-        constrain(options) {
-            start.linkTo(parent.start, 0.dp)
-            end.linkTo(parent.end, 0.dp)
-            top.linkTo(question.bottom, 8.dp)
-            bottom.linkTo(parent.bottom, 4.dp)
-        }
-    }
-}
-
-@Composable
-fun MultiChoiceItem(
-    modifier: Modifier = Modifier,
-    answer: String,
-    contents: List<String> = emptyList(),
-    options: List<QuestionOption> = QuestionOption.values().toList(),
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Start,
-    ) {
-        options.forEachIndexed { index, option ->
-            QuestionOptionItem(
-                content = contents[index],
-                option = when (option) {
-                    QuestionOption.OptionA -> "A"
-                    QuestionOption.OptionB -> "B"
-                    QuestionOption.OptionC -> "C"
-                    QuestionOption.OptionD -> "D"
-                },
-                selected = contents[index] == answer,
-            )
-        }
-    }
-}
-
-@Composable
-fun TrueFalseItem(
-    modifier: Modifier = Modifier,
-    answer: String,
-    options: List<QuestionOptionTrueFalse> = QuestionOptionTrueFalse.values().toList(),
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        options.forEach { option ->
-            QuestionOptionItem(
-                content = option.name,
-                option = if (option == QuestionOptionTrueFalse.True)
-                    "A" else "B",
-                selected = option.name == answer,
-            )
-            Spacer(modifier = modifier.width(8.dp))
-        }
-    }
-}
-
-@Composable
-fun ShortAnswerItem(
-    modifier: Modifier = Modifier,
-    answer: String,
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = stringResource(id = R.string.answer).uppercase(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Black100,
-            modifier = modifier.padding(4.dp)
-        )
-
-
-        Text(
-            text = answer,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Normal,
-            color = Black100,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-            modifier = modifier.padding(4.dp)
-        )
-
-    }
-}
-
-@Composable
-fun QuestionOptionItem(
-    modifier: Modifier = Modifier,
-    content: String,
-    option: String = "A",
-    selected: Boolean = true,
-) {
-    Row(
-        modifier = modifier.padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Surface(
-            modifier = modifier,
-            color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(
-                0.1f
-            ),
-            shape = CircleShape,
-        ) {
-            Box(
-                modifier = modifier
-                    .size(22.dp)
-                    .background(
-                        color = Color.Transparent,
-                        shape = CircleShape,
-                    ), contentAlignment = Alignment.Center
-            ) {
-                if (selected) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.icon_tick),
-                        contentDescription = stringResource(id = R.string.icon_tick),
-                        tint = MaterialTheme.colors.onPrimary,
-                        modifier = modifier.size(24.dp)
-                    )
-                } else {
-                    Text(
-                        text = option.uppercase(),
-                        fontSize = 12.sp,
-                        color = Black100,
-                    )
-                }
-            }
-        }
-
-        Text(
-            text = content,
-            fontSize = 12.sp,
-            color = Black100,
-            modifier = modifier.padding(8.dp)
-        )
-    }
-}
-
 
 @Composable
 @Preview
@@ -996,16 +553,5 @@ private fun ShortAnswerItemPreview() {
 private fun TrueFalseItemPreview() {
     TrueFalseItem(
         answer = QuestionOptionTrueFalse.True.name,
-    )
-}
-
-@Composable
-@Preview
-private fun MultiChoiceItem(){
-    MultiChoiceItem(
-        answer = "Choice",
-        contents = listOf(
-            "Boy", "Choice", "Baby", "Shoe"
-        ),
     )
 }

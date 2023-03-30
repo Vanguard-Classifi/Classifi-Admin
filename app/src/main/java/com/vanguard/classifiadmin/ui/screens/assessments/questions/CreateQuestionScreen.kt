@@ -580,6 +580,7 @@ fun CreateQuestionScreenContent(
                                     optionD = questionOptionDCreateQuestion.orEmpty(),
                                     answers = answers,
                                     lastModified = todayComputational(),
+                                    authorId = currentUserIdPref.orEmpty()
                                 )
 
                                 viewModel.saveQuestionAsStagedNetwork(question.toNetwork(),

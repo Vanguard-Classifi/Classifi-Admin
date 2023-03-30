@@ -38,6 +38,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailFeatu
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailMessage
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBottomSheetMode
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionBottomSheetMode
@@ -712,8 +713,16 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(CreateQuestionMessage.NoMessage as CreateQuestionMessage)
     val createQuestionMessage: StateFlow<CreateQuestionMessage> = _createQuestionMessage
 
+    private var _assessmentCreationMessage =
+        MutableStateFlow(AssessmentCreationMessage.NoMessage as AssessmentCreationMessage)
+    val assessmentCreationMessage: StateFlow<AssessmentCreationMessage> = _assessmentCreationMessage
+
+    fun onAssessmentCreationMessageChanged(message: AssessmentCreationMessage) = effect {
+        _assessmentCreationMessage.value = message
+    }
+
     fun clearCreateQuestionFields() = effect {
-          _questionBodyCreateQuestion.value = null
+        _questionBodyCreateQuestion.value = null
         _questionOptionACreateQuestion.value = null
         _questionOptionBCreateQuestion.value = null
         _questionOptionCCreateQuestion.value = null
