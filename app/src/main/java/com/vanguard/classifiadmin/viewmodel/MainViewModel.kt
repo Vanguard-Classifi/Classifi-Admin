@@ -39,6 +39,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectAdminDetailMessa
 import com.vanguard.classifiadmin.ui.screens.admin.ManageSubjectMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationMessage
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationOpenMode
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionBottomSheetMode
@@ -747,6 +748,36 @@ class MainViewModel @Inject constructor(
     val verifiedAssessmentsPublishedForClassNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
         _verifiedAssessmentsPublishedForClassNetwork
 
+    private var _assessmentCreationOpenMode =
+        MutableStateFlow(AssessmentCreationOpenMode.Editor as AssessmentCreationOpenMode)
+    val assessmentCreationOpenMode: StateFlow<AssessmentCreationOpenMode> = _assessmentCreationOpenMode
+
+    private var _currentAssessmentIdDraft = MutableStateFlow(null as String?)
+    val currentAssessmentIdDraft: StateFlow<String?> = _currentAssessmentIdDraft
+
+    private var _verifiedQuestionsByAssessmentNetwork =
+        MutableStateFlow(Resource.Loading<List<QuestionNetworkModel>>() as Resource<List<QuestionNetworkModel>>)
+    val verifiedQuestionsByAssessmentNetwork: StateFlow<Resource<List<QuestionNetworkModel>>> =
+        _verifiedQuestionsByAssessmentNetwork
+
+    fun getVerifiedQuestionsByAssessmentNetwork(
+        assessmentId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedQuestionsByAssessmentNetwork(
+            assessmentId, schoolId
+        ){
+            _verifiedQuestionsByAssessmentNetwork.value = it
+        }
+    }
+
+
+    fun onCurrentAssessmentIdDraftChanged(assessmentId: String?) = effect {
+        _currentAssessmentIdDraft.value = assessmentId
+    }
+    fun onAssessmentCreationOpenModeChanged(mode: AssessmentCreationOpenMode) = effect {
+        _assessmentCreationOpenMode.value = mode
+    }
 
     fun getVerifiedAssessmentsDraftForClassNetwork(
         classId: String,

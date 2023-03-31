@@ -380,6 +380,13 @@ interface MainRepository {
         onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
     )
 
+    suspend fun getVerifiedQuestionsByAssessmentNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Resource<List<QuestionNetworkModel>>) -> Unit,
+    )
+
+
     suspend fun getVerifiedAssessmentsDraftNetwork(
         schoolId: String,
         onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit

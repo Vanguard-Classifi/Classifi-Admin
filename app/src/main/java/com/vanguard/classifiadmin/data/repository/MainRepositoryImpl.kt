@@ -632,6 +632,16 @@ class MainRepositoryImpl @Inject constructor(
         firestoreManager.getVerifiedAssessmentsNetwork(schoolId, onResult)
     }
 
+    override suspend fun getVerifiedQuestionsByAssessmentNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Resource<List<QuestionNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getVerifiedQuestionsByAssessmentNetwork(
+            assessmentId, schoolId, onResult
+        )
+    }
+
     override suspend fun getVerifiedAssessmentsDraftNetwork(
         schoolId: String,
         onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit

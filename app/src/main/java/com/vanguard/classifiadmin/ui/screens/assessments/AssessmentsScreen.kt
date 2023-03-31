@@ -209,7 +209,12 @@ fun AssessmentsScreenContent(
                         currentUserRolePref != UserRole.Parent.name
                     ) {
                         RoundedIconButton(
-                            onClick = onCreateQuestions,
+                            onClick = {
+                                viewModel.onAssessmentCreationOpenModeChanged(
+                                    AssessmentCreationOpenMode.Creator
+                                )
+                                onCreateQuestions()
+                            },
                             icon = R.drawable.icon_add,
                         )
                     }

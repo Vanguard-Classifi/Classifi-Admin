@@ -432,6 +432,13 @@ interface FirestoreManager {
         onResult: (Resource<List<QuestionNetworkModel>>) -> Unit,
     )
 
+    suspend fun getVerifiedQuestionsByAssessmentNetwork(
+        assessmentId: String,
+        schoolId: String,
+        onResult: (Resource<List<QuestionNetworkModel>>) -> Unit,
+    )
+
+
     suspend fun getStagedQuestionsNetwork(
         schoolId: String,
         authorId: String,

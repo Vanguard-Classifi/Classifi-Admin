@@ -16,6 +16,7 @@ import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.NoDataScreen
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationOpenMode
 import com.vanguard.classifiadmin.ui.screens.assessments.items.AssessmentItem
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
@@ -55,7 +56,14 @@ fun AssessmentsScreenContentDraft(
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onDraftAssessmentOptions,
-                                    onSelectAssessment = onSelectAssessment,
+                                    onSelectAssessment = {
+                                        viewModel.onAssessmentCreationOpenModeChanged(
+                                            AssessmentCreationOpenMode.Editor
+                                        )
+                                        viewModel.onCurrentAssessmentIdDraftChanged(
+                                            it.assessmentId
+                                        )
+                                        onSelectAssessment(it) },
                                 )
                             }
                         }
@@ -101,7 +109,14 @@ fun AssessmentsScreenContentDraft(
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onDraftAssessmentOptions,
-                                    onSelectAssessment = onSelectAssessment,
+                                    onSelectAssessment = {
+                                        viewModel.onAssessmentCreationOpenModeChanged(
+                                            AssessmentCreationOpenMode.Editor
+                                        )
+                                        viewModel.onCurrentAssessmentIdDraftChanged(
+                                            it.assessmentId
+                                        )
+                                        onSelectAssessment(it) },
                                 )
                             }
                         }
@@ -147,7 +162,14 @@ fun AssessmentsScreenContentDraft(
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onDraftAssessmentOptions,
-                                    onSelectAssessment = onSelectAssessment,
+                                    onSelectAssessment = {
+                                        viewModel.onAssessmentCreationOpenModeChanged(
+                                            AssessmentCreationOpenMode.Editor
+                                        )
+                                        viewModel.onCurrentAssessmentIdDraftChanged(
+                                            it.assessmentId
+                                        )
+                                        onSelectAssessment(it) },
                                 )
                             }
                         }
@@ -193,7 +215,14 @@ fun AssessmentsScreenContentDraft(
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onDraftAssessmentOptions,
-                                    onSelectAssessment = onSelectAssessment,
+                                    onSelectAssessment = {
+                                        viewModel.onAssessmentCreationOpenModeChanged(
+                                            AssessmentCreationOpenMode.Editor
+                                        )
+                                        viewModel.onCurrentAssessmentIdDraftChanged(
+                                            it.assessmentId
+                                        )
+                                        onSelectAssessment(it) },
                                 )
                             }
                         }
@@ -236,7 +265,14 @@ fun AssessmentsScreenContentDraft(
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onDraftAssessmentOptions,
-                                    onSelectAssessment = onSelectAssessment,
+                                    onSelectAssessment = {
+                                        viewModel.onAssessmentCreationOpenModeChanged(
+                                            AssessmentCreationOpenMode.Editor
+                                        )
+                                        viewModel.onCurrentAssessmentIdDraftChanged(
+                                            it.assessmentId
+                                        )
+                                        onSelectAssessment(it) },
                                 )
                             }
                         }
