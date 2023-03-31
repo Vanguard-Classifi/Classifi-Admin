@@ -470,7 +470,6 @@ fun CreateAssessmentBoxContent(
                     enabled = eligible,
                     onClick = {
                         scope.launch {
-
                             val studentIds = ArrayList<String>()
                             studentsBufferCreateAssessment.map {
                                 studentIds.add(it.userId)

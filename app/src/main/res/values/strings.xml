@@ -230,4 +230,7 @@
     <string name="short_answer">Short Answer</string>
     <string name="icon_tick">Tick Icon</string>
     <string name="answer">Answer</string>
+    <string name="no_published_assessment">No published assessments available</string>
+    <string name="no_assessment_in_review">No assessment currently in review</string>
+    <string name="no_assessment_in_draft">No assessment currently in draft</string>
 </resources>

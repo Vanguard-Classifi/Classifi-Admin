@@ -2,27 +2,23 @@ package com.vanguard.classifiadmin.ui.screens.assessments
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -35,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,10 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.Dimension
-import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.domain.helpers.UserRole
@@ -59,7 +50,6 @@ import com.vanguard.classifiadmin.ui.screens.assessments.states.AssessmentsScree
 import com.vanguard.classifiadmin.ui.screens.assessments.states.AssessmentsScreenContentInReview
 import com.vanguard.classifiadmin.ui.screens.assessments.states.AssessmentsScreenContentPublished
 import com.vanguard.classifiadmin.ui.theme.Black100
-import com.vanguard.classifiadmin.ui.theme.Green100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 
@@ -97,17 +87,22 @@ fun AssessmentsScreenContent(
     onSelectAssessment: (AssessmentModel) -> Unit,
     onCreateQuestions: () -> Unit,
 ) {
-    val verticalScroll = rememberLazyListState()
     val innerModifier = Modifier
     val currentAssessmentOption by viewModel.currentAssessmentOption.collectAsState()
     val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
+    val verifiedAssessmentsPublishedNetwork by viewModel.verifiedAssessmentsPublishedNetwork.collectAsState()
+    val verifiedAssessmentsInReviewNetwork by viewModel.verifiedAssessmentsInReviewNetwork.collectAsState()
+    val verifiedAssessmentsDraftNetwork by viewModel.verifiedAssessmentsDraftNetwork.collectAsState()
+    val currentClassFeedPref by viewModel.currentClassFeedPref.collectAsState()
 
-    LaunchedEffect(Unit) {
+
+    LaunchedEffect(Unit, currentClassFeedPref, currentUserRolePref) {
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserRolePref()
+        viewModel.getCurrentClassFeedPref()
         delay(1000)
         //delete all staged assessments
         viewModel.deleteStagedQuestionsByUserNetwork(
@@ -120,79 +115,147 @@ fun AssessmentsScreenContent(
             currentSchoolIdPref.orEmpty(),
             onResult = {}
         )
+
+        when (currentUserRolePref) {
+            UserRole.Teacher.name -> {
+                //get only verified assessments for class by published, in-review, and draft
+                viewModel.getVerifiedAssessmentsDraftForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+                viewModel.getVerifiedAssessmentsInReviewForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+                viewModel.getVerifiedAssessmentsPublishedForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Parent.name -> {
+                //get only verified assessments for class by published, in-review, and draft
+                viewModel.getVerifiedAssessmentsDraftForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+                viewModel.getVerifiedAssessmentsInReviewForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+                viewModel.getVerifiedAssessmentsPublishedForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Student.name -> {
+                //get only verified assessments for class by published, in-review, and draft
+                viewModel.getVerifiedAssessmentsDraftForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+                viewModel.getVerifiedAssessmentsInReviewForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+                viewModel.getVerifiedAssessmentsPublishedForClassNetwork(
+                    currentClassFeedPref.orEmpty(),
+                    currentSchoolIdPref.orEmpty()
+                )
+            }
+
+            UserRole.Admin.name -> {
+                //get all verified assessments by published, in-review, and draft
+                viewModel.getVerifiedAssessmentsDraftNetwork(currentSchoolIdPref.orEmpty())
+                viewModel.getVerifiedAssessmentsPublishedNetwork(currentSchoolIdPref.orEmpty())
+                viewModel.getVerifiedAssessmentsInReviewNetwork(currentSchoolIdPref.orEmpty())
+            }
+
+            UserRole.SuperAdmin.name -> {
+                //get all verified assessments by published, in-review, and draft
+                viewModel.getVerifiedAssessmentsDraftNetwork(currentSchoolIdPref.orEmpty())
+                viewModel.getVerifiedAssessmentsPublishedNetwork(currentSchoolIdPref.orEmpty())
+                viewModel.getVerifiedAssessmentsInReviewNetwork(currentSchoolIdPref.orEmpty())
+            }
+        }
     }
 
     Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Row(
-                modifier = innerModifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+        BoxWithConstraints(modifier = Modifier) {
+            val maxHeight = maxHeight
+
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = stringResource(id = R.string.assessments),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary,
+                Row(
+                    modifier = innerModifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.assessments),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary,
+                    )
+
+                    if (currentUserRolePref != null &&
+                        currentUserRolePref != UserRole.Student.name &&
+                        currentUserRolePref != UserRole.Parent.name
+                    ) {
+                        RoundedIconButton(
+                            onClick = onCreateQuestions,
+                            icon = R.drawable.icon_add,
+                        )
+                    }
+                }
+
+                AssessmentSelector(
+                    modifier = innerModifier,
+                    viewModel = viewModel,
                 )
 
-                if (currentUserRolePref != null &&
-                    currentUserRolePref != UserRole.Student.name &&
-                    currentUserRolePref != UserRole.Parent.name
-                ) {
-                    RoundedIconButton(
-                        onClick = onCreateQuestions,
-                        icon = R.drawable.icon_add,
-                    )
-                }
-            }
+                when (currentAssessmentOption) {
+                    AssessmentState.Published -> {
+                        AssessmentsScreenContentPublished(
+                            viewModel = viewModel,
+                            onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+                            onSelectAssessment = onSelectAssessment,
+                            maxHeight = maxHeight
+                        )
+                    }
 
-            AssessmentSelector(
-                modifier = innerModifier,
-                viewModel = viewModel,
-            )
+                    AssessmentState.InReview -> {
+                        AssessmentsScreenContentInReview(
+                            viewModel = viewModel,
+                            onInReviewAssessmentOptions = onInReviewAssessmentOptions,
+                            onSelectAssessment = onSelectAssessment,
+                            maxHeight = maxHeight
+                        )
+                    }
 
-            when (currentAssessmentOption) {
-                AssessmentState.Published -> {
-                    AssessmentsScreenContentPublished(
-                        viewModel = viewModel,
-                        verticalScroll = verticalScroll,
-                        onPublishedAssessmentOptions = onPublishedAssessmentOptions,
-                        onSelectAssessment = onSelectAssessment,
-                    )
-                }
+                    AssessmentState.Draft -> {
+                        AssessmentsScreenContentDraft(
+                            viewModel = viewModel,
+                            onDraftAssessmentOptions = onDraftAssessmentOptions,
+                            onSelectAssessment = onSelectAssessment,
+                            maxHeight = maxHeight,
+                        )
+                    }
 
-                AssessmentState.InReview -> {
-                    AssessmentsScreenContentInReview(
-                        viewModel = viewModel,
-                        verticalScroll = verticalScroll,
-                        onInReviewAssessmentOptions = onInReviewAssessmentOptions,
-                        onSelectAssessment = onSelectAssessment,
-                    )
-                }
-
-                AssessmentState.Draft -> {
-                    AssessmentsScreenContentDraft(
-                        viewModel = viewModel,
-                        verticalScroll = verticalScroll,
-                        onDraftAssessmentOptions = onDraftAssessmentOptions,
-                        onSelectAssessment = onSelectAssessment,
-                    )
-                }
-
-                else -> {
-                    AssessmentsScreenContentPublished(
-                        viewModel = viewModel,
-                        verticalScroll = verticalScroll,
-                        onPublishedAssessmentOptions = onPublishedAssessmentOptions,
-                        onSelectAssessment = onSelectAssessment,
-                    )
+                    else -> {
+                        AssessmentsScreenContentPublished(
+                            viewModel = viewModel,
+                            onPublishedAssessmentOptions = onPublishedAssessmentOptions,
+                            onSelectAssessment = onSelectAssessment,
+                            maxHeight = maxHeight
+                        )
+                    }
                 }
             }
         }
@@ -402,7 +465,6 @@ fun DraftAssessmentBottomSheetContent(
         }
     }
 }
-
 
 
 enum class PublishedAssessmentBottomSheetOption(val label: String, val icon: Int) {

@@ -28,6 +28,7 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.AssessmentModel
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentSubjectRow
 import com.vanguard.classifiadmin.ui.screens.assessments.DateIcon
 import com.vanguard.classifiadmin.ui.theme.Black100
@@ -92,7 +93,9 @@ fun AssessmentItem(
                 overflow = TextOverflow.Ellipsis,
             )
 
-            if (assessment.endTime != null) {
+            /*todo; determine expiry */
+            if (assessment.endTime != null &&
+                assessment.state != AssessmentState.Draft.name) {
                 Text(
                     text = stringResource(id = R.string.closed).uppercase(),
                     fontSize = 14.sp,

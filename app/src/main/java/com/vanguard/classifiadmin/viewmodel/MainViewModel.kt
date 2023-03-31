@@ -717,6 +717,88 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(AssessmentCreationMessage.NoMessage as AssessmentCreationMessage)
     val assessmentCreationMessage: StateFlow<AssessmentCreationMessage> = _assessmentCreationMessage
 
+    private var _verifiedAssessmentsDraftNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val verifiedAssessmentsDraftNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _verifiedAssessmentsDraftNetwork
+
+    private var _verifiedAssessmentsDraftForClassNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val verifiedAssessmentsDraftForClassNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _verifiedAssessmentsDraftForClassNetwork
+
+    private var _verifiedAssessmentsInReviewNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val verifiedAssessmentsInReviewNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _verifiedAssessmentsInReviewNetwork
+
+    private var _verifiedAssessmentsInReviewForClassNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val verifiedAssessmentsInReviewForClassNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _verifiedAssessmentsInReviewForClassNetwork
+
+    private var _verifiedAssessmentsPublishedNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val verifiedAssessmentsPublishedNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _verifiedAssessmentsPublishedNetwork
+
+    private var _verifiedAssessmentsPublishedForClassNetwork =
+        MutableStateFlow(Resource.Loading<List<AssessmentNetworkModel>>() as Resource<List<AssessmentNetworkModel>>)
+    val verifiedAssessmentsPublishedForClassNetwork: StateFlow<Resource<List<AssessmentNetworkModel>>> =
+        _verifiedAssessmentsPublishedForClassNetwork
+
+
+    fun getVerifiedAssessmentsDraftForClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedAssessmentsDraftForClassNetwork(classId, schoolId){
+            _verifiedAssessmentsDraftForClassNetwork.value = it
+        }
+    }
+
+    fun getVerifiedAssessmentsInReviewForClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedAssessmentsInReviewForClassNetwork(classId, schoolId){
+            _verifiedAssessmentsInReviewForClassNetwork.value = it
+        }
+    }
+
+    fun getVerifiedAssessmentsPublishedForClassNetwork(
+        classId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedAssessmentsPublishedForClassNetwork(classId, schoolId){
+            _verifiedAssessmentsPublishedForClassNetwork.value = it
+        }
+    }
+
+    fun getVerifiedAssessmentsDraftNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedAssessmentsDraftNetwork(schoolId){
+            _verifiedAssessmentsDraftNetwork.value = it
+        }
+    }
+
+    fun getVerifiedAssessmentsInReviewNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedAssessmentsInReviewNetwork(schoolId){
+            _verifiedAssessmentsInReviewNetwork.value = it
+        }
+    }
+
+    fun getVerifiedAssessmentsPublishedNetwork(
+        schoolId: String,
+    ) = effect {
+        repository.getVerifiedAssessmentsPublishedNetwork(schoolId){
+            _verifiedAssessmentsPublishedNetwork.value = it
+        }
+    }
+
     fun onAssessmentCreationMessageChanged(message: AssessmentCreationMessage) = effect {
         _assessmentCreationMessage.value = message
     }

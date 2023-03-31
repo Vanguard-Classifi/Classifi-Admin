@@ -14,6 +14,7 @@ import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserRole
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -1591,6 +1592,156 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionAssessments)
                 .whereEqualTo("verified", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<AssessmentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<AssessmentNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch assessments")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedAssessmentsDraftNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionAssessments)
+                .whereEqualTo("verified", true)
+                .whereEqualTo("state", AssessmentState.Draft.name)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<AssessmentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<AssessmentNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch assessments")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedAssessmentsDraftForClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionAssessments)
+                .whereEqualTo("verified", true)
+                .whereEqualTo("state", AssessmentState.Draft.name)
+                .whereArrayContains("assignedClasses", classId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<AssessmentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<AssessmentNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch assessments")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedAssessmentsInReviewNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionAssessments)
+                .whereEqualTo("verified", true)
+                .whereEqualTo("state", AssessmentState.InReview.name)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<AssessmentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<AssessmentNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch assessments")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedAssessmentsInReviewForClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionAssessments)
+                .whereEqualTo("verified", true)
+                .whereEqualTo("state", AssessmentState.InReview.name)
+                .whereArrayContains("assignedClasses", classId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<AssessmentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<AssessmentNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch assessments")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedAssessmentsPublishedNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionAssessments)
+                .whereEqualTo("verified", true)
+                .whereEqualTo("state", AssessmentState.Published.name)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<AssessmentNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<AssessmentNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener { onResult(Resource.Error("Could not fetch assessments")) }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getVerifiedAssessmentsPublishedForClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionAssessments)
+                .whereEqualTo("verified", true)
+                .whereEqualTo("state", AssessmentState.Published.name)
+                .whereArrayContains("assignedClasses", classId)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<AssessmentNetworkModel>()

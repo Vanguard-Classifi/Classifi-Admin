@@ -147,7 +147,7 @@ fun NavGraph(
                 onManageClass = { navController.navigate(Destinations.manageClass) },
                 goToAssessmentReport = { navController.navigate(Destinations.assessmentReport) },
                 goToAssessmentReview = { navController.navigate(Destinations.assessmentReview) },
-                goToModifyAssessment = { navController.navigate(Destinations.modifyAssessment) },
+                goToModifyAssessment = { navController.navigate(Destinations.assessmentCreation) },
                 onLogin = { navController.navigate(Destinations.login) },
                 onFeedDetail = { navController.navigate(Destinations.feedDetail) },
                 onStudentDetail = { navController.navigate(Destinations.studentDetail) },

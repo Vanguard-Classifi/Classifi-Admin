@@ -125,6 +125,9 @@ fun AssessmentCreationScreen(
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         delay(1000)
+        /*todo; get the selected assessment when clicked
+           from an existing assesment else get the staged
+            assessment */
         //find the staged assessment
         viewModel.getStagedAssessmentsNetwork(
             currentUserIdPref.orEmpty(),

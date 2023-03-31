@@ -354,6 +354,39 @@ interface FirestoreManager {
         onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
     )
 
+    suspend fun getVerifiedAssessmentsDraftNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedAssessmentsDraftForClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedAssessmentsInReviewNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedAssessmentsInReviewForClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedAssessmentsPublishedNetwork(
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
+    suspend fun getVerifiedAssessmentsPublishedForClassNetwork(
+        classId: String,
+        schoolId: String,
+        onResult: (Resource<List<AssessmentNetworkModel>>) -> Unit
+    )
+
     suspend fun getAssessmentByIdNetwork(
         assessmentId: String,
         schoolId: String,
