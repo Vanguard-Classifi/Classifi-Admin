@@ -44,6 +44,7 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionMessage
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionCreationOpenMode
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionDifficulty
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOption
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
@@ -759,6 +760,14 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(Resource.Loading<List<QuestionNetworkModel>>() as Resource<List<QuestionNetworkModel>>)
     val verifiedQuestionsByAssessmentNetwork: StateFlow<Resource<List<QuestionNetworkModel>>> =
         _verifiedQuestionsByAssessmentNetwork
+
+    private var _questionCreationOpenMode =
+        MutableStateFlow(QuestionCreationOpenMode.Editor as QuestionCreationOpenMode)
+    val questionCreationOpenMode: StateFlow<QuestionCreationOpenMode> = _questionCreationOpenMode
+
+    fun onQuestionCreationOpenModeChanged(mode: QuestionCreationOpenMode) = effect {
+        _questionCreationOpenMode.value = mode
+    }
 
     fun getVerifiedQuestionsByAssessmentNetwork(
         assessmentId: String,

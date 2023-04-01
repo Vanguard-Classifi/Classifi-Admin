@@ -54,6 +54,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
+import com.vanguard.classifiadmin.data.local.models.QuestionModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.toSimpleDate
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithInfo
@@ -81,6 +82,7 @@ fun AssessmentCreationScreen(
     onBack: () -> Unit,
     onCreateQuestion: () -> Unit,
     onImportQuestion: () -> Unit,
+    onEditQuestion: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
@@ -188,13 +190,20 @@ fun AssessmentCreationScreen(
 
                         },
                         maxHeight = maxHeight,
-                        onSelect = {
+                        onSelectAddQuestionFeature = {
                             if (it == AssessmentCreationAddQuestionFeature.CreateQuestion) {
                                 onCreateQuestion()
                             } else {
                                 onImportQuestion()
                             }
                         },
+                        onSelectQuestionOptionFeature = {
+                            if(it == AssessmentCreationQuestionOptionFeature.DeleteQuestion){
+                                /*todo: on delete question  */
+                            } else {
+                                onEditQuestion()
+                            }
+                        }
                     )
                 },
                 content = {
@@ -264,6 +273,15 @@ fun AssessmentCreationScreen(
                                 onCreateQuestion = onCreateQuestion,
                                 onImportQuestion = onImportQuestion,
                                 viewModel = viewModel,
+                                onQuestionOptions = {
+                                    viewModel.onAssessmentCreationBottomSheetModeChanged(
+                                        AssessmentCreationBottomSheetMode.QuestionOptions
+                                    )
+                                    coroutineScope.launch {
+                                        showModalSheet.value = true
+                                        sheetState.show()
+                                    }
+                                }
                             )
                         },
                         bottomBar = {
@@ -297,6 +315,7 @@ fun AssessmentCreationScreenContent(
     onAddQuestion: () -> Unit,
     onCreateQuestion: () -> Unit,
     onImportQuestion: () -> Unit,
+    onQuestionOptions: (QuestionModel) -> Unit,
 ) {
     val TAG = "AssessmentCreationScreenContent"
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
@@ -389,6 +408,9 @@ fun AssessmentCreationScreenContent(
                                     items(stagedQuestionsNetwork.data!!) { question ->
                                         QuestionItemAssessmentCreation(
                                             question = question.toLocal(),
+                                            onOptions = {
+                                               onQuestionOptions(it)
+                                            }
                                         )
                                     }
                                 }
@@ -426,6 +448,9 @@ fun AssessmentCreationScreenContent(
                                     items(verifiedQuestionsByAssessmentNetwork.data!!) { question ->
                                         QuestionItemAssessmentCreation(
                                             question = question.toLocal(),
+                                            onOptions = {
+                                                onQuestionOptions(it)
+                                            }
                                         )
                                     }
                                 }
@@ -606,11 +631,17 @@ private fun CreateAssessmentBottomBarConstraints(margin: Dp): ConstraintSet {
 sealed class AssessmentCreationBottomSheetMode {
     object AddQuestion : AssessmentCreationBottomSheetMode()
     object Info : AssessmentCreationBottomSheetMode()
+    object QuestionOptions: AssessmentCreationBottomSheetMode()
 }
 
 enum class AssessmentCreationAddQuestionFeature(val title: String, val icon: Int) {
     CreateQuestion("Create Question", R.drawable.icon_add),
     ImportQuestion("Import Question", R.drawable.icon_import)
+}
+
+enum class AssessmentCreationQuestionOptionFeature(val title: String, val icon: Int){
+    EditQuestion("Edit Question", R.drawable.icon_edit),
+    DeleteQuestion("Delete Question", R.drawable.icon_delete)
 }
 
 sealed class AssessmentCreationOpenMode {

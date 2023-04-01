@@ -406,7 +406,8 @@ fun NavGraph(
                 viewModel = viewModel,
                 onBack = { navController.navigate(Destinations.dashboard) },
                 onCreateQuestion = { navController.navigate(Destinations.createQuestion) },
-                onImportQuestion = {/*todo: on Import Question*/ }
+                onImportQuestion = {/*todo: on Import Question*/ },
+                onEditQuestion = { navController.navigate(Destinations.createQuestion) }
             )
         }
 

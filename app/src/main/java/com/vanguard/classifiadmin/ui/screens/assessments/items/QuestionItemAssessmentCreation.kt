@@ -42,6 +42,7 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 fun QuestionItemAssessmentCreation(
     modifier: Modifier = Modifier,
     question: QuestionModel,
+    onOptions: (QuestionModel) -> Unit,
 ) {
     val TAG = "QuestionItemAssessmentCreation"
     val innerModifier = Modifier
@@ -78,7 +79,7 @@ fun QuestionItemAssessmentCreation(
                 )
 
                 RoundedIconButton(
-                    onClick = {},
+                    onClick = { onOptions(question) },
                     tint = Black100,
                     modifier = innerModifier.layoutId("more"),
                     icon = R.drawable.icon_options_horizontal
@@ -132,28 +133,30 @@ fun QuestionItemAssessmentCreation(
                 .fillMaxWidth()
                 .padding(top = 16.dp),
             contentAlignment = Alignment.TopStart
-        ){
-           Surface(
-               modifier = modifier,
-               color = MaterialTheme.colors.primary,
-               shape = RoundedCornerShape(
-                   topEndPercent = 50,
-                   bottomEndPercent = 50,
-               )
-           ){
-               Box(modifier = modifier
-                   .height(28.dp)
-                   .widthIn(max = 35.dp)
-                   .padding(4.dp),
-                   contentAlignment = Alignment.Center){
-                   Text(
-                       text = question.position.toString(),
-                       fontWeight = FontWeight.Bold,
-                       fontSize = 12.sp,
-                       color = MaterialTheme.colors.onPrimary,
-                   )
-               }
-           }
+        ) {
+            Surface(
+                modifier = modifier,
+                color = MaterialTheme.colors.primary,
+                shape = RoundedCornerShape(
+                    topEndPercent = 50,
+                    bottomEndPercent = 50,
+                )
+            ) {
+                Box(
+                    modifier = modifier
+                        .height(28.dp)
+                        .widthIn(max = 35.dp)
+                        .padding(4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = question.position.toString(),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colors.onPrimary,
+                    )
+                }
+            }
         }
     }
 }
@@ -196,6 +199,7 @@ private fun QuestionItemAssessmentCreationPreview() {
             optionD = "A place to sleep",
             answers = arrayListOf("The meaning is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate is indeterminate"),
 
-            )
+            ),
+        onOptions = {}
     )
 }

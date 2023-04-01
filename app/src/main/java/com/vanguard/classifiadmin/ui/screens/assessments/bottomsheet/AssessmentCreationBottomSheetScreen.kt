@@ -24,7 +24,9 @@ import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.NoDataInline
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationAddQuestionFeature
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationBottomSheetMode
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationQuestionOptionFeature
 import com.vanguard.classifiadmin.ui.screens.assessments.items.AssessmentCreationAddQuestionFeatureItem
+import com.vanguard.classifiadmin.ui.screens.assessments.items.AssessmentCreationQuestionOptionItem
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
@@ -34,9 +36,12 @@ fun AssessmentCreationBottomSheetScreen(
     viewModel: MainViewModel,
     onDone: () -> Unit,
     maxHeight: Dp,
-    onSelect: (AssessmentCreationAddQuestionFeature) -> Unit,
+    onSelectAddQuestionFeature: (AssessmentCreationAddQuestionFeature) -> Unit,
     addQuestionFeatures: List<AssessmentCreationAddQuestionFeature> =
         AssessmentCreationAddQuestionFeature.values().toList(),
+    questionOptions: List<AssessmentCreationQuestionOptionFeature> =
+        AssessmentCreationQuestionOptionFeature.values().toList(),
+    onSelectQuestionOptionFeature: (AssessmentCreationQuestionOptionFeature) -> Unit,
 ) {
     val mode by viewModel.assessmentCreationBottomSheetMode.collectAsState()
     val stagedAssessmentsNetwork by viewModel.stagedAssessmentsNetwork.collectAsState()
@@ -67,7 +72,7 @@ fun AssessmentCreationBottomSheetScreen(
                 addQuestionFeatures.forEach { feature ->
                     AssessmentCreationAddQuestionFeatureItem(
                         feature = feature,
-                        onSelect = onSelect,
+                        onSelect = onSelectAddQuestionFeature,
                     )
                 }
             }
@@ -92,6 +97,15 @@ fun AssessmentCreationBottomSheetScreen(
                     is Resource.Error -> {
                         NoDataInline(message = stringResource(id = R.string.could_not_load_assessment))
                     }
+                }
+            }
+
+            is AssessmentCreationBottomSheetMode.QuestionOptions -> {
+                questionOptions.forEach { option ->
+                    AssessmentCreationQuestionOptionItem(
+                        onSelect = onSelectQuestionOptionFeature,
+                        feature = option,
+                    )
                 }
             }
         }

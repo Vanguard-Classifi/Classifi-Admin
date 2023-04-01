@@ -276,6 +276,7 @@ fun CreateQuestionScreenContent(
     val openMode by viewModel.assessmentCreationOpenMode.collectAsState()
     val currentAssessmentIdDraft by viewModel.currentAssessmentIdDraft.collectAsState()
     val assessmentByIdNetwork by viewModel.assessmentByIdNetwork.collectAsState()
+    val questionOpenMode by viewModel.questionCreationOpenMode.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -292,6 +293,12 @@ fun CreateQuestionScreenContent(
                 currentAssessmentIdDraft.orEmpty(),
                 currentSchoolIdPref.orEmpty(),
             )
+        }
+
+        if(questionOpenMode is QuestionCreationOpenMode.Editor) {
+            //open the selected question
+        } else {
+
         }
     }
 
@@ -732,6 +739,10 @@ sealed class CreateQuestionBottomSheetMode {
     object Score : CreateQuestionBottomSheetMode()
 }
 
+sealed class QuestionCreationOpenMode {
+    object Creator: QuestionCreationOpenMode()
+    object Editor: QuestionCreationOpenMode()
+}
 
 enum class QuestionDifficulty {
     Easy,
