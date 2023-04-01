@@ -66,12 +66,12 @@ fun QuestionItemAssessmentCreation(
             shape = RoundedCornerShape(8.dp)
         ) {
             ConstraintLayout(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
                 constraintSet = constraints,
             ) {
                 Text(
                     text = question.text.orEmpty(),
-                    fontSize = 12.sp,
+                    fontSize = 13.sp,
                     color = Black100,
                     modifier = innerModifier
                         .layoutId("question")
@@ -140,12 +140,14 @@ fun QuestionItemAssessmentCreation(
                 shape = RoundedCornerShape(
                     topEndPercent = 50,
                     bottomEndPercent = 50,
+                    topStartPercent = 8,
+                    bottomStartPercent = 8
                 )
             ) {
                 Box(
                     modifier = modifier
                         .height(28.dp)
-                        .widthIn(max = 35.dp)
+                        .width(35.dp)
                         .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {

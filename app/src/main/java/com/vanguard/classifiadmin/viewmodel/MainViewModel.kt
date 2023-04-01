@@ -44,7 +44,6 @@ import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionBottomSheetMode
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionMessage
-import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionCreationOpenMode
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionDifficulty
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOption
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
@@ -684,8 +683,8 @@ class MainViewModel @Inject constructor(
     private var _questionScoreCreateQuestion = MutableStateFlow(null as String?)
     var questionScoreCreateQuestion: StateFlow<String?> = _questionScoreCreateQuestion
 
-    private var _questionDurationCreateQuestion = MutableStateFlow(null as String?)
-    var questionDurationCreateQuestion: StateFlow<String?> = _questionDurationCreateQuestion
+    private var _assessmentDurationCreateQuestion = MutableStateFlow(null as String?)
+    var assessmentDurationCreateQuestion: StateFlow<String?> = _assessmentDurationCreateQuestion
 
     private var _questionAnswersCreateQuestion = MutableStateFlow(mutableListOf<String>())
     var questionAnswersCreateQuestion: StateFlow<List<String>> = _questionAnswersCreateQuestion
@@ -761,12 +760,11 @@ class MainViewModel @Inject constructor(
     val verifiedQuestionsByAssessmentNetwork: StateFlow<Resource<List<QuestionNetworkModel>>> =
         _verifiedQuestionsByAssessmentNetwork
 
-    private var _questionCreationOpenMode =
-        MutableStateFlow(QuestionCreationOpenMode.Editor as QuestionCreationOpenMode)
-    val questionCreationOpenMode: StateFlow<QuestionCreationOpenMode> = _questionCreationOpenMode
+    private var _selectedQuestionIdCreateQuestion = MutableStateFlow(null as String?)
+    val selectedQuestionIdCreateQuestion: StateFlow<String?> = _selectedQuestionIdCreateQuestion
 
-    fun onQuestionCreationOpenModeChanged(mode: QuestionCreationOpenMode) = effect {
-        _questionCreationOpenMode.value = mode
+    fun onSelectedQuestionIdCreateQuestionChanged(questionId: String?) = effect {
+        _selectedQuestionIdCreateQuestion.value = questionId
     }
 
     fun getVerifiedQuestionsByAssessmentNetwork(
@@ -958,8 +956,8 @@ class MainViewModel @Inject constructor(
         _questionAnswersCreateQuestion.value.clear()
     }
 
-    fun onQuestionDurationCreateQuestionChanged(duration: String?) = effect {
-        _questionDurationCreateQuestion.value = duration
+    fun onAssessmentDurationCreateQuestionChanged(duration: String?) = effect {
+        _assessmentDurationCreateQuestion.value = duration
     }
 
     fun onQuestionScoreCreateQuestionChanged(score: String?) = effect {

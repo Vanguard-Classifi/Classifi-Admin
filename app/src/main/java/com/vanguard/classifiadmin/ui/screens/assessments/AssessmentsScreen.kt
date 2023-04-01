@@ -104,17 +104,6 @@ fun AssessmentsScreenContent(
         viewModel.getCurrentUserRolePref()
         viewModel.getCurrentClassFeedPref()
         delay(1000)
-        //delete all staged assessments
-        viewModel.deleteStagedQuestionsByUserNetwork(
-            currentUserIdPref.orEmpty(),
-            currentSchoolIdPref.orEmpty(),
-            onResult = {}
-        )
-        viewModel.deleteStagedAssessmentsByUserNetwork(
-            currentUserIdPref.orEmpty(),
-            currentSchoolIdPref.orEmpty(),
-            onResult = {}
-        )
 
         when (currentUserRolePref) {
             UserRole.Teacher.name -> {

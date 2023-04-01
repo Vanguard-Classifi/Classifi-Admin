@@ -93,70 +93,32 @@ fun AssessmentCreationScreen(
     val coroutineScope = rememberCoroutineScope()
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
-    val stagedAssessmentsNetwork by viewModel.stagedAssessmentsNetwork.collectAsState()
-    val stagedQuestionsNetwork by viewModel.stagedQuestionsNetwork.collectAsState()
     val message by viewModel.assessmentCreationMessage.collectAsState()
     val openMode by viewModel.assessmentCreationOpenMode.collectAsState()
     val currentAssessmentIdDraft by viewModel.currentAssessmentIdDraft.collectAsState()
     val assessmentByIdNetwork by viewModel.assessmentByIdNetwork.collectAsState()
-    val heading: String = when(openMode) {
-        AssessmentCreationOpenMode.Creator -> {
-            remember(stagedAssessmentsNetwork.data) {
-                if (stagedAssessmentsNetwork is Resource.Success &&
-                    stagedAssessmentsNetwork.data?.isNotEmpty() == true
-                ) {
-                    "${stagedAssessmentsNetwork.data?.first()?.name}"
-                } else ""
-            }
-        }
-        AssessmentCreationOpenMode.Editor -> {
-          remember(assessmentByIdNetwork.data){
-              if(assessmentByIdNetwork is Resource.Success &&
-                      assessmentByIdNetwork.data != null){
-                  "${assessmentByIdNetwork.data?.name}"
-              } else ""
-          }
-        }
+    val heading: String = remember(assessmentByIdNetwork.data){
+        if(assessmentByIdNetwork is Resource.Success &&
+            assessmentByIdNetwork.data != null){
+            "${assessmentByIdNetwork.data?.name}"
+        } else ""
     }
 
-    val subheading: String = when(openMode){
-        AssessmentCreationOpenMode.Creator -> {
-            remember(stagedAssessmentsNetwork.data) {
-                if (stagedAssessmentsNetwork is Resource.Success &&
-                    stagedAssessmentsNetwork.data?.isNotEmpty() == true
-                ) {
-                    "${stagedAssessmentsNetwork.data?.first()?.startDate?.toSimpleDate()} - ${stagedAssessmentsNetwork.data?.first()?.endDate?.toSimpleDate()}"
-                } else ""
-            }
-        }
-        AssessmentCreationOpenMode.Editor -> {
-            remember(assessmentByIdNetwork.data){
-                if(assessmentByIdNetwork is Resource.Success &&
-                    assessmentByIdNetwork.data != null){
-                    "${assessmentByIdNetwork.data?.startDate?.toSimpleDate()} - ${assessmentByIdNetwork.data?.endDate?.toSimpleDate()}"
-                } else ""
-            }
-        }
+    val subheading: String = remember(assessmentByIdNetwork.data){
+        if(assessmentByIdNetwork is Resource.Success &&
+            assessmentByIdNetwork.data != null){
+            "${assessmentByIdNetwork.data?.startDate?.toSimpleDate()} - ${assessmentByIdNetwork.data?.endDate?.toSimpleDate()}"
+        } else ""
     }
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         delay(1000)
-        if(openMode is AssessmentCreationOpenMode.Creator) {
-            //find the staged assessment
-            viewModel.getStagedAssessmentsNetwork(
-                currentUserIdPref.orEmpty(),
-                currentSchoolIdPref.orEmpty()
-            )
-        } else {
-            //get selected assessment in draft
-            viewModel.getAssessmentByIdNetwork(
-                currentAssessmentIdDraft.orEmpty(),
-                currentSchoolIdPref.orEmpty()
-            )
-        }
-
+        viewModel.getAssessmentByIdNetwork(
+            currentAssessmentIdDraft.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
     }
 
     LaunchedEffect(message){
@@ -192,6 +154,9 @@ fun AssessmentCreationScreen(
                         maxHeight = maxHeight,
                         onSelectAddQuestionFeature = {
                             if (it == AssessmentCreationAddQuestionFeature.CreateQuestion) {
+                                viewModel.onAssessmentCreationOpenModeChanged(
+                                    AssessmentCreationOpenMode.Creator
+                                )
                                 onCreateQuestion()
                             } else {
                                 onImportQuestion()
@@ -201,6 +166,9 @@ fun AssessmentCreationScreen(
                             if(it == AssessmentCreationQuestionOptionFeature.DeleteQuestion){
                                 /*todo: on delete question  */
                             } else {
+                                viewModel.onAssessmentCreationOpenModeChanged(
+                                    AssessmentCreationOpenMode.Editor
+                                )
                                 onEditQuestion()
                             }
                         }
@@ -212,35 +180,7 @@ fun AssessmentCreationScreen(
                         topBar = {
                             ChildTopBarWithInfo(
                                 onBack = {
-                                    if (stagedQuestionsNetwork is Resource.Success &&
-                                        stagedQuestionsNetwork.data?.isNotEmpty() == true
-                                    ) {
-                                        coroutineScope.launch {
-                                            stagedQuestionsNetwork.data?.forEach { question ->
-                                                viewModel.saveQuestionAsVerifiedNetwork(
-                                                    question,
-                                                    onResult = {}
-                                                )
-                                            }
-                                            if (stagedAssessmentsNetwork is Resource.Success &&
-                                                stagedAssessmentsNetwork.data?.isNotEmpty() == true
-                                            ) {
-                                                //save as draft
-                                                stagedAssessmentsNetwork.data?.first()!!.state =
-                                                    AssessmentState.Draft.name
-                                                viewModel.saveAssessmentAsVerifiedNetwork(
-                                                    stagedAssessmentsNetwork.data?.first()!!,
-                                                    onResult = {}
-                                                )
-                                                //show dialog message
-                                                viewModel.onAssessmentCreationMessageChanged(
-                                                    AssessmentCreationMessage.SaveAssessmentToDraft
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        onBack()
-                                    }
+                                    onBack()
                                 },
                                 onInfo = {
                                     viewModel.onAssessmentCreationBottomSheetModeChanged(
@@ -270,7 +210,12 @@ fun AssessmentCreationScreen(
                                         sheetState.show()
                                     }
                                 },
-                                onCreateQuestion = onCreateQuestion,
+                                onCreateQuestion = {
+                                    viewModel.onAssessmentCreationOpenModeChanged(
+                                        AssessmentCreationOpenMode.Creator
+                                    )
+                                    onCreateQuestion()
+                                                   },
                                 onImportQuestion = onImportQuestion,
                                 viewModel = viewModel,
                                 onQuestionOptions = {
@@ -287,10 +232,10 @@ fun AssessmentCreationScreen(
                         bottomBar = {
                             CreateAssessmentBottomBar(
                                 onClose = {
-
+                                    onBack()
                                 },
                                 onDelete = {
-
+                                    /*todo; on delete current assessment*/
                                 },
                                 onPublish = {
 
@@ -320,32 +265,17 @@ fun AssessmentCreationScreenContent(
     val TAG = "AssessmentCreationScreenContent"
     val currentSchoolIdPref by viewModel.currentSchoolIdPref.collectAsState()
     val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
-    val stagedQuestionsNetwork by viewModel.stagedQuestionsNetwork.collectAsState()
     val openMode by viewModel.assessmentCreationOpenMode.collectAsState()
     val currentAssessmentIdDraft by viewModel.currentAssessmentIdDraft.collectAsState()
     val assessmentByIdNetwork by viewModel.assessmentByIdNetwork.collectAsState()
-    val stagedAssessmentsNetwork by viewModel.stagedAssessmentsNetwork.collectAsState()
     val verifiedQuestionsByAssessmentNetwork by viewModel.verifiedQuestionsByAssessmentNetwork.collectAsState()
 
 
-    val totalQuestions = when(openMode) {
-        AssessmentCreationOpenMode.Creator -> {
-            remember(stagedAssessmentsNetwork.data) {
-                if (stagedAssessmentsNetwork is Resource.Success &&
-                    stagedAssessmentsNetwork.data?.isNotEmpty() == true
-                ) {
-                    "Questions (${stagedAssessmentsNetwork.data?.first()?.questionIds?.size})"
-                } else "Questions (0)"
-            }
-        }
-        AssessmentCreationOpenMode.Editor -> {
-            remember(assessmentByIdNetwork.data){
-                if(assessmentByIdNetwork is Resource.Success &&
-                    assessmentByIdNetwork.data != null){
-                    "Questions (${assessmentByIdNetwork.data?.questionIds?.size})"
-                } else "Questions (0)"
-            }
-        }
+    val totalQuestions = remember(assessmentByIdNetwork.data){
+        if(assessmentByIdNetwork is Resource.Success &&
+            assessmentByIdNetwork.data != null){
+            "Questions (${assessmentByIdNetwork.data?.questionIds?.size})"
+        } else "Questions (0)"
     }
 
     //get all staged questions
@@ -353,20 +283,10 @@ fun AssessmentCreationScreenContent(
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUserIdPref()
         delay(1000)
-        if(openMode is AssessmentCreationOpenMode.Creator){
-            Log.e(TAG, "AssessmentCreationScreenContent: Assessment Creator mode activated")
-            viewModel.getStagedQuestionsNetwork(
-                currentSchoolIdPref.orEmpty(),
-                currentUserIdPref.orEmpty()
-            )
-        } else {
-            Log.e(TAG, "AssessmentCreationScreenContent: Assessment Editor mode activated")
-            //get selected assessment questions in draft
-           viewModel.getVerifiedQuestionsByAssessmentNetwork(
-               currentAssessmentIdDraft.orEmpty(),
-               currentSchoolIdPref.orEmpty(),
-           )
-        }
+        viewModel.getVerifiedQuestionsByAssessmentNetwork(
+            currentAssessmentIdDraft.orEmpty(),
+            currentSchoolIdPref.orEmpty(),
+        )
     }
 
     BoxWithConstraints(modifier = Modifier) {
@@ -395,85 +315,45 @@ fun AssessmentCreationScreenContent(
 
             Divider(modifier = modifier.fillMaxWidth())
 
-            when(openMode){
-                AssessmentCreationOpenMode.Creator -> {
-                    when (stagedQuestionsNetwork) {
-                        is Resource.Loading -> {
-                            LoadingScreen(maxHeight = maxHeight)
-                        }
+            when (verifiedQuestionsByAssessmentNetwork) {
+                is Resource.Loading -> {
+                    LoadingScreen(maxHeight = maxHeight)
+                }
 
-                        is Resource.Success -> {
-                            if (stagedQuestionsNetwork.data?.isNotEmpty() == true) {
-                                LazyColumn(modifier = modifier, state = rememberLazyListState()) {
-                                    items(stagedQuestionsNetwork.data!!) { question ->
-                                        QuestionItemAssessmentCreation(
-                                            question = question.toLocal(),
-                                            onOptions = {
-                                               onQuestionOptions(it)
-                                            }
+                is Resource.Success -> {
+                    if (verifiedQuestionsByAssessmentNetwork.data?.isNotEmpty() == true) {
+                        Log.e(TAG, "AssessmentCreationScreenContent: the size of questions ${verifiedQuestionsByAssessmentNetwork.data?.size}")
+                        LazyColumn(modifier = modifier, state = rememberLazyListState()) {
+                            items(verifiedQuestionsByAssessmentNetwork.data!!) { question ->
+                                QuestionItemAssessmentCreation(
+                                    question = question.toLocal(),
+                                    onOptions = {
+                                        viewModel.onSelectedQuestionIdCreateQuestionChanged(
+                                            it.questionId
                                         )
+                                        onQuestionOptions(it)
                                     }
-                                }
-                            } else {
-                                Log.e(TAG, "AssessmentCreationScreenContent: no staged questions")
-                                NoQuestionPageAssessmentCreation(
-                                    onCreateQuestion = onCreateQuestion,
-                                    onImportQuestion = onImportQuestion
                                 )
                             }
                         }
-
-                        is Resource.Error -> {
-                            Log.e(
-                                TAG,
-                                "AssessmentCreationScreenContent: an error occurred on staged questions",
-                            )
-                            NoQuestionPageAssessmentCreation(
-                                onCreateQuestion = onCreateQuestion,
-                                onImportQuestion = onImportQuestion
-                            )
-                        }
+                    } else {
+                        Log.e(TAG, "AssessmentCreationScreenContent: no questions")
+                        NoQuestionPageAssessmentCreation(
+                            onCreateQuestion = onCreateQuestion,
+                            onImportQuestion = onImportQuestion
+                        )
                     }
                 }
-                AssessmentCreationOpenMode.Editor -> {
-                    when (verifiedQuestionsByAssessmentNetwork) {
-                        is Resource.Loading -> {
-                            LoadingScreen(maxHeight = maxHeight)
-                        }
 
-                        is Resource.Success -> {
-                            if (verifiedQuestionsByAssessmentNetwork.data?.isNotEmpty() == true) {
-                                Log.e(TAG, "AssessmentCreationScreenContent: the size of questions ${verifiedQuestionsByAssessmentNetwork.data?.size}")
-                                LazyColumn(modifier = modifier, state = rememberLazyListState()) {
-                                    items(verifiedQuestionsByAssessmentNetwork.data!!) { question ->
-                                        QuestionItemAssessmentCreation(
-                                            question = question.toLocal(),
-                                            onOptions = {
-                                                onQuestionOptions(it)
-                                            }
-                                        )
-                                    }
-                                }
-                            } else {
-                                Log.e(TAG, "AssessmentCreationScreenContent: no questions")
-                                NoQuestionPageAssessmentCreation(
-                                    onCreateQuestion = onCreateQuestion,
-                                    onImportQuestion = onImportQuestion
-                                )
-                            }
-                        }
-
-                        is Resource.Error -> {
-                            Log.e(
-                                TAG,
-                                "AssessmentCreationScreenContent: an error occurred on questions",
-                            )
-                            NoQuestionPageAssessmentCreation(
-                                onCreateQuestion = onCreateQuestion,
-                                onImportQuestion = onImportQuestion
-                            )
-                        }
-                    }
+                is Resource.Error -> {
+                    Log.e(
+                        TAG,
+                        "AssessmentCreationScreenContent: an error occurred on questions",
+                    )
+                    NoQuestionPageAssessmentCreation(
+                        onCreateQuestion = onCreateQuestion,
+                        onImportQuestion = onImportQuestion
+                    )
                 }
             }
         }

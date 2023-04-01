@@ -35,7 +35,7 @@ fun QuestionDurationBottomSheetContent(
     viewModel: MainViewModel,
     onClose: () -> Unit,
 ) {
-    val questionDurationCreateQuestion by viewModel.questionDurationCreateQuestion.collectAsState()
+    val questionDurationCreateQuestion by viewModel.assessmentDurationCreateQuestion.collectAsState()
 
     Surface(modifier = modifier) {
         Column(
@@ -53,7 +53,7 @@ fun QuestionDurationBottomSheetContent(
                         RoundedCornerShape(8.dp)
                     ),
                 value = questionDurationCreateQuestion.orZeroString(),
-                onValueChange = viewModel::onQuestionDurationCreateQuestionChanged,
+                onValueChange = viewModel::onAssessmentDurationCreateQuestionChanged,
                 placeholder = {
                     Text(
                         text = stringResource(id = R.string.assessment_duration),
