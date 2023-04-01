@@ -21,6 +21,7 @@ data class QuestionNetworkModel(
     var topicId: String? = null,
     var topicName: String? = null,
     var verified: Boolean? = null,
+    var position: Int? = null,
     var lastModified: String? = null,
 ) {
     fun toLocal() = QuestionModel(
@@ -41,5 +42,8 @@ data class QuestionNetworkModel(
         essayWordLimit = essayWordLimit,
         topicId = topicId,
         topicName = topicName,
+        verified = verified,
+        position = position,
+        lastModified = lastModified,
     )
 }

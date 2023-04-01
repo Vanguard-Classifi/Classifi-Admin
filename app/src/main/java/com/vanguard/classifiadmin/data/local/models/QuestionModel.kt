@@ -21,6 +21,7 @@ data class QuestionModel(
     var topicId: String? = null,
     var topicName: String? = null,
     var verified: Boolean? = null,
+    var position: Int? = null,
     var lastModified: String? = null,
 ) {
     fun toNetwork() = QuestionNetworkModel(
@@ -42,6 +43,7 @@ data class QuestionModel(
         topicId = topicId,
         topicName = topicName,
         verified = verified,
+        position = position,
         lastModified = lastModified,
     )
 }

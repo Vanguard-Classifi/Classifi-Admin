@@ -21,7 +21,7 @@ fun ShortAnswerItem(
     answer: String,
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(0.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center
     ) {
@@ -30,7 +30,7 @@ fun ShortAnswerItem(
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = Black100,
-            modifier = modifier.padding(4.dp)
+            modifier = modifier.padding(top = 4.dp, bottom = 4.dp, start = 0.dp)
         )
 
 
@@ -41,7 +41,7 @@ fun ShortAnswerItem(
             color = Black100,
             maxLines = 3,
             overflow = TextOverflow.Ellipsis,
-            modifier = modifier.padding(4.dp)
+            modifier = modifier.padding(top = 4.dp, bottom = 4.dp, start = 0.dp)
         )
 
     }

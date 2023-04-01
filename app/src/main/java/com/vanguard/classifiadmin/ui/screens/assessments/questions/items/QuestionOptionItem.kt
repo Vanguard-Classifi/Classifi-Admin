@@ -31,7 +31,7 @@ fun QuestionOptionItem(
     selected: Boolean = true,
 ) {
     Row(
-        modifier = modifier.padding(8.dp),
+        modifier = modifier.padding(0.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

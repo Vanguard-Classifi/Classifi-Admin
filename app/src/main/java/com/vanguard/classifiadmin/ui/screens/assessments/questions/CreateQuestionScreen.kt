@@ -70,6 +70,7 @@ import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SuccessBar
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentCreationOpenMode
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.bottomsheet.CreateQuestionScreenBottomSheetContent
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.boxes.QuestionBox
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.boxes.QuestionBoxTrueFalse
@@ -272,16 +273,26 @@ fun CreateQuestionScreenContent(
     val rowWidthTrueFalse = remember { mutableStateOf(0) }
     val correctAnswerTrueFalse by viewModel.correctAnswerTrueFalse.collectAsState()
     val correctShortAnswerCreateQuestion by viewModel.correctShortAnswerCreateQuestion.collectAsState()
+    val openMode by viewModel.assessmentCreationOpenMode.collectAsState()
+    val currentAssessmentIdDraft by viewModel.currentAssessmentIdDraft.collectAsState()
+    val assessmentByIdNetwork by viewModel.assessmentByIdNetwork.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         delay(1000)
         //find the staged assessment
-        viewModel.getStagedAssessmentsNetwork(
-            currentUserIdPref.orEmpty(),
-            currentSchoolIdPref.orEmpty()
-        )
+        if (openMode is AssessmentCreationOpenMode.Creator) {
+            viewModel.getStagedAssessmentsNetwork(
+                currentUserIdPref.orEmpty(),
+                currentSchoolIdPref.orEmpty()
+            )
+        } else {
+            viewModel.getAssessmentByIdNetwork(
+                currentAssessmentIdDraft.orEmpty(),
+                currentSchoolIdPref.orEmpty(),
+            )
+        }
     }
 
     BoxWithConstraints(modifier = Modifier) {
@@ -559,15 +570,26 @@ fun CreateQuestionScreenContent(
                                 val answers = ArrayList<String>()
                                 questionAnswersCreateQuestion.map { answers.add(it) }
 
-                                val parentAssessmentId =
-                                    if (stagedAssessmentsNetwork is Resource.Success &&
-                                        stagedAssessmentsNetwork.data?.isNotEmpty() == true
-                                    ) {
-                                        stagedAssessmentsNetwork.data?.first()?.assessmentId.orEmpty()
-                                    } else ""
+                                val parentAssessmentId: String = when (openMode) {
+                                    AssessmentCreationOpenMode.Creator -> {
+                                        if (stagedAssessmentsNetwork is Resource.Success &&
+                                            stagedAssessmentsNetwork.data?.isNotEmpty() == true
+                                        ) {
+                                            stagedAssessmentsNetwork.data?.first()?.assessmentId.orEmpty()
+                                        } else ""
+                                    }
 
+                                    AssessmentCreationOpenMode.Editor -> {
+                                        if(assessmentByIdNetwork is Resource.Success &&
+                                                assessmentByIdNetwork.data != null){
+                                            assessmentByIdNetwork.data?.assessmentId.orEmpty()
+                                        } else ""
+                                    }
+                                }
+
+                                val questionId = UUID.randomUUID().toString()
                                 val question = QuestionModel(
-                                    questionId = UUID.randomUUID().toString(),
+                                    questionId = questionId,
                                     parentAssessmentIds = arrayListOf(parentAssessmentId),
                                     schoolId = currentSchoolIdPref.orEmpty(),
                                     type = questionType.title,
@@ -580,8 +602,33 @@ fun CreateQuestionScreenContent(
                                     optionD = questionOptionDCreateQuestion.orEmpty(),
                                     answers = answers,
                                     lastModified = todayComputational(),
-                                    authorId = currentUserIdPref.orEmpty()
+                                    authorId = currentUserIdPref.orEmpty(),
                                 )
+
+                                //add question to assessment registry
+                                if(openMode is AssessmentCreationOpenMode.Creator){
+                                    if (stagedAssessmentsNetwork is Resource.Success &&
+                                        stagedAssessmentsNetwork.data?.isNotEmpty() == true &&
+                                        !stagedAssessmentsNetwork.data?.first()?.questionIds?.contains(questionId)!!
+                                    ) {
+                                        stagedAssessmentsNetwork.data?.first()?.questionIds?.add(questionId)
+
+                                        viewModel.saveAssessmentAsVerifiedNetwork(
+                                            stagedAssessmentsNetwork.data?.first()!!,
+                                            onResult = {}
+                                        )
+                                    }
+                                } else {
+                                    if(assessmentByIdNetwork is Resource.Success &&
+                                        assessmentByIdNetwork.data != null &&
+                                        !assessmentByIdNetwork.data?.questionIds?.contains(questionId)!!){
+                                        assessmentByIdNetwork.data?.questionIds?.add(questionId)
+
+                                        viewModel.saveAssessmentAsVerifiedNetwork(
+                                            assessmentByIdNetwork.data!!, onResult = {}
+                                        )
+                                    }
+                                }
 
                                 viewModel.saveQuestionAsStagedNetwork(question.toNetwork(),
                                     onResult = {})
@@ -599,7 +646,6 @@ fun CreateQuestionScreenContent(
         }
     }
 }
-
 
 
 @Composable
@@ -677,8 +723,6 @@ fun CreateQuestionBottomBar(
         }
     }
 }
-
-
 
 
 sealed class CreateQuestionBottomSheetMode {
