@@ -1,6 +1,12 @@
 package com.vanguard.classifiadmin.ui.screens.assessments
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,8 +54,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
@@ -61,6 +69,7 @@ import com.vanguard.classifiadmin.ui.components.ChildTopBarWithInfo
 import com.vanguard.classifiadmin.ui.components.LoadingScreen
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.components.YesNoPrompt
 import com.vanguard.classifiadmin.ui.screens.assessments.bottomsheet.AssessmentCreationBottomSheetScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.items.QuestionItemAssessmentCreation
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
@@ -74,7 +83,7 @@ import kotlinx.coroutines.launch
 
 const val ASSESSMENT_CREATION_SCREEN = "assessment_creation_screen"
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun AssessmentCreationScreen(
     modifier: Modifier = Modifier,
@@ -84,6 +93,7 @@ fun AssessmentCreationScreen(
     onImportQuestion: () -> Unit,
     onEditQuestion: () -> Unit,
 ) {
+    val TAG = "AssessmentCreationScreen"
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
@@ -97,19 +107,24 @@ fun AssessmentCreationScreen(
     val openMode by viewModel.assessmentCreationOpenMode.collectAsState()
     val currentAssessmentIdDraft by viewModel.currentAssessmentIdDraft.collectAsState()
     val assessmentByIdNetwork by viewModel.assessmentByIdNetwork.collectAsState()
-    val heading: String = remember(assessmentByIdNetwork.data){
-        if(assessmentByIdNetwork is Resource.Success &&
-            assessmentByIdNetwork.data != null){
+    val heading: String = remember(assessmentByIdNetwork.data) {
+        if (assessmentByIdNetwork is Resource.Success &&
+            assessmentByIdNetwork.data != null
+        ) {
             "${assessmentByIdNetwork.data?.name}"
         } else ""
     }
 
-    val subheading: String = remember(assessmentByIdNetwork.data){
-        if(assessmentByIdNetwork is Resource.Success &&
-            assessmentByIdNetwork.data != null){
+    val subheading: String = remember(assessmentByIdNetwork.data) {
+        if (assessmentByIdNetwork is Resource.Success &&
+            assessmentByIdNetwork.data != null
+        ) {
             "${assessmentByIdNetwork.data?.startDate?.toSimpleDate()} - ${assessmentByIdNetwork.data?.endDate?.toSimpleDate()}"
         } else ""
     }
+    val deleteAssessmentState = remember { mutableStateOf(false) }
+    val selectedQuestionIdCreateQuestion by viewModel.selectedQuestionIdCreateQuestion.collectAsState()
+    val questionByIdNetwork by viewModel.questionByIdNetwork.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
@@ -119,10 +134,32 @@ fun AssessmentCreationScreen(
             currentAssessmentIdDraft.orEmpty(),
             currentSchoolIdPref.orEmpty()
         )
+        viewModel.getQuestionByIdNetwork(
+            selectedQuestionIdCreateQuestion.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
     }
 
-    LaunchedEffect(message){
-        if(message !is AssessmentCreationMessage.NoMessage) {
+    LaunchedEffect(selectedQuestionIdCreateQuestion) {
+        viewModel.getQuestionByIdNetwork(
+            selectedQuestionIdCreateQuestion.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+    }
+
+    LaunchedEffect(showModalSheet.value) {
+        viewModel.getVerifiedQuestionsByAssessmentNetwork(
+            currentAssessmentIdDraft.orEmpty(),
+            currentSchoolIdPref.orEmpty(),
+        )
+        viewModel.getAssessmentByIdNetwork(
+            currentAssessmentIdDraft.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+    }
+
+    LaunchedEffect(message) {
+        if (message !is AssessmentCreationMessage.NoMessage) {
             delay(2000)
             viewModel.onAssessmentCreationMessageChanged(
                 AssessmentCreationMessage.NoMessage
@@ -149,7 +186,6 @@ fun AssessmentCreationScreen(
                     AssessmentCreationBottomSheetScreen(
                         viewModel = viewModel,
                         onDone = {
-
                         },
                         maxHeight = maxHeight,
                         onSelectAddQuestionFeature = {
@@ -163,8 +199,33 @@ fun AssessmentCreationScreen(
                             }
                         },
                         onSelectQuestionOptionFeature = {
-                            if(it == AssessmentCreationQuestionOptionFeature.DeleteQuestion){
-                                /*todo: on delete question  */
+                            if (it == AssessmentCreationQuestionOptionFeature.RemoveQuestion) {
+                                coroutineScope.launch {
+                                    //remove question from assessment
+                                    if (assessmentByIdNetwork is Resource.Success &&
+                                        assessmentByIdNetwork.data != null &&
+                                        questionByIdNetwork is Resource.Success &&
+                                        questionByIdNetwork.data != null
+                                    ) {
+                                        questionByIdNetwork.data?.parentAssessmentIds?.remove(
+                                            assessmentByIdNetwork.data?.assessmentId.orEmpty(),
+                                        )
+                                        assessmentByIdNetwork.data?.questionIds?.remove(
+                                            questionByIdNetwork.data?.questionId.orEmpty()
+                                        )
+                                        viewModel.saveAssessmentAsVerifiedNetwork(
+                                            assessmentByIdNetwork.data!!,
+                                            onResult = {}
+                                        )
+                                        viewModel.saveQuestionAsVerifiedNetwork(
+                                            questionByIdNetwork.data!!,
+                                            onResult = {}
+                                        )
+                                    }
+                                    showModalSheet.value = false
+                                    sheetState.hide()
+                                }
+
                             } else {
                                 viewModel.onAssessmentCreationOpenModeChanged(
                                     AssessmentCreationOpenMode.Editor
@@ -215,7 +276,7 @@ fun AssessmentCreationScreen(
                                         AssessmentCreationOpenMode.Creator
                                     )
                                     onCreateQuestion()
-                                                   },
+                                },
                                 onImportQuestion = onImportQuestion,
                                 viewModel = viewModel,
                                 onQuestionOptions = {
@@ -235,7 +296,7 @@ fun AssessmentCreationScreen(
                                     onBack()
                                 },
                                 onDelete = {
-                                    /*todo; on delete current assessment*/
+                                    deleteAssessmentState.value = true
                                 },
                                 onPublish = {
 
@@ -247,6 +308,45 @@ fun AssessmentCreationScreen(
             )
 
             //handle all messages and prompts
+            AnimatedVisibility(
+                visible = deleteAssessmentState.value,
+                enter = scaleIn(
+                    initialScale = 0.8f, animationSpec = tween(
+                        durationMillis = 50, easing = FastOutLinearInEasing
+                    )
+                ),
+                exit = scaleOut(
+                    targetScale = 0.8f,
+                    animationSpec = tween(
+                        durationMillis = 50, easing = FastOutLinearInEasing
+                    ),
+                ),
+            ) {
+                Popup(alignment = Alignment.Center,
+                    offset = IntOffset(0, 0),
+                    onDismissRequest = { deleteAssessmentState.value = false }) {
+                    YesNoPrompt(
+                        maxHeight = maxHeight,
+                        maxWidth = maxWidth,
+                        onYes = {
+                            //delete assessment
+                            if (assessmentByIdNetwork is Resource.Success &&
+                                assessmentByIdNetwork.data != null
+                            ) {
+                                viewModel.deleteAssessmentNetwork(
+                                    assessmentByIdNetwork.data!!,
+                                    onResult = {}
+                                )
+                                onBack()
+                            }
+                        },
+                        onNo = {
+                            deleteAssessmentState.value = false
+                        },
+                        label = stringResource(id = R.string.delete_this_assessment)
+                    )
+                }
+            }
 
         }
     }
@@ -271,9 +371,10 @@ fun AssessmentCreationScreenContent(
     val verifiedQuestionsByAssessmentNetwork by viewModel.verifiedQuestionsByAssessmentNetwork.collectAsState()
 
 
-    val totalQuestions = remember(assessmentByIdNetwork.data){
-        if(assessmentByIdNetwork is Resource.Success &&
-            assessmentByIdNetwork.data != null){
+    val totalQuestions = remember(Unit, assessmentByIdNetwork.data) {
+        if (assessmentByIdNetwork is Resource.Success &&
+            assessmentByIdNetwork.data != null
+        ) {
             "Questions (${assessmentByIdNetwork.data?.questionIds?.size})"
         } else "Questions (0)"
     }
@@ -296,7 +397,7 @@ fun AssessmentCreationScreenContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                    .padding(vertical = 4.dp, horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -322,7 +423,10 @@ fun AssessmentCreationScreenContent(
 
                 is Resource.Success -> {
                     if (verifiedQuestionsByAssessmentNetwork.data?.isNotEmpty() == true) {
-                        Log.e(TAG, "AssessmentCreationScreenContent: the size of questions ${verifiedQuestionsByAssessmentNetwork.data?.size}")
+                        Log.e(
+                            TAG,
+                            "AssessmentCreationScreenContent: the size of questions ${verifiedQuestionsByAssessmentNetwork.data?.size}"
+                        )
                         LazyColumn(modifier = modifier, state = rememberLazyListState()) {
                             items(verifiedQuestionsByAssessmentNetwork.data!!) { question ->
                                 QuestionItemAssessmentCreation(
@@ -511,7 +615,7 @@ private fun CreateAssessmentBottomBarConstraints(margin: Dp): ConstraintSet {
 sealed class AssessmentCreationBottomSheetMode {
     object AddQuestion : AssessmentCreationBottomSheetMode()
     object Info : AssessmentCreationBottomSheetMode()
-    object QuestionOptions: AssessmentCreationBottomSheetMode()
+    object QuestionOptions : AssessmentCreationBottomSheetMode()
 }
 
 enum class AssessmentCreationAddQuestionFeature(val title: String, val icon: Int) {
@@ -519,21 +623,21 @@ enum class AssessmentCreationAddQuestionFeature(val title: String, val icon: Int
     ImportQuestion("Import Question", R.drawable.icon_import)
 }
 
-enum class AssessmentCreationQuestionOptionFeature(val title: String, val icon: Int){
+enum class AssessmentCreationQuestionOptionFeature(val title: String, val icon: Int) {
     EditQuestion("Edit Question", R.drawable.icon_edit),
-    DeleteQuestion("Delete Question", R.drawable.icon_delete)
+    RemoveQuestion("Remove Question", R.drawable.icon_delete)
 }
 
 sealed class AssessmentCreationOpenMode {
-    object Creator: AssessmentCreationOpenMode()
-    object Editor: AssessmentCreationOpenMode()
+    object Creator : AssessmentCreationOpenMode()
+    object Editor : AssessmentCreationOpenMode()
 }
 
-sealed class AssessmentCreationMessage(val message: String){
-    object SaveAssessmentToDraft: AssessmentCreationMessage("Saving assessment to draft")
-    object AssessmentPublished: AssessmentCreationMessage("Assessment published successfully!")
-    object AssessmentDeleted: AssessmentCreationMessage("Assessment deleted successfully!")
-    object NoMessage: AssessmentCreationMessage("")
+sealed class AssessmentCreationMessage(val message: String) {
+    object SaveAssessmentToDraft : AssessmentCreationMessage("Saving assessment to draft")
+    object AssessmentPublished : AssessmentCreationMessage("Assessment published successfully!")
+    object AssessmentDeleted : AssessmentCreationMessage("Assessment deleted successfully!")
+    object NoMessage : AssessmentCreationMessage("")
 }
 
 @Composable

@@ -340,6 +340,11 @@ fun CreateQuestionScreenContent(
                             viewModel.onAddToAnswersCreateQuestion(
                                 this.answers.first()
                             )
+
+                            Log.e(
+                                TAG,
+                                "CreateQuestionScreenContent: question answer buffer contains ${questionAnswersCreateQuestion.first()}"
+                            )
                         }
 
                         QuestionType.TrueFalse.title -> {
@@ -651,6 +656,7 @@ fun CreateQuestionScreenContent(
 
                                 when (openMode) {
                                     is AssessmentCreationOpenMode.Creator -> {
+                                        val questionId = UUID.randomUUID().toString()
                                         val questionPosition: Int =
                                             if (assessmentByIdNetwork is Resource.Success &&
                                                 assessmentByIdNetwork.data != null
@@ -658,7 +664,7 @@ fun CreateQuestionScreenContent(
                                                 assessmentByIdNetwork.data?.questionIds?.size!! + 1
                                             } else -1
 
-                                        val questionId = UUID.randomUUID().toString()
+
                                         val question = QuestionModel(
                                             questionId = questionId,
                                             parentAssessmentIds = arrayListOf(parentAssessmentId),
@@ -677,6 +683,10 @@ fun CreateQuestionScreenContent(
                                             authorId = currentUserIdPref.orEmpty(),
                                             position = questionPosition,
                                         )
+
+                                        if(!assessmentByIdNetwork.data?.questionIds?.contains(questionId)!!) {
+                                            assessmentByIdNetwork.data?.questionIds?.add(questionId)
+                                        }
 
                                         viewModel.saveQuestionAsVerifiedNetwork(
                                             question.toNetwork(),

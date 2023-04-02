@@ -74,6 +74,7 @@ import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.todayComputational
 import com.vanguard.classifiadmin.ui.screens.admin.VerifiedStudentItem
 import com.vanguard.classifiadmin.ui.screens.admin.VerifiedSubjectItem
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedType
 import com.vanguard.classifiadmin.ui.theme.Black100
@@ -502,12 +503,15 @@ fun CreateAssessmentBoxContent(
                                 type = currentAssessmentType.name,
                                 assignedClasses = arrayListOf(selectedSubjectCreateAssessment?.classId.orEmpty()),
                                 assignedStudents = studentIds,
-                                lastModified = todayComputational()
+                                lastModified = todayComputational(),
+                                state = AssessmentState.Draft.title,
                             )
 
-                            viewModel.saveFeedAsStagedNetwork(feed.toNetwork(), onResult = {})
+                            viewModel.onCurrentAssessmentIdDraftChanged(feedId)
+
+                            viewModel.saveFeedAsStagedNetwork(feed.toNetwork(), onResult = {}) //todo
                             //stage assessment
-                            viewModel.saveAssessmentAsStagedNetwork(assessment.toNetwork(), onResult = {})
+                            viewModel.saveAssessmentAsVerifiedNetwork(assessment.toNetwork(), onResult = {})
                         }.invokeOnCompletion {
                             runnableBlock {
                                 //close dialog

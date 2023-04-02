@@ -849,6 +849,10 @@ class MainViewModel @Inject constructor(
         _questionOptionDCreateQuestion.value = null
         _questionAnswersCreateQuestion.value.clear()
         _correctShortAnswerCreateQuestion.value = null
+        _questionScoreCreateQuestion.value = null
+        _questionDifficultyCreateQuestion.value = QuestionDifficulty.Easy
+        _questionTypeCreateQuestion.value = QuestionType.MultiChoice
+        Log.e(TAG, "clearCreateQuestionFields: clearing the create question fields")
     }
 
     fun deleteStagedQuestionsByUserNetwork(

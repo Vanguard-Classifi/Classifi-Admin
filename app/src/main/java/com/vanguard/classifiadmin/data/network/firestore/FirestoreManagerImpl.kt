@@ -1615,7 +1615,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionAssessments)
                 .whereEqualTo("verified", true)
-                .whereEqualTo("state", AssessmentState.Draft.name)
+                .whereEqualTo("state", AssessmentState.Draft.title)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<AssessmentNetworkModel>()
@@ -1640,7 +1640,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionAssessments)
                 .whereEqualTo("verified", true)
-                .whereEqualTo("state", AssessmentState.Draft.name)
+                .whereEqualTo("state", AssessmentState.Draft.title)
                 .whereArrayContains("assignedClasses", classId)
                 .get()
                 .addOnSuccessListener { docs ->
@@ -1665,7 +1665,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionAssessments)
                 .whereEqualTo("verified", true)
-                .whereEqualTo("state", AssessmentState.InReview.name)
+                .whereEqualTo("state", AssessmentState.InReview.title)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<AssessmentNetworkModel>()
@@ -1690,7 +1690,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionAssessments)
                 .whereEqualTo("verified", true)
-                .whereEqualTo("state", AssessmentState.InReview.name)
+                .whereEqualTo("state", AssessmentState.InReview.title)
                 .whereArrayContains("assignedClasses", classId)
                 .get()
                 .addOnSuccessListener { docs ->
@@ -1715,7 +1715,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionAssessments)
                 .whereEqualTo("verified", true)
-                .whereEqualTo("state", AssessmentState.Published.name)
+                .whereEqualTo("state", AssessmentState.Published.title)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<AssessmentNetworkModel>()
@@ -1740,7 +1740,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .document(schoolId)
                 .collection(Collections.collectionAssessments)
                 .whereEqualTo("verified", true)
-                .whereEqualTo("state", AssessmentState.Published.name)
+                .whereEqualTo("state", AssessmentState.Published.title)
                 .whereArrayContains("assignedClasses", classId)
                 .get()
                 .addOnSuccessListener { docs ->

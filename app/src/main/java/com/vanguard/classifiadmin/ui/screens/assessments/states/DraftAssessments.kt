@@ -63,7 +63,7 @@ fun AssessmentsScreenContentDraft(
                                         viewModel.onCurrentAssessmentIdDraftChanged(
                                             it.assessmentId
                                         )
-                                        onSelectAssessm ent(it) },
+                                        onSelectAssessment(it) },
                                 )
                             }
                         }

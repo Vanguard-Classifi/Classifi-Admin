@@ -233,4 +233,5 @@
     <string name="no_published_assessment">No published assessments available</string>
     <string name="no_assessment_in_review">No assessment currently in review</string>
     <string name="no_assessment_in_draft">No assessment currently in draft</string>
+    <string name="delete_this_assessment">Delete this assessment?</string>
 </resources>

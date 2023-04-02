@@ -28,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -189,6 +190,39 @@ fun DropdownButton(
         )
     }
 }
+
+@Composable
+fun TertiaryTextButton(
+    modifier: Modifier = Modifier,
+    label: String,
+    onClick: () -> Unit,
+    textColor: Color = MaterialTheme.colors.primary,
+) {
+    TextButton(
+        onClick = onClick,
+        shape = RoundedCornerShape(4.dp),
+        modifier = modifier
+            .padding(0.dp)
+            .clip(RoundedCornerShape(4.dp)),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Color.Transparent,
+            contentColor = textColor,
+            disabledBackgroundColor = Black100.copy(0.1f)
+        )
+    ) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = textColor,
+            textAlign = TextAlign.Center,
+            modifier = modifier
+                .weight(1f)
+                .padding(horizontal = 4.dp, vertical = 0.dp)
+        )
+    }
+}
+
 
 @Composable
 fun TertiaryTextButtonWithIcon(
@@ -444,5 +478,14 @@ private fun SecondaryButtonWithIconRightStyledPreview() {
         label = "Mark as answer",
         onClick = {},
         selected = true,
+    )
+}
+
+@Composable
+@Preview
+private fun TertiaryTextButtonPreview(){
+    TertiaryTextButton(
+        label = "Click me",
+        onClick = {},
     )
 }

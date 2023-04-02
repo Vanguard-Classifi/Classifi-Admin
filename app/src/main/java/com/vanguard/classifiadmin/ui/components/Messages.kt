@@ -4,10 +4,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,6 +44,67 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.theme.Black100
 
+@Composable
+fun YesNoPrompt(
+    modifier: Modifier = Modifier,
+    maxHeight: Dp,
+    maxWidth: Dp,
+    yesNoOptions: List<YesNoOption> = YesNoOption.values().toList(),
+    onYes: () -> Unit,
+    onNo: () -> Unit,
+    label: String,
+) {
+    Card(
+        modifier = modifier
+            .heightIn(min = maxHeight.times(0.2f))
+            .padding(8.dp),
+        elevation = 2.dp,
+        shape = RoundedCornerShape(8.dp),
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = Black100,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = 16.dp,
+                        bottom = 8.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                    )
+                    .heightIn(min = maxHeight.times(0.2f))
+            )
+
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(0.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(modifier = Modifier) {
+                    yesNoOptions.forEach { option ->
+                        TertiaryTextButton(
+                            modifier = modifier.width(maxWidth.times(0.45f)),
+                            label = option.name,
+                            onClick = {
+                                if (option == YesNoOption.Yes) {
+                                    onYes()
+                                } else onNo()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+enum class YesNoOption {
+    Yes, No
+}
 
 @Composable
 fun NoDataInline(
@@ -49,7 +112,9 @@ fun NoDataInline(
     message: String,
 ) {
     Box(
-        modifier = modifier.fillMaxWidth().height(200.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -343,5 +408,17 @@ private fun SuccessBarPreview() {
 private fun LoadingScreenPreview() {
     LoadingScreen(
         maxHeight = 400.dp
+    )
+}
+
+@Composable
+@Preview
+private fun YesNoPromptPreview(){
+    YesNoPrompt(
+        maxHeight = 400.dp,
+        maxWidth = 400.dp,
+        onYes = {},
+        onNo = {},
+        label = "Delete assessment?"
     )
 }
