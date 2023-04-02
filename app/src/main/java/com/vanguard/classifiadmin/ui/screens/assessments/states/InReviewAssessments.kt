@@ -52,7 +52,9 @@ fun AssessmentsScreenContentInReview(
                             modifier = modifier,
                             state = rememberLazyListState()
                         ) {
-                            items(verifiedAssessmentsInReviewForClassNetwork.data!!) { assessment ->
+                            val verifiedAssessmentsInReviewSorted =
+                                verifiedAssessmentsInReviewForClassNetwork.data?.sortedByDescending { it.lastModified }
+                            items(verifiedAssessmentsInReviewSorted!!) { assessment ->
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onInReviewAssessmentOptions,

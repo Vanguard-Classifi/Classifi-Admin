@@ -283,7 +283,7 @@ fun CreateQuestionScreenContent(
     val selectedQuestionIdCreateQuestion by viewModel.selectedQuestionIdCreateQuestion.collectAsState()
     val questionByIdNetwork by viewModel.questionByIdNetwork.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit, openMode) {
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         delay(1000)
@@ -688,6 +688,7 @@ fun CreateQuestionScreenContent(
                                             assessmentByIdNetwork.data?.questionIds?.add(questionId)
                                         }
 
+                                        viewModel.onSelectedQuestionIdCreateQuestionChanged(questionId)
                                         viewModel.saveQuestionAsVerifiedNetwork(
                                             question.toNetwork(),
                                             onResult = {}
@@ -735,6 +736,9 @@ fun CreateQuestionScreenContent(
                                 }
                             }.invokeOnCompletion {
                                 runnableBlock {
+                                    viewModel.onAssessmentCreationOpenModeChanged(
+                                        AssessmentCreationOpenMode.Editor
+                                    )
                                     viewModel.onCreateQuestionMessageChanged(
                                         CreateQuestionMessage.QuestionSaved
                                     )

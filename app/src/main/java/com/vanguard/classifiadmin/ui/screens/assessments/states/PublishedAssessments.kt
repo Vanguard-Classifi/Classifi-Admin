@@ -53,7 +53,9 @@ fun AssessmentsScreenContentPublished(
                             modifier = modifier,
                             state = rememberLazyListState()
                         ) {
-                            items(verifiedAssessmentsPublishedForClassNetwork.data!!) { assessment ->
+                            val verifiedAssessmentsPublishedSorted =
+                                verifiedAssessmentsPublishedForClassNetwork.data?.sortedByDescending { it.lastModified }
+                            items(verifiedAssessmentsPublishedSorted!!) { assessment ->
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onPublishedAssessmentOptions,

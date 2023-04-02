@@ -423,12 +423,11 @@ fun AssessmentCreationScreenContent(
 
                 is Resource.Success -> {
                     if (verifiedQuestionsByAssessmentNetwork.data?.isNotEmpty() == true) {
-                        Log.e(
-                            TAG,
-                            "AssessmentCreationScreenContent: the size of questions ${verifiedQuestionsByAssessmentNetwork.data?.size}"
-                        )
                         LazyColumn(modifier = modifier, state = rememberLazyListState()) {
-                            items(verifiedQuestionsByAssessmentNetwork.data!!) { question ->
+                            val verifiedQuestionsSorted = verifiedQuestionsByAssessmentNetwork.data?.sortedBy {
+                                it.position
+                            }
+                            items(verifiedQuestionsSorted!!) { question ->
                                 QuestionItemAssessmentCreation(
                                     question = question.toLocal(),
                                     onOptions = {

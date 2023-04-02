@@ -52,7 +52,9 @@ fun AssessmentsScreenContentDraft(
                             modifier = modifier,
                             state = rememberLazyListState()
                         ) {
-                            items(verifiedAssessmentsDraftForClassNetwork.data!!) { assessment ->
+                            val verifiedAssessmentsDraftSorted =
+                                verifiedAssessmentsDraftForClassNetwork.data?.sortedByDescending { it.lastModified }
+                            items(verifiedAssessmentsDraftSorted!!) { assessment ->
                                 AssessmentItem(
                                     assessment = assessment.toLocal(),
                                     onOptions = onDraftAssessmentOptions,
