@@ -64,14 +64,18 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.QuestionModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
+import com.vanguard.classifiadmin.domain.helpers.runnableBlock
 import com.vanguard.classifiadmin.domain.helpers.toSimpleDate
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithInfo
 import com.vanguard.classifiadmin.ui.components.LoadingScreen
+import com.vanguard.classifiadmin.ui.components.MessageBar
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
+import com.vanguard.classifiadmin.ui.components.SuccessBar
 import com.vanguard.classifiadmin.ui.components.YesNoPrompt
 import com.vanguard.classifiadmin.ui.screens.assessments.bottomsheet.AssessmentCreationBottomSheetScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.items.QuestionItemAssessmentCreation
+import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionMessage
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.QuestionOptionItem
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.ShortAnswerItem
@@ -299,7 +303,24 @@ fun AssessmentCreationScreen(
                                     deleteAssessmentState.value = true
                                 },
                                 onPublish = {
+                                    //on publish
+                                    coroutineScope.launch {
+                                        if (assessmentByIdNetwork is Resource.Success &&
+                                            assessmentByIdNetwork.data != null
+                                        ) {
+                                            assessmentByIdNetwork.data?.state =
+                                                AssessmentState.Published.title
 
+                                            viewModel.saveAssessmentAsVerifiedNetwork(
+                                                assessmentByIdNetwork.data!!,
+                                                onResult = {}
+                                            )
+                                        } else return@launch
+                                    }.invokeOnCompletion {
+                                        runnableBlock {
+                                            //show message
+                                        }
+                                    }
                                 }
                             )
                         }
@@ -345,6 +366,13 @@ fun AssessmentCreationScreen(
                         },
                         label = stringResource(id = R.string.delete_this_assessment)
                     )
+                }
+            }
+
+
+            if(message !is AssessmentCreationMessage.NoMessage){
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                    SuccessBar(message = message.message, maxWidth = maxWidth)
                 }
             }
 
@@ -424,9 +452,10 @@ fun AssessmentCreationScreenContent(
                 is Resource.Success -> {
                     if (verifiedQuestionsByAssessmentNetwork.data?.isNotEmpty() == true) {
                         LazyColumn(modifier = modifier, state = rememberLazyListState()) {
-                            val verifiedQuestionsSorted = verifiedQuestionsByAssessmentNetwork.data?.sortedBy {
-                                it.position
-                            }
+                            val verifiedQuestionsSorted =
+                                verifiedQuestionsByAssessmentNetwork.data?.sortedBy {
+                                    it.position
+                                }
                             items(verifiedQuestionsSorted!!) { question ->
                                 QuestionItemAssessmentCreation(
                                     question = question.toLocal(),
