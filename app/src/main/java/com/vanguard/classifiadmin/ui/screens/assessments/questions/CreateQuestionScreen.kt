@@ -561,7 +561,7 @@ fun CreateQuestionScreenContent(
                                         rowWidth = with(LocalDensity.current) {
                                             rowWidthTrueFalse.value.toDp()
                                         },
-                                        isLeft = option == QuestionOptionTrueFalse.False,
+                                        isLeft = option == QuestionOptionTrueFalse.True,
                                         selected = correctAnswerTrueFalse == option,
                                     )
                                 }

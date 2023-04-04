@@ -15,6 +15,7 @@ import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
 import com.vanguard.classifiadmin.domain.helpers.Resource
 import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
+import com.vanguard.classifiadmin.ui.screens.feeds.FeedState
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -1191,6 +1192,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             firestore.collection(Collections.collectionSchools).document(schoolId)
                 .collection(Collections.collectionFeeds)
                 .whereEqualTo("verified", false)
+                .whereEqualTo("state", FeedState.Published.name)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<FeedNetworkModel>()
@@ -1216,6 +1218,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             firestore.collection(Collections.collectionSchools).document(schoolId)
                 .collection(Collections.collectionFeeds)
                 .whereEqualTo("verified", false)
+                .whereEqualTo("state", FeedState.Published.name)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<FeedNetworkModel>()
@@ -1243,6 +1246,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             firestore.collection(Collections.collectionSchools).document(schoolId)
                 .collection(Collections.collectionFeeds)
                 .whereEqualTo("verified", true)
+                .whereEqualTo("state", FeedState.Published.name)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<FeedNetworkModel>()
@@ -1268,6 +1272,7 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
             firestore.collection(Collections.collectionSchools).document(schoolId)
                 .collection(Collections.collectionFeeds)
                 .whereEqualTo("verified", true)
+                .whereEqualTo("state", FeedState.Published.name)
                 .get()
                 .addOnSuccessListener { docs ->
                     val results = ArrayList<FeedNetworkModel>()

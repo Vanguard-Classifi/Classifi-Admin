@@ -93,11 +93,13 @@ fun FeedsScreen(
     viewModel: MainViewModel,
     onSelectClasses: () -> Unit,
     onDetails: (FeedModel) -> Unit,
+    onViewReport: (FeedModel) -> Unit,
 ) {
     FeedsScreenContent(
         viewModel = viewModel,
         onSelectClasses = onSelectClasses,
-        onDetails = onDetails
+        onDetails = onDetails,
+        onViewReport = onViewReport,
     )
 }
 
@@ -107,6 +109,7 @@ fun FeedsScreenContent(
     viewModel: MainViewModel,
     onSelectClasses: () -> Unit,
     onDetails: (FeedModel) -> Unit,
+    onViewReport: (FeedModel) -> Unit,
 ) {
     val TAG = "FeedsScreenContent"
     var upcomingActivitiesExpanded by remember { mutableStateOf(false) }
@@ -141,10 +144,10 @@ fun FeedsScreenContent(
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentUsernamePref()
         delay(1000)
-       viewModel.getVerifiedFeedsByClassNetwork(
-           currentClassFeedPref.orEmpty(),
-           currentSchoolIdPref.orEmpty()
-       )
+        viewModel.getVerifiedFeedsByClassNetwork(
+            currentClassFeedPref.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
         viewModel.getStagedFeedsNetwork(
             currentSchoolIdPref.orEmpty()
         )
@@ -175,7 +178,8 @@ fun FeedsScreenContent(
                     likes = arrayListOf(),
                     commentIds = arrayListOf(),
                     type = FeedType.Discussion.title,
-                    mediaUris = arrayListOf()
+                    mediaUris = arrayListOf(),
+                    state = FeedState.Published.name,
                 )
 
                 viewModel.saveFeedAsStagedNetwork(
@@ -237,7 +241,10 @@ fun FeedsScreenContent(
                                             currentSchoolIdPref.orEmpty()
                                         )
                                         delay(1000)
-                                        Log.e(TAG, "FeedsScreenContent:  staged classes is not empty ${stagedFeedsNetwork.data?.isNotEmpty()}", )
+                                        Log.e(
+                                            TAG,
+                                            "FeedsScreenContent:  staged classes is not empty ${stagedFeedsNetwork.data?.isNotEmpty()}",
+                                        )
                                         if (stagedFeedsNetwork is Resource.Success &&
                                             stagedFeedsNetwork.data?.isNotEmpty() == true
                                         ) {
@@ -261,7 +268,9 @@ fun FeedsScreenContent(
                                                     viewModel.onComposeDiscussionStateChanged(null)
                                                     //clear the discussion text field
                                                     viewModel.clearDiscussionTextField()
-                                                    viewModel.onDashboardMessageChanged(DashboardMessage.FeedCreated)
+                                                    viewModel.onDashboardMessageChanged(
+                                                        DashboardMessage.FeedCreated
+                                                    )
                                                 }
                                             }
                                         }
@@ -333,6 +342,12 @@ fun FeedsScreenContent(
                                                 viewModel.onSelectedFeedChanged(it)
                                                 viewModel.onFeedDetailModeChanged(FeedDetailMode.Content)
                                                 onDetails(it)
+                                            },
+                                            onViewReport = {
+                                                viewModel.onCurrentAssessmentIdPublishedChanged(
+                                                    it.feedId
+                                                )
+                                                onViewReport(it)
                                             }
                                         )
                                     }
@@ -821,6 +836,10 @@ enum class FeedType(val title: String, val icon: Int) {
     LiveClass("Live Class", R.drawable.icon_video_camera),
     Lesson("Lesson", R.drawable.icon_subject),
     Discussion("Discussion", R.drawable.icon_discussion),
+}
+
+enum class FeedState {
+    Pending, Published
 }
 
 fun String.toFeedType(): FeedType {

@@ -29,6 +29,7 @@ fun BottomContainer(
     onSelectClasses: () -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
     onCreateQuestions: () -> Unit,
+    onViewReport: (FeedModel) -> Unit,
 ) {
     BottomNavGraph(
         viewModel = viewModel,
@@ -43,5 +44,6 @@ fun BottomContainer(
         onFeedDetail = onFeedDetail,
         onStudentDetail = onStudentDetail,
         onCreateQuestions = onCreateQuestions,
+        onViewReport = onViewReport
     )
 }

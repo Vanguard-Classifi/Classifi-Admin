@@ -13,8 +13,16 @@ data class FeedNetworkModel(
     var commentIds: ArrayList<String> = arrayListOf(),
     var lastModified: String? = null,
     var type: String? = null,
+    var state: String? = null,
     var verified: Boolean? = null,
     var mediaUris: ArrayList<String> = arrayListOf(),
+    var assessmentName: String? = null,
+    var assessmentType: String? = null,
+    var assessmentSubject: String? = null,
+    var assessmentStartTime: String? = null,
+    var assessmentEndTime: String? = null,
+    var assessmentDuration: String? = null,
+    var attempts: ArrayList<String> = arrayListOf(),
 ) {
     fun toLocal() =
         FeedModel(
@@ -27,8 +35,15 @@ data class FeedNetworkModel(
             commentIds = commentIds,
             likes = likes,
             type = type,
+            state = state,
             lastModified = lastModified,
             verified = verified,
             mediaUris = mediaUris,
+            assessmentDuration = assessmentDuration,
+            assessmentStartTime = assessmentStartTime,
+            assessmentEndTime = assessmentEndTime,
+            assessmentName = assessmentName,
+            assessmentSubject = assessmentSubject,
+            assessmentType = assessmentType,
         )
 }

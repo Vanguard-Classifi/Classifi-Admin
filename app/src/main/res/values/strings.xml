@@ -234,4 +234,6 @@
     <string name="no_assessment_in_review">No assessment currently in review</string>
     <string name="no_assessment_in_draft">No assessment currently in draft</string>
     <string name="delete_this_assessment">Delete this assessment?</string>
+    <string name="view_report">View Report</string>
+    <string name="due_date">Due Date</string>
 </resources>

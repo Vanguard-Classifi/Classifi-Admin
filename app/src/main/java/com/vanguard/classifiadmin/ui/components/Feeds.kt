@@ -51,11 +51,16 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.FeedModel
+import com.vanguard.classifiadmin.domain.extensions.toAssessmentType
 import com.vanguard.classifiadmin.domain.helpers.lastModified
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatar
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedType
 import com.vanguard.classifiadmin.ui.screens.feeds.toFeedType
 import com.vanguard.classifiadmin.ui.theme.Black100
+import com.vanguard.classifiadmin.ui.theme.Blue100
+import com.vanguard.classifiadmin.ui.theme.Green100
+import com.vanguard.classifiadmin.ui.theme.Red100
 
 @Composable
 fun FeedItem(
@@ -65,6 +70,7 @@ fun FeedItem(
     onEngage: (FeedItemFeature) -> Unit,
     onOptions: () -> Unit,
     onDetails: (FeedModel) -> Unit,
+    onViewReport: (FeedModel) -> Unit,
 ) {
 
     Card(
@@ -91,53 +97,259 @@ fun FeedItem(
                 )
                 Spacer(modifier = modifier.height(8.dp))
                 //content
-                if (feed.text?.isNotBlank() == true && feed.text != null) {
-                    Spacer(modifier = modifier.height(8.dp))
-                    Text(
-                        text = feed.text.orEmpty(),
-                        fontSize = 13.sp,
-                        color = Black100,
-                        maxLines = 10,
-                        modifier = modifier
-                            .widthIn(max = maxWidth.times(.93f))
-                            .heightIn(min = 100.dp)
-                            .fillMaxWidth(),
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Start,
-                    )
-                }
-                if (feed.mediaUris.isNotEmpty()) {
-                    if (feed.mediaUris.size < 3) {
-                        feed.mediaUris.map { media ->
+                when (feed.type) {
+                    FeedType.Discussion.title -> {
+                        if (feed.text?.isNotBlank() == true && feed.text != null) {
                             Spacer(modifier = modifier.height(8.dp))
-                            //todo: media here
-
-                        }
-                    } else {
-                        feed.mediaUris.subList(0, 2).map { media ->
-                            Spacer(modifier = modifier.height(8.dp))
-                            //todo: media here
-
-                        }
-
-                        TextButton(
-                            onClick = { onDetails(feed) },
-                        ) {
                             Text(
-                                text = stringResource(id = R.string.see_more),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
+                                text = feed.text.orEmpty(),
+                                fontSize = 13.sp,
                                 color = Black100,
-                                style = TextStyle(
-                                    textDecoration = TextDecoration.Underline,
-                                )
+                                maxLines = 10,
+                                modifier = modifier
+                                    .widthIn(max = maxWidth.times(.93f))
+                                    .heightIn(min = 100.dp)
+                                    .fillMaxWidth(),
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Start,
                             )
                         }
+                        if (feed.mediaUris.isNotEmpty()) {
+                            if (feed.mediaUris.size < 3) {
+                                feed.mediaUris.map { media ->
+                                    Spacer(modifier = modifier.height(8.dp))
+                                    //todo: media here
+
+                                }
+                            } else {
+                                feed.mediaUris.subList(0, 2).map { media ->
+                                    Spacer(modifier = modifier.height(8.dp))
+                                    //todo: media here
+
+                                }
+
+                                TextButton(
+                                    onClick = { onDetails(feed) },
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.see_more),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Black100,
+                                        style = TextStyle(
+                                            textDecoration = TextDecoration.Underline,
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    FeedType.Assessment.title -> {
+                        FeedAssessmentBody(
+                            feed = feed,
+                            onViewReport = onViewReport
+                        )
+                    }
+
+                    FeedType.Lesson.title -> {
+
+                    }
+
+                    FeedType.LiveClass.title -> {
+
                     }
                 }
                 Spacer(modifier = modifier.height(8.dp))
                 FeedItemFooter(feed = feed, currentUserId = currentUserId, onEngage = onEngage)
             }
+        }
+    }
+}
+
+@Composable
+fun FeedAssessmentBody(
+    modifier: Modifier = Modifier,
+    feed: FeedModel,
+    onViewReport: (FeedModel) -> Unit,
+) {
+    Card(
+        modifier = modifier.padding(12.dp)
+            .clickable {  },
+        elevation = 2.dp,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary.copy(0.5f),
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            FeedAssessmentBodyHeader(feed = feed, modifier = modifier)
+            FeedAssessmentBodyMiddle(feed = feed, modifier = modifier)
+            FeedAssessmentBodyFooter(feed = feed, onViewReport = onViewReport,
+                modifier = modifier)
+        }
+    }
+}
+
+
+@Composable
+fun FeedAssessmentBodyHeader(
+    modifier: Modifier = Modifier,
+    feed: FeedModel,
+) {
+    val constraints = FeedAssessmentBodyHeaderConstraints(8.dp)
+    val innerModifier = Modifier
+
+    Surface(modifier = modifier) {
+        ConstraintLayout(modifier = modifier, constraintSet = constraints) {
+            AssessmentTypeIcon(
+                type = feed.type?.toAssessmentType()!!,
+                modifier = innerModifier.layoutId("icon")
+            )
+
+            Text(
+                text = "feed.assessmentName.orEmpty()".uppercase(),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Black100,
+                maxLines= 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = innerModifier.layoutId("header")
+            )
+
+            Text(
+                text = "feed.assessmentSubject.orEmpty()",
+                fontSize = 12.sp,
+                maxLines= 1,
+                overflow = TextOverflow.Ellipsis,
+                color = Black100.copy(0.2f),
+                modifier = innerModifier.layoutId("subheading")
+            )
+        }
+    }
+
+}
+
+private fun FeedAssessmentBodyHeaderConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val icon = createRefFor("icon")
+        val header = createRefFor("header")
+        val subheading = createRefFor("subheading")
+
+        constrain(icon) {
+            start.linkTo(parent.start, 2.dp)
+            top.linkTo(parent.top, 4.dp)
+        }
+        constrain(header) {
+            top.linkTo(icon.top, 4.dp)
+            start.linkTo(icon.end, 8.dp)
+        }
+        constrain(subheading) {
+            top.linkTo(header.bottom, 4.dp)
+            bottom.linkTo(icon.bottom, 4.dp)
+            start.linkTo(header.start, 0.dp)
+        }
+
+    }
+}
+
+
+@Composable
+fun FeedAssessmentBodyMiddle(
+    modifier: Modifier = Modifier,
+    feed: FeedModel,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Column(
+            modifier = modifier.padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
+                text = "OPEN",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Green100,
+            )
+            Text(
+                text = stringResource(id = R.string.status),
+                fontSize = 12.sp,
+                color = Black100.copy(0.2f),
+            )
+        }
+
+        Column(
+            modifier = modifier.padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
+                text = feed.assessmentEndTime.orEmpty(),
+                fontSize = 12.sp,
+                color = Green100,
+            )
+            Text(
+                text = stringResource(id = R.string.due_date),
+                fontSize = 12.sp,
+                color = Black100.copy(0.2f),
+            )
+        }
+    }
+}
+
+
+
+@Composable
+fun FeedAssessmentBodyFooter(
+    modifier: Modifier = Modifier,
+    feed: FeedModel,
+    onViewReport: (FeedModel) -> Unit
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        PrimaryTextButton(
+            label = stringResource(id = R.string.view_report).uppercase(),
+            onClick = { onViewReport(feed) })
+    }
+}
+
+
+@Composable
+fun AssessmentTypeIcon(
+    modifier: Modifier = Modifier,
+    type: AssessmentType,
+) {
+    val color = when (type) {
+        AssessmentType.HomeWork -> Blue100
+        AssessmentType.Exam -> Red100
+        AssessmentType.Quiz -> Green100
+    }
+
+    Surface(
+        modifier = modifier,
+        color = color.copy(0.8f),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Box(
+            modifier = modifier.size(48.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.icon_book),
+                contentDescription = stringResource(id = R.string.icon),
+                tint = color,
+                modifier = modifier.padding(16.dp)
+            )
         }
     }
 }
@@ -380,7 +592,23 @@ fun FeedItemHeader(
         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
             append(feed.authorName?.uppercase())
         }
-        append(" started a ")
+        when (feed.type) {
+            FeedType.Discussion.title -> {
+                append(" started a ")
+            }
+
+            FeedType.Assessment.title -> {
+                append(" created an ")
+            }
+
+            FeedType.Lesson.title -> {
+                append(" created a ")
+            }
+
+            FeedType.LiveClass.title -> {
+                append(" started a ")
+            }
+        }
         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
             append(type.title.lowercase())
         }
@@ -483,5 +711,53 @@ private fun FeedItemFeaturePreview() {
 private fun DocumentIconPreview() {
     DocumentIcon(
         icon = R.drawable.icon_pdf_file,
+    )
+}
+
+
+@Composable
+@Preview
+private fun AssessmentTypeIconPreview() {
+    AssessmentTypeIcon(
+        type = AssessmentType.HomeWork
+    )
+}
+
+@Composable
+@Preview
+private fun FeedAssessmentBodyFooterPreview() {
+    FeedAssessmentBodyFooter(
+        feed = FeedModel(
+            feedId = "refd",
+            text = "feufejf"
+        ),
+        onViewReport = {}
+    )
+}
+
+@Composable
+@Preview
+private fun FeedAssessmentBodyMiddlePreview() {
+    FeedAssessmentBodyMiddle(
+        feed = FeedModel(
+            feedId = "refd",
+            text = "feufejf",
+            assessmentEndTime = "4th Apr, 2023 6:34am"
+        ),
+    )
+}
+
+@Composable
+@Preview
+private fun FeedAssessmentBodyPreview() {
+    FeedAssessmentBody(
+        feed = FeedModel(
+            feedId = "53fdfd",
+            text = "tusihgnef",
+            assessmentEndTime = "4th Apr, 2023 6:34am",
+        ),
+        onViewReport = {
+
+        }
     )
 }

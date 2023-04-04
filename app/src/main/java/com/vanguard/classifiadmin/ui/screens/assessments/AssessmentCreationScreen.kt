@@ -80,6 +80,7 @@ import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptio
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.QuestionOptionItem
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.ShortAnswerItem
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.items.TrueFalseItem
+import com.vanguard.classifiadmin.ui.screens.feeds.FeedState
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
@@ -129,10 +130,13 @@ fun AssessmentCreationScreen(
     val deleteAssessmentState = remember { mutableStateOf(false) }
     val selectedQuestionIdCreateQuestion by viewModel.selectedQuestionIdCreateQuestion.collectAsState()
     val questionByIdNetwork by viewModel.questionByIdNetwork.collectAsState()
+    val currentFeedIdPending by viewModel.currentFeedIdPending.collectAsState()
+    val feedByIdNetwork by viewModel.feedByIdNetwork.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
+        viewModel.onCurrentFeedIdPendingChanged(currentAssessmentIdDraft)
         delay(1000)
         viewModel.getAssessmentByIdNetwork(
             currentAssessmentIdDraft.orEmpty(),
@@ -140,6 +144,10 @@ fun AssessmentCreationScreen(
         )
         viewModel.getQuestionByIdNetwork(
             selectedQuestionIdCreateQuestion.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
+        viewModel.getFeedByIdNetwork(
+            currentFeedIdPending.orEmpty(),
             currentSchoolIdPref.orEmpty()
         )
     }
@@ -319,6 +327,20 @@ fun AssessmentCreationScreen(
                                     }.invokeOnCompletion {
                                         runnableBlock {
                                             //show message
+                                            viewModel.onAssessmentCreationMessageChanged(
+                                                AssessmentCreationMessage.AssessmentPublished
+                                            )
+                                            //post feed
+                                            if(feedByIdNetwork is Resource.Success &&
+                                                    feedByIdNetwork.data != null){
+                                                feedByIdNetwork.data?.state =
+                                                    FeedState.Published.name
+
+                                                viewModel.saveFeedAsVerifiedNetwork(
+                                                    feedByIdNetwork.data!!,
+                                                    onResult = {}
+                                                )
+                                            }
                                         }
                                     }
                                 }

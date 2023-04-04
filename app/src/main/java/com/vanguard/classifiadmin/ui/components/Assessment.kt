@@ -76,6 +76,7 @@ import com.vanguard.classifiadmin.ui.screens.admin.VerifiedStudentItem
 import com.vanguard.classifiadmin.ui.screens.admin.VerifiedSubjectItem
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentState
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
+import com.vanguard.classifiadmin.ui.screens.feeds.FeedState
 import com.vanguard.classifiadmin.ui.screens.feeds.FeedType
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
@@ -484,8 +485,10 @@ fun CreateAssessmentBoxContent(
                                 schoolId = currentSchoolIdPref.orEmpty(),
                                 lastModified = todayComputational(),
                                 type = FeedType.Assessment.name,
+                                state = FeedState.Pending.name,
                                 classIds = arrayListOf(selectedSubjectCreateAssessment?.classId.orEmpty())
                             )
+
                             val assessment = AssessmentModel(
                                 assessmentId = feedId,
                                 name = assessmentNameCreateAssessment.orEmpty(),
@@ -508,8 +511,9 @@ fun CreateAssessmentBoxContent(
                             )
 
                             viewModel.onCurrentAssessmentIdDraftChanged(feedId)
+                            viewModel.onCurrentFeedIdPendingChanged(feedId)
 
-                            viewModel.saveFeedAsStagedNetwork(feed.toNetwork(), onResult = {}) //todo
+                            viewModel.saveFeedAsVerifiedNetwork(feed.toNetwork(), onResult = {})
                             //stage assessment
                             viewModel.saveAssessmentAsVerifiedNetwork(assessment.toNetwork(), onResult = {})
                         }.invokeOnCompletion {

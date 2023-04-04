@@ -151,7 +151,8 @@ fun NavGraph(
                 onLogin = { navController.navigate(Destinations.login) },
                 onFeedDetail = { navController.navigate(Destinations.feedDetail) },
                 onStudentDetail = { navController.navigate(Destinations.studentDetail) },
-                onCreateAssessment = { navController.navigate(Destinations.assessmentCreation) }
+                onCreateAssessment = { navController.navigate(Destinations.assessmentCreation) },
+                onViewReport = { navController.navigate(Destinations.assessmentReport) },
             )
         }
 
@@ -443,6 +444,7 @@ fun BottomNavGraph(
     onSelectClasses: () -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
     onCreateQuestions: () -> Unit,
+    onViewReport: (FeedModel) -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -456,6 +458,7 @@ fun BottomNavGraph(
                 viewModel = viewModel,
                 onSelectClasses = onSelectClasses,
                 onDetails = onFeedDetail,
+                onViewReport = onViewReport
             )
         }
 

@@ -103,6 +103,7 @@ fun MainDashboardScreen(
     onFeedDetail: (FeedModel) -> Unit,
     onStudentDetail: (UserModel) -> Unit,
     onCreateAssessment: () -> Unit,
+    onViewReport: (FeedModel) -> Unit,
 ) {
     val navController = rememberNavController()
     val currentBottomSheetFlavor by viewModel.currentDashboardBottomSheetFlavor.collectAsState()
@@ -313,7 +314,8 @@ fun MainDashboardScreen(
                 onStudentDetail = onStudentDetail,
                 onCreateQuestions = {
                     createQuestionState = true
-                }
+                },
+                onViewReport = onViewReport
             )
         }
 
@@ -464,6 +466,7 @@ fun MainDashboardScreenContent(
     onSelectClasses: () -> Unit,
     onFeedDetail: (FeedModel) -> Unit,
     onCreateQuestions: () -> Unit,
+    onViewReport: (FeedModel) -> Unit,
 ) {
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -496,7 +499,8 @@ fun MainDashboardScreenContent(
                     onInReviewAssessmentOptions = onInReviewAssessmentOptions,
                     onSelectClasses = onSelectClasses,
                     onFeedDetail = onFeedDetail,
-                    onCreateQuestions = onCreateQuestions
+                    onCreateQuestions = onCreateQuestions,
+                    onViewReport = onViewReport,
                 )
             }
         )

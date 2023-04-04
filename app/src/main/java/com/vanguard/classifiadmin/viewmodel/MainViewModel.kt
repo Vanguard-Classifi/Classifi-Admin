@@ -755,6 +755,9 @@ class MainViewModel @Inject constructor(
     private var _currentAssessmentIdDraft = MutableStateFlow(null as String?)
     val currentAssessmentIdDraft: StateFlow<String?> = _currentAssessmentIdDraft
 
+    private var _currentFeedIdPending = MutableStateFlow(null as String?)
+    val currentFeedIdPending: StateFlow<String?> = _currentFeedIdPending
+
     private var _verifiedQuestionsByAssessmentNetwork =
         MutableStateFlow(Resource.Loading<List<QuestionNetworkModel>>() as Resource<List<QuestionNetworkModel>>)
     val verifiedQuestionsByAssessmentNetwork: StateFlow<Resource<List<QuestionNetworkModel>>> =
@@ -763,6 +766,16 @@ class MainViewModel @Inject constructor(
     private var _selectedQuestionIdCreateQuestion = MutableStateFlow(null as String?)
     val selectedQuestionIdCreateQuestion: StateFlow<String?> = _selectedQuestionIdCreateQuestion
 
+    private var _currentAssessmentIdPublished = MutableStateFlow(null as String?)
+    val currentAssessmentIdPublished: StateFlow<String?> = _currentAssessmentIdPublished
+
+    fun onCurrentAssessmentIdPublishedChanged(assessmentId: String?) = effect {
+        _currentAssessmentIdPublished.value = assessmentId
+    }
+
+    fun onCurrentFeedIdPendingChanged(feedId: String?) = effect {
+        _currentFeedIdPending.value = feedId
+    }
     fun onSelectedQuestionIdCreateQuestionChanged(questionId: String?) = effect {
         _selectedQuestionIdCreateQuestion.value = questionId
     }
