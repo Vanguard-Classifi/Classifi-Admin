@@ -289,11 +289,17 @@ fun CreateQuestionScreenContent(
     val assessmentByIdNetwork by viewModel.assessmentByIdNetwork.collectAsState()
     val selectedQuestionIdCreateQuestion by viewModel.selectedQuestionIdCreateQuestion.collectAsState()
     val questionByIdNetwork by viewModel.questionByIdNetwork.collectAsState()
+    val currentFeedIdPending by viewModel.currentFeedIdPending.collectAsState()
+    val feedByIdNetwork by viewModel.feedByIdNetwork.collectAsState()
 
     LaunchedEffect(Unit, openMode) {
         viewModel.getCurrentUserIdPref()
         viewModel.getCurrentSchoolIdPref()
         delay(1000)
+        viewModel.getFeedByIdNetwork(
+            currentFeedIdPending.orEmpty(),
+            currentSchoolIdPref.orEmpty(),
+        )
         viewModel.getAssessmentByIdNetwork(
             currentAssessmentIdDraft.orEmpty(),
             currentSchoolIdPref.orEmpty(),
@@ -346,11 +352,6 @@ fun CreateQuestionScreenContent(
                             viewModel.clearAnswersCreateQuestion()
                             viewModel.onAddToAnswersCreateQuestion(
                                 this.answers.first()
-                            )
-
-                            Log.e(
-                                TAG,
-                                "CreateQuestionScreenContent: question answer buffer contains ${questionAnswersCreateQuestion.first()}"
                             )
                         }
 
@@ -654,12 +655,24 @@ fun CreateQuestionScreenContent(
 
                                 val answerBuffer = ArrayList<String>()
                                 questionAnswersCreateQuestion.map { answerBuffer.add(it) }
+
                                 val parentAssessmentId: String =
                                     if (assessmentByIdNetwork is Resource.Success &&
                                         assessmentByIdNetwork.data != null
                                     ) {
                                         assessmentByIdNetwork.data?.assessmentId.orEmpty()
                                     } else ""
+
+                                //save the assessment duration in the feed
+                                if(feedByIdNetwork is Resource.Success &&
+                                        feedByIdNetwork.data != null){
+                                    feedByIdNetwork.data?.assessmentDuration =
+                                        assessmentDurationCreateQuestion.orEmpty()
+
+                                    viewModel.saveFeedAsVerifiedNetwork(
+                                        feedByIdNetwork.data!!, onResult = {}
+                                    )
+                                }
 
                                 when (openMode) {
                                     is AssessmentCreationOpenMode.Creator -> {
@@ -670,6 +683,12 @@ fun CreateQuestionScreenContent(
                                             ) {
                                                 assessmentByIdNetwork.data?.questionIds?.size!! + 1
                                             } else -1
+
+                                        if(assessmentByIdNetwork is Resource.Success &&
+                                                assessmentByIdNetwork.data != null){
+                                            assessmentByIdNetwork.data?.duration =
+                                                assessmentDurationCreateQuestion
+                                        }
 
 
                                         val question = QuestionModel(

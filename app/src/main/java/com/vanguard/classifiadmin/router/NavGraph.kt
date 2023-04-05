@@ -425,7 +425,8 @@ fun NavGraph(
 
         composable(Destinations.briefingScreen) {
             BriefingScreen(
-               onBack = {navController.navigate(Destinations.dashboard)}
+               onBack = {navController.navigate(Destinations.dashboard)},
+                viewModel = viewModel,
             )
         }
     }

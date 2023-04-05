@@ -300,7 +300,25 @@ fun CreateAssessmentBoxContent(
                 endDateCreateAssessment?.isNotBlank() == true &&
                 currentAssessmentType.name.isNotBlank()
     }
-
+    val subjectByIdNetwork by viewModel.subjectByIdNetwork.collectAsState()
+    val subjectName  = remember(subjectByIdNetwork.data){
+        if(subjectByIdNetwork is Resource.Success &&
+                subjectByIdNetwork.data != null){
+            subjectByIdNetwork.data?.subjectName.orEmpty()
+        } else ""
+    }
+    val subjectClassId  = remember(subjectByIdNetwork.data){
+        if(subjectByIdNetwork is Resource.Success &&
+            subjectByIdNetwork.data != null){
+            subjectByIdNetwork.data?.classId.orEmpty()
+        } else ""
+    }
+    val subjectClassName  = remember(subjectByIdNetwork.data){
+        if(subjectByIdNetwork is Resource.Success &&
+            subjectByIdNetwork.data != null){
+            subjectByIdNetwork.data?.className.orEmpty()
+        } else ""
+    }
 
     LaunchedEffect(Unit) {
         viewModel.getCurrentUserRolePref()
@@ -308,6 +326,10 @@ fun CreateAssessmentBoxContent(
         viewModel.getCurrentSchoolIdPref()
         viewModel.getCurrentUsernamePref()
         delay(1000)
+        viewModel.getSubjectByIdNetwork(
+            selectedSubjectCreateAssessment?.subjectId.orEmpty(),
+            currentSchoolIdPref.orEmpty(),
+        )
         when (currentUserRolePref) {
             UserRole.Teacher.name -> {
                 //get classes assigned to teacher
@@ -493,14 +515,20 @@ fun CreateAssessmentBoxContent(
                                 lastModified = todayComputational(),
                                 type = FeedType.Assessment.name,
                                 state = FeedState.Pending.name,
-                                classIds = arrayListOf(selectedSubjectCreateAssessment?.classId.orEmpty())
+                                classIds = arrayListOf(subjectClassId),
+                                assessmentSubject = subjectName,
+                                assessmentClass = subjectClassName,
+                                assessmentName = assessmentNameCreateAssessment.orEmpty(),
+                                assessmentType = currentAssessmentType.name,
+                                assessmentStartTime = "$startDateCreateAssessment $startTimeCreateAssessment",
+                                assessmentEndTime = "$endDateCreateAssessment $endTimeCreateAssessment",
                             )
 
                             val assessment = AssessmentModel(
                                 assessmentId = feedId,
                                 name = assessmentNameCreateAssessment.orEmpty(),
                                 subjectId = selectedSubjectCreateAssessment?.subjectId.orEmpty(),
-                                subjectName = selectedSubjectCreateAssessment?.subjectName.orEmpty(),
+                                subjectName = subjectName,
                                 schoolId = currentSchoolIdPref.orEmpty(),
                                 startTime = startTimeCreateAssessment.orEmpty(),
                                 endTime = endTimeCreateAssessment.orEmpty(),

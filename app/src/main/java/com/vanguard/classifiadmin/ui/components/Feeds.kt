@@ -230,7 +230,7 @@ fun FeedAssessmentBodyHeader(
             )
 
             Text(
-                text = "feed.assessmentName.orEmpty()".uppercase(),
+                text = feed.assessmentName.orEmpty().uppercase(),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Black100,
@@ -240,11 +240,11 @@ fun FeedAssessmentBodyHeader(
             )
 
             Text(
-                text = "feed.assessmentSubject.orEmpty()",
+                text = feed.assessmentSubject.orEmpty(),
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = Black100.copy(0.2f),
+                color = Black100.copy(0.8f),
                 modifier = innerModifier.layoutId("subheading")
             )
         }
@@ -299,7 +299,7 @@ fun FeedAssessmentBodyMiddle(
             Text(
                 text = stringResource(id = R.string.status),
                 fontSize = 12.sp,
-                color = Black100.copy(0.2f),
+                color = Black100.copy(0.8f),
             )
         }
 
@@ -311,12 +311,12 @@ fun FeedAssessmentBodyMiddle(
             Text(
                 text = feed.assessmentEndTime.orEmpty(),
                 fontSize = 12.sp,
-                color = Green100,
+                color = Black100,
             )
             Text(
                 text = stringResource(id = R.string.due_date),
                 fontSize = 12.sp,
-                color = Black100.copy(0.2f),
+                color = Black100.copy(0.8f),
             )
         }
     }
@@ -370,7 +370,7 @@ fun AssessmentTypeIcon(
 
     Surface(
         modifier = modifier,
-        color = color.copy(0.8f),
+        color = color,
         shape = RoundedCornerShape(16.dp)
     ) {
         Box(
@@ -380,7 +380,7 @@ fun AssessmentTypeIcon(
             Icon(
                 painter = painterResource(id = R.drawable.icon_book),
                 contentDescription = stringResource(id = R.string.icon),
-                tint = color,
+                tint = MaterialTheme.colors.onPrimary,
                 modifier = modifier.padding(16.dp)
             )
         }

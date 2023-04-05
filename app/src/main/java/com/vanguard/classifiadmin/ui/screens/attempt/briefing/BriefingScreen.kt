@@ -35,6 +35,7 @@ import com.vanguard.classifiadmin.ui.components.ChildTopBar
 import com.vanguard.classifiadmin.ui.components.ChildTopBarWithCloseButtonOnly
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
+import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
@@ -83,7 +84,12 @@ fun BriefingScreenContent(
     val feedByIdNetwork by viewModel.feedByIdNetwork.collectAsState()
     val currentClass = remember(feedByIdNetwork.data){
         if(feedByIdNetwork is Resource.Success && feedByIdNetwork.data != null){
-            feedByIdNetwork.data?.assessmentClass
+            feedByIdNetwork.data?.assessmentClass.orEmpty()
+        } else ""
+    }
+    val assessmentType = remember(feedByIdNetwork.data){
+        if(feedByIdNetwork is Resource.Success && feedByIdNetwork.data != null){
+            feedByIdNetwork.data?.assessmentType.orEmpty()
         } else ""
     }
 
@@ -109,8 +115,15 @@ fun BriefingScreenContent(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
+                    val imageRes = when(assessmentType){
+                        AssessmentType.Exam.title -> R.drawable.icon_exam
+                        AssessmentType.HomeWork.title -> R.drawable.icon_homework
+                        AssessmentType.Quiz.title -> R.drawable.icon_quiz
+                        else -> R.drawable.icon_homework
+                    }
+
                     Image(
-                        painter = painterResource(id = R.drawable.icon_quiz),
+                        painter = painterResource(id = imageRes),
                         contentDescription = stringResource(id = R.string.assessment_image),
                         modifier = Modifier.size(200.dp)
                     )
