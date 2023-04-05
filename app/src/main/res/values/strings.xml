@@ -236,4 +236,7 @@
     <string name="delete_this_assessment">Delete this assessment?</string>
     <string name="view_report">View Report</string>
     <string name="due_date">Due Date</string>
+    <string name="take_assessment">Take Assessment</string>
+    <string name="assessment_image">Assessment Image</string>
+    <string name="start_assessment">Start</string>
 </resources>

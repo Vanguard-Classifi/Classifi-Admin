@@ -170,6 +170,7 @@ fun AssessmentsScreenContent(
         }
     }
 
+
     Surface(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(modifier = Modifier) {
             val maxHeight = maxHeight
@@ -333,6 +334,7 @@ fun AssessmentSubjectRow(
     }
 }
 
+
 @Composable
 fun AssessmentSelector(
     modifier: Modifier = Modifier,
@@ -424,6 +426,7 @@ fun PublishedAssessmentBottomSheetContent(
         }
     }
 }
+
 
 @Composable
 fun InReviewAssessmentBottomSheetContent(

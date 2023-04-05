@@ -83,6 +83,13 @@ import java.util.UUID
 
 const val CREATE_QUESTION_SCREEN = "create_question_screen"
 
+/**
+ * A screen where each question is created.
+ * Here you get to compose the question body,
+ * the type of question whether Multiple choice,
+ * True/False, Short Answer or Essay question
+ */
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CreateQuestionScreen(

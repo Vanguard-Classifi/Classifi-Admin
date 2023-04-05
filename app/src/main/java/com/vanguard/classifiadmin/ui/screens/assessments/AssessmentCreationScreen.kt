@@ -88,6 +88,12 @@ import kotlinx.coroutines.launch
 
 const val ASSESSMENT_CREATION_SCREEN = "assessment_creation_screen"
 
+/**
+ * A screen where you get to manage your assessment,
+ * you can add or delete questions from the assessment,
+ * and ultimately you can publish or even delete the assessment
+ */
+
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun AssessmentCreationScreen(
@@ -119,7 +125,6 @@ fun AssessmentCreationScreen(
             "${assessmentByIdNetwork.data?.name}"
         } else ""
     }
-
     val subheading: String = remember(assessmentByIdNetwork.data) {
         if (assessmentByIdNetwork is Resource.Success &&
             assessmentByIdNetwork.data != null
@@ -491,7 +496,6 @@ fun AssessmentCreationScreenContent(
                             }
                         }
                     } else {
-                        Log.e(TAG, "AssessmentCreationScreenContent: no questions")
                         NoQuestionPageAssessmentCreation(
                             onCreateQuestion = onCreateQuestion,
                             onImportQuestion = onImportQuestion
@@ -500,10 +504,6 @@ fun AssessmentCreationScreenContent(
                 }
 
                 is Resource.Error -> {
-                    Log.e(
-                        TAG,
-                        "AssessmentCreationScreenContent: an error occurred on questions",
-                    )
                     NoQuestionPageAssessmentCreation(
                         onCreateQuestion = onCreateQuestion,
                         onImportQuestion = onImportQuestion
@@ -512,7 +512,6 @@ fun AssessmentCreationScreenContent(
             }
         }
     }
-
 }
 
 
@@ -560,6 +559,7 @@ fun NoQuestionPageAssessmentCreation(
         }
     }
 }
+
 
 @Composable
 fun CreateAssessmentBottomBar(
@@ -661,6 +661,7 @@ private fun CreateAssessmentBottomBarConstraints(margin: Dp): ConstraintSet {
         }
     }
 }
+
 
 sealed class AssessmentCreationBottomSheetMode {
     object AddQuestion : AssessmentCreationBottomSheetMode()

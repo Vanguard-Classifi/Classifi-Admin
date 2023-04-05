@@ -88,6 +88,13 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
+/**
+ * The dialog that opens on creating an assessment,
+ * here you determine the start and end periods for the
+ * assessment.
+ * A feed is simultaneously created and populated accordingly
+ */
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CreateAssessmentBox(

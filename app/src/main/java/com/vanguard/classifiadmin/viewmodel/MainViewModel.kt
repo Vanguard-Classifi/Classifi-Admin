@@ -776,6 +776,7 @@ class MainViewModel @Inject constructor(
     fun onCurrentFeedIdPendingChanged(feedId: String?) = effect {
         _currentFeedIdPending.value = feedId
     }
+
     fun onSelectedQuestionIdCreateQuestionChanged(questionId: String?) = effect {
         _selectedQuestionIdCreateQuestion.value = questionId
     }
@@ -795,9 +796,12 @@ class MainViewModel @Inject constructor(
     fun onCurrentAssessmentIdDraftChanged(assessmentId: String?) = effect {
         _currentAssessmentIdDraft.value = assessmentId
     }
+
+
     fun onAssessmentCreationOpenModeChanged(mode: AssessmentCreationOpenMode) = effect {
         _assessmentCreationOpenMode.value = mode
     }
+
 
     fun getVerifiedAssessmentsDraftForClassNetwork(
         classId: String,

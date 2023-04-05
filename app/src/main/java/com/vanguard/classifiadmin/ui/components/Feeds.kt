@@ -24,6 +24,9 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,6 +55,7 @@ import androidx.constraintlayout.compose.layoutId
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.FeedModel
 import com.vanguard.classifiadmin.domain.extensions.toAssessmentType
+import com.vanguard.classifiadmin.domain.helpers.UserRole
 import com.vanguard.classifiadmin.domain.helpers.lastModified
 import com.vanguard.classifiadmin.ui.screens.assessments.AssessmentType
 import com.vanguard.classifiadmin.ui.screens.dashboard.DefaultAvatar
@@ -61,16 +65,19 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 import com.vanguard.classifiadmin.ui.theme.Blue100
 import com.vanguard.classifiadmin.ui.theme.Green100
 import com.vanguard.classifiadmin.ui.theme.Red100
+import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 @Composable
 fun FeedItem(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     feed: FeedModel,
     currentUserId: String,
     onEngage: (FeedItemFeature) -> Unit,
     onOptions: () -> Unit,
     onDetails: (FeedModel) -> Unit,
     onViewReport: (FeedModel) -> Unit,
+    onTakeAssessment: (FeedModel) -> Unit,
 ) {
 
     Card(
@@ -148,7 +155,9 @@ fun FeedItem(
                     FeedType.Assessment.title -> {
                         FeedAssessmentBody(
                             feed = feed,
-                            onViewReport = onViewReport
+                            onViewReport = onViewReport,
+                            viewModel = viewModel,
+                            onTakeAssessment = onTakeAssessment,
                         )
                     }
 
@@ -167,15 +176,19 @@ fun FeedItem(
     }
 }
 
+
 @Composable
 fun FeedAssessmentBody(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     feed: FeedModel,
     onViewReport: (FeedModel) -> Unit,
+    onTakeAssessment: (FeedModel) -> Unit,
 ) {
     Card(
-        modifier = modifier.padding(12.dp)
-            .clickable {  },
+        modifier = modifier
+            .padding(12.dp)
+            .clickable { },
         elevation = 2.dp,
         border = BorderStroke(
             width = 1.dp,
@@ -190,8 +203,12 @@ fun FeedAssessmentBody(
         ) {
             FeedAssessmentBodyHeader(feed = feed, modifier = modifier)
             FeedAssessmentBodyMiddle(feed = feed, modifier = modifier)
-            FeedAssessmentBodyFooter(feed = feed, onViewReport = onViewReport,
-                modifier = modifier)
+            FeedAssessmentBodyFooter(
+                feed = feed, onViewReport = onViewReport,
+                modifier = modifier,
+                viewModel = viewModel,
+                onTakeAssessment = onTakeAssessment,
+            )
         }
     }
 }
@@ -217,7 +234,7 @@ fun FeedAssessmentBodyHeader(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Black100,
-                maxLines= 1,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = innerModifier.layoutId("header")
             )
@@ -225,7 +242,7 @@ fun FeedAssessmentBodyHeader(
             Text(
                 text = "feed.assessmentSubject.orEmpty()",
                 fontSize = 12.sp,
-                maxLines= 1,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 color = Black100.copy(0.2f),
                 modifier = innerModifier.layoutId("subheading")
@@ -306,20 +323,36 @@ fun FeedAssessmentBodyMiddle(
 }
 
 
-
 @Composable
 fun FeedAssessmentBodyFooter(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
     feed: FeedModel,
-    onViewReport: (FeedModel) -> Unit
+    onViewReport: (FeedModel) -> Unit,
+    onTakeAssessment: (FeedModel) -> Unit,
 ) {
+    val currentUserIdPref by viewModel.currentUserIdPref.collectAsState()
+    val currentUserRolePref by viewModel.currentUserRolePref.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getCurrentUserIdPref()
+        viewModel.getCurrentUserRolePref()
+    }
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
         PrimaryTextButton(
-            label = stringResource(id = R.string.view_report).uppercase(),
-            onClick = { onViewReport(feed) })
+            label = stringResource(
+                id =
+                if (currentUserRolePref == UserRole.SuperAdmin.name ||
+                    currentUserRolePref == UserRole.Admin.name
+                )
+                    R.string.take_assessment else
+                    R.string.view_report
+            ).uppercase(),
+            onClick = { onTakeAssessment(feed) })
     }
 }
 
@@ -420,6 +453,7 @@ fun DocumentThumbnail(
     }
 }
 
+
 private fun DocumentThumbnailConstraints(margin: Dp): ConstraintSet {
     return ConstraintSet {
         val icon = createRefFor("icon")
@@ -448,6 +482,7 @@ private fun DocumentThumbnailConstraints(margin: Dp): ConstraintSet {
         }
     }
 }
+
 
 @Composable
 fun DocumentIcon(
@@ -658,6 +693,7 @@ fun FeedItemHeader(
     }
 }
 
+
 private fun FeedItemHeaderConstraints(margin: Dp): ConstraintSet {
     return ConstraintSet {
         val avatar = createRefFor("avatar")
@@ -706,6 +742,7 @@ private fun FeedItemFeaturePreview() {
     )
 }
 
+
 @Composable
 @Preview
 private fun DocumentIconPreview() {
@@ -725,18 +762,6 @@ private fun AssessmentTypeIconPreview() {
 
 @Composable
 @Preview
-private fun FeedAssessmentBodyFooterPreview() {
-    FeedAssessmentBodyFooter(
-        feed = FeedModel(
-            feedId = "refd",
-            text = "feufejf"
-        ),
-        onViewReport = {}
-    )
-}
-
-@Composable
-@Preview
 private fun FeedAssessmentBodyMiddlePreview() {
     FeedAssessmentBodyMiddle(
         feed = FeedModel(
@@ -744,20 +769,5 @@ private fun FeedAssessmentBodyMiddlePreview() {
             text = "feufejf",
             assessmentEndTime = "4th Apr, 2023 6:34am"
         ),
-    )
-}
-
-@Composable
-@Preview
-private fun FeedAssessmentBodyPreview() {
-    FeedAssessmentBody(
-        feed = FeedModel(
-            feedId = "53fdfd",
-            text = "tusihgnef",
-            assessmentEndTime = "4th Apr, 2023 6:34am",
-        ),
-        onViewReport = {
-
-        }
     )
 }

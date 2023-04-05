@@ -39,6 +39,8 @@ import com.vanguard.classifiadmin.ui.screens.assessments.questions.CREATE_QUESTI
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.MODIFY_ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ModifyAssessmentScreen
+import com.vanguard.classifiadmin.ui.screens.attempt.briefing.BRIEFING_SCREEN
+import com.vanguard.classifiadmin.ui.screens.attempt.briefing.BriefingScreen
 import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN
 import com.vanguard.classifiadmin.ui.screens.calendar.MyCalendarScreen
 import com.vanguard.classifiadmin.ui.screens.classes.MANAGE_CLASS_SCREEN
@@ -122,6 +124,7 @@ object Destinations {
     const val studentDetail = STUDENT_DETAIL_SCREEN
     const val assessmentCreation = ASSESSMENT_CREATION_SCREEN
     const val createQuestion = CREATE_QUESTION_SCREEN
+    const val briefingScreen = BRIEFING_SCREEN
 }
 
 
@@ -153,6 +156,7 @@ fun NavGraph(
                 onStudentDetail = { navController.navigate(Destinations.studentDetail) },
                 onCreateAssessment = { navController.navigate(Destinations.assessmentCreation) },
                 onViewReport = { navController.navigate(Destinations.assessmentReport) },
+                onTakeAssessment = { navController.navigate(Destinations.briefingScreen) }
             )
         }
 
@@ -418,6 +422,12 @@ fun NavGraph(
                 onBack = { navController.navigate(Destinations.assessmentCreation) },
             )
         }
+
+        composable(Destinations.briefingScreen) {
+            BriefingScreen(
+               onBack = {navController.navigate(Destinations.dashboard)}
+            )
+        }
     }
 }
 
@@ -445,6 +455,7 @@ fun BottomNavGraph(
     onFeedDetail: (FeedModel) -> Unit,
     onCreateQuestions: () -> Unit,
     onViewReport: (FeedModel) -> Unit,
+    onTakeAssessment: (FeedModel) -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -458,7 +469,8 @@ fun BottomNavGraph(
                 viewModel = viewModel,
                 onSelectClasses = onSelectClasses,
                 onDetails = onFeedDetail,
-                onViewReport = onViewReport
+                onViewReport = onViewReport,
+                onTakeAssessment = onTakeAssessment,
             )
         }
 

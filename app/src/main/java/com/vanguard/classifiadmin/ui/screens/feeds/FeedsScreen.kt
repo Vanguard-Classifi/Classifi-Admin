@@ -87,6 +87,13 @@ import java.util.UUID
 
 const val FEEDS_SCREEN = "feeds_screen"
 
+/**
+ * A screen where you get to create and manage
+ * feeds. A feed may be a discussion, an assessment,
+ * a live class or a lesson.
+ * All these can be created from this screen
+ */
+
 @Composable
 fun FeedsScreen(
     modifier: Modifier = Modifier,
@@ -94,14 +101,17 @@ fun FeedsScreen(
     onSelectClasses: () -> Unit,
     onDetails: (FeedModel) -> Unit,
     onViewReport: (FeedModel) -> Unit,
+    onTakeAssessment: (FeedModel) -> Unit,
 ) {
     FeedsScreenContent(
         viewModel = viewModel,
         onSelectClasses = onSelectClasses,
         onDetails = onDetails,
         onViewReport = onViewReport,
+        onTakeAssessment = onTakeAssessment,
     )
 }
+
 
 @Composable
 fun FeedsScreenContent(
@@ -110,6 +120,7 @@ fun FeedsScreenContent(
     onSelectClasses: () -> Unit,
     onDetails: (FeedModel) -> Unit,
     onViewReport: (FeedModel) -> Unit,
+    onTakeAssessment: (FeedModel) -> Unit,
 ) {
     val TAG = "FeedsScreenContent"
     var upcomingActivitiesExpanded by remember { mutableStateOf(false) }
@@ -241,10 +252,7 @@ fun FeedsScreenContent(
                                             currentSchoolIdPref.orEmpty()
                                         )
                                         delay(1000)
-                                        Log.e(
-                                            TAG,
-                                            "FeedsScreenContent:  staged classes is not empty ${stagedFeedsNetwork.data?.isNotEmpty()}",
-                                        )
+
                                         if (stagedFeedsNetwork is Resource.Success &&
                                             stagedFeedsNetwork.data?.isNotEmpty() == true
                                         ) {
@@ -348,6 +356,13 @@ fun FeedsScreenContent(
                                                     it.feedId
                                                 )
                                                 onViewReport(it)
+                                            },
+                                            viewModel = viewModel,
+                                            onTakeAssessment = {
+                                                viewModel.onCurrentAssessmentIdPublishedChanged(
+                                                    it.feedId
+                                                )
+                                                onTakeAssessment(it)
                                             }
                                         )
                                     }
@@ -475,6 +490,7 @@ fun DiscussionBox(
         }
     }
 }
+
 
 @Composable
 fun CreateDiscussionSection(
