@@ -92,6 +92,11 @@ fun BriefingScreenContent(
             feedByIdNetwork.data?.assessmentType.orEmpty()
         } else ""
     }
+    val endTime = remember(feedByIdNetwork.data){
+        if(feedByIdNetwork is Resource.Success && feedByIdNetwork.data != null){
+            feedByIdNetwork.data?.assessmentEndTime.orEmpty()
+        } else ""
+    }
 
     LaunchedEffect(Unit){
         viewModel.getCurrentSchoolIdPref()
@@ -132,13 +137,13 @@ fun BriefingScreenContent(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "Class 2",
+                    text = currentClass,
                     fontSize = 16.sp,
                     color = Black100,
                 )
 
                 Text(
-                    text = "HomeWork",
+                    text = assessmentType,
                     fontSize = 22.sp,
                     color = Black100,
                     fontWeight = FontWeight.Bold,
@@ -147,7 +152,7 @@ fun BriefingScreenContent(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "This assessment should be submitted latest 23rd April, 2023 by 08:00am. Goodluck!",
+                    text = "This assessment should be submitted latest $endTime. Goodluck!",
                     fontSize = 14.sp,
                     color = Black100,
                     maxLines = 3,
