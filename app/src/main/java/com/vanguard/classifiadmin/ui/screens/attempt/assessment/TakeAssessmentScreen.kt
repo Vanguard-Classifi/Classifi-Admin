@@ -1,23 +1,39 @@
 package com.vanguard.classifiadmin.ui.screens.attempt.assessment
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProgressIndicatorDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.text.buildSpannedString
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.data.local.models.QuestionModel
 import com.vanguard.classifiadmin.domain.extensions.supportWideScreen
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
+import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
+import com.vanguard.classifiadmin.ui.theme.Black100
+
 
 @Composable
 fun TakeAssessmentScreen(
@@ -32,7 +48,11 @@ fun TakeAssessmentScreen(
 ) {
     Surface(modifier = Modifier.supportWideScreen()) {
         Scaffold(
-            topBar = {},
+            topBar = {TakeAssessmentScreenTopBar(
+                onClosePressed = onClosePressed,
+                questionCount = takeAssessmentData.questionCount,
+                questionIndex = takeAssessmentData.questionIndex
+            )},
             content = content,
             bottomBar = {
                 TakeAssessmentScreenBottomBar(
@@ -45,6 +65,62 @@ fun TakeAssessmentScreen(
                 )
             }
         )
+    }
+}
+
+
+@Composable
+fun TakeAssessmentScreenTopBar(
+    modifier: Modifier = Modifier,
+    onClosePressed: () -> Unit,
+    questionIndex: Int,
+    questionCount: Int,
+) {
+
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
+        ){
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "34:23",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Black100.copy(0.8f)
+                )
+
+                RoundedIconButton(
+                    onClick = onClosePressed,
+                    icon = R.drawable.icon_close
+                )
+            }
+
+            Text(
+                text = "$questionIndex of $questionCount",
+                fontSize = 12.sp,
+                color = Black100.copy(0.8f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(22.dp))
+        val animatedProgress by animateFloatAsState(
+            targetValue = (questionIndex + 1) / questionCount.toFloat(),
+            animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
+        )
+
+        LinearProgressIndicator(
+            progress = animatedProgress,
+            modifier = Modifier
+                .fillMaxWidth(),
+            color = MaterialTheme.colors.primary,
+            backgroundColor = Black100.copy(0.1f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
