@@ -48,6 +48,7 @@ import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionDiffi
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOption
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionOptionTrueFalse
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.QuestionType
+import com.vanguard.classifiadmin.ui.screens.attempt.assessment.TakeAssessmentData
 import com.vanguard.classifiadmin.ui.screens.classes.AcademicLevel
 import com.vanguard.classifiadmin.ui.screens.classes.JoinClassOption
 import com.vanguard.classifiadmin.ui.screens.dashboard.ClassFilterMode
@@ -750,7 +751,8 @@ class MainViewModel @Inject constructor(
 
     private var _assessmentCreationOpenMode =
         MutableStateFlow(AssessmentCreationOpenMode.Editor as AssessmentCreationOpenMode)
-    val assessmentCreationOpenMode: StateFlow<AssessmentCreationOpenMode> = _assessmentCreationOpenMode
+    val assessmentCreationOpenMode: StateFlow<AssessmentCreationOpenMode> =
+        _assessmentCreationOpenMode
 
     private var _currentAssessmentIdDraft = MutableStateFlow(null as String?)
     val currentAssessmentIdDraft: StateFlow<String?> = _currentAssessmentIdDraft
@@ -768,6 +770,37 @@ class MainViewModel @Inject constructor(
 
     private var _currentAssessmentIdPublished = MutableStateFlow(null as String?)
     val currentAssessmentIdPublished: StateFlow<String?> = _currentAssessmentIdPublished
+
+    private var _isAssessmentComplete = MutableStateFlow(false)
+    val isAssessmentComplete: StateFlow<Boolean> = _isAssessmentComplete
+
+    private var _isNextQuestionEnabled = MutableStateFlow(false)
+    val isNextQuestionEnabled: StateFlow<Boolean> = _isNextQuestionEnabled
+
+    private var _takeAssessmentData = MutableStateFlow(null as TakeAssessmentData?)
+    val takeAssessmentData: StateFlow<TakeAssessmentData?> = _takeAssessmentData
+
+    fun onNextQuestionEnabledChanged(enabled: Boolean) = effect {
+        _isNextQuestionEnabled.value = enabled
+    }
+    fun onNextPressed() = effect {
+
+    }
+
+    fun onPreviousPressed() = effect {
+
+    }
+
+    fun onDonePressed() = effect {
+
+    }
+    fun onTakeAssessmentDataChanged(data: TakeAssessmentData?) = effect {
+        _takeAssessmentData.value = data
+    }
+
+    fun onAssessmentCompleteChanged(complete: Boolean) = effect {
+        _isAssessmentComplete.value = complete
+    }
 
     fun onCurrentAssessmentIdPublishedChanged(assessmentId: String?) = effect {
         _currentAssessmentIdPublished.value = assessmentId
@@ -787,7 +820,7 @@ class MainViewModel @Inject constructor(
     ) = effect {
         repository.getVerifiedQuestionsByAssessmentNetwork(
             assessmentId, schoolId
-        ){
+        ) {
             _verifiedQuestionsByAssessmentNetwork.value = it
         }
     }
@@ -807,7 +840,7 @@ class MainViewModel @Inject constructor(
         classId: String,
         schoolId: String,
     ) = effect {
-        repository.getVerifiedAssessmentsDraftForClassNetwork(classId, schoolId){
+        repository.getVerifiedAssessmentsDraftForClassNetwork(classId, schoolId) {
             _verifiedAssessmentsDraftForClassNetwork.value = it
         }
     }
@@ -816,7 +849,7 @@ class MainViewModel @Inject constructor(
         classId: String,
         schoolId: String,
     ) = effect {
-        repository.getVerifiedAssessmentsInReviewForClassNetwork(classId, schoolId){
+        repository.getVerifiedAssessmentsInReviewForClassNetwork(classId, schoolId) {
             _verifiedAssessmentsInReviewForClassNetwork.value = it
         }
     }
@@ -825,7 +858,7 @@ class MainViewModel @Inject constructor(
         classId: String,
         schoolId: String,
     ) = effect {
-        repository.getVerifiedAssessmentsPublishedForClassNetwork(classId, schoolId){
+        repository.getVerifiedAssessmentsPublishedForClassNetwork(classId, schoolId) {
             _verifiedAssessmentsPublishedForClassNetwork.value = it
         }
     }
@@ -833,7 +866,7 @@ class MainViewModel @Inject constructor(
     fun getVerifiedAssessmentsDraftNetwork(
         schoolId: String,
     ) = effect {
-        repository.getVerifiedAssessmentsDraftNetwork(schoolId){
+        repository.getVerifiedAssessmentsDraftNetwork(schoolId) {
             _verifiedAssessmentsDraftNetwork.value = it
         }
     }
@@ -841,7 +874,7 @@ class MainViewModel @Inject constructor(
     fun getVerifiedAssessmentsInReviewNetwork(
         schoolId: String,
     ) = effect {
-        repository.getVerifiedAssessmentsInReviewNetwork(schoolId){
+        repository.getVerifiedAssessmentsInReviewNetwork(schoolId) {
             _verifiedAssessmentsInReviewNetwork.value = it
         }
     }
@@ -849,7 +882,7 @@ class MainViewModel @Inject constructor(
     fun getVerifiedAssessmentsPublishedNetwork(
         schoolId: String,
     ) = effect {
-        repository.getVerifiedAssessmentsPublishedNetwork(schoolId){
+        repository.getVerifiedAssessmentsPublishedNetwork(schoolId) {
             _verifiedAssessmentsPublishedNetwork.value = it
         }
     }

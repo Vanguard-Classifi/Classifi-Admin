@@ -39,6 +39,8 @@ import com.vanguard.classifiadmin.ui.screens.assessments.questions.CREATE_QUESTI
 import com.vanguard.classifiadmin.ui.screens.assessments.questions.CreateQuestionScreen
 import com.vanguard.classifiadmin.ui.screens.assessments.MODIFY_ASSESSMENT_SCREEN
 import com.vanguard.classifiadmin.ui.screens.assessments.ModifyAssessmentScreen
+import com.vanguard.classifiadmin.ui.screens.attempt.assessment.ASSESSMENT_MANAGEMENT_SCREEN
+import com.vanguard.classifiadmin.ui.screens.attempt.assessment.AssessmentManagementScreen
 import com.vanguard.classifiadmin.ui.screens.attempt.briefing.BRIEFING_SCREEN
 import com.vanguard.classifiadmin.ui.screens.attempt.briefing.BriefingScreen
 import com.vanguard.classifiadmin.ui.screens.calendar.CALENDAR_SCREEN
@@ -125,6 +127,7 @@ object Destinations {
     const val assessmentCreation = ASSESSMENT_CREATION_SCREEN
     const val createQuestion = CREATE_QUESTION_SCREEN
     const val briefingScreen = BRIEFING_SCREEN
+    const val assessmentManagement = ASSESSMENT_MANAGEMENT_SCREEN
 }
 
 
@@ -425,7 +428,15 @@ fun NavGraph(
 
         composable(Destinations.briefingScreen) {
             BriefingScreen(
-               onBack = {navController.navigate(Destinations.dashboard)},
+                onBack = { navController.navigate(Destinations.dashboard) },
+                viewModel = viewModel,
+                onStartAssessment = { navController.navigate(Destinations.assessmentManagement) }
+            )
+        }
+
+        composable(Destinations.assessmentManagement) {
+            AssessmentManagementScreen(
+                onBack = { navController.navigate(Destinations.briefingScreen) },
                 viewModel = viewModel,
             )
         }

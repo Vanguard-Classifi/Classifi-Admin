@@ -418,8 +418,10 @@ fun PrimaryTextButtonFillWidth(
     modifier: Modifier = Modifier,
     label: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
     TextButton(
+        enabled = enabled,
         onClick = onClick,
         shape = CircleShape,
         modifier = modifier

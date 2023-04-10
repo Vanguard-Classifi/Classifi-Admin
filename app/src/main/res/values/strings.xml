@@ -239,4 +239,6 @@
     <string name="take_assessment">Take Assessment</string>
     <string name="assessment_image">Assessment Image</string>
     <string name="start_assessment">Start</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
 </resources>
