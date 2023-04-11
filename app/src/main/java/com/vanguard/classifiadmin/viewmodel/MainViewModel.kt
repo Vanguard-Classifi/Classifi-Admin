@@ -58,9 +58,11 @@ import com.vanguard.classifiadmin.ui.screens.feeds.FeedDetailMode
 import com.vanguard.classifiadmin.ui.screens.importations.ImportTeacherRequest
 import com.vanguard.classifiadmin.ui.screens.profile.AccountBottomSheetState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.lang.IllegalStateException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -777,25 +779,132 @@ class MainViewModel @Inject constructor(
     private var _isNextQuestionEnabled = MutableStateFlow(false)
     val isNextQuestionEnabled: StateFlow<Boolean> = _isNextQuestionEnabled
 
-    private var _takeAssessmentData = MutableStateFlow(null as TakeAssessmentData?)
-    val takeAssessmentData: StateFlow<TakeAssessmentData?> = _takeAssessmentData
+    private var _takeAssessmentData =
+        MutableStateFlow(Resource.Loading<TakeAssessmentData?>() as Resource<TakeAssessmentData?>)
+    val takeAssessmentData: StateFlow<Resource<TakeAssessmentData?>> = _takeAssessmentData
+
+    private var _providedAnswer = MutableStateFlow(null as String?)
+    val providedAnswer: StateFlow<String?> = _providedAnswer
+
+    private var _currentQuestionIndex = MutableStateFlow(0)
+    val currentQuestionIndex: StateFlow<Int> = _currentQuestionIndex
+
+    private var _questionByIndexNetwork =
+        MutableStateFlow(Resource.Loading<QuestionNetworkModel?>() as Resource<QuestionNetworkModel?>)
+    val questionByIndexNetwork: StateFlow<Resource<QuestionNetworkModel?>> =
+        _questionByIndexNetwork
+
+    fun getQuestionByIndexNetwork(
+        index: Int,
+        assessmentId: String,
+        schoolId: String,
+    ) = effect {
+        repository.getQuestionByIndexNetwork(
+            index, assessmentId, schoolId
+        ) {
+            _questionByIndexNetwork.value = it
+        }
+    }
+
+    fun onIncCurrentQuestionIndex() = effect {
+        _currentQuestionIndex.value++
+    }
+
+    fun onDecCurrentQuestionIndex() = effect {
+        if (_currentQuestionIndex.value > 0)
+            _currentQuestionIndex.value--
+    }
+
+    fun onProvideAnswer(answer: String?) = effect {
+        _providedAnswer.value = answer
+    }
 
     fun onNextQuestionEnabledChanged(enabled: Boolean) = effect {
         _isNextQuestionEnabled.value = enabled
     }
-    fun onNextPressed() = effect {
 
+    fun onNextPressed() = effect {
+        changeQuestion(_currentQuestionIndex.value + 1)
+    }
+
+    fun initAssessment() = effect {
+        changeQuestion(0)
+    }
+
+    private fun changeQuestion(newQuestionIndex: Int) = effect {
+        _currentQuestionIndex.value = newQuestionIndex
+        val assessmentData = createTakeAssessmentData()
+        if (assessmentData is Resource.Success && assessmentData.data != null) {
+            onTakeAssessmentDataChanged(assessmentData.data)
+            _isNextQuestionEnabled.value = getIsNextQuestionEnabled()
+            return@effect
+        }
+    }
+
+    private fun createTakeAssessmentData(): Resource<TakeAssessmentData?> {
+        return try {
+            val questionCount = _verifiedQuestionsByAssessmentNetwork.value.data?.size!!
+            //create assessment question by index
+            this.getQuestionByIndexNetwork(
+                _currentQuestionIndex.value + 1,
+                _currentAssessmentIdPublished.value.orEmpty(),
+                _currentSchoolIdPref.value.orEmpty()
+            )
+            Log.e(
+                TAG,
+                "createTakeAssessmentData: assessment first index is $${_currentQuestionIndex.value}"
+            )
+
+            if (_questionByIndexNetwork.value is Resource.Success && _questionByIndexNetwork.value.data != null) {
+                val assessmentData = _questionByIndexNetwork.value.data?.toLocal()?.let {
+                    TakeAssessmentData(
+                        questionIndex = _currentQuestionIndex.value,
+                        questionCount = questionCount,
+                        shouldShowPreviousButton = _currentQuestionIndex.value > 0,
+                        shouldShowDoneButton =
+                        _currentQuestionIndex.value == questionCount - 1,
+                        currentQuestion = it
+                    )
+                }
+
+                Resource.Success(assessmentData)
+            } else {
+                Resource.Error("Couldn't load assessment data")
+            }
+
+        } catch (e: Exception) {
+            Resource.Error("Couldn't fetch assessment data")
+        }
+
+    }
+
+    private fun getIsNextQuestionEnabled(): Boolean {
+        return try {
+            if(_takeAssessmentData.value is Resource.Success && _takeAssessmentData.value.data != null){
+                val questionCount = _takeAssessmentData.value.data?.questionCount
+                val questionIndex = _takeAssessmentData.value.data?.questionIndex
+                if (questionCount != null && questionIndex != null) {
+                    questionCount > questionIndex
+                } else false
+            } else false
+        } catch (e: NullPointerException) {
+            e.printStackTrace()
+            false
+        }
     }
 
     fun onPreviousPressed() = effect {
-
+        if (_currentQuestionIndex.value == 0)
+            throw IllegalStateException("onPreviousPressed when on question index is 0")
+        changeQuestion(_currentQuestionIndex.value - 1)
     }
 
     fun onDonePressed() = effect {
-
+        this.onAssessmentCompleteChanged(true)
     }
+
     fun onTakeAssessmentDataChanged(data: TakeAssessmentData?) = effect {
-        _takeAssessmentData.value = data
+        _takeAssessmentData.value = Resource.Success(data)
     }
 
     fun onAssessmentCompleteChanged(complete: Boolean) = effect {

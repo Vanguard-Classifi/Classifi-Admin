@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.ui.screens.attempt.assessment
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +40,7 @@ import com.vanguard.classifiadmin.ui.theme.Black100
 @Composable
 fun TakeAssessmentScreen(
     modifier: Modifier = Modifier,
-    takeAssessmentData: TakeAssessmentData,
+    takeAssessmentData: TakeAssessmentData?,
     isNextEnabled: Boolean,
     onClosePressed: () -> Unit,
     onPreviousPressed: () -> Unit,
@@ -46,18 +48,22 @@ fun TakeAssessmentScreen(
     onDonePressed: () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
+    LaunchedEffect(Unit){
+    }
     Surface(modifier = Modifier.supportWideScreen()) {
         Scaffold(
-            topBar = {TakeAssessmentScreenTopBar(
-                onClosePressed = onClosePressed,
-                questionCount = takeAssessmentData.questionCount,
-                questionIndex = takeAssessmentData.questionIndex
-            )},
+            topBar = {
+                TakeAssessmentScreenTopBar(
+                    onClosePressed = onClosePressed,
+                    questionCount = takeAssessmentData?.questionCount ?: 0,
+                    questionIndex = takeAssessmentData?.questionIndex ?: 0
+                )
+            },
             content = content,
             bottomBar = {
                 TakeAssessmentScreenBottomBar(
-                    shouldShowPreviousButton = takeAssessmentData.shouldShowPreviousButton,
-                    shouldShowDoneButton = takeAssessmentData.shouldShowDoneButton,
+                    shouldShowPreviousButton = takeAssessmentData?.shouldShowPreviousButton ?: false,
+                    shouldShowDoneButton = takeAssessmentData?.shouldShowDoneButton ?: false,
                     isNextButtonEnabled = isNextEnabled,
                     onPreviousPressed = onPreviousPressed,
                     onNextPressed = onNextPressed,
@@ -76,12 +82,15 @@ fun TakeAssessmentScreenTopBar(
     questionIndex: Int,
     questionCount: Int,
 ) {
+    val TAG = "TakeAssessmentScreenTopBar"
 
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp)) {
         Spacer(modifier = Modifier.height(16.dp))
         Box(
             modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
-        ){
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -112,6 +121,9 @@ fun TakeAssessmentScreenTopBar(
             targetValue = (questionIndex + 1) / questionCount.toFloat(),
             animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
         )
+
+        Log.e(TAG, "TakeAssessmentScreenTopBar: questionIndex is $questionIndex")
+        Log.e(TAG, "TakeAssessmentScreenTopBar: questionCount is $questionCount")
 
         LinearProgressIndicator(
             progress = animatedProgress,
@@ -179,7 +191,7 @@ data class TakeAssessmentData(
 ) {
     companion object {
         val Default = TakeAssessmentData(
-            questionIndex = -1,
+            questionIndex = 0,
             questionCount = 0,
             shouldShowPreviousButton = false,
             shouldShowDoneButton = false,

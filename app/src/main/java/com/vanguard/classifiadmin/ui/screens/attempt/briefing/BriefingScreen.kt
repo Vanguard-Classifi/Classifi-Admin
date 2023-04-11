@@ -121,6 +121,10 @@ fun BriefingScreenContent(
             currentAssessmentIdPublished.orEmpty(),
             currentSchoolIdPref.orEmpty()
         )
+        viewModel.getVerifiedQuestionsByAssessmentNetwork(
+            currentAssessmentIdPublished.orEmpty(),
+            currentSchoolIdPref.orEmpty()
+        )
     }
 
     Surface(modifier = Modifier) {
