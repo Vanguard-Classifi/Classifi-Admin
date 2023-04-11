@@ -125,6 +125,7 @@ fun BriefingScreenContent(
             currentAssessmentIdPublished.orEmpty(),
             currentSchoolIdPref.orEmpty()
         )
+
     }
 
     Surface(modifier = Modifier) {

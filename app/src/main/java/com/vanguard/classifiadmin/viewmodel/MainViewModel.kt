@@ -817,6 +817,7 @@ class MainViewModel @Inject constructor(
 
     fun onProvideAnswer(answer: String?) = effect {
         _providedAnswer.value = answer
+        Log.e(TAG, "onProvideAnswer: the provided answer is ${_providedAnswer.value}")
     }
 
     fun onNextQuestionEnabledChanged(enabled: Boolean) = effect {
@@ -903,11 +904,11 @@ class MainViewModel @Inject constructor(
         this.onAssessmentCompleteChanged(true)
     }
 
-    fun onTakeAssessmentDataChanged(data: TakeAssessmentData?) = effect {
+    private fun onTakeAssessmentDataChanged(data: TakeAssessmentData?) = effect {
         _takeAssessmentData.value = Resource.Success(data)
     }
 
-    fun onAssessmentCompleteChanged(complete: Boolean) = effect {
+    private fun onAssessmentCompleteChanged(complete: Boolean) = effect {
         _isAssessmentComplete.value = complete
     }
 

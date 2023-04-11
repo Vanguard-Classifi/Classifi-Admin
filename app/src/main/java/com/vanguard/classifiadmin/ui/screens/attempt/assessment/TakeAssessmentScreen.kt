@@ -48,8 +48,9 @@ fun TakeAssessmentScreen(
     onDonePressed: () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    LaunchedEffect(Unit){
-    }
+    val TAG = "TakeAssessmentScreen"
+    Log.e(TAG, "TakeAssessmentScreen: the take assessment screen is called")
+
     Surface(modifier = Modifier.supportWideScreen()) {
         Scaffold(
             topBar = {
@@ -110,7 +111,7 @@ fun TakeAssessmentScreenTopBar(
             }
 
             Text(
-                text = "$questionIndex of $questionCount",
+                text = "${questionIndex + 1} of $questionCount",
                 fontSize = 12.sp,
                 color = Black100.copy(0.8f)
             )

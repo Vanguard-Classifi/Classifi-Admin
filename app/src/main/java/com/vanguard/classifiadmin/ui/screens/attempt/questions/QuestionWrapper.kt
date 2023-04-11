@@ -28,16 +28,16 @@ fun QuestionWrapper(
 ) {
     Column(
         modifier = modifier
-            .padding(horizontal = 16.dp)
+            .padding(start = 16.dp, end = 16.dp, bottom = 102.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = modifier.height(32.dp))
         QuestionTitle(title = title)
         directionsRes?.let {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = modifier.height(8.dp))
             QuestionDirections(directions = it)
         }
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = modifier.height(18.dp))
         content()
     }
 }
