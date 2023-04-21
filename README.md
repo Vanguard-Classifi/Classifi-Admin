@@ -23,6 +23,8 @@ teachers, parents and the management of schools**
 
 ### Some Screenshots of the app
 
+![image](screenshots/Screenshot_20230421-233220.png)
+![image](screenshots/Screenshot_20230421-233227.png)
 ![image](screenshots/Screenshot_20230421-225331.png)
 ![image](screenshots/Screenshot_20230421-225344.png)
 ![image](screenshots/Screenshot_20230421-225425.png)
