@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProgressIndicatorDefaults
@@ -19,6 +20,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,14 +36,15 @@ import com.vanguard.classifiadmin.ui.components.PrimaryTextButton
 import com.vanguard.classifiadmin.ui.components.PrimaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.components.RoundedIconButton
 import com.vanguard.classifiadmin.ui.components.SecondaryTextButton
+import com.vanguard.classifiadmin.ui.components.SecondaryTextButtonFillWidth
 import com.vanguard.classifiadmin.ui.theme.Black100
+import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 
 @Composable
 fun TakeAssessmentScreen(
     modifier: Modifier = Modifier,
-    takeAssessmentData: TakeAssessmentData?,
-    isNextEnabled: Boolean,
+    viewModel: MainViewModel,
     onClosePressed: () -> Unit,
     onPreviousPressed: () -> Unit,
     onNextPressed: () -> Unit,
@@ -49,23 +52,31 @@ fun TakeAssessmentScreen(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val TAG = "TakeAssessmentScreen"
+    val isNextQuestionEnabled by viewModel.isNextQuestionEnabled.collectAsState()
+    val takeAssessmentData by viewModel.takeAssessmentData.collectAsState()
+
     Log.e(TAG, "TakeAssessmentScreen: the take assessment screen is called")
+    Log.e(
+        TAG,
+        "TakeAssessmentScreen: current assessment data index is ${takeAssessmentData.data?.questionIndex}"
+    )
+
 
     Surface(modifier = Modifier.supportWideScreen()) {
         Scaffold(
             topBar = {
                 TakeAssessmentScreenTopBar(
                     onClosePressed = onClosePressed,
-                    questionCount = takeAssessmentData?.questionCount ?: 0,
-                    questionIndex = takeAssessmentData?.questionIndex ?: 0
+                    questionCount = takeAssessmentData.data?.questionCount ?: 0,
+                    questionIndex = takeAssessmentData.data?.questionIndex ?: 0
                 )
             },
             content = content,
             bottomBar = {
                 TakeAssessmentScreenBottomBar(
-                    shouldShowPreviousButton = takeAssessmentData?.shouldShowPreviousButton ?: false,
-                    shouldShowDoneButton = takeAssessmentData?.shouldShowDoneButton ?: false,
-                    isNextButtonEnabled = isNextEnabled,
+                    shouldShowPreviousButton = takeAssessmentData.data?.shouldShowPreviousButton ?: false,
+                    shouldShowDoneButton = takeAssessmentData.data?.shouldShowDoneButton ?: false,
+                    isNextButtonEnabled = isNextQuestionEnabled,
                     onPreviousPressed = onPreviousPressed,
                     onNextPressed = onNextPressed,
                     onDonePressed = onDonePressed
@@ -123,9 +134,6 @@ fun TakeAssessmentScreenTopBar(
             animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
         )
 
-        Log.e(TAG, "TakeAssessmentScreenTopBar: questionIndex is $questionIndex")
-        Log.e(TAG, "TakeAssessmentScreenTopBar: questionCount is $questionCount")
-
         LinearProgressIndicator(
             progress = animatedProgress,
             modifier = Modifier
@@ -148,6 +156,8 @@ fun TakeAssessmentScreenBottomBar(
     onNextPressed: () -> Unit,
     onDonePressed: () -> Unit,
 ) {
+    val TAG = "TakeAssessmentScreenBottomBar"
+
     Surface(modifier = Modifier.fillMaxWidth(), elevation = 7.dp) {
         Row(
             modifier = Modifier
@@ -157,11 +167,12 @@ fun TakeAssessmentScreenBottomBar(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             if (shouldShowPreviousButton) {
-                SecondaryTextButton(
+                SecondaryTextButtonFillWidth(
                     label = stringResource(id = R.string.previous),
                     onClick = onPreviousPressed,
                     modifier = Modifier.weight(1f),
                 )
+                Spacer(modifier = Modifier.width(4.dp))
             }
             if (shouldShowDoneButton) {
                 PrimaryTextButtonFillWidth(

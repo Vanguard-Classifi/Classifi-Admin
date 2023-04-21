@@ -9,6 +9,7 @@ import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
+import com.vanguard.classifiadmin.data.network.models.QuestionResponseNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -29,6 +30,7 @@ object Collections {
     const val collectionComments = "collection_comments"
     const val collectionAssessments = "collection_assessments"
     const val collectionQuestions = "collection_questions"
+    const val collectionQuestionResponses = "collection_question_responses"
 }
 
 
@@ -2010,6 +2012,104 @@ class FirestoreManagerImpl @Inject constructor() : FirestoreManager {
                 .addOnFailureListener { onResult(Resource.Error("Could not fetch question")) }
         } catch (e: Exception) {
             onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun saveQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(response.schoolId.orEmpty())
+                .collection(Collections.collectionQuestionResponses)
+                .document(response.responseId.orEmpty())
+                .set(response)
+                .addOnSuccessListener { onResult(true) }
+                .addOnFailureListener { onResult(false) }
+        } catch (e: Exception) {
+            onResult(false)
+        }
+    }
+
+    override suspend fun getQuestionResponseByPositionNetwork(
+        position: Int,
+        schoolId: String,
+        studentId: String,
+        assessmentId: String,
+        onResult: (Resource<QuestionResponseNetworkModel?>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionQuestionResponses)
+                .whereEqualTo("parentAssessmentId", assessmentId)
+                .whereEqualTo("studentId", studentId)
+                .whereEqualTo("position", position)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<QuestionResponseNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<QuestionResponseNetworkModel>())
+                    }
+                    if (results.isNotEmpty()) {
+                        onResult(Resource.Success(results.first()))
+                    } else onResult(Resource.Success(null))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Couldn't fetch question responses"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun getQuestionResponsesForStudentByAssessmentNetwork(
+        studentId: String,
+        schoolId: String,
+        assessmentId: String,
+        onResult: (Resource<List<QuestionResponseNetworkModel>>) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(schoolId)
+                .collection(Collections.collectionQuestionResponses)
+                .whereEqualTo("parentAssessmentId", assessmentId)
+                .whereEqualTo("studentId", studentId)
+                .get()
+                .addOnSuccessListener { docs ->
+                    val results = ArrayList<QuestionResponseNetworkModel>()
+                    for (doc in docs!!) {
+                        results.add(doc.toObject<QuestionResponseNetworkModel>())
+                    }
+                    onResult(Resource.Success(results))
+                }
+                .addOnFailureListener {
+                    onResult(Resource.Error("Couldn't fetch question responses"))
+                }
+        } catch (e: Exception) {
+            onResult(Resource.Error("Something went wrong"))
+        }
+    }
+
+    override suspend fun deleteQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        try {
+            firestore.collection(Collections.collectionSchools)
+                .document(response.schoolId.orEmpty())
+                .collection(Collections.collectionQuestionResponses)
+                .document(response.responseId.orEmpty())
+                .delete()
+                .addOnSuccessListener {
+                    onResult(true)
+                }
+                .addOnFailureListener {
+                    onResult(false)
+                }
+        } catch (e: Exception) {
+            onResult(false)
         }
     }
 }

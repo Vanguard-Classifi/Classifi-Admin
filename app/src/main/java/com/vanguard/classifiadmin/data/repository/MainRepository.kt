@@ -8,6 +8,7 @@ import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
+import com.vanguard.classifiadmin.data.network.models.QuestionResponseNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -476,5 +477,31 @@ interface MainRepository {
         schoolId: String,
         authorId: String,
         onResult: (Resource<List<QuestionNetworkModel>>) -> Unit,
+    )
+
+    //question response
+    suspend fun saveQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit,
+    )
+
+    suspend fun getQuestionResponseByPositionNetwork(
+        position: Int,
+        schoolId: String,
+        studentId: String,
+        assessmentId: String,
+        onResult: (Resource<QuestionResponseNetworkModel?>) -> Unit
+    )
+
+    suspend fun getQuestionResponsesForStudentByAssessmentNetwork(
+        studentId: String,
+        schoolId: String,
+        assessmentId: String,
+        onResult: (Resource<List<QuestionResponseNetworkModel>>) -> Unit
+    )
+
+    suspend fun deleteQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit
     )
 }

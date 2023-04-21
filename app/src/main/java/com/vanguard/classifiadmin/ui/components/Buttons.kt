@@ -350,6 +350,37 @@ fun LocalIconButton(
     }
 }
 
+@Composable
+fun SecondaryTextButtonFillWidth(
+    modifier: Modifier = Modifier,
+    label: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+        shape = CircleShape,
+        modifier = modifier
+            .clip(CircleShape),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primary,
+        ),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Color.Transparent,
+            contentColor = MaterialTheme.colors.primary,
+            disabledBackgroundColor = Color.Transparent,
+        )
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+    }
+}
+
 
 @Composable
 fun SecondaryTextButton(

@@ -9,6 +9,7 @@ import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
+import com.vanguard.classifiadmin.data.network.models.QuestionResponseNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -772,6 +773,43 @@ class MainRepositoryImpl @Inject constructor(
         onResult: (Resource<List<QuestionNetworkModel>>) -> Unit
     ) {
         firestoreManager.getStagedQuestionsNetwork(schoolId, authorId, onResult)
+    }
+
+    override suspend fun saveQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.saveQuestionResponseNetwork(response, onResult)
+    }
+
+    override suspend fun getQuestionResponseByPositionNetwork(
+        position: Int,
+        schoolId: String,
+        studentId: String,
+        assessmentId: String,
+        onResult: (Resource<QuestionResponseNetworkModel?>) -> Unit
+    ) {
+        firestoreManager.getQuestionResponseByPositionNetwork(
+            position, schoolId, studentId, assessmentId, onResult
+        )
+    }
+
+    override suspend fun getQuestionResponsesForStudentByAssessmentNetwork(
+        studentId: String,
+        schoolId: String,
+        assessmentId: String,
+        onResult: (Resource<List<QuestionResponseNetworkModel>>) -> Unit
+    ) {
+        firestoreManager.getQuestionResponsesForStudentByAssessmentNetwork(
+            studentId, schoolId, assessmentId, onResult
+        )
+    }
+
+    override suspend fun deleteQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestoreManager.deleteQuestionResponseNetwork(response, onResult)
     }
 
 }

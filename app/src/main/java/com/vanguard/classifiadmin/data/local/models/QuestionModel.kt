@@ -44,4 +44,10 @@ data class QuestionModel(
         position = position,
         lastModified = lastModified,
     )
+
+    companion object {
+        val Default = QuestionModel(
+            questionId = "<Unknown>",
+        )
+    }
 }

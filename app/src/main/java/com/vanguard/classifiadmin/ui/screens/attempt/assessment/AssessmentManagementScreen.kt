@@ -39,16 +39,13 @@ fun AssessmentManagementScreen(
     onBack: () -> Unit,
     resultContent: @Composable () -> Unit = {},
     assessmentContent: @Composable (
-        takeAssessmentData: TakeAssessmentData,
-        isNextEnabled: Boolean,
         onNextPressed: () -> Unit,
         onPreviousPressed: () -> Unit,
         onDonePressed: () -> Unit,
         questionContent: @Composable (PaddingValues) -> Unit,
-    ) -> Unit = { data, nextEnabled, onNextPressed, onPreviousPressed, onDonePressed, questionContent ->
+    ) -> Unit = { onNextPressed, onPreviousPressed, onDonePressed, questionContent ->
         TakeAssessmentScreen(
-            takeAssessmentData = data,
-            isNextEnabled = nextEnabled,
+            viewModel = viewModel,
             onNextPressed = onNextPressed,
             onPreviousPressed = onPreviousPressed,
             onDonePressed = onDonePressed,
@@ -63,13 +60,13 @@ fun AssessmentManagementScreen(
     val isNextQuestionEnabled by viewModel.isNextQuestionEnabled.collectAsState()
     val providedAnswer by viewModel.providedAnswer.collectAsState()
 
-    LaunchedEffect(Unit, takeAssessmentData.data) {
+    LaunchedEffect(Unit) {
         //init take assessment data
         viewModel.initAssessment()
         Log.e(TAG, "AssessmentManagementScreen: init the assessment data")
     }
 
-
+    Log.e(TAG, "AssessmentManagementScreen: AssessmentManagementScreen has been called")
     Log.e(TAG, "AssessmentManagementScreen: take assessment data is now ${takeAssessmentData.data}")
 
     Surface(modifier = Modifier) {
@@ -93,8 +90,6 @@ fun AssessmentManagementScreen(
                     is Resource.Success -> {
                         if (takeAssessmentData.data != null) {
                             assessmentContent(
-                                takeAssessmentData = takeAssessmentData.data!!,
-                                isNextEnabled = isNextQuestionEnabled,
                                 onNextPressed = { viewModel.onNextPressed() },
                                 onPreviousPressed = { viewModel.onPreviousPressed() },
                                 onDonePressed = { viewModel.onDonePressed() }
@@ -125,10 +120,12 @@ fun AssessmentManagementScreen(
                                         takeAssessmentData = targetState.data!!,
                                         onOptionsSelected = {
                                             viewModel.onProvideAnswer(it)
+                                            viewModel.refreshIsNextQuestionState()
                                         },
                                         providedAnswer = providedAnswer.orEmpty(),
                                         onProvideAnswer = {
                                             viewModel.onProvideAnswer(it)
+                                            viewModel.refreshIsNextQuestionState()
                                         },
                                         minHeight = maxHeight.times(0.5f),
                                         modifier = localModifier

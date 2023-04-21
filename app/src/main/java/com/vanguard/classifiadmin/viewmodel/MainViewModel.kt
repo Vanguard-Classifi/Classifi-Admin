@@ -7,8 +7,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseUser
+import com.vanguard.classifiadmin.data.file.DummyQuestions
 import com.vanguard.classifiadmin.data.local.models.ClassModel
 import com.vanguard.classifiadmin.data.local.models.FeedModel
+import com.vanguard.classifiadmin.data.local.models.QuestionModel
 import com.vanguard.classifiadmin.data.local.models.SchoolModel
 import com.vanguard.classifiadmin.data.local.models.SubjectModel
 import com.vanguard.classifiadmin.data.local.models.UserModel
@@ -17,6 +19,7 @@ import com.vanguard.classifiadmin.data.network.models.ClassNetworkModel
 import com.vanguard.classifiadmin.data.network.models.CommentNetworkModel
 import com.vanguard.classifiadmin.data.network.models.FeedNetworkModel
 import com.vanguard.classifiadmin.data.network.models.QuestionNetworkModel
+import com.vanguard.classifiadmin.data.network.models.QuestionResponseNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SchoolNetworkModel
 import com.vanguard.classifiadmin.data.network.models.SubjectNetworkModel
 import com.vanguard.classifiadmin.data.network.models.UserNetworkModel
@@ -794,6 +797,58 @@ class MainViewModel @Inject constructor(
     val questionByIndexNetwork: StateFlow<Resource<QuestionNetworkModel?>> =
         _questionByIndexNetwork
 
+    private var _questionResponseByPositionNetwork =
+        MutableStateFlow(Resource.Loading<QuestionResponseNetworkModel?>() as Resource<QuestionResponseNetworkModel?>)
+    val questionResponseByPositionNetwork: StateFlow<Resource<QuestionResponseNetworkModel?>> =
+        _questionResponseByPositionNetwork
+
+    private var _questionResponsesForStudentByAssessmentNetwork =
+        MutableStateFlow(Resource.Loading<List<QuestionResponseNetworkModel>>() as Resource<List<QuestionResponseNetworkModel>>)
+    val questionResponsesForStudentByAssessmentNetwork: StateFlow<Resource<List<QuestionResponseNetworkModel>>> =
+        _questionResponsesForStudentByAssessmentNetwork
+
+
+    //question response
+    fun saveQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit,
+    ) = effect {
+        repository.saveQuestionResponseNetwork(response, onResult)
+    }
+
+    fun getQuestionResponseByPositionNetwork(
+        position: Int,
+        schoolId: String,
+        studentId: String,
+        assessmentId: String,
+    ) = effect {
+        repository.getQuestionResponseByPositionNetwork(
+            position, schoolId, studentId, assessmentId
+        ) {
+            _questionResponseByPositionNetwork.value = it
+        }
+    }
+
+    fun getQuestionResponsesForStudentByAssessmentNetwork(
+        studentId: String,
+        schoolId: String,
+        assessmentId: String,
+    ) = effect {
+        repository.getQuestionResponsesForStudentByAssessmentNetwork(
+            studentId, schoolId, assessmentId
+        ) {
+            _questionResponsesForStudentByAssessmentNetwork.value = it
+        }
+    }
+
+    fun deleteQuestionResponseNetwork(
+        response: QuestionResponseNetworkModel,
+        onResult: (Boolean) -> Unit
+    ) = effect {
+        repository.deleteQuestionResponseNetwork(response, onResult)
+    }
+
+
     fun getQuestionByIndexNetwork(
         index: Int,
         assessmentId: String,
@@ -834,6 +889,11 @@ class MainViewModel @Inject constructor(
 
     private fun changeQuestion(newQuestionIndex: Int) = effect {
         _currentQuestionIndex.value = newQuestionIndex
+        this.getQuestionByIndexNetwork(
+            newQuestionIndex + 1,
+            _currentAssessmentIdPublished.value.orEmpty(),
+            _currentSchoolIdPref.value.orEmpty()
+        )
         val assessmentData = createTakeAssessmentData()
         if (assessmentData is Resource.Success && assessmentData.data != null) {
             onTakeAssessmentDataChanged(assessmentData.data)
@@ -844,27 +904,22 @@ class MainViewModel @Inject constructor(
 
     private fun createTakeAssessmentData(): Resource<TakeAssessmentData?> {
         return try {
-            val questionCount = _verifiedQuestionsByAssessmentNetwork.value.data?.size!!
-            //create assessment question by index
-            this.getQuestionByIndexNetwork(
-                _currentQuestionIndex.value + 1,
-                _currentAssessmentIdPublished.value.orEmpty(),
-                _currentSchoolIdPref.value.orEmpty()
-            )
             Log.e(
                 TAG,
-                "createTakeAssessmentData: assessment first index is $${_currentQuestionIndex.value}"
+                "createTakeAssessmentData: assessment current index is $${_currentQuestionIndex.value}"
             )
+            val questionCount = _verifiedQuestionsByAssessmentNetwork.value.data?.size!!
+            //create assessment question by index
 
             if (_questionByIndexNetwork.value is Resource.Success && _questionByIndexNetwork.value.data != null) {
                 val assessmentData = _questionByIndexNetwork.value.data?.toLocal()?.let {
                     TakeAssessmentData(
                         questionIndex = _currentQuestionIndex.value,
-                        questionCount = questionCount,
+                        questionCount = DummyQuestions.questions.size,
                         shouldShowPreviousButton = _currentQuestionIndex.value > 0,
                         shouldShowDoneButton =
-                        _currentQuestionIndex.value == questionCount - 1,
-                        currentQuestion = it
+                        _currentQuestionIndex.value == DummyQuestions.questions.size - 1,
+                        currentQuestion = DummyQuestions.getQuestionByPosition(_currentQuestionIndex.value + 1)
                     )
                 }
 
@@ -879,9 +934,14 @@ class MainViewModel @Inject constructor(
 
     }
 
+    fun refreshIsNextQuestionState() = effect {
+        onNextQuestionEnabledChanged(getIsNextQuestionEnabled())
+    }
+
+
     private fun getIsNextQuestionEnabled(): Boolean {
         return try {
-            if(_takeAssessmentData.value is Resource.Success && _takeAssessmentData.value.data != null){
+            if (_takeAssessmentData.value is Resource.Success && _takeAssessmentData.value.data != null) {
                 val questionCount = _takeAssessmentData.value.data?.questionCount
                 val questionIndex = _takeAssessmentData.value.data?.questionIndex
                 if (questionCount != null && questionIndex != null) {
@@ -895,9 +955,8 @@ class MainViewModel @Inject constructor(
     }
 
     fun onPreviousPressed() = effect {
-        if (_currentQuestionIndex.value == 0)
-            throw IllegalStateException("onPreviousPressed when on question index is 0")
-        changeQuestion(_currentQuestionIndex.value - 1)
+        if (_currentQuestionIndex.value > 0)
+            changeQuestion(_currentQuestionIndex.value - 1)
     }
 
     fun onDonePressed() = effect {
