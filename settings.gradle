@@ -14,3 +14,7 @@ pluginManagement {
 //}
 rootProject.name = "ClassifiAdmin"
 include ':app'
+include ':catalog'
+include ':core'
+include ':core:common'
+include ':core:designsystem'
