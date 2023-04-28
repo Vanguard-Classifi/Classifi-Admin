@@ -396,7 +396,6 @@ fun MyAccountScreenContentHeader(
             )
         }
     }
-
 }
 
 @OptIn(ExperimentalPagerApi::class)

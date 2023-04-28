@@ -1,6 +1,7 @@
 package com.khalidtouch.catalog
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
@@ -17,17 +18,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.khalidtouch.core.designsystem.components.ClassifiAvatar
 import com.khalidtouch.core.designsystem.components.ClassifiButton
 import com.khalidtouch.core.designsystem.components.ClassifiNavigationBar
 import com.khalidtouch.core.designsystem.components.ClassifiNavigationBarItem
 import com.khalidtouch.core.designsystem.components.ClassifiOutlinedButton
+import com.khalidtouch.core.designsystem.components.ClassifiScrollableTabRow
+import com.khalidtouch.core.designsystem.components.ClassifiTab
+import com.khalidtouch.core.designsystem.components.ClassifiTabRow
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 import com.khalidtouch.core.designsystem.components.ClassifiToggleButton
+import com.khalidtouch.core.designsystem.extensions.getInitials
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 import com.khalidtouch.core.designsystem.theme.ClassifiTheme
 
@@ -136,24 +144,36 @@ fun ClassifiCatalog() {
                     ClassifiButton(onClick = { /*TODO*/ }) {
                         Text(text = "Click Here", style = MaterialTheme.typography.labelMedium)
                     }
-                }
 
-                item {
+                    ClassifiButton(
+                        onClick = {},
+                        text = {
+                            Text(
+                                text = "ClassifiButton",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = ClassifiIcons.Tick),
+                                contentDescription = null,
+                            )
+                        }
+                    )
+
+
                     ClassifiTextButton(onClick = { /*TODO*/ }) {
                         Text("TextButton", style = MaterialTheme.typography.labelLarge)
                     }
-                }
 
-                item {
                     ClassifiOutlinedButton(onClick = { /*TODO*/ }) {
                         Text(
                             "Outline Button", style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
                         )
                     }
-                }
 
-                item {
+
                     ClassifiToggleButton(checked = toggleButtonState, onCheckedChange = {
                         toggleButtonState = !toggleButtonState
                     },
@@ -189,7 +209,6 @@ fun ClassifiCatalog() {
                             )
                         }
                     )
-
                 }
 
                 item {
@@ -232,6 +251,103 @@ fun ClassifiCatalog() {
                             )
                         }
                     }
+                }
+
+                item {
+                    Text("Tabs", style = MaterialTheme.typography.headlineSmall)
+
+                    var selectedTabIndex by remember { mutableStateOf(0) }
+                    val titles =
+                        listOf("Profile", "Account Settings", "Preferences", "Administration")
+
+                    ClassifiTabRow(selectedTabIndex = selectedTabIndex) {
+                        titles.forEachIndexed { index, title ->
+                            ClassifiTab(
+                                selected = index == selectedTabIndex,
+                                onClick = { selectedTabIndex = index },
+                                text = {
+                                    Text(title, style = MaterialTheme.typography.labelSmall)
+                                }
+                            )
+                        }
+                    }
+
+
+                    ClassifiScrollableTabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        pageSize = titles.size,
+                    ) {
+                        titles.forEachIndexed { index, title ->
+                            ClassifiTab(
+                                selected = index == selectedTabIndex,
+                                onClick = { selectedTabIndex = index },
+                                text = {
+                                    Text(title, style = MaterialTheme.typography.titleSmall)
+                                }
+                            )
+                        }
+                    }
+
+                    ClassifiScrollableTabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        pageSize = titles.size,
+                    ) {
+                        titles.forEachIndexed { index, title ->
+                            ClassifiTab(
+                                selected = index == selectedTabIndex,
+                                onClick = { selectedTabIndex = index },
+                                text = {
+                                    Text(title, style = MaterialTheme.typography.titleSmall)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = ClassifiIcons.Profile),
+                                        contentDescription = null,
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Text(
+                        text = "Avatar",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+
+                    ClassifiAvatar(
+                        isLarge = true,
+                        onClick = { /*TODO*/ },
+                        text = {
+                            Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "Mubarak Isah".getInitials(),
+                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                        textAlign = TextAlign.Center,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+                    )
+
+                    ClassifiAvatar(
+                        isLarge = false,
+                        onClick = { /*TODO*/ },
+                        text = {
+                            Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "Mubarak Isah".getInitials(),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        textAlign = TextAlign.Center,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+                    )
+
                 }
             }
         }

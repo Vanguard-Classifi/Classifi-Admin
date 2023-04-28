@@ -38,7 +38,7 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.ui.theme.Black100
 
 
-
+@Deprecated(message = "This button is deprecated, use ClassifiOutlinedButton instead")
 @Composable
 fun SecondaryButtonWithIconStyled(
     modifier: Modifier = Modifier,
@@ -99,6 +99,7 @@ fun SecondaryButtonWithIconStyled(
 }
 
 
+@Deprecated(message = "This button is deprecated, use ClassifiOutlinedButton instead")
 @Composable
 fun SecondaryButtonWithIconRight(
     modifier: Modifier = Modifier,
@@ -194,6 +195,8 @@ fun DropdownButton(
     }
 }
 
+
+@Deprecated(message = "This button is now deprecated, use ClassifiTextButton instead")
 @Composable
 fun TertiaryTextButton(
     modifier: Modifier = Modifier,

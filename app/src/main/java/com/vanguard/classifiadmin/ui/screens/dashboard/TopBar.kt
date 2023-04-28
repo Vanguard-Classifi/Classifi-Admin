@@ -227,6 +227,7 @@ fun DefaultAvatarBig(
     }
 }
 
+
 @Composable
 fun DefaultAvatar(
     modifier: Modifier = Modifier,
