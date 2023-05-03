@@ -245,4 +245,8 @@
     <string name="select_your_answer">Select your answer</string>
     <string name="provide_short_answer">Provide a short answer</string>
     <string name="your_answer">Your answer</string>
+    <string name="feeds">Feeds</string>
+    <string name="students">Students</string>
+    <string name="reports">Reports</string>
+    <string name="not_connected">Not Connected</string>
 </resources>

@@ -2,6 +2,7 @@ package com.vanguard.classifiadmin.router
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Surface
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -10,6 +11,7 @@ import com.vanguard.classifiadmin.ui.theme.ClassifiAdminTheme
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 
 
+@Deprecated(message = "This function has been deprecated.", replaceWith = ReplaceWith("ClassifiApp"))
 @Composable
 fun ClassifiApp(
     modifier: Modifier = Modifier,

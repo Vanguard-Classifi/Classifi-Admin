@@ -2,13 +2,16 @@ package com.khalidtouch.catalog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.khalidtouch.core.designsystem.components.ClassifiAvatar
 import com.khalidtouch.core.designsystem.components.ClassifiButton
+import com.khalidtouch.core.designsystem.components.ClassifiCenterTopAppBar
 import com.khalidtouch.core.designsystem.components.ClassifiNavigationBar
 import com.khalidtouch.core.designsystem.components.ClassifiNavigationBarItem
 import com.khalidtouch.core.designsystem.components.ClassifiOutlinedButton
@@ -39,6 +43,7 @@ import com.khalidtouch.core.designsystem.extensions.getInitials
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 import com.khalidtouch.core.designsystem.theme.ClassifiTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClassifiCatalog() {
     ClassifiTheme {
@@ -348,6 +353,212 @@ fun ClassifiCatalog() {
                         }
                     )
 
+                }
+                item {
+                    Text(text = "TopAppBar", style = MaterialTheme.typography.labelSmall)
+
+                    ClassifiCenterTopAppBar(
+                        text = {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                ClassifiOutlinedButton(
+                                    modifier = Modifier,
+                                    onClick = { /*TODO*/ },
+                                    content = {
+                                        Text(
+                                            text = "KG100",
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
+
+                                        Icon(
+                                            painter = painterResource(id = ClassifiIcons.Dropdown),
+                                            contentDescription = null,
+                                        )
+                                    }
+                                )
+
+                                ClassifiToggleButton(
+                                    checked = false,
+                                    onCheckedChange = {},
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(id = ClassifiIcons.Results),
+                                            contentDescription = null
+                                        )
+                                    }
+                                )
+
+                            }
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = ClassifiIcons.BrandingBig),
+                                contentDescription = null,
+                            )
+                        },
+                        trailingIcon = {
+                            ClassifiAvatar(
+                                onClick = { /*TODO open settings */ },
+                                text = {
+                                    Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                                        Text(
+                                            text = "Khalid Isah".getInitials(),
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                textAlign = TextAlign.Center,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        )
+                                    }
+                                },
+                            )
+                        },
+                    )
+
+
+                    ClassifiCenterTopAppBar(
+                        elevate = false,
+                        text = {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                ClassifiOutlinedButton(
+                                    modifier = Modifier,
+                                    onClick = { /*TODO*/ },
+                                    content = {
+                                        Text(
+                                            text = "KG100",
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
+
+                                        Icon(
+                                            painter = painterResource(id = ClassifiIcons.Dropdown),
+                                            contentDescription = null,
+                                        )
+                                    }
+                                )
+
+                                ClassifiToggleButton(
+                                    checked = false,
+                                    onCheckedChange = {},
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(id = ClassifiIcons.Results),
+                                            contentDescription = null
+                                        )
+                                    }
+                                )
+
+                            }
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = ClassifiIcons.BrandingBig),
+                                contentDescription = null,
+                            )
+                        },
+                        trailingIcon = {
+                            ClassifiAvatar(
+                                onClick = { /*TODO open settings */ },
+                                text = {
+                                    Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                                        Text(
+                                            text = "Khalid Isah".getInitials(),
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                textAlign = TextAlign.Center,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        )
+                                    }
+                                },
+                            )
+                        },
+                    )
+
+
+
+                    ClassifiCenterTopAppBar(
+                        elevate = true,
+                        text = {
+                            Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "Manage Courses",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        textAlign = TextAlign.Center,
+                                    )
+                                )
+                            }
+                        },
+                        leadingIcon = {
+                            ClassifiToggleButton(
+                               onCheckedChange = {},
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(id = ClassifiIcons.Back),
+                                        contentDescription = null
+                                    )
+                                },
+                                checked = false,
+                            )
+                        },
+                        trailingIcon = {
+                            ClassifiToggleButton(
+                                onCheckedChange = {},
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(id = ClassifiIcons.OptionsVertical),
+                                        contentDescription = null
+                                    )
+                                },
+                                checked = false,
+                            )
+                        },
+                    )
+
+
+                    ClassifiCenterTopAppBar(
+                        elevate = false,
+                        text = {
+                            Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "Manage Courses",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        textAlign = TextAlign.Center,
+                                    )
+                                )
+                            }
+                        },
+                        leadingIcon = {
+                            ClassifiToggleButton(
+                                onCheckedChange = {},
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(id = ClassifiIcons.Back),
+                                        contentDescription = null
+                                    )
+                                },
+                                checked = false,
+                            )
+                        },
+                        trailingIcon = {
+                            ClassifiToggleButton(
+                                onCheckedChange = {},
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(id = ClassifiIcons.OptionsVertical),
+                                        contentDescription = null
+                                    )
+                                },
+                                checked = false,
+                            )
+                        },
+                    )
                 }
             }
         }

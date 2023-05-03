@@ -1,5 +1,0 @@
- Surface(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Wake up bottom nav screen")
-        }
-    }
