@@ -1,8 +1,7 @@
 [versions]
 androidGradlePlugin = "7.4.1"  #"8.0.0-alpha11"
 androidDesugarJdkLibs = "1.2.2"
-kotlinPlugin = "1.8.0" #"1.7.21"
-googleServices = "4.3.14"
+googleServices = "4.3.15"
 hilt = "2.44.2"
 androidxHilt = "1.0.0"
 pagingVersion = "1.0.0-alpha17"
@@ -10,7 +9,7 @@ androidxComposeBom = "2022.10.00"
 androidxComposeCompiler = "1.4.1"
 androidxComposeAnimation = "1.4.0-alpha02"
 androidxComposeMaterial3 = "1.1.0-alpha06"
-firebaseBom = "31.1.0"
+firebaseBom = "32.0.0"  #"31.1.0"
 firebaseCrashlyticsPlugin = "2.9.2"
 firebasePerfPlugin = "1.4.2"
 protobuf = "3.21.12"
@@ -18,6 +17,7 @@ protobufPlugin = "0.8.19"
 espressoCore = "3.5.1"
 junit = "4.13.2"
 junitExt = "1.1.5"
+kotlinPlugin = "1.8.0" #"1.7.21"
 kotlinxCoroutines = "1.6.4"
 kotlinxDatetime = "0.4.0"
 kotlinxSerializationJson = "1.4.1"
@@ -129,18 +129,16 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlinPlugin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 
-android-tools-build-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
-android-tools-build-gradle-api = { group = "com.android.tools.build", name = "gradle-api", version.ref = "androidGradlePlugin" }
-
-
-
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinPlugin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
+firebase-crashlytics = {id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin"}
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }

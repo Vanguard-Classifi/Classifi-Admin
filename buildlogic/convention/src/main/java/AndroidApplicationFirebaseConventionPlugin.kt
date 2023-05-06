@@ -12,28 +12,27 @@ class AndroidApplicationFirebaseConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("com.google.gms.google-services")
-              //  apply("com.google.firebase.firebase-perf")
-             //   apply("com.google.firebase.crashlytics")
+                apply("com.google.firebase.firebase-perf")
+                apply("com.google.firebase.crashlytics")
             }
 
             val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
             dependencies {
                 val bom = libs.findLibrary("firebase.bom").get()
                 add("implementation", platform(bom))
-//                add("implementation", (libs.findLibrary("firebase.analytics").get()))
-//                add("implementation", (libs.findLibrary("firebase.performance").get()))
-//                add("implementation", (libs.findLibrary("firebase.crashlytics").get()))
-                add("implementation", (libs.findLibrary("firebase.auth").get()))
-                add("implementation", (libs.findLibrary("firebase.firestore").get()))
-                add("implementation", (libs.findLibrary("firebase.storage").get()))
+                "implementation"(libs.findLibrary("firebase.crashlytics").get())
+                "implementation"(libs.findLibrary("firebase.auth").get())
+                "implementation"(libs.findLibrary("firebase.firestore").get())
+                "implementation"(libs.findLibrary("firebase.storage").get())
+                "implementation"(libs.findLibrary("firebase.performance").get())
             }
 
             extensions.configure<ApplicationAndroidComponentsExtension> {
                 finalizeDsl {
                     it.buildTypes.forEach { buildType ->
-//                        buildType.configure<CrashlyticsExtension> {
-//                            mappingFileUploadEnabled = false
-//                        }
+                        buildType.configure<CrashlyticsExtension> {
+                            mappingFileUploadEnabled = false
+                        }
                     }
                 }
             }

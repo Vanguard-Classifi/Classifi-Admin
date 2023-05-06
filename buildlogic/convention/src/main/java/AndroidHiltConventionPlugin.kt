@@ -6,8 +6,8 @@ import org.gradle.kotlin.dsl.getByType
 
 class AndroidHiltConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
-        with(target){
-            with(pluginManager){
+        with(target) {
+            with(pluginManager) {
                 apply("dagger.hilt.android.plugin")
                 apply("org.jetbrains.kotlin.kapt")
             }
@@ -18,6 +18,9 @@ class AndroidHiltConventionPlugin : Plugin<Project> {
                 "implementation"(libs.findLibrary("hilt.android").get())
                 "kapt"(libs.findLibrary("hilt.compiler").get())
                 "kaptAndroidTest"(libs.findLibrary("hilt.compiler").get())
+                "kapt"(libs.findLibrary("androidx.hilt.compiler").get())
+                "implementation"(libs.findLibrary("androidx.hilt.work").get())
+                "implementation"(libs.findLibrary("androidx.hilt.navigation.compose").get())
             }
         }
     }

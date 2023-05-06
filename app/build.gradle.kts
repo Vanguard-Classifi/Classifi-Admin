@@ -2,10 +2,10 @@ import org.jetbrains.kotlin.gradle.utils.toSetOrEmpty
 
 plugins {
     id("classifi.android.application")
-    id("classifi.android.application.firebase")
     id("classifi.android.application.compose")
     id("classifi.android.application.flavors")
     id("classifi.android.hilt")
+    id("classifi.android.application.firebase")
 }
 
 android {
@@ -31,19 +31,8 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.0-alpha02"
-    }
+
+
     packagingOptions {
         resources {
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
@@ -61,7 +50,7 @@ dependencies {
     implementation(project(":feature:students"))
     implementation(project(":feature:assessment"))
     implementation(project(":feature:reports"))
-   // implementation(firebaseBom)
+
     implementation(composeBom)
 
     implementation(libs.androidx.core.ktx)
@@ -114,8 +103,11 @@ dependencies {
     implementation(libs.google.gson)//---
     implementation(libs.androidx.hilt.navigation.compose)//--
 
-    implementation(libs.android.tools.build.gradle)
-    implementation(libs.android.tools.build.gradle.api)
+//    implementation(libs.android.tools.build.gradle)
+//    implementation(libs.android.tools.build.gradle.api)
+
+//    implementation(libs.firebase.performance)
+//    implementation(libs.firebase.crashlytics)
 }
 
 

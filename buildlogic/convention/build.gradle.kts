@@ -17,8 +17,6 @@ dependencies {
     compileOnly(libs.firebase.performance.gradle)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
-    compileOnly(libs.android.tools.build.gradle)
-    compileOnly(libs.android.tools.build.gradle.api)
 }
 
 gradlePlugin {

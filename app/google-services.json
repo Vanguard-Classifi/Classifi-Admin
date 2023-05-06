@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:500101128305:android:c499070e002bef445cfbd0",
         "android_client_info": {
-          "package_name": "com.vanguard.classifiadmin"
+          "package_name": "com.vanguard.classifiadmin.demo"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "500101128305-e0aa7o947k8lli4pthjbl2d7ujc3flsh.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.vanguard.classifiadmin",
+            "package_name": "com.vanguard.classifiadmin.demo",
             "certificate_hash": "661858350ab216a55db145eacacad1321d32ed6f"
           }
         },

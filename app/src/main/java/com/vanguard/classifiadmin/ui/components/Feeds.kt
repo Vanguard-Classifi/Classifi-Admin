@@ -625,7 +625,7 @@ fun FeedItemHeader(
     val innerModifier = Modifier
     val annotatedString = buildAnnotatedString {
         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-            append(feed.authorName?.uppercase())
+            append(feed.authorName?.uppercase().orEmpty())
         }
         when (feed.type) {
             FeedType.Discussion.title -> {
