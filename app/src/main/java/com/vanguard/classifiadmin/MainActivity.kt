@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -34,18 +35,11 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        val uiState: MainActivityUiState by mutableStateOf(Loading)
+        var uiState: MainActivityUiState by mutableStateOf(Loading)
 
         //update the uistate
         /*todo: */
 
-        //keep the splashscreen on-screen until the UI state is loaded
-        splashScreen.setKeepOnScreenCondition {
-            when (uiState) {
-                Loading -> true
-                is Success -> false
-            }
-        }
 
         // Turn off the decor fitting system windows, which allows us to handle insets,
         // including IME animations

@@ -9,4 +9,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.activity.compose)
+    implementation(libs.accompanist.navigation.animation)
+    implementation(libs.androidx.compose.animation)
 }

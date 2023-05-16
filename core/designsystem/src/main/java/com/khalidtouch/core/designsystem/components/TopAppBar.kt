@@ -7,6 +7,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarState
@@ -22,8 +23,14 @@ fun ClassifiCenterTopAppBar(
     text: @Composable () -> Unit,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    elevate: Boolean = true,
-    colors:TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+    elevate: Boolean = false,
+    colors:TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+        containerColor = MaterialTheme.colorScheme.primary,
+        scrolledContainerColor = MaterialTheme.colorScheme.primary,
+        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+        actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+    ),
 ) {
     Card(
         modifier = modifier.wrapContentHeight().fillMaxWidth(),

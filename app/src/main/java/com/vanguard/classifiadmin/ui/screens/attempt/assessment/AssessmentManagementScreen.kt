@@ -54,7 +54,7 @@ fun AssessmentManagementScreen(
         )
     },
 ) {
-    val TAG = "AssessmentManagementScreen"
+    val TAG = "AssManagementScreen"
     val isAssessmentComplete by viewModel.isAssessmentComplete.collectAsState()
     val takeAssessmentData by viewModel.takeAssessmentData.collectAsState()
     val isNextQuestionEnabled by viewModel.isNextQuestionEnabled.collectAsState()
@@ -71,114 +71,8 @@ fun AssessmentManagementScreen(
 
     Surface(modifier = Modifier) {
         BoxWithConstraints(modifier = Modifier) {
-            val maxHeight = maxHeight
-            val maxWidth = maxWidth
-            if (isAssessmentComplete) {
-                resultContent()
-            } else {
-                when (takeAssessmentData) {
-                    is Resource.Loading -> {
-                        viewModel.initAssessment()
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            LoadingScreen(maxHeight = maxHeight)
-                        }
-                    }
 
-                    is Resource.Success -> {
-                        if (takeAssessmentData.data != null) {
-                            assessmentContent(
-                                onNextPressed = { viewModel.onNextPressed() },
-                                onPreviousPressed = { viewModel.onPreviousPressed() },
-                                onDonePressed = { viewModel.onDonePressed() }
-                            ) { paddingValues ->
-                                val localModifier = Modifier.padding(paddingValues)
-
-                                AnimatedContent(
-                                    targetState = takeAssessmentData,
-                                    transitionSpec = {
-                                        val animationSpec: TweenSpec<IntOffset> =
-                                            tween(300)
-                                        val direction = getTransitionDirection(
-                                            initialIndex = initialState.data?.questionIndex ?: 0,
-                                            targetIndex = initialState.data?.questionIndex ?: 0,
-                                        )
-                                        slideIntoContainer(
-                                            towards = direction,
-                                            animationSpec = animationSpec
-                                        ) with slideOutOfContainer(
-                                            towards = direction,
-                                            animationSpec = animationSpec
-                                        )
-
-                                    },
-                                ) { targetState ->
-
-                                    AssessmentQuestion(
-                                        takeAssessmentData = targetState.data!!,
-                                        onOptionsSelected = {
-                                            viewModel.onProvideAnswer(it)
-                                            viewModel.refreshIsNextQuestionState()
-                                        },
-                                        providedAnswer = providedAnswer.orEmpty(),
-                                        onProvideAnswer = {
-                                            viewModel.onProvideAnswer(it)
-                                            viewModel.refreshIsNextQuestionState()
-                                        },
-                                        minHeight = maxHeight.times(0.5f),
-                                        modifier = localModifier
-                                    )
-                                }
-                            }
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                NoDataScreen(
-                                    maxHeight = maxHeight,
-                                    message = stringResource(id = R.string.could_not_load_assessment),
-                                    buttonLabel = stringResource(id = R.string.retry),
-                                    onClick = {
-                                        viewModel.initAssessment()
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    is Resource.Error -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            NoDataScreen(
-                                maxHeight = maxHeight,
-                                message = stringResource(id = R.string.could_not_load_assessment),
-                                buttonLabel = stringResource(id = R.string.retry),
-                                onClick = {
-                                    viewModel.initAssessment()
-                                }
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 }
 
-
-@OptIn(ExperimentalAnimationApi::class)
-private fun getTransitionDirection(
-    initialIndex: Int,
-    targetIndex: Int
-): AnimatedContentScope.SlideDirection {
-    return if (targetIndex > initialIndex) {
-        AnimatedContentScope.SlideDirection.Left
-    } else {
-        AnimatedContentScope.SlideDirection.Right
-    }
-}

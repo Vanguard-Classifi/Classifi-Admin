@@ -83,6 +83,7 @@ fun ClassifiOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    isDark: Boolean = false,
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit,
 ) {
@@ -96,7 +97,9 @@ fun ClassifiOutlinedButton(
         border = BorderStroke(
             width = ClassifiButtonDefaults.OutlinedButtonBorderWidth,
             color = if (enabled) {
-                MaterialTheme.colorScheme.outline
+                if (isDark) {
+                    MaterialTheme.colorScheme.outline
+                } else MaterialTheme.colorScheme.onPrimary
             } else {
                 MaterialTheme.colorScheme.onSurface.copy(
                     alpha = ClassifiButtonDefaults.DisabledOutlinedButtonBorderAlpha
@@ -182,6 +185,6 @@ object ClassifiButtonDefaults {
 private fun ClassifiTextButtonPreview() {
     ClassifiTextButton(
         onClick = {},
-        text = {Text("This is a ball")},
+        text = { Text("This is a ball") },
     )
 }

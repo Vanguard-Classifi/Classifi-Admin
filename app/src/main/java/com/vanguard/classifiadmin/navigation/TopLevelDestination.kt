@@ -23,18 +23,4 @@ enum class TopLevelDestination(
         iconTextId = R.string.students,
         titleTextId = R.string.students
     ),
-
-    Assessments(
-        selectedIcon = Icon.DrawableResourceIcon(ClassifiIcons.Assessment),
-        unselectedIcon = Icon.DrawableResourceIcon(ClassifiIcons.AssessmentOutline),
-        iconTextId = R.string.assessments,
-        titleTextId = R.string.assessments
-    ),
-
-    Reports(
-        selectedIcon = Icon.DrawableResourceIcon(ClassifiIcons.Reports),
-        unselectedIcon = Icon.DrawableResourceIcon(ClassifiIcons.ReportsOutline),
-        iconTextId = R.string.reports,
-        titleTextId = R.string.reports
-    ),
 }
