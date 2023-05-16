@@ -77,7 +77,7 @@ fun DashboardMenuScreen(
 }
 
 @Composable
-fun DashboardMenuHeader(
+private fun DashboardMenuHeader(
     modifier: Modifier = Modifier,
     username: String,
     email: String,
@@ -158,7 +158,7 @@ private fun dashboardMenuHeaderConstraints(margin: Dp): ConstraintSet {
 
 
 @Composable
-fun DashboardMenuItem(
+private fun DashboardMenuItem(
     modifier: Modifier = Modifier,
     dashboardMenu: DashboardMenu,
     onSelect: (DashboardMenu) -> Unit,

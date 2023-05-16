@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.khalidtouch.core.designsystem.components.ClassifiAvatar
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
@@ -63,4 +64,13 @@ fun ClassifiApp(
     Column {
         ClassifiNavHost(windowSizeClass = windowSizeClass, appState = appState)
     }
+}
+
+
+enum class Device(
+    val minWidth: Dp,
+) {
+    COMPACT(300.dp),
+    MEDIUM(950.dp),
+    LARGE(1440.dp),
 }

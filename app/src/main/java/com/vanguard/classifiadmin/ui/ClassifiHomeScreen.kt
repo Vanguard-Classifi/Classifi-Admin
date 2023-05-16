@@ -1,7 +1,9 @@
 package com.vanguard.classifiadmin.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
@@ -19,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -26,7 +29,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -38,13 +44,18 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import com.khalidtouch.core.designsystem.components.ClassifiAvatar
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
 import com.khalidtouch.core.designsystem.components.ClassifiCenterTopAppBar
 import com.khalidtouch.core.designsystem.components.ClassifiGradientBackground
+import com.khalidtouch.core.designsystem.components.ClassifiMenu
 import com.khalidtouch.core.designsystem.components.ClassifiOutlinedButton
 import com.khalidtouch.core.designsystem.components.ClassifiToggleButton
+import com.khalidtouch.core.designsystem.components.MenuHeader
+import com.khalidtouch.core.designsystem.components.MenuItem
 import com.khalidtouch.core.designsystem.extensions.getInitials
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 import com.khalidtouch.core.designsystem.theme.GradientColors
@@ -53,7 +64,8 @@ import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.navigation.ClassifiBottomNavHost
 import com.vanguard.classifiadmin.navigation.TopLevelDestination
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
     ExperimentalComposeUiApi::class
 )
 @Composable
@@ -61,6 +73,7 @@ fun ClassifiHomeScreen(
     windowSizeClass: WindowSizeClass,
     appState: ClassifiAppState = rememberClassifiAppState(windowSizeClass = windowSizeClass),
 ) {
+    val TAG = "HomeScreen"
     val shouldShowGradientBackground =
         appState.currentTopLevelDestination == TopLevelDestination.Feeds
 
@@ -73,6 +86,7 @@ fun ClassifiHomeScreen(
             }
         ) {
             val snackbarHostState = remember { SnackbarHostState() }
+            var menuState by remember { mutableStateOf(false) }
 
             // If user is not connected to the internet show a snack bar to inform them.
             val notConnectedMessage = stringResource(R.string.not_connected)
@@ -96,108 +110,244 @@ fun ClassifiHomeScreen(
                     }
                 }
             ) { padding ->
-                Row(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .consumeWindowInsets(padding)
-                        .windowInsetsPadding(
-                            WindowInsets.safeDrawing.only(
-                                WindowInsetsSides.Horizontal
+
+                BoxWithConstraints {
+                    val maxWidth = maxWidth
+                    val maxHeight = maxHeight
+                    Log.d(TAG, "ClassifiHomeScreen: the maxWidth is $maxWidth")
+
+                    Row(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            .consumeWindowInsets(padding)
+                            .windowInsetsPadding(
+                                WindowInsets.safeDrawing.only(
+                                    WindowInsetsSides.Horizontal
+                                ),
                             ),
-                        ),
-                ) {
-                    if (appState.shouldShowNavRail) {
-                        ClassifiNavRail(
-                            destinations = appState.topLevelDestinations,
-                            onNavigateToDestination = appState::navigationToTopLevelDestination,
-                            currentDestination = appState.currentDestination,
-                            modifier = Modifier
-                                .testTag("ClassifiNavRail")
-                                .safeDrawingPadding()
-                        )
-                    }
-
-                    Column(Modifier.fillMaxSize()) {
-                        val destination = appState.currentTopLevelDestination
-                        if (destination != null) {
-                            ClassifiCenterTopAppBar(
-                                elevate = false,
-                                text = {
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 8.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-
-                                        ClassifiOutlinedButton(
-                                            modifier = Modifier,
-                                            onClick = { /*TODO*/ },
-                                            content = {
-                                                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onPrimary) {
-                                                    Text(
-                                                        text = "KG100",
-                                                        style = MaterialTheme.typography.labelMedium,
-                                                    )
-
-                                                    Icon(
-                                                        painter = painterResource(id = ClassifiIcons.Dropdown),
-                                                        contentDescription = null,
-                                                    )
-                                                }
-                                            }
-                                        )
-
-                                        ClassifiToggleButton(
-                                            checked = false,
-                                            onCheckedChange = {/*TODO on tap for more features */ },
-                                            icon = {
-                                                Icon(
-                                                    painter = painterResource(id = ClassifiIcons.Results),
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        )
-
-                                    }
-                                },
-                                leadingIcon = {
-                                    Box(modifier = Modifier.padding(start = 8.dp)) {
-                                        Icon(
-                                            painter = painterResource(id = ClassifiIcons.BrandingBig),
-                                            contentDescription = null,
-                                        )
-                                    }
-                                },
-                                trailingIcon = {
-                                    Box(modifier = Modifier.padding(end = 8.dp)) {
-                                        ClassifiAvatar(
-                                            onClick = { /*TODO open settings */ },
-                                            text = {
-                                                Box(
-                                                    modifier = Modifier,
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text(
-                                                        text = "Khalid Isah".getInitials(),
-                                                        style = MaterialTheme.typography.labelMedium.copy(
-                                                            textAlign = TextAlign.Center,
-                                                            fontWeight = FontWeight.Bold
-                                                        )
-                                                    )
-                                                }
-                                            },
-                                        )
-                                    }
-                                },
+                    ) {
+                        if (appState.shouldShowNavRail) {
+                            ClassifiNavRail(
+                                destinations = appState.topLevelDestinations,
+                                onNavigateToDestination = appState::navigationToTopLevelDestination,
+                                currentDestination = appState.currentDestination,
+                                modifier = Modifier
+                                    .testTag("ClassifiNavRail")
+                                    .safeDrawingPadding()
                             )
-
                         }
 
-                        ClassifiBottomNavHost(appState.bottomNavController)
+                        Column(Modifier.fillMaxSize()) {
+                            val destination = appState.currentTopLevelDestination
+                            if (destination != null) {
+                                ClassifiCenterTopAppBar(
+                                    elevate = false,
+                                    text = {
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+
+                                            ClassifiOutlinedButton(
+                                                modifier = Modifier,
+                                                onClick = { /*TODO*/ },
+                                                content = {
+                                                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onPrimary) {
+                                                        Text(
+                                                            text = "KG100",
+                                                            style = MaterialTheme.typography.labelMedium,
+                                                        )
+
+                                                        Icon(
+                                                            painter = painterResource(id = ClassifiIcons.Dropdown),
+                                                            contentDescription = null,
+                                                        )
+                                                    }
+                                                }
+                                            )
+
+                                            ClassifiToggleButton(
+                                                checked = false,
+                                                onCheckedChange = {/*TODO on tap for more features */ },
+                                                icon = {
+                                                    Icon(
+                                                        painter = painterResource(id = ClassifiIcons.Results),
+                                                        contentDescription = null
+                                                    )
+                                                }
+                                            )
+
+                                        }
+                                    },
+                                    leadingIcon = {
+                                        Box(modifier = Modifier.padding(start = 8.dp)) {
+                                            Icon(
+                                                painter = painterResource(id = ClassifiIcons.BrandingBig),
+                                                contentDescription = null,
+                                            )
+                                        }
+                                    },
+                                    trailingIcon = {
+                                        val textStyle = MaterialTheme.typography.labelMedium.copy(
+                                            textAlign = TextAlign.Center,
+                                            fontWeight = FontWeight.Bold
+                                        )
+
+                                        Box(modifier = Modifier.padding(end = 8.dp)) {
+                                            ClassifiAvatar(
+                                                onClick = { menuState = true },
+                                                text = {
+                                                    Box(
+                                                        modifier = Modifier,
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        ProvideTextStyle(textStyle) {
+                                                            Text(
+                                                                text = "Khalid Isah".getInitials(),
+                                                            )
+                                                        }
+                                                    }
+                                                },
+                                            )
+                                        }
+                                    },
+                                )
+
+                            }
+
+                            ClassifiBottomNavHost(appState.bottomNavController)
+                        }
+                    }
+
+                    if (menuState) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(16.dp)
+                        ) {
+                            val localModifier = Modifier
+                            Box(
+                                contentAlignment = when {
+                                    maxWidth > Device.LARGE.minWidth -> Alignment.Center
+                                    maxWidth > Device.MEDIUM.minWidth -> Alignment.Center
+                                    else -> Alignment.TopEnd
+                                },
+                            ) {
+                                Popup(
+                                    alignment = Alignment.Center,
+                                    offset = IntOffset(0, 200),
+                                    onDismissRequest = { menuState = false },
+                                ) {
+                                    ClassifiMenu(
+                                        modifier = localModifier,
+                                        header = {
+                                            val textStyle =
+                                                MaterialTheme.typography.labelMedium.copy(
+                                                    textAlign = TextAlign.Center,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+
+                                            MenuHeader(
+                                                onClick = { /*todo; on click menu header */ }
+                                            ) {
+                                                Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                                                    val nameStyle =
+                                                        MaterialTheme.typography.titleMedium
+                                                    val emailStyle =
+                                                        MaterialTheme.typography.titleSmall
+                                                    Box(modifier = Modifier.padding(16.dp)) {
+                                                        ClassifiAvatar(
+                                                            onClick = { },
+                                                            text = {
+                                                                Box(
+                                                                    modifier = Modifier,
+                                                                    contentAlignment = Alignment.Center
+                                                                ) {
+                                                                    ProvideTextStyle(textStyle) {
+                                                                        Text(
+                                                                            text = "Khalid Isah".getInitials(),
+                                                                        )
+                                                                    }
+                                                                }
+                                                            },
+                                                        )
+                                                    }
+                                                    Column(
+                                                        modifier = Modifier.weight(1f),
+                                                        verticalArrangement = Arrangement.SpaceEvenly
+                                                    ) {
+                                                        ProvideTextStyle(value = nameStyle) {
+                                                            Text(
+                                                                text = "khalid Isah".uppercase()
+                                                            )
+                                                        }
+                                                        ProvideTextStyle(value = emailStyle) {
+                                                            Text(
+                                                                text = "khalid.isah@gmail.com"
+                                                            )
+                                                        }
+
+                                                        ProvideTextStyle(value = emailStyle) {
+                                                            Text(
+                                                                text = "Click here to view profile"
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        content = {
+                                            val textStyle = MaterialTheme.typography.labelMedium
+
+                                            MenuItem(
+                                                icon = {
+                                                    Icon(
+                                                        painter = painterResource(id = ClassifiIcons.Support),
+                                                        contentDescription = stringResource(id = R.string.help_and_support)
+                                                    )
+                                                },
+                                                text = {
+                                                    ProvideTextStyle(textStyle) {
+                                                        Text(
+                                                            text = stringResource(id = R.string.help_and_support)
+                                                        )
+                                                    }
+
+                                                },
+                                                onClick = {
+                                                    /*todo; on get support */
+                                                }
+                                            )
+
+                                            MenuItem(
+                                                icon = {
+                                                    Icon(
+                                                        painter = painterResource(id = ClassifiIcons.Settings),
+                                                        contentDescription = stringResource(id = R.string.my_account)
+                                                    )
+                                                },
+                                                text = {
+                                                    ProvideTextStyle(textStyle) {
+                                                        Text(
+                                                            text = stringResource(id = R.string.my_account)
+                                                        )
+                                                    }
+
+                                                },
+                                                onClick = {
+                                                    /*todo; on view account */
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
+
             }
 
         }

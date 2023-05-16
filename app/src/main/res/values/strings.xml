@@ -249,4 +249,6 @@
     <string name="students">Students</string>
     <string name="reports">Reports</string>
     <string name="not_connected">Not Connected</string>
+    <string name="help_and_support">Help and Support</string>
+    <string name="my_account">My Account</string>
 </resources>
