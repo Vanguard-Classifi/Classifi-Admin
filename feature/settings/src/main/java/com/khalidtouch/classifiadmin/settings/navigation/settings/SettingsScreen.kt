@@ -41,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,6 +55,7 @@ import com.khalidtouch.core.designsystem.components.ClassifiScrollableTabRow
 import com.khalidtouch.core.designsystem.components.ClassifiSidePane
 import com.khalidtouch.core.designsystem.components.ClassifiSimpleTopAppBar
 import com.khalidtouch.core.designsystem.components.ClassifiTab
+import com.khalidtouch.core.designsystem.components.ClassifiTabSidePane
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 
 @Composable
@@ -140,8 +142,27 @@ internal fun SettingsScreen(
                                 modifier = Modifier,
                                 totalWidth = maxWidth,
                                 items = {
-                                    //todo -> settings items
-                                    Text("Side panel")
+                                    val textStyle = MaterialTheme.typography.labelLarge.copy(
+                                        textAlign = TextAlign.Center
+                                    )
+
+                                    settingsViewModel.tabs.forEachIndexed { index, setting ->
+                                        ClassifiTabSidePane(
+                                            selected = selectedTabIndex!! == index,
+                                            onClick = { settingsViewModel.updateTabIndex(index) },
+                                            text = {
+                                                ProvideTextStyle(value = textStyle) {
+                                                    Text(stringResource(id = setting.textRes))
+                                                }
+                                            },
+                                            leadingIcon = {
+                                                Icon(
+                                                    painter = painterResource(id = setting.iconRes),
+                                                    contentDescription = stringResource(id = setting.textRes)
+                                                )
+                                            }
+                                        )
+                                    }
                                 }
                             )
                         }

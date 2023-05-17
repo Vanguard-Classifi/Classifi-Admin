@@ -6,4 +6,5 @@
     <string name="account">Account</string>
     <string name="preferences">Preferences</string>
     <string name="administration">Administration</string>
+    <string name="change_profile_image">Change profile image</string>
 </resources>

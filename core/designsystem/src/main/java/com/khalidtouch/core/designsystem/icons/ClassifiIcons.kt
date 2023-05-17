@@ -8,8 +8,10 @@ import com.khalidtouch.core.designsystem.R
 
 object ClassifiIcons {
     val Abort = R.drawable.icon_abort
+    val About = R.drawable.icon_about
     val Add = R.drawable.icon_add
     val Admin = R.drawable.icon_admin
+    val Address = R.drawable.icon_address
     val ArrowDown = R.drawable.icon_arrow_down
     val ArrowUp = R.drawable.icon_arrow_up
     val Assessment = R.drawable.icon_assessment
@@ -20,22 +22,27 @@ object ClassifiIcons {
     val Brand = R.drawable.icon_brand
     val BrandingBig = R.drawable.icon_branding_big
     val Calendar = R.drawable.icon_calendar
+    val Camera = R.drawable.icon_camera
     val Cap = R.drawable.icon_cap
+    val City = R.drawable.icon_city
     val Classroom = R.drawable.icon_classroom
     val Close = R.drawable.icon_close
     val CommentOutline = R.drawable.icon_comment_outline
     val CommentSolid = R.drawable.icon_comment_solid
     val Copy = R.drawable.icon_copy
     val Copyright = R.drawable.icon_copyright
+    val Country = R.drawable.icon_country
     val Customize = R.drawable.icon_customize
     val Delete = R.drawable.icon_delete
     val Discussion = R.drawable.icon_discussion
+    val Dob = R.drawable.icon_dob
     val DocxFile = R.drawable.icon_docx_file
     val DoubleArrowDown = R.drawable.icon_double_arrow_down
     val DoubleArrowUp = R.drawable.icon_double_arrow_up
     val Dropdown = R.drawable.icon_dropdown
     val DropdownClose = R.drawable.icon_dropdown_close
     val Edit = R.drawable.icon_edit
+    val EditSolid = R.drawable.icon_edit_solid
     val Enroll = R.drawable.icon_enroll
     val Error = R.drawable.icon_error
     val Exam = R.drawable.icon_exam
@@ -54,8 +61,11 @@ object ClassifiIcons {
     val OptionsVertical = R.drawable.icon_options_vertical
     val Parent = R.drawable.icon_parent
     val PdfFile = R.drawable.icon_pdf_file
+    val Personal = R.drawable.icon_personal
+    val Phone = R.drawable.icon_phone
     val PngFile = R.drawable.icon_png_file
     val Portrait = R.drawable.icon_portrait
+    val Postal = R.drawable.icon_postal
     val PptFile= R.drawable.icon_ppt_file
     val Preference = R.drawable.icon_preference
     val Preview = R.drawable.icon_preview

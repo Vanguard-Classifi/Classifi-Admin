@@ -1,6 +1,7 @@
 package com.khalidtouch.core.designsystem.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.ButtonDefaults
@@ -81,6 +82,38 @@ fun ClassifiTabRow(
 }
 
 @Composable
+fun ClassifiTabSidePane(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    text: @Composable () -> Unit,
+    leadingIcon: @Composable (() -> Unit)? = null,
+) {
+    Tab(
+        selected = selected,
+        onClick = onClick,
+        enabled = enabled,
+        selectedContentColor = MaterialTheme.colorScheme.onPrimary,
+        unselectedContentColor = MaterialTheme.colorScheme.onPrimary.copy(ClassifiTabDefaults.TabAlpha),
+        modifier = modifier,
+        text = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (leadingIcon != null) {
+                    Box(Modifier.padding(16.dp)) {
+                        leadingIcon()
+                    }
+                }
+
+                Box(Modifier.weight(1f)) {
+                    text()
+                }
+            }
+        }
+    )
+}
+
+@Composable
 fun ClassifiTab(
     selected: Boolean,
     onClick: () -> Unit,
@@ -154,6 +187,5 @@ fun ClassifiTabContent(
 
 object ClassifiTabDefaults {
     val TabTopPadding = 7.dp
-
     val TabAlpha = 0.4f
 }

@@ -14,4 +14,5 @@ dependencies {
     implementation(libs.androidx.compose.material3.windowSizeClass)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.runtime.livedata)
+    implementation(libs.coil.kt.compose)
 }

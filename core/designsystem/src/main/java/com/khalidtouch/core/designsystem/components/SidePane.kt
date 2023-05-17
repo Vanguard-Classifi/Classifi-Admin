@@ -1,9 +1,13 @@
 package com.khalidtouch.core.designsystem.components
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,16 +23,17 @@ fun ClassifiSidePane(
     modifier: Modifier = Modifier,
     totalWidth: Dp,
     items: @Composable ColumnScope.() -> Unit,
+    verticalScroll: ScrollState = rememberScrollState(),
 ) {
     Surface(
         modifier = modifier
             .fillMaxHeight()
-            .width(totalWidth.times(0.33f)),
+            .widthIn(max = totalWidth.times(0.25f)),
         color = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
         tonalElevation = ClassifiSidePaneDefaults.tonalElevation,
     ) {
-        Column {
+        Column(modifier.verticalScroll(verticalScroll)) {
             items()
         }
     }
