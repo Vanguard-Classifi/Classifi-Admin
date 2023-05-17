@@ -1,6 +1,5 @@
 package com.vanguard.classifiadmin.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,6 +26,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +72,7 @@ import com.vanguard.classifiadmin.navigation.TopLevelDestination
 fun ClassifiHomeScreen(
     windowSizeClass: WindowSizeClass,
     appState: ClassifiAppState = rememberClassifiAppState(windowSizeClass = windowSizeClass),
+    onOpenSettings: () -> Unit = {},
 ) {
     val TAG = "HomeScreen"
     val shouldShowGradientBackground =
@@ -112,9 +113,6 @@ fun ClassifiHomeScreen(
             ) { padding ->
 
                 BoxWithConstraints {
-                    val maxWidth = maxWidth
-                    val maxHeight = maxHeight
-                    Log.d(TAG, "ClassifiHomeScreen: the maxWidth is $maxWidth")
 
                     Row(
                         Modifier
@@ -153,7 +151,7 @@ fun ClassifiHomeScreen(
 
                                             ClassifiOutlinedButton(
                                                 modifier = Modifier,
-                                                onClick = { /*TODO*/ },
+                                                onClick = { /*TODO on select class .... */ },
                                                 content = {
                                                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onPrimary) {
                                                         Text(
@@ -224,14 +222,16 @@ fun ClassifiHomeScreen(
 
                     if (menuState) {
                         Box(
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxSize()
                                 .padding(16.dp)
                         ) {
                             val localModifier = Modifier
                             Box(
-                                contentAlignment = when {
-                                    maxWidth > Device.LARGE.minWidth -> Alignment.Center
-                                    maxWidth > Device.MEDIUM.minWidth -> Alignment.Center
+                                contentAlignment = when (windowSizeClass.widthSizeClass) {
+                                    WindowWidthSizeClass.Expanded -> Alignment.Center
+                                    WindowWidthSizeClass.Medium -> Alignment.Center
+                                    WindowWidthSizeClass.Compact -> Alignment.TopEnd
                                     else -> Alignment.TopEnd
                                 },
                             ) {
@@ -250,7 +250,10 @@ fun ClassifiHomeScreen(
                                                 )
 
                                             MenuHeader(
-                                                onClick = { /*todo; on click menu header */ }
+                                                onClick = {
+                                                    onOpenSettings()
+                                                    menuState = false
+                                                },
                                             ) {
                                                 Row(modifier = Modifier.padding(vertical = 8.dp)) {
                                                     val nameStyle =
@@ -337,7 +340,8 @@ fun ClassifiHomeScreen(
 
                                                 },
                                                 onClick = {
-                                                    /*todo; on view account */
+                                                    onOpenSettings()
+                                                    menuState = false
                                                 }
                                             )
                                         }

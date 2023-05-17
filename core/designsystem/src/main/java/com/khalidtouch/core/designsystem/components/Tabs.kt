@@ -41,8 +41,8 @@ fun ClassifiScrollableTabRow(
         modifier = modifier,
         edgePadding = 0.dp,
         selectedTabIndex = selectedTabIndex,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(
                 modifier = Modifier.customTabIndicatorOffset(
@@ -50,7 +50,7 @@ fun ClassifiScrollableTabRow(
                     tabWidth = tabWidths[selectedTabIndex]
                 ),
                 height = 8.dp,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         },
         tabs = tabs
@@ -67,13 +67,13 @@ fun ClassifiTabRow(
     TabRow(
         selectedTabIndex = selectedTabIndex,
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(
                 modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                 height = 2.dp,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         },
         tabs = tabs,
@@ -93,8 +93,8 @@ fun ClassifiTab(
         selected = selected,
         onClick = onClick,
         enabled = enabled,
-        selectedContentColor = MaterialTheme.colorScheme.onSurface,
-        unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(ClassifiTabDefaults.TabAlpha),
+        selectedContentColor = MaterialTheme.colorScheme.onPrimary,
+        unselectedContentColor = MaterialTheme.colorScheme.onPrimary.copy(ClassifiTabDefaults.TabAlpha),
         modifier = modifier,
         text = {
             val style = MaterialTheme.typography.labelLarge.copy(textAlign = TextAlign.Center)

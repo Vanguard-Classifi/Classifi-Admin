@@ -44,7 +44,7 @@ class ClassifiAppState(
     val bottomNavController: NavHostController,
     val navController: NavHostController,
     val coroutineScope: CoroutineScope,
-    val windowSizeClass: WindowSizeClass
+    private val windowSizeClass: WindowSizeClass
 ) {
     val currentDestination: NavDestination?
         @Composable get() = bottomNavController
@@ -62,11 +62,15 @@ class ClassifiAppState(
     val shouldShowBottomBar: Boolean
         get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
 
+    val shouldShowSettingsTab: Boolean
+        get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+
     var shouldShowSettingsDialog by mutableStateOf(false)
         private set
 
     val shouldShowNavRail: Boolean
         get() = !shouldShowBottomBar
+
 
     fun setShowSettingsDialog(shouldShow: Boolean) {
         shouldShowSettingsDialog = shouldShow

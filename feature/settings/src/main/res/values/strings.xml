@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="go_back">Go back</string>
+    <string name="manage_account">Manage Account</string>
+    <string name="profile">Profile</string>
+    <string name="account">Account</string>
+    <string name="preferences">Preferences</string>
+    <string name="administration">Administration</string>
+</resources>

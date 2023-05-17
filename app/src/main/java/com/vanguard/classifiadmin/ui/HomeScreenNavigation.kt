@@ -14,10 +14,12 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.homeScreen(windowSizeClass: WindowSizeClass) {
+fun NavGraphBuilder.homeScreen(windowSizeClass: WindowSizeClass, onOpenSettings: () -> Unit) {
     composable(
         route = homeScreenNavigationRoute,
     ) {
-        ClassifiHomeScreen(windowSizeClass = windowSizeClass)
+        ClassifiHomeScreen(
+            windowSizeClass = windowSizeClass, onOpenSettings = onOpenSettings
+        )
     }
 }

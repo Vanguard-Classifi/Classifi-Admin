@@ -46,10 +46,12 @@ dependencies {
 
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
+    implementation(project(":core:common"))
     implementation(project(":feature:feeds"))
     implementation(project(":feature:students"))
     implementation(project(":feature:assessment"))
     implementation(project(":feature:reports"))
+    implementation(project(":feature:settings"))
 
     implementation(composeBom)
 
