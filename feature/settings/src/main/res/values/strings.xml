@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="go_back">Go back</string>
     <string name="manage_account">Manage Account</string>
     <string name="profile">Profile</string>
@@ -7,4 +7,9 @@
     <string name="preferences">Preferences</string>
     <string name="administration">Administration</string>
     <string name="change_profile_image">Change profile image</string>
+    <string name="address">Address</string>
+    <string name="country">Country</string>
+    <string name="state">State</string>
+    <string name="city">City</string>
+    <string name="postal_code">Postal Code</string>
 </resources>

@@ -44,7 +44,8 @@ fun SettingItem(
                     .weight(1f)
                     .padding(
                         top = ClassifiSettingDefaults.topTextPadding,
-                        bottom = ClassifiSettingDefaults.topTextPadding
+                        bottom = ClassifiSettingDefaults.textPadding,
+                        end = ClassifiSettingDefaults.textPadding
                     )
             ) {
                 text()
@@ -55,7 +56,7 @@ fun SettingItem(
             Box(
                 contentAlignment = Alignment.TopEnd, modifier = modifier
                     .fillMaxWidth()
-                    .padding(end = 8.dp, top = 8.dp)
+                    .padding(top = 8.dp, end = ClassifiSettingDefaults.iconPadding)
             ) {
                 Icon(
                     painter = painterResource(id = ClassifiIcons.EditSolid),
@@ -69,5 +70,6 @@ fun SettingItem(
 
 object ClassifiSettingDefaults {
     val iconPadding = 22.dp
-    val topTextPadding = 8.dp
+    val topTextPadding = 26.dp
+    val textPadding = 8.dp
 }

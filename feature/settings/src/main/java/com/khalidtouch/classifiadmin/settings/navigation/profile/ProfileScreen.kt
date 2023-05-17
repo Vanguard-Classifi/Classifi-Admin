@@ -5,8 +5,10 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -75,7 +77,7 @@ internal fun ProfileScreen(
             val headerStyle = MaterialTheme.typography.titleSmall.copy(
                 color = Color.Black.copy(0.8f)
             )
-            val textStyle = MaterialTheme.typography.bodyLarge
+            val textStyle = MaterialTheme.typography.bodyMedium
 
             /**
              * The user profile image
@@ -84,6 +86,9 @@ internal fun ProfileScreen(
             /**
              * Name
              */
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             SettingItem(
                 modifier = modifier,
                 onClick = {},
@@ -207,12 +212,175 @@ internal fun ProfileScreen(
                 hasEditIcon = true,
             )
 
+            Spacer(modifier = modifier.height(8.dp))
+
             Divider(
                 modifier = modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
 
+            Spacer(modifier = modifier.height(8.dp))
+
+
+            /**
+             * Street/Address
+              */
+            SettingItem(
+                modifier = modifier,
+                onClick = {},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = ClassifiIcons.Address),
+                        contentDescription = null
+                    )
+                },
+                text = {
+                    Column {
+                        ProvideTextStyle(value = headerStyle) {
+                            Text(
+                                text = stringResource(id = R.string.address)
+                            )
+                        }
+
+                        ProvideTextStyle(value = textStyle) {
+                            Text(
+                                text = "No 23. Poly road",
+                            )
+                        }
+
+                    }
+                },
+                hasEditIcon = true,
+            )
+
+
+            /**
+             * Country
+             */
+            SettingItem(
+                modifier = modifier,
+                onClick = {},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = ClassifiIcons.Country),
+                        contentDescription = null
+                    )
+                },
+                text = {
+                    Column {
+                        ProvideTextStyle(value = headerStyle) {
+                            Text(
+                                text = stringResource(id = R.string.country)
+                            )
+                        }
+
+                        ProvideTextStyle(value = textStyle) {
+                            Text(
+                                text = "Nigeria",
+                            )
+                        }
+
+                    }
+                },
+                hasEditIcon = true,
+            )
+
+            /**
+             * State in Country
+             */
+            SettingItem(
+                modifier = modifier,
+                onClick = {},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = ClassifiIcons.Country),
+                        contentDescription = null
+                    )
+                },
+                text = {
+                    Column {
+                        ProvideTextStyle(value = headerStyle) {
+                            Text(
+                                text = stringResource(id = R.string.state)
+                            )
+                        }
+
+                        ProvideTextStyle(value = textStyle) {
+                            Text(
+                                text = "Edo",
+                            )
+                        }
+
+                    }
+                },
+                hasEditIcon = true,
+            )
+
+            /**
+             * City
+             */
+            SettingItem(
+                modifier = modifier,
+                onClick = {},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = ClassifiIcons.City),
+                        contentDescription = null
+                    )
+                },
+                text = {
+                    Column {
+                        ProvideTextStyle(value = headerStyle) {
+                            Text(
+                                text = stringResource(id = R.string.city)
+                            )
+                        }
+
+                        ProvideTextStyle(value = textStyle) {
+                            Text(
+                                text = "Auchi",
+                            )
+                        }
+
+                    }
+                },
+                hasEditIcon = true,
+            )
+
+            /**
+             * Postal code of city
+             */
+            SettingItem(
+                modifier = modifier,
+                onClick = {},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = ClassifiIcons.Postal),
+                        contentDescription = null
+                    )
+                },
+                text = {
+                    Column {
+                        ProvideTextStyle(value = headerStyle) {
+                            Text(
+                                text = stringResource(id = R.string.postal_code)
+                            )
+                        }
+
+                        ProvideTextStyle(value = textStyle) {
+                            Text(
+                                text = "234587",
+                            )
+                        }
+
+                    }
+                },
+                hasEditIcon = true,
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
+
     }
 }
