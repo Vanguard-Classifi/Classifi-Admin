@@ -18,22 +18,29 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +64,7 @@ import com.khalidtouch.core.designsystem.components.ClassifiSimpleTopAppBar
 import com.khalidtouch.core.designsystem.components.ClassifiTab
 import com.khalidtouch.core.designsystem.components.ClassifiTabSidePane
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsRoute(
@@ -85,102 +93,89 @@ internal fun SettingsScreen(
     ClassifiBackground {
         val snackbarHostState = remember { SnackbarHostState() }
         val selectedTabIndex by settingsViewModel.selectedTabIndex.observeAsState()
+        val scope = rememberCoroutineScope()
+        val sheetState = rememberModalBottomSheetState()
+        var showModalBottomSheet by rememberSaveable {
+            mutableStateOf(false)
+        }
+        val currentSettingItemClicked by settingsViewModel.currentSettingItemClicked.observeAsState()
 
-        Scaffold(
-            modifier = Modifier.semantics { testTagsAsResourceId = true },
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                val headerStyle = MaterialTheme.typography.titleMedium
+        LaunchedEffect(currentSettingItemClicked!!) {
+            if (currentSettingItemClicked !is SettingItemClicked.None) {
+                sheetState.show()
+                showModalBottomSheet = true
+            }
+        }
 
-                ClassifiSimpleTopAppBar(
-                    title = {
-                        Box(Modifier.padding(start = 16.dp)) {
-                            ProvideTextStyle(headerStyle) {
-                                Text(
-                                    text = stringResource(id = R.string.manage_account)
-                                )
-                            }
-                        }
-                    },
-                    navIcon = {
-                        Box(modifier = Modifier) {
-                            IconButton(
-                                onClick = onBack,
-                                enabled = true,
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = ClassifiIcons.Back),
-                                    contentDescription = stringResource(id = R.string.go_back)
-                                )
-                            }
-                        }
-                    }
-                )
-            },
-            content = { padding ->
-                BoxWithConstraints {
-                    val maxWidth = maxWidth
+        BoxWithConstraints {
+            Scaffold(
+                modifier = Modifier.semantics { testTagsAsResourceId = true },
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onBackground,
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                topBar = {
+                    val headerStyle = MaterialTheme.typography.titleMedium
 
-                    Row(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(padding)
-                            .consumeWindowInsets(padding)
-                            .windowInsetsPadding(
-                                WindowInsets.safeDrawing.only(
-                                    WindowInsetsSides.Horizontal
-                                )
-                            )
-                    ) {
-                        if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium ||
-                            windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
-                        ) {
-                            //side pane
-                            ClassifiSidePane(
-                                modifier = Modifier,
-                                totalWidth = maxWidth,
-                                items = {
-                                    val textStyle = MaterialTheme.typography.labelLarge.copy(
-                                        textAlign = TextAlign.Center
+                    ClassifiSimpleTopAppBar(
+                        title = {
+                            Box(Modifier.padding(start = 16.dp)) {
+                                ProvideTextStyle(headerStyle) {
+                                    Text(
+                                        text = stringResource(id = R.string.manage_account)
                                     )
-
-                                    settingsViewModel.tabs.forEachIndexed { index, setting ->
-                                        ClassifiTabSidePane(
-                                            selected = selectedTabIndex!! == index,
-                                            onClick = { settingsViewModel.updateTabIndex(index) },
-                                            text = {
-                                                ProvideTextStyle(value = textStyle) {
-                                                    Text(stringResource(id = setting.textRes))
-                                                }
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    painter = painterResource(id = setting.iconRes),
-                                                    contentDescription = stringResource(id = setting.textRes)
-                                                )
-                                            }
-                                        )
-                                    }
                                 }
-                            )
+                            }
+                        },
+                        navIcon = {
+                            Box(modifier = Modifier) {
+                                IconButton(
+                                    onClick = onBack,
+                                    enabled = true,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = ClassifiIcons.Back),
+                                        contentDescription = stringResource(id = R.string.go_back)
+                                    )
+                                }
+                            }
                         }
+                    )
+                },
+                content = { padding ->
+                    BoxWithConstraints {
+                        val maxWidth = maxWidth
 
-                        Column(Modifier.weight(1f)) {
-                            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
-                                //settings tab
-                                ClassifiScrollableTabRow(
-                                    selectedTabIndex = selectedTabIndex!!,
-                                    tabs = {
+                        Row(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(padding)
+                                .consumeWindowInsets(padding)
+                                .windowInsetsPadding(
+                                    WindowInsets.safeDrawing.only(
+                                        WindowInsetsSides.Horizontal
+                                    )
+                                )
+                        ) {
+                            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium ||
+                                windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+                            ) {
+                                //side pane
+                                ClassifiSidePane(
+                                    modifier = Modifier,
+                                    totalWidth = maxWidth,
+                                    items = {
+                                        val textStyle = MaterialTheme.typography.labelLarge.copy(
+                                            textAlign = TextAlign.Center
+                                        )
+
                                         settingsViewModel.tabs.forEachIndexed { index, setting ->
-                                            ClassifiTab(
+                                            ClassifiTabSidePane(
                                                 selected = selectedTabIndex!! == index,
-                                                onClick = {
-                                                    settingsViewModel.updateTabIndex(index)
-                                                },
+                                                onClick = { settingsViewModel.updateTabIndex(index) },
                                                 text = {
-                                                    Text(stringResource(id = setting.textRes))
+                                                    ProvideTextStyle(value = textStyle) {
+                                                        Text(stringResource(id = setting.textRes))
+                                                    }
                                                 },
                                                 leadingIcon = {
                                                     Icon(
@@ -190,29 +185,82 @@ internal fun SettingsScreen(
                                                 }
                                             )
                                         }
-                                    },
-                                    pageSize = settingsViewModel.tabs.size
+                                    }
                                 )
                             }
 
-                            //screens
-                            when (selectedTabIndex!!) {
-                                /**
-                                 * 0 -> Profile
-                                 * 1 -> Account
-                                 * 2 -> Preferences
-                                 * 3 -> Administration
-                                 */
-                                0 -> ProfileScreenWrapper()
-                                1 -> AccountScreenWrapper()
-                                2 -> PreferencesScreenWrapper()
-                                3 -> AdministrationScreenWrapper()
+                            Column(Modifier.weight(1f)) {
+                                if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+                                    //settings tab
+                                    ClassifiScrollableTabRow(
+                                        selectedTabIndex = selectedTabIndex!!,
+                                        tabs = {
+                                            settingsViewModel.tabs.forEachIndexed { index, setting ->
+                                                ClassifiTab(
+                                                    selected = selectedTabIndex!! == index,
+                                                    onClick = {
+                                                        settingsViewModel.updateTabIndex(index)
+                                                    },
+                                                    text = {
+                                                        Text(stringResource(id = setting.textRes))
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            painter = painterResource(id = setting.iconRes),
+                                                            contentDescription = stringResource(id = setting.textRes)
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        },
+                                        pageSize = settingsViewModel.tabs.size
+                                    )
+                                }
+
+                                //screens
+                                when (selectedTabIndex!!) {
+                                    /**
+                                     * 0 -> Profile
+                                     * 1 -> Account
+                                     * 2 -> Preferences
+                                     * 3 -> Administration
+                                     */
+                                    0 -> ProfileScreenWrapper()
+                                    1 -> AccountScreenWrapper()
+                                    2 -> PreferencesScreenWrapper()
+                                    3 -> AdministrationScreenWrapper()
+                                }
                             }
                         }
                     }
                 }
+            )
+
+            if (showModalBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        scope.launch {
+                            sheetState.hide()
+                            showModalBottomSheet = false
+                        }
+                    },
+                    sheetState = sheetState,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(
+                        topStartPercent = 23,
+                        topEndPercent = 23
+                    ),
+                    tonalElevation = 2.dp,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    content = {
+                        Text(
+                            "BottomSheet Content "
+                        )
+                    }
+                )
             }
-        )
+        }
+
     }
 }
 
@@ -242,4 +290,17 @@ enum class Settings(
         R.string.administration,
         ""
     )
+}
+
+sealed interface SettingItemClicked {
+    object None : SettingItemClicked
+    object Name : SettingItemClicked
+    object Phone : SettingItemClicked
+    object Bio : SettingItemClicked
+    object Dob : SettingItemClicked
+    object Address : SettingItemClicked
+    object Country : SettingItemClicked
+    object StateOfCountry : SettingItemClicked
+    object City : SettingItemClicked
+    object PostalCode : SettingItemClicked
 }

@@ -7,7 +7,7 @@ androidxHilt = "1.0.0"
 androidxComposeBom = "2022.10.00"
 androidxComposeCompiler = "1.4.1"
 androidxComposeAnimation = "1.4.3"
-androidxComposeMaterial3 = "1.1.0-alpha06"
+androidxComposeMaterial3 = "1.2.0-alpha01"
 androidxComposeRuntimeTracing = "1.0.0-alpha01"
 androidxNavigation = "2.5.3"
 appCompat = "1.5.1"
@@ -55,11 +55,12 @@ accompanist-systemuicontroller = { group = "com.google.accompanist", name = "acc
 accompanist-pager = { group = "com.google.accompanist", name = "accompanist-pager", version.ref = "accompanist" }
 accompanist-pager-indicators = { group = "com.google.accompanist", name = "accompanist-pager-indicators", version.ref = "accompanist" }
 accompanist-navigation-animation = {group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist"}
+accompanist-navigation-material = {group = "com.google.accompanist", name = "accompanist-navigation-material", version.ref = "accompanist"}
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidxComposeMaterial3" }
 androidx-compose-material3-windowSizeClass = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "androidxComposeMaterial3" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }

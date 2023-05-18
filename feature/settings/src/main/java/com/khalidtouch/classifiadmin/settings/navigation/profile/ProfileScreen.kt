@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.khalidtouch.classifiadmin.settings.R
+import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingItemClicked
 import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingsViewModel
 import com.khalidtouch.core.designsystem.components.ClassifiAvatar
 import com.khalidtouch.core.designsystem.components.ClassifiImageAvatar
@@ -66,10 +67,7 @@ fun ProfileScreenWrapper(
 @Composable
 internal fun ProfileScreen(
     modifier: Modifier = Modifier,
-    iconButtonColors: IconButtonColors = IconButtonDefaults.iconButtonColors(
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-    ),
+    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
 ) {
     LazyColumn(Modifier.fillMaxSize()) {
         item {
@@ -80,7 +78,7 @@ internal fun ProfileScreen(
             val textStyle = MaterialTheme.typography.bodyMedium
 
             /**
-             * The user profile image
+             * TODO: The user profile image
              */
 
             /**
@@ -91,7 +89,11 @@ internal fun ProfileScreen(
 
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.Name
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.Personal),
@@ -102,7 +104,7 @@ internal fun ProfileScreen(
                     Column {
                         ProvideTextStyle(value = headerStyle) {
                             Text(
-                                text = "Name"
+                                text = stringResource(id = R.string.name)
                             )
                         }
 
@@ -122,7 +124,11 @@ internal fun ProfileScreen(
              */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.Phone
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.Phone),
@@ -133,7 +139,7 @@ internal fun ProfileScreen(
                     Column {
                         ProvideTextStyle(value = headerStyle) {
                             Text(
-                                text = "Phone"
+                                text = stringResource(R.string.phone)
                             )
                         }
 
@@ -153,7 +159,11 @@ internal fun ProfileScreen(
              */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.Bio
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.About),
@@ -164,7 +174,7 @@ internal fun ProfileScreen(
                     Column {
                         ProvideTextStyle(value = headerStyle) {
                             Text(
-                                text = "Bio"
+                                text = stringResource(id = R.string.bio)
                             )
                         }
 
@@ -186,7 +196,11 @@ internal fun ProfileScreen(
              */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.Dob
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.Dob),
@@ -197,7 +211,7 @@ internal fun ProfileScreen(
                     Column {
                         ProvideTextStyle(value = headerStyle) {
                             Text(
-                                text = "Date of birth"
+                                text = stringResource(id = R.string.dob)
                             )
                         }
 
@@ -225,10 +239,14 @@ internal fun ProfileScreen(
 
             /**
              * Street/Address
-              */
+             */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.Address
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.Address),
@@ -260,7 +278,11 @@ internal fun ProfileScreen(
              */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.Country
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.Country),
@@ -291,7 +313,11 @@ internal fun ProfileScreen(
              */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.StateOfCountry
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.Country),
@@ -322,7 +348,11 @@ internal fun ProfileScreen(
              */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.City
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.City),
@@ -353,7 +383,11 @@ internal fun ProfileScreen(
              */
             SettingItem(
                 modifier = modifier,
-                onClick = {},
+                onClick = {
+                    settingsViewModel.updateCurrentSettingItemClicked(
+                        SettingItemClicked.PostalCode
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.Postal),

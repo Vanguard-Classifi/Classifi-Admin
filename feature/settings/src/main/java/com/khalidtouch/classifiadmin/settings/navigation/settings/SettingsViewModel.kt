@@ -18,6 +18,10 @@ class SettingsViewModel @Inject constructor() : ViewModel() {
         isSwipeLeft = it > 0
     }
 
+    private val _currentSettingItemClicked: MutableLiveData<SettingItemClicked> =
+        MutableLiveData(SettingItemClicked.None)
+    val currentSettingItemClicked: LiveData<SettingItemClicked> = _currentSettingItemClicked
+
     private var _dragState = MutableLiveData<DraggableState>(draggableState)
     val dragState: LiveData<DraggableState> = _dragState
 
@@ -30,5 +34,13 @@ class SettingsViewModel @Inject constructor() : ViewModel() {
 
     fun updateTabIndex(i: Int) {
         _selectedTabIndex.value = i
+    }
+
+    fun updateCurrentSettingItemClicked(settingItemClicked: SettingItemClicked) {
+        _currentSettingItemClicked.value = settingItemClicked
+    }
+
+    fun cancelSettingItemClicked() {
+        _currentSettingItemClicked.value = SettingItemClicked.None
     }
 }
