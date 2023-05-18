@@ -72,4 +72,5 @@ object ClassifiSettingDefaults {
     val iconPadding = 22.dp
     val topTextPadding = 26.dp
     val textPadding = 8.dp
+    const val textFieldAlpha = 0.8f
 }

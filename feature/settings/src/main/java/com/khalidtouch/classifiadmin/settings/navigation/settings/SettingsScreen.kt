@@ -19,16 +19,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -55,14 +59,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.khalidtouch.classifiadmin.settings.R
 import com.khalidtouch.classifiadmin.settings.navigation.account.AccountScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.administration.AdministrationScreenWrapper
+import com.khalidtouch.classifiadmin.settings.navigation.components.SettingsTextFieldBox
 import com.khalidtouch.classifiadmin.settings.navigation.preferences.PreferencesScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.profile.ProfileScreenWrapper
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
 import com.khalidtouch.core.designsystem.components.ClassifiScrollableTabRow
+import com.khalidtouch.core.designsystem.components.ClassifiSettingDefaults
 import com.khalidtouch.core.designsystem.components.ClassifiSidePane
 import com.khalidtouch.core.designsystem.components.ClassifiSimpleTopAppBar
 import com.khalidtouch.core.designsystem.components.ClassifiTab
 import com.khalidtouch.core.designsystem.components.ClassifiTabSidePane
+import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 import kotlinx.coroutines.launch
 
@@ -86,7 +93,15 @@ fun SettingsRoute(
 internal fun SettingsScreen(
     onBack: () -> Unit = {},
     windowSizeClass: WindowSizeClass,
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
+    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
+    textFieldColors: TextFieldColors = TextFieldDefaults.colors(
+        focusedTextColor = Color.Black,
+        unfocusedTextColor = Color.Black.copy(alpha = ClassifiSettingDefaults.textFieldAlpha),
+        focusedContainerColor = Color.Transparent,
+        unfocusedContainerColor = Color.Transparent,
+        focusedLabelColor = Color.Black,
+        cursorColor = Color.Black,
+    ),
 ) {
     val TAG = "SettingsScreen"
 
@@ -242,20 +257,104 @@ internal fun SettingsScreen(
                         scope.launch {
                             sheetState.hide()
                             showModalBottomSheet = false
+                            settingsViewModel.cancelSettingItemClicked()
                         }
                     },
                     sheetState = sheetState,
                     containerColor = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(
-                        topStartPercent = 23,
-                        topEndPercent = 23
+                        topStartPercent = 5,
+                        topEndPercent = 5
                     ),
                     tonalElevation = 2.dp,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                     content = {
-                        Text(
-                            "BottomSheet Content "
-                        )
+                        val headerStyle = MaterialTheme.typography.titleMedium
+
+                        when (currentSettingItemClicked!!) {
+                            is SettingItemClicked.Name -> {
+                                SettingsTextFieldBox(
+                                    textField = {
+                                        OutlinedTextField(
+                                            value = "",
+                                            onValueChange = {},
+                                            enabled = true,
+                                            keyboardOptions = KeyboardOptions(),
+                                            colors = textFieldColors,
+                                            maxLines = 1,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    },
+                                    header = {
+                                        ProvideTextStyle(headerStyle) {
+                                            Text(stringResource(id = R.string.enter_your_name))
+                                        }
+                                    },
+                                    responseButtons = {
+                                        ClassifiTextButton(
+                                            onClick = { /*TODO* on Cancel */ },
+                                            text = {
+                                                Text(
+                                                    stringResource(id = R.string.cancel),
+                                                    modifier = Modifier.padding(
+                                                        horizontal = ClassifiSettingDefaults.textPadding
+                                                    )
+                                                )
+                                            }
+                                        )
+
+                                        ClassifiTextButton(
+                                            onClick = { /*TODO* on Save */ },
+                                            text = {
+                                                Text(
+                                                    stringResource(id = R.string.save),
+                                                    modifier = Modifier.padding(
+                                                        horizontal = ClassifiSettingDefaults.textPadding
+                                                    )
+                                                )
+                                            }
+                                        )
+
+                                    }
+                                )
+                            }
+
+                            is SettingItemClicked.Phone -> {
+
+                            }
+
+                            is SettingItemClicked.Bio -> {
+
+                            }
+
+                            is SettingItemClicked.Dob -> {
+
+                            }
+
+                            is SettingItemClicked.Address -> {
+
+                            }
+
+                            is SettingItemClicked.Country -> {
+
+                            }
+
+                            is SettingItemClicked.StateOfCountry -> {
+
+                            }
+
+                            is SettingItemClicked.City -> {
+
+                            }
+
+                            is SettingItemClicked.PostalCode -> {
+
+                            }
+
+                            else -> {
+
+                            }
+                        }
                     }
                 )
             }

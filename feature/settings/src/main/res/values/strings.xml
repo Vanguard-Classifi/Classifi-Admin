@@ -16,4 +16,7 @@
     <string name="phone">Phone</string>
     <string name="bio">Bio</string>
     <string name="dob">Date of birth</string>
+    <string name="enter_your_name">Enter your name</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
 </resources>

@@ -30,9 +30,14 @@ fun SettingsTextFieldBox(
             }
         }
 
-        Box { textField() }
+        Box(modifier = modifier.fillMaxWidth()) { textField() }
 
-        Row(horizontalArrangement = Arrangement.End) {
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = modifier.fillMaxWidth().padding(
+                vertical = SettingsInputDefaults.textPadding
+            )
+        ) {
             responseButtons()
         }
     }
@@ -41,4 +46,5 @@ fun SettingsTextFieldBox(
 
 object SettingsInputDefaults {
     val layoutPadding = 16.dp
+    val textPadding = 8.dp
 }
