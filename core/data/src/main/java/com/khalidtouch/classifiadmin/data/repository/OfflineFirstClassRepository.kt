@@ -1,4 +1,4 @@
 package com.khalidtouch.classifiadmin.data.repository
 
-class SessionRepositoryImpl {
+class OfflineFirstClassRepository {
 }

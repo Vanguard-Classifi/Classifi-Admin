@@ -1,8 +1,6 @@
 package com.khalidtouch.classifiadmin.model.classifi
 
-import kotlinx.datetime.LocalDateTime
-import java.util.Date
-
+import java.time.LocalDateTime
 
 data class ClassifiSchool(
     val schoolId: Long,

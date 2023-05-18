@@ -2,10 +2,7 @@ package com.khalidtouch.chatme.database.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.datetime.LocalDateTime
-import java.util.Date
-
-
+import java.time.LocalDateTime
 
 @Entity
 data class ClassifiSchoolEntity(

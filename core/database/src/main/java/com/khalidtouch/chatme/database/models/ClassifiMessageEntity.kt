@@ -3,7 +3,7 @@ package com.khalidtouch.chatme.database.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.khalidtouch.classifiadmin.model.MessageType
-import kotlinx.datetime.LocalDateTime
+import java.time.LocalDateTime
 
 
 @Entity

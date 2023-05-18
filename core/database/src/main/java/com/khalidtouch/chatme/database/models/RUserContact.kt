@@ -1,5 +1,7 @@
 package com.khalidtouch.chatme.database.models
 
+import com.khalidtouch.classifiadmin.model.UserContact
+
 data class RUserContact(
     var address: String? = null,
     var country: String? = null,

@@ -2,8 +2,8 @@ package com.khalidtouch.chatme.database.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.datetime.LocalDateTime
-import java.util.Date
+import java.time.LocalDateTime
+
 
 @Entity
 data class ClassifiClassEntity(
@@ -12,4 +12,7 @@ data class ClassifiClassEntity(
     var className: String? = null,
     var classCode: String? = null,
     var dateCreated: LocalDateTime? = null,
+    var formTeacherId: Long? = null,
+    var prefectId: Long? = null,
+    var creatorId: Long? = null,
 )

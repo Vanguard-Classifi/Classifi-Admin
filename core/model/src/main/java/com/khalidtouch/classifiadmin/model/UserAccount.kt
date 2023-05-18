@@ -1,7 +1,7 @@
 package com.khalidtouch.classifiadmin.model
 
 data class UserAccount(
-    val username: String,
-    val email: String,
-    val userRole: UserRole,
+    var username: String? = null,
+    var email: String? = null,
+    var userRole: UserRole? = null,
 )
