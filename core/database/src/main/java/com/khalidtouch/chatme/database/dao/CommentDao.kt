@@ -31,7 +31,7 @@ interface CommentDao {
     @Query(
         value = "select * from ClassifiCommentEntity where feedId = :feedId"
     )
-    fun fetchCommentsByFeed(feedId: Long): Flow<List<ClassifiComment>>
+    fun fetchCommentsByFeed(feedId: Long): Flow<List<ClassifiCommentEntity>>
 
     @Query(
         value = "select * from ClassifiCommentEntity where commentId = :commentId"

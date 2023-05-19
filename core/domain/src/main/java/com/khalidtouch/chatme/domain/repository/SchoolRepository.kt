@@ -16,6 +16,7 @@ interface SchoolRepository {
     suspend fun fetchSchoolWithSessions(schoolId: Long): ClassifiSchool?
 
     suspend fun fetchSchoolWithClasses(schoolId: Long): ClassifiSchool?
-
-    suspend fun fetchSchoolWithUsers(schoolId: Long): ClassifiSchool?
+    suspend fun fetchSchoolWithStudents(schoolId: Long): ClassifiSchool?
+    suspend fun fetchSchoolWithTeachers(schoolId: Long): ClassifiSchool?
+    suspend fun fetchSchoolWithParents(schoolId: Long): ClassifiSchool?
 }

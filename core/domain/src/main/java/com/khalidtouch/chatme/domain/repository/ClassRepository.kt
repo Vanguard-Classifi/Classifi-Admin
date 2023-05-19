@@ -17,5 +17,7 @@ interface ClassRepository {
 
     fun fetchClassWithFeeds(classId: Long): Flow<ClassifiClass?>
 
-    fun fetchClassWithUsers(classId: Long): Flow<ClassifiClass?>
+    fun fetchClassWithTeachers(classId: Long): Flow<ClassifiClass?>
+
+    fun fetchClassWithStudents(classId: Long): Flow<ClassifiClass?>
 }

@@ -23,7 +23,6 @@ import com.khalidtouch.chatme.database.models.ClassifiMessageEntity
 import com.khalidtouch.chatme.database.models.ClassifiSchoolEntity
 import com.khalidtouch.chatme.database.models.ClassifiUserEntity
 import com.khalidtouch.chatme.database.relations.FeedsWithClassesCrossRef
-import com.khalidtouch.chatme.database.relations.UsersWithClasses
 import com.khalidtouch.chatme.database.relations.UsersWithClassesCrossRef
 import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 

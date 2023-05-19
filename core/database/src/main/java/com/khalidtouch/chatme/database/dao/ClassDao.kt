@@ -39,10 +39,15 @@ interface ClassDao {
     @Query(
         value = "select * from ClassifiClassEntity where classId = :classId"
     )
-    fun fetchClassWithFeeds(classId: Long): Flow<ClassWithFeeds>
+    fun fetchClassWithFeeds(classId: Long): Flow<ClassWithFeeds?>
 
     @Query(
         value = "select * from ClassifiClassEntity where classId = :classId"
     )
-    fun fetchClassWithUsers(classId: Long): Flow<ClassWithUsers>
+    fun fetchClassWithTeachers(classId: Long): Flow<ClassWithUsers?>
+
+    @Query(
+        value = "select * from ClassifiClassEntity where classId = :classId"
+    )
+    fun fetchClassWithStudents(classId: Long): Flow<ClassWithUsers?>
 }
