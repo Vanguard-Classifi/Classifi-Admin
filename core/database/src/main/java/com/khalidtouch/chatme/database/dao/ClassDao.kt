@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.khalidtouch.chatme.database.models.ClassifiClassEntity
 import com.khalidtouch.chatme.database.relations.ClassWithFeeds
@@ -39,15 +40,18 @@ interface ClassDao {
     @Query(
         value = "select * from ClassifiClassEntity where classId = :classId"
     )
+    @Transaction
     fun fetchClassWithFeeds(classId: Long): Flow<ClassWithFeeds?>
 
     @Query(
         value = "select * from ClassifiClassEntity where classId = :classId"
     )
+    @Transaction
     fun fetchClassWithTeachers(classId: Long): Flow<ClassWithUsers?>
 
     @Query(
         value = "select * from ClassifiClassEntity where classId = :classId"
     )
+    @Transaction
     fun fetchClassWithStudents(classId: Long): Flow<ClassWithUsers?>
 }

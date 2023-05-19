@@ -2,7 +2,7 @@ package com.khalidtouch.classifiadmin.model
 
 
 enum class UserRole(val role: String) {
-    SuperAdmin("Super Admin"),
+    SuperAdmin("SuperAdmin"),
     Admin("Admin"),
     Parent("Parent"),
     Teacher("Teacher"),

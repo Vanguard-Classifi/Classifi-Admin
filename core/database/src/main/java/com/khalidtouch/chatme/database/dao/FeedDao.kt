@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.khalidtouch.chatme.database.models.ClassifiFeedEntity
 import com.khalidtouch.chatme.database.relations.FeedWithClasses
@@ -32,23 +33,27 @@ interface FeedDao {
     @Query(
         value = "select * from ClassifiFeedEntity where feedId = :feedId"
     )
+    @Transaction
     fun fetchFeedWithMessages(feedId: Long): Flow<FeedWithMessages>
 
     @Query(
         value = "select * from ClassifiFeedEntity where feedId = :feedId"
     )
+    @Transaction
     fun fetchFeedWithComments(feedId: Long): Flow<FeedWithComments>
 
 
     @Query(
         value = "select * from ClassifiFeedEntity where feedId = :feedId"
     )
+    @Transaction
     fun fetchFeedWithLikes(feedId: Long): Flow<FeedWithLikes>
 
 
     @Query(
         value = "select * from ClassifiFeedEntity where feedId = :feedId"
     )
+    @Transaction
     fun fetchFeedWithClasses(feedId: Long): Flow<FeedWithClasses>
 
 }

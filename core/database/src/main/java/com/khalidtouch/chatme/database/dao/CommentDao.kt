@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.khalidtouch.chatme.database.models.ClassifiCommentEntity
 import com.khalidtouch.chatme.database.relations.CommentWithLikes
@@ -36,11 +37,13 @@ interface CommentDao {
     @Query(
         value = "select * from ClassifiCommentEntity where commentId = :commentId"
     )
+    @Transaction
     fun fetchCommentWithLikes(commentId: Long): Flow<CommentWithLikes?>
 
     @Query(
         value = "select * from ClassifiCommentEntity where commentId = :commentId"
     )
+    @Transaction
     fun fetchCommentWithMessages(commentId: Long): Flow<CommentWithMessages?>
 
 }

@@ -228,7 +228,7 @@ fun RUserContact.toModel() = UserContact(
 fun UserAccount.toRoom() = RUserAccount(
     username = username,
     email = email,
-    userRole = userRole
+    userRole = userRole ?: UserRole.Guest
 )
 
 fun RUserAccount.toModel() = UserAccount(
@@ -239,7 +239,6 @@ fun RUserAccount.toModel() = UserAccount(
 
 fun UserProfile.toRoom() = RUserProfile(
     profileImage = profileImage,
-    username = username,
     phone = phone,
     bio = bio,
     dob = dob,
@@ -248,7 +247,6 @@ fun UserProfile.toRoom() = RUserProfile(
 
 fun RUserProfile.toModel() = UserProfile(
     profileImage = profileImage,
-    username = username,
     phone = phone,
     bio = bio,
     dob = dob,

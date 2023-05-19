@@ -3,6 +3,9 @@ package com.khalidtouch.classifiadmin.model.classifi
 import java.time.LocalDateTime
 
 
+
+
+
 data class ClassifiFeed(
     val feedId: Long,
     val creator: ClassifiUser,

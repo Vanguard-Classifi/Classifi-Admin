@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.khalidtouch.chatme.database.models.ClassifiSchoolEntity
 import com.khalidtouch.chatme.database.relations.SchoolWithClasses
@@ -33,15 +34,18 @@ interface SchoolDao {
     @Query(
         value = "select * from ClassifiSchoolEntity where schoolId = :schoolId"
     )
+    @Transaction
     suspend fun fetchSchoolWithSessions(schoolId: Long): SchoolWithSessions?
 
     @Query(
         value = "select * from ClassifiSchoolEntity where schoolId = :schoolId"
     )
+    @Transaction
     suspend fun fetchSchoolWithClasses(schoolId: Long): SchoolWithClasses?
 
     @Query(
         value = "select * from ClassifiSchoolEntity where schoolId = :schoolId"
     )
+    @Transaction
     suspend fun fetchSchoolWithUsers(schoolId: Long): SchoolWithUsers?
 }

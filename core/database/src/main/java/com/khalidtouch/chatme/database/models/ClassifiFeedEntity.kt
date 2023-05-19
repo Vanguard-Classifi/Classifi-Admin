@@ -8,5 +8,7 @@ import java.time.LocalDateTime
 data class ClassifiFeedEntity(
     @PrimaryKey(autoGenerate = true) val feedId: Long,
     var creatorId: Long? = null,
+    var creatorName: String? = null,
+    var creatorImage: String? = null,
     var dateCreated: LocalDateTime? = null,
 )

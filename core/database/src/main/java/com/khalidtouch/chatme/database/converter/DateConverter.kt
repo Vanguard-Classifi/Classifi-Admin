@@ -1,7 +1,7 @@
 package com.khalidtouch.chatme.database.converter
 
 import androidx.room.TypeConverter
-import kotlinx.datetime.LocalDateTime
+import java.time.LocalDateTime
 
 class DateConverter {
     @TypeConverter

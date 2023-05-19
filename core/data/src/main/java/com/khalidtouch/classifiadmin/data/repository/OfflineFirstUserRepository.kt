@@ -73,7 +73,7 @@ class OfflineFirstUserRepository @Inject constructor(
             account = userWithSchools?.user?.account?.toModel(),
             profile = userWithSchools?.user?.profile?.toModel(),
             dateCreated = userWithSchools?.user?.dateCreated,
-            joinedSchools = userWithSchools?.schools ?: emptyList(),
+            joinedSchools = userWithSchools?.schools?.map { modelMapper.schoolEntityToModel(it)!! } ?: emptyList(),
         )
 
     }

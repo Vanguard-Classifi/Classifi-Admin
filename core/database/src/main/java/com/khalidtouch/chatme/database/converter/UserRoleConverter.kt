@@ -6,12 +6,12 @@ import com.khalidtouch.classifiadmin.model.asUserRole
 
 class UserRoleConverter {
     @TypeConverter
-    fun roleToString(role: UserRole): String {
-        return role.role
+    fun roleToString(role: UserRole?): String? {
+        return role?.let(UserRole::role)
     }
 
     @TypeConverter
-    fun stringToRole(role: String): UserRole {
+    fun stringToRole(role: String?): UserRole {
         return role.asUserRole()
     }
 }

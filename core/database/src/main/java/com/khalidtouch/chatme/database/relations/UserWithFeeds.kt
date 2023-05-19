@@ -6,6 +6,7 @@ import com.khalidtouch.chatme.database.models.ClassifiFeedEntity
 import com.khalidtouch.chatme.database.models.ClassifiUserEntity
 
 
+
 data class UserWithFeeds(
     @Embedded val user: ClassifiUserEntity,
     @Relation(
