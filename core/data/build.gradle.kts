@@ -15,5 +15,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(project(":core:domain"))
     implementation(project(":core:database"))
+    implementation(project(":core:datastore"))
     implementation(project(":core:model"))
 }

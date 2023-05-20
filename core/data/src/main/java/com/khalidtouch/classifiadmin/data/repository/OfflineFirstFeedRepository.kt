@@ -1,14 +1,17 @@
 package com.khalidtouch.classifiadmin.data.repository
 
 import com.khalidtouch.chatme.database.dao.FeedDao
+import com.khalidtouch.chatme.domain.repository.FeedQuery
 import com.khalidtouch.chatme.domain.repository.FeedRepository
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
+import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapperImpl
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiFeed
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -104,6 +107,12 @@ class OfflineFirstFeedRepository @Inject constructor(
                     dateCreated = it.feed.dateCreated ?: LocalDateTime.now(),
                 )
             )
+        }
+    }
+
+    override fun fetchFeedResources(query: FeedQuery): Flow<List<ClassifiFeed>> {
+        return feedDao.fetchFeedResources(query.filterByFeedIds ?: setOf(-1L)).map {
+            it.map { feed -> modelMapper.feedEntityToModel(feed)!! }
         }
     }
 }

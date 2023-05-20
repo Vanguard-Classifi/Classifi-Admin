@@ -19,4 +19,11 @@ interface FeedRepository {
     fun fetchFeedWithLikes(feedId: Long): Flow<ClassifiFeed?>
 
     fun fetchFeedWithClasses(feedId: Long): Flow<ClassifiFeed?>
+
+    fun fetchFeedResources(query: FeedQuery): Flow<List<ClassifiFeed>>
 }
+
+
+data class FeedQuery(
+    val filterByFeedIds: Set<Long>? = null,
+)

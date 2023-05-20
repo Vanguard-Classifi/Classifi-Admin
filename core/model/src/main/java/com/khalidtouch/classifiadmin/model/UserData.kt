@@ -5,4 +5,6 @@ data class UserData(
     val useDynamicColor: Boolean,
     val darkThemeConfig: DarkThemeConfig,
     val themeBrand: ThemeBrand,
+    val likedFeeds: Set<Long>,
+    val assignedFeeds: Set<Long>
 )

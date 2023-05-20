@@ -9,6 +9,7 @@ androidxComposeCompiler = "1.4.1"
 androidxComposeAnimation = "1.4.3"
 androidxComposeMaterial3 = "1.2.0-alpha01"
 androidxComposeRuntimeTracing = "1.0.0-alpha01"
+androidxDataStore = "1.0.0"
 androidxNavigation = "2.5.3"
 appCompat = "1.5.1"
 coil = "2.2.2"
@@ -74,6 +75,8 @@ androidx-compose-foundation = { group = "androidx.compose.foundation", name = "f
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "androidxComposeAnimation" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+androidx-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
+androidx-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
 androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
 androidx-test-espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeExt" }

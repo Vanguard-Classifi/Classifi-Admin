@@ -1,3 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="open_feeds">Open Feed</string>
+    <string name="like">Like</string>
+    <string name="unlike">Unlike</string>
+    <string name="comment">Comment</string>
+    <string name="share">Share</string>
 </resources>

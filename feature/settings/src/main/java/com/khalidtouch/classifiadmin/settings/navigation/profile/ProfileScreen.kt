@@ -67,7 +67,8 @@ fun ProfileScreenWrapper(
 @Composable
 internal fun ProfileScreen(
     modifier: Modifier = Modifier,
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
+    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
+    profileViewModel: ProfileViewModel = hiltViewModel<ProfileViewModel>(),
 ) {
     LazyColumn(Modifier.fillMaxSize()) {
         item {

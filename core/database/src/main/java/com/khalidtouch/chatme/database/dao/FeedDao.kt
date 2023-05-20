@@ -56,4 +56,9 @@ interface FeedDao {
     @Transaction
     fun fetchFeedWithClasses(feedId: Long): Flow<FeedWithClasses>
 
+    @Query(
+        value = "select * from ClassifiFeedEntity where feedId in (:feedIds) order by dateCreated desc"
+    )
+    fun fetchFeedResources(feedIds: Set<Long>): Flow<List<ClassifiFeedEntity>>
+
 }

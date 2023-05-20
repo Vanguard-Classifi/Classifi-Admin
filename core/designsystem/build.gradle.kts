@@ -24,5 +24,8 @@ dependencies {
     api(libs.androidx.compose.ui.util)
     debugApi(libs.androidx.compose.ui.tooling)
     implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt)
     implementation(libs.androidx.core.ktx)
+    implementation(project(":core:model"))
+    implementation(project(":core:domain"))
 }
