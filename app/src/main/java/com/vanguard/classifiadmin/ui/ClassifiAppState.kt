@@ -33,7 +33,7 @@ fun rememberClassifiAppState(
     bottomNavController: NavHostController = rememberAnimatedNavController(),
 ): ClassifiAppState {
     //todo: navigation tracking side effect
-    return remember(navController, coroutineScope, windowSizeClass) {
+    return remember(bottomNavController, navController, coroutineScope, windowSizeClass) {
         ClassifiAppState(bottomNavController, navController, coroutineScope, windowSizeClass)
     }
 }

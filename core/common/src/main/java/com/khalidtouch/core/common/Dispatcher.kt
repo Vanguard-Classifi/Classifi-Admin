@@ -1,4 +1,4 @@
-package com.khalidtouch.chatme.network
+package com.khalidtouch.core.common
 
 import javax.inject.Qualifier
 

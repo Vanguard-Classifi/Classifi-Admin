@@ -8,7 +8,7 @@ import com.khalidtouch.core.designsystem.ui.NewsFeedCard
 fun LazyListScope.newsFeed(
     feedState: NewsFeedUiState,
     onStartComment: () -> Unit,
-    onLikeCheckedChanged: (Boolean) -> Unit,
+    onLikeCheckedChanged: (Long, Boolean) -> Unit,
     onSharePost: () -> Unit,
     onViewDetails: () -> Unit,
     onViewAuthor: () -> Unit,

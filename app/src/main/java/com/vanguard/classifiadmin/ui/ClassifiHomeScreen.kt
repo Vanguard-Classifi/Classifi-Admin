@@ -47,10 +47,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import com.khalidtouch.classifiadmin.feeds.compose.navigateToComposeFeed
+import com.khalidtouch.classifiadmin.settings.navigation.navigateToSettings
 import com.khalidtouch.core.designsystem.components.ClassifiAvatar
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
 import com.khalidtouch.core.designsystem.components.ClassifiCenterTopAppBar
 import com.khalidtouch.core.designsystem.components.ClassifiGradientBackground
+import com.khalidtouch.core.designsystem.components.ClassifiIconButton
 import com.khalidtouch.core.designsystem.components.ClassifiMenu
 import com.khalidtouch.core.designsystem.components.ClassifiOutlinedButton
 import com.khalidtouch.core.designsystem.components.ClassifiToggleButton
@@ -71,8 +74,9 @@ import com.vanguard.classifiadmin.navigation.TopLevelDestination
 @Composable
 fun ClassifiHomeScreen(
     windowSizeClass: WindowSizeClass,
-    appState: ClassifiAppState = rememberClassifiAppState(windowSizeClass = windowSizeClass),
-    onOpenSettings: () -> Unit = {},
+    appState: ClassifiAppState,
+    onComposeFeed: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val TAG = "HomeScreen"
     val shouldShowGradientBackground =
@@ -167,9 +171,8 @@ fun ClassifiHomeScreen(
                                                 }
                                             )
 
-                                            ClassifiToggleButton(
-                                                checked = false,
-                                                onCheckedChange = {/*TODO on tap for more features */ },
+                                            ClassifiIconButton(
+                                                onClick = {/*todo -> more features */ },
                                                 icon = {
                                                     Icon(
                                                         painter = painterResource(id = ClassifiIcons.Results),
@@ -216,7 +219,10 @@ fun ClassifiHomeScreen(
 
                             }
 
-                            ClassifiBottomNavHost(appState.bottomNavController)
+                            ClassifiBottomNavHost(
+                                appState.bottomNavController,
+                                onComposeFeed = onComposeFeed,
+                            )
                         }
                     }
 
@@ -251,7 +257,7 @@ fun ClassifiHomeScreen(
 
                                             MenuHeader(
                                                 onClick = {
-                                                    onOpenSettings()
+                                                   onOpenSettings()
                                                     menuState = false
                                                 },
                                             ) {

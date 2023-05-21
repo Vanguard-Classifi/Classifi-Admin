@@ -29,6 +29,7 @@ object ClassifiIcons {
     val Close = R.drawable.icon_close
     val CommentOutline = R.drawable.icon_comment_outline
     val CommentSolid = R.drawable.icon_comment_solid
+    val Compose = R.drawable.icon_compose
     val Copy = R.drawable.icon_copy
     val Copyright = R.drawable.icon_copyright
     val Country = R.drawable.icon_country

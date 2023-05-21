@@ -6,6 +6,8 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import com.khalidtouch.chatme.datastore.UserPreferences
 import com.khalidtouch.chatme.datastore.UserPreferencesSerializer
+import com.khalidtouch.core.common.ClassifiDispatcher
+import com.khalidtouch.core.common.Dispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +25,7 @@ class DataStoreModule {
     @Singleton
     fun provideUserPreferencesDataStore(
         @ApplicationContext context: Context,
-        ioDispatcher: CoroutineDispatcher,
+        @Dispatcher(ClassifiDispatcher.IO) ioDispatcher: CoroutineDispatcher,
         userPreferencesSerializer: UserPreferencesSerializer,
     ): DataStore<UserPreferences> =
         DataStoreFactory.create(

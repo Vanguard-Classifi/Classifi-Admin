@@ -5,19 +5,22 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.khalidtouch.classifiadmin.feeds.compose.composeFeedScreen
+import com.khalidtouch.classifiadmin.feeds.compose.navigateToComposeFeed
 import com.khalidtouch.classifiadmin.settings.navigation.navigateToSettings
 import com.khalidtouch.classifiadmin.settings.navigation.settingsScreen
 import com.vanguard.classifiadmin.ui.ClassifiAppState
 import com.vanguard.classifiadmin.ui.homeScreen
 import com.vanguard.classifiadmin.ui.homeScreenNavigationRoute
 import com.vanguard.classifiadmin.ui.navigateToHome
+import com.vanguard.classifiadmin.ui.rememberClassifiAppState
 
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ClassifiNavHost(
     windowSizeClass: WindowSizeClass,
-    appState: ClassifiAppState,
+    appState: ClassifiAppState = rememberClassifiAppState(windowSizeClass = windowSizeClass),
     modifier: Modifier = Modifier,
     startDestination: String = homeScreenNavigationRoute,
 ) {
@@ -28,8 +31,16 @@ fun ClassifiNavHost(
     ) {
         homeScreen(
             windowSizeClass = windowSizeClass,
-            onOpenSettings = { appState.navController.navigateToSettings() })
+            appState = appState,
+            onComposeFeed = { appState.navController.navigateToComposeFeed() },
+            onOpenSettings = { appState.navController.navigateToSettings() }
+        )
+
         settingsScreen(
-            windowSizeClass = windowSizeClass, onBack = { appState.navController.navigateToHome() })
+            windowSizeClass = windowSizeClass,
+            onBack = { appState.navController.navigateUp() }
+        )
+
+        composeFeedScreen()
     }
 }

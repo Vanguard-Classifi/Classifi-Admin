@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.khalidtouch.classifiadmin.feeds.navigation.feedsNavigationRoute
 import com.khalidtouch.classifiadmin.feeds.navigation.feedsScreen
+import com.khalidtouch.classifiadmin.students.navigation.studentsNavigationRoute
 import com.khalidtouch.classifiadmin.students.navigation.studentsScreen
 
 
@@ -15,6 +16,7 @@ import com.khalidtouch.classifiadmin.students.navigation.studentsScreen
 fun ClassifiBottomNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    onComposeFeed: () -> Unit,
     startDestination: String = feedsNavigationRoute,
 ) {
     AnimatedNavHost(
@@ -22,7 +24,7 @@ fun ClassifiBottomNavHost(
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        feedsScreen()
+        feedsScreen(onComposeFeed = onComposeFeed)
         studentsScreen()
     }
 }

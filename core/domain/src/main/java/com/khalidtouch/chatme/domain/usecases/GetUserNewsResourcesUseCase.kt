@@ -22,7 +22,7 @@ class GetUserNewsResourcesUseCase @Inject constructor(
         .fetchFeedResources(query).mapToUserNewsResources(userDataRepository.userData)
 }
 
-private fun Flow<List<ClassifiFeed>>.mapToUserNewsResources(
+internal fun Flow<List<ClassifiFeed>>.mapToUserNewsResources(
     userDataStream: Flow<UserData>
 ): Flow<List<UserNewsFeed>> =
     filterNot { it.isEmpty() }

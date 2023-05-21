@@ -48,7 +48,7 @@ fun NewsFeedCard(
     newsFeed: UserNewsFeed,
     modifier: Modifier = Modifier,
     isLiked: Boolean,
-    onToggleLike: (Boolean) -> Unit,
+    onToggleLike: (Long, Boolean) -> Unit,
     onClick: () -> Unit,
     onStartComment: () -> Unit,
     onViewAuthor: () -> Unit,
@@ -106,7 +106,12 @@ fun NewsFeedCard(
                         Box(Modifier.padding(NewsFeedDefaults.iconButtonPadding)) {
                             ClassifiToggleButton(
                                 checked = isLiked,
-                                onCheckedChange = { onToggleLike(it) },
+                                onCheckedChange = {
+                                    onToggleLike(
+                                        newsFeed.feedId,
+                                        it
+                                    )
+                                },
                                 checkedIcon = {
                                     Icon(
                                         painter = painterResource(ClassifiIcons.LikeSolid),

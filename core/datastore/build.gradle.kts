@@ -44,4 +44,5 @@ dependencies {
     implementation(libs.androidx.dataStore.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(project(":core:model"))
+    implementation(project(":core:common"))
 }
