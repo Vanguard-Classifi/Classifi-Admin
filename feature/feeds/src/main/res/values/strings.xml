@@ -4,4 +4,6 @@
     <string name="post">Post</string>
     <string name="close">Close</string>
     <string name="camera">Camera</string>
+    <string name="title">Title</string>
+    <string name="what_you_write_about">What do you want to write about?</string>
 </resources>

@@ -2,6 +2,7 @@ package com.khalidtouch.classifiadmin.feeds.compose
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
@@ -22,13 +24,25 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,11 +50,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.khalidtouch.classifiadmin.feeds.R
 import com.khalidtouch.core.designsystem.components.ClassifiButton
@@ -48,6 +64,7 @@ import com.khalidtouch.core.designsystem.components.ClassifiComposeFeedBottomBar
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
 import com.khalidtouch.core.designsystem.components.ClassifiSimpleTopAppBar
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -55,14 +72,32 @@ fun ComposeFeedRoute(
     composeFeedViewModel: ComposeFeedViewModel = hiltViewModel<ComposeFeedViewModel>(),
     onCloseComposeFeedScreen: () -> Unit,
 ) {
+    val feedTitle by composeFeedViewModel.feedTitle.collectAsStateWithLifecycle()
+    val feedContent by composeFeedViewModel.feedContent.collectAsStateWithLifecycle()
+    val isFeedPostable by composeFeedViewModel.isFeedPostable.collectAsStateWithLifecycle()
+    val isBottomSheetShown by composeFeedViewModel.isBottomSheetShown.collectAsStateWithLifecycle()
+    val currentBottomSheetSelection
+            by composeFeedViewModel.currentComposeFeedBottomSheetSelection.collectAsStateWithLifecycle()
 
     ComposeFeedScreen(
         onCloseComposeFeedScreen = onCloseComposeFeedScreen,
         onPostFeed = { /*TODO*/ },
-        isFeedPostable = false,
+        isFeedPostable = isFeedPostable,
         feedScope = "All classes",
         authorName = "Muhammed Bilal",
         schoolName = "Future Leaders International School",
+        currentTitle = feedTitle,
+        currentContent = feedContent,
+        isBottomSheetShown = isBottomSheetShown,
+        onTitleValueChange = composeFeedViewModel::onTitleValueChange,
+        onContentValueChange = composeFeedViewModel::onContentValueChange,
+        clearBottomSheetSelection = composeFeedViewModel::clearBottomSheetSelection,
+        currentBottomSheetSelection = currentBottomSheetSelection,
+        openAttachmentsBottomSheet = {
+            composeFeedViewModel.onComposeFeedBottomSheetSelectionChange(
+                ComposeFeedBottomSheetSelection.Attachments
+            )
+        }
     )
 }
 
@@ -76,8 +111,32 @@ private fun ComposeFeedScreen(
     feedScope: String,
     authorName: String,
     schoolName: String,
+    currentTitle: String,
+    currentContent: String,
+    isBottomSheetShown: Boolean,
+    onTitleValueChange: (String) -> Unit,
+    onContentValueChange: (String) -> Unit,
+    clearBottomSheetSelection: () -> Unit,
+    currentBottomSheetSelection: ComposeFeedBottomSheetSelection,
+    openAttachmentsBottomSheet: () -> Unit,
 ) {
+
+    var showModalBottomSheet by rememberSaveable {
+        mutableStateOf(false)
+    }
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(isBottomSheetShown) {
+        if (isBottomSheetShown) {
+            sheetState.show()
+            showModalBottomSheet = true
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             ClassifiSimpleTopAppBar(
                 title = { },
@@ -165,7 +224,17 @@ private fun ComposeFeedScreen(
                     ComposeFeedBottomBarActions.values().map { action ->
                         Box {
                             ClassifiIconButton(
-                                onClick = { },
+                                onClick = {
+                                    when (action) {
+                                        ComposeFeedBottomBarActions.More -> {
+                                            openAttachmentsBottomSheet()
+                                        }
+
+                                        else -> {
+
+                                        }
+                                    }
+                                },
                                 colors = composeFeedButtonColors,
                                 icon = {
                                     Icon(
@@ -183,18 +252,104 @@ private fun ComposeFeedScreen(
             ComposeFeedBody(
                 modifier = Modifier.padding(it),
                 schoolName = schoolName,
-                authorName = authorName
+                authorName = authorName,
+                currentTitle = currentTitle,
+                currentContent = currentContent,
+                onTitleValueChange = onTitleValueChange,
+                onContentValueChange = onContentValueChange,
             )
         }
     )
+
+    if (showModalBottomSheet)
+        ModalBottomSheet(
+            onDismissRequest = {
+                scope.launch {
+                    sheetState.hide()
+                    showModalBottomSheet = false
+                    clearBottomSheetSelection()
+                }
+            },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            shape = RoundedCornerShape(
+                topStartPercent = 5,
+                topEndPercent = 5
+            ),
+            tonalElevation = 2.dp,
+        ) {
+            when (currentBottomSheetSelection) {
+                is ComposeFeedBottomSheetSelection.Attachments -> {
+                    ComposeFeedMainActions.values().map {
+                        ActionListItem(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = it.icon),
+                                    contentDescription = it.title
+                                )
+                            },
+                            text = {
+                                Text(
+                                    it.title,
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                            },
+                            onClick = {
+                                /*todo -> do your thing */
+                                scope.launch {
+                                    sheetState.hide()
+                                    showModalBottomSheet = false
+                                    clearBottomSheetSelection()
+                                }
+                            }
+                        )
+                    }
+                }
+
+                else -> {
+
+                }
+            }
+
+        }
 }
 
+
+@Composable
+fun ActionListItem(
+    icon: @Composable () -> Unit,
+    text: @Composable () -> Unit,
+    onClick: () -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(
+                enabled = true,
+                onClick = onClick,
+                role = Role.Button,
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.padding(16.dp)) {
+            icon()
+        }
+        Box(Modifier.weight(1f)) {
+            text()
+        }
+    }
+}
 
 @Composable
 private fun ComposeFeedBody(
     modifier: Modifier = Modifier,
     authorName: String,
     schoolName: String,
+    currentTitle: String,
+    currentContent: String,
+    onTitleValueChange: (String) -> Unit,
+    onContentValueChange: (String) -> Unit,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
         focusedContainerColor = Color.Transparent,
         unfocusedContainerColor = Color.Transparent,
@@ -249,14 +404,15 @@ private fun ComposeFeedBody(
         title = {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = "",
-                onValueChange = {},
+                value = currentTitle,
+                onValueChange = onTitleValueChange,
                 placeholder = {
                     Text(
-                        text = "Title",
+                        text = stringResource(id = R.string.title),
                         style = MaterialTheme.typography.titleMedium
                     )
                 },
+                textStyle = MaterialTheme.typography.titleMedium,
                 colors = textFieldColors,
                 maxLines = 1,
                 keyboardOptions = KeyboardOptions(
@@ -268,15 +424,16 @@ private fun ComposeFeedBody(
         text = {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = "",
-                onValueChange = {},
+                value = currentContent,
+                onValueChange = onContentValueChange,
                 placeholder = {
                     Text(
-                        text = "What do you want to write about?",
+                        text = stringResource(id = R.string.what_you_write_about),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 },
                 colors = textFieldColors,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
                 )
@@ -344,6 +501,13 @@ enum class ComposeFeedBottomBarActions(val icon: Int) {
     More(ClassifiIcons.OptionsHorizontal)
 }
 
+enum class ComposeFeedMainActions(val title: String, val icon: Int) {
+    ImportPhoto("Add a photo", ClassifiIcons.Image),
+    TakePhoto("Take a photo", ClassifiIcons.Camera),
+    AddDocument("Add a document", ClassifiIcons.Doc),
+    RecordVideo("Record a video", ClassifiIcons.VideoCamera)
+}
+
 @Composable
 @Preview
 private fun ComposeFeedBodyPreview() {
@@ -377,5 +541,9 @@ private fun ComposeFeedBodyPreview2() {
     ComposeFeedBody(
         authorName = "Khalid Isah",
         schoolName = "Future Leaders International School",
+        currentTitle = "Exam Timetable",
+        currentContent = "I'm happy to announce the launch of the new exam time table",
+        onContentValueChange = {},
+        onTitleValueChange = {},
     )
 }

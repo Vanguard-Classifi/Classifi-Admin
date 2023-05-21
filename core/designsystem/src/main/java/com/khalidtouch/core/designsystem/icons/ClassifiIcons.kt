@@ -36,6 +36,7 @@ object ClassifiIcons {
     val Customize = R.drawable.icon_customize
     val Delete = R.drawable.icon_delete
     val Discussion = R.drawable.icon_discussion
+    val Doc = R.drawable.icon_doc
     val Dob = R.drawable.icon_dob
     val DocxFile = R.drawable.icon_docx_file
     val DoubleArrowDown = R.drawable.icon_double_arrow_down
