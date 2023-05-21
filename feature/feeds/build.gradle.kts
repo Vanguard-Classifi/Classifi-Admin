@@ -9,4 +9,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.activity.compose)
+    implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt)
 }

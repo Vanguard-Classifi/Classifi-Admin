@@ -51,6 +51,7 @@ object ClassifiIcons {
     val Feeds = R.drawable.icon_feeds
     val FeedsSolid = R.drawable.icon_feeds_solid
     val Homework = R.drawable.icon_homework
+    val Image = R.drawable.icon_image
     val Import = R.drawable.icon_import
     val Info =R.drawable.icon_info
     val JpgFile = R.drawable.icon_jpg_file

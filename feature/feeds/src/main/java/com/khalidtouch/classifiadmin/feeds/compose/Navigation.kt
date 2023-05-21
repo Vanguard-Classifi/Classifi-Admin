@@ -15,7 +15,9 @@ fun NavController.navigateToComposeFeed(navOptions: NavOptions? = null) {
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.composeFeedScreen() {
+fun NavGraphBuilder.composeFeedScreen(
+    onCloseComposeFeedScreen: () -> Unit,
+) {
     composable(
         route = composeFeedNavigationRoute,
         enterTransition = {
@@ -31,6 +33,6 @@ fun NavGraphBuilder.composeFeedScreen() {
             )
         }
     ) {
-        ComposeFeedRoute()
+        ComposeFeedRoute(onCloseComposeFeedScreen = onCloseComposeFeedScreen)
     }
 }

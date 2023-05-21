@@ -1,5 +1,6 @@
 package com.khalidtouch.core.designsystem.components
 
+import android.widget.Button
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -22,13 +24,20 @@ fun ClassifiButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    border: BorderStroke? = null,
     text: @Composable () -> Unit,
     leadingIcon: @Composable (() -> Unit)? = null,
+    colors: ButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.onBackground,
+        contentColor = MaterialTheme.colorScheme.background,
+    ),
 ) {
     ClassifiButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
+        colors = colors,
+        border = border,
         contentPadding = if (leadingIcon != null) {
             ButtonDefaults.ButtonWithIconContentPadding
         } else ButtonDefaults.ContentPadding,
@@ -43,16 +52,20 @@ fun ClassifiButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    border: BorderStroke? = null,
+    colors: ButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.onBackground,
+        contentColor = MaterialTheme.colorScheme.background,
+    ),
     content: @Composable RowScope.() -> Unit,
 ) {
     Button(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.onBackground
-        ),
+        colors = colors,
         contentPadding = contentPadding,
+        border = border,
         content = content
     )
 }

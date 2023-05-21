@@ -41,6 +41,8 @@ fun ClassifiNavHost(
             onBack = { appState.navController.navigateUp() }
         )
 
-        composeFeedScreen()
+        composeFeedScreen(
+            onCloseComposeFeedScreen = { appState.navController.navigateUp() }
+        )
     }
 }
