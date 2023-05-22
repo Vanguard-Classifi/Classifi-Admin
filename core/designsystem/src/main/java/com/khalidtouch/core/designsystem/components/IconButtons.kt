@@ -1,23 +1,62 @@
 package com.khalidtouch.core.designsystem.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButtonColors
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+
+@Composable
+fun ClassifiTakeSnapshotButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    icon: @Composable () -> Unit,
+    onClick: () -> Unit,
+    border: BorderStroke? = null,
+    buttonSize: Dp = ClassifiIconButtonDefaults.defaultButtonSize,
+    color: Color = MaterialTheme.colorScheme.primary,
+    elevation: Dp = ClassifiIconButtonDefaults.tonalElevationDefaults,
+    shadowElevation: Dp = ClassifiIconButtonDefaults.shadowElevationDefaults,
+) {
+    Surface(
+        modifier = modifier
+            .size(buttonSize)
+            .clip(CircleShape)
+            .clickable(
+                enabled = enabled,
+                onClick = onClick,
+                role = Role.Button,
+            ),
+        shape = CircleShape,
+        tonalElevation = elevation,
+        border = border,
+        color = color,
+        shadowElevation = shadowElevation,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            icon()
+        }
+
+    }
+}
 
 @Composable
 fun ClassifiFab(
@@ -98,4 +137,6 @@ object ClassifiIconButtonDefaults {
     const val DisabledIconButtonContainerAlpha = 0.12f
     val defaultButtonSize = 48.dp
     val bigButtonSize = 96.dp
+    val tonalElevationDefaults = 2.dp
+    val shadowElevationDefaults = 1.dp
 }

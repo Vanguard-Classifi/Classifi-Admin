@@ -6,4 +6,10 @@
     <string name="camera">Camera</string>
     <string name="title">Title</string>
     <string name="what_you_write_about">What do you want to write about?</string>
+    <string name="camera_permission">Camera Permission</string>
+    <string name="proceed_to_use_camera">Click Proceed to grant the Camera Permissions</string>
+    <string name="proceed">Proceed</string>
+    <string name="cancel">Cancel</string>
+    <string name="next">Next</string>
+    <string name="saved_image">Saved Image</string>
 </resources>

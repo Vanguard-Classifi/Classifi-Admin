@@ -12,6 +12,7 @@ object ClassifiIcons {
     val Add = R.drawable.icon_add
     val Admin = R.drawable.icon_admin
     val Address = R.drawable.icon_address
+    val Album = R.drawable.icon_album
     val ArrowDown = R.drawable.icon_arrow_down
     val ArrowUp = R.drawable.icon_arrow_up
     val Assessment = R.drawable.icon_assessment
@@ -51,6 +52,9 @@ object ClassifiIcons {
     val Facebook = R.drawable.icon_facebook
     val Feeds = R.drawable.icon_feeds
     val FeedsSolid = R.drawable.icon_feeds_solid
+    val FlashOff = R.drawable.icon_flash_off
+    val FlashOn = R.drawable.icon_flash_on
+    val FlipCamera = R.drawable.icon_flip_camera
     val Homework = R.drawable.icon_homework
     val Image = R.drawable.icon_image
     val Import = R.drawable.icon_import
@@ -83,6 +87,7 @@ object ClassifiIcons {
     val School = R.drawable.icon_school
     val Settings = R.drawable.icon_settings
     val Share = R.drawable.icon_share
+    val Snapshot = R.drawable.icon_snapshot
     val Spreadsheet = R.drawable.icon_spreadsheet
     val StudentCap = R.drawable.icon_student_cap
     val Students = R.drawable.icon_students

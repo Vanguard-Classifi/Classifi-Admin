@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.khalidtouch.classifiadmin.feeds.compose.composeFeedScreen
 import com.khalidtouch.classifiadmin.feeds.compose.navigateToComposeFeed
+import com.khalidtouch.classifiadmin.feeds.takephoto.navigation.navigateToTakePhoto
+import com.khalidtouch.classifiadmin.feeds.takephoto.navigation.takePhotoScreen
 import com.khalidtouch.classifiadmin.settings.navigation.navigateToSettings
 import com.khalidtouch.classifiadmin.settings.navigation.settingsScreen
 import com.vanguard.classifiadmin.ui.ClassifiAppState
@@ -42,7 +44,14 @@ fun ClassifiNavHost(
         )
 
         composeFeedScreen(
-            onCloseComposeFeedScreen = { appState.navController.navigateUp() }
+            onCloseComposeFeedScreen = { appState.navController.navigateUp() },
+            onTakePhoto = { appState.navController.navigateToTakePhoto() }
+        )
+
+        takePhotoScreen(
+            onDismissDialog = { appState.navController.navigateUp() },
+            onClose = { appState.navController.navigateUp() },
+            onNext = { appState.navController.navigateToComposeFeed() },
         )
     }
 }

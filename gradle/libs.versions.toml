@@ -4,6 +4,7 @@ activityCompose = "1.6.1"
 androidGradlePlugin = "7.4.1"  #"8.0.0-alpha11"
 androidDesugarJdkLibs = "1.2.2"
 androidxHilt = "1.0.0"
+androidxCameraX = "1.3.0-alpha05"
 androidxComposeBom = "2022.10.00"
 androidxComposeCompiler = "1.4.1"
 androidxComposeAnimation = "1.4.3"
@@ -55,8 +56,13 @@ workRuntime = "2.7.1"
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist-pager = { group = "com.google.accompanist", name = "accompanist-pager", version.ref = "accompanist" }
 accompanist-pager-indicators = { group = "com.google.accompanist", name = "accompanist-pager-indicators", version.ref = "accompanist" }
-accompanist-navigation-animation = {group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist"}
-accompanist-navigation-material = {group = "com.google.accompanist", name = "accompanist-navigation-material", version.ref = "accompanist"}
+accompanist-navigation-animation = { group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist" }
+accompanist-navigation-material = { group = "com.google.accompanist", name = "accompanist-navigation-material", version.ref = "accompanist" }
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "androidxCameraX" }
+androidx-camera-video = { group = "androidx.camera", name = "camera-video", version.ref = "androidxCameraX" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "androidxCameraX" }
+androidx-camera-ext = { group = "androidx.camera", name = "camera-extensions", version.ref = "androidxCameraX" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
@@ -144,7 +150,7 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
 firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
-firebase-crashlytics = {id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin"}
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinPlugin" }

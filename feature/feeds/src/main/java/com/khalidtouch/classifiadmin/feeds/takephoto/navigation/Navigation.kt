@@ -1,4 +1,4 @@
-package com.khalidtouch.classifiadmin.feeds.compose
+package com.khalidtouch.classifiadmin.feeds.takephoto.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -7,20 +7,23 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import com.google.accompanist.navigation.animation.composable
+import com.khalidtouch.classifiadmin.feeds.takephoto.TakePhotoRoute
 
-const val composeFeedNavigationRoute = "compose_feed_navigation_route"
+const val takePhotoNavigationRoute = "takePhotoNavigationRoute"
 
-fun NavController.navigateToComposeFeed(navOptions: NavOptions? = null) {
-    this.navigate(composeFeedNavigationRoute, navOptions)
+fun NavController.navigateToTakePhoto(navOptions: NavOptions? = null) {
+    this.navigate(takePhotoNavigationRoute, navOptions)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.composeFeedScreen(
-    onCloseComposeFeedScreen: () -> Unit,
-    onTakePhoto: () -> Unit,
+fun NavGraphBuilder.takePhotoScreen(
+    onDismissDialog: () -> Unit,
+    onClose: () -> Unit,
+    onNext: () -> Unit,
+    onViewAlbum: () -> Unit,
 ) {
     composable(
-        route = composeFeedNavigationRoute,
+        route = takePhotoNavigationRoute,
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -34,9 +37,11 @@ fun NavGraphBuilder.composeFeedScreen(
             )
         }
     ) {
-        ComposeFeedRoute(
-            onCloseComposeFeedScreen = onCloseComposeFeedScreen,
-            onTakePhoto = onTakePhoto,
+        TakePhotoRoute(
+            onDismissDialog = onDismissDialog,
+            onClose = onClose,
+            onNext = onNext,
+            onViewAlbum = onViewAlbum
         )
     }
 }

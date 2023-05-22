@@ -71,6 +71,7 @@ import kotlinx.coroutines.launch
 fun ComposeFeedRoute(
     composeFeedViewModel: ComposeFeedViewModel = hiltViewModel<ComposeFeedViewModel>(),
     onCloseComposeFeedScreen: () -> Unit,
+    onTakePhoto: () -> Unit,
 ) {
     val feedTitle by composeFeedViewModel.feedTitle.collectAsStateWithLifecycle()
     val feedContent by composeFeedViewModel.feedContent.collectAsStateWithLifecycle()
@@ -97,7 +98,8 @@ fun ComposeFeedRoute(
             composeFeedViewModel.onComposeFeedBottomSheetSelectionChange(
                 ComposeFeedBottomSheetSelection.Attachments
             )
-        }
+        },
+        onTakePhoto = onTakePhoto,
     )
 }
 
@@ -119,6 +121,7 @@ private fun ComposeFeedScreen(
     clearBottomSheetSelection: () -> Unit,
     currentBottomSheetSelection: ComposeFeedBottomSheetSelection,
     openAttachmentsBottomSheet: () -> Unit,
+    onTakePhoto: () -> Unit,
 ) {
 
     var showModalBottomSheet by rememberSaveable {
@@ -229,6 +232,16 @@ private fun ComposeFeedScreen(
                                         ComposeFeedBottomBarActions.More -> {
                                             openAttachmentsBottomSheet()
                                         }
+                                        ComposeFeedBottomBarActions.Camera -> {
+                                            onTakePhoto()
+                                        }
+                                        ComposeFeedBottomBarActions.Video -> {
+
+                                        }
+
+                                        ComposeFeedBottomBarActions.Photo -> {
+
+                                        }
 
                                         else -> {
 
@@ -296,8 +309,21 @@ private fun ComposeFeedScreen(
                                 )
                             },
                             onClick = {
-                                /*todo -> do your thing */
                                 scope.launch {
+                                    when(it) {
+                                        ComposeFeedMainActions.TakePhoto -> {
+                                            onTakePhoto()
+                                        }
+                                        ComposeFeedMainActions.RecordVideo -> {
+
+                                        }
+                                        ComposeFeedMainActions.ImportPhoto -> {
+
+                                        }
+                                        ComposeFeedMainActions.AddDocument -> {
+
+                                        }
+                                    }
                                     sheetState.hide()
                                     showModalBottomSheet = false
                                     clearBottomSheetSelection()
