@@ -3,6 +3,9 @@ package com.khalidtouch.chatme.datastore
 import android.util.Log
 import androidx.datastore.core.DataStore
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
+import com.khalidtouch.classifiadmin.model.FeedData
+import com.khalidtouch.classifiadmin.model.FeedMessage
+import com.khalidtouch.classifiadmin.model.MessageType
 import com.khalidtouch.classifiadmin.model.ThemeBrand
 import com.khalidtouch.classifiadmin.model.UserData
 import kotlinx.coroutines.flow.map
@@ -11,8 +14,15 @@ import javax.inject.Inject
 
 class ClassifiPreferencesDataSource @Inject constructor(
     private val userPreferences: DataStore<UserPreferences>,
+    private val feedDataProto: DataStore<ComposeFeedDataProto>,
+    private val feedMessageProto: DataStore<ComposeFeedMessageProto>,
 ) {
     val TAG = "ClassifiPref"
+
+    val feedMessage = feedMessageProto.data.map { it.toData() }
+
+    val feedData = feedDataProto.data.map { it.toData() }
+
 
     val userData = userPreferences.data
         .map {
@@ -44,9 +54,9 @@ class ClassifiPreferencesDataSource @Inject constructor(
                 },
                 likedFeeds = it.likedFeedsMap.keys,
                 assignedFeeds = it.assignedFeedsMap.keys,
+                feedData = it.feedData.toData()
             )
         }
-
 
     suspend fun setLikedFeedIds(feedIds: Set<Long>) {
         try {
@@ -139,10 +149,102 @@ class ClassifiPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun enqueueNonTextMessage(message: FeedMessage) {
+        if (message.feedType == MessageType.TextMessage) return
+        feedMessageProto.updateData { pref ->
+            pref.copy {
+                this.feedMessageId = message.messageId
+                this.uri = message.uri
+                this.feedMessageType = when (message.feedType) {
+                    MessageType.ImageMessage -> ComposeFeedMessageTypeProto.Image
+                    MessageType.VideoMessage -> ComposeFeedMessageTypeProto.Video
+                    MessageType.AudioMessage -> ComposeFeedMessageTypeProto.Audio
+                    MessageType.FileMessage -> ComposeFeedMessageTypeProto.Doc
+                    MessageType.Unknown -> ComposeFeedMessageTypeProto.Unspecified
+                    else -> ComposeFeedMessageTypeProto.UNRECOGNIZED
+                }
+
+                feedDataProto.updateData { dataPref ->
+                    dataPref.copy {
+                        feedMessages.put(pref.feedMessageId, pref)
+
+                        userPreferences.updateData { userPref ->
+                            userPref.copy {
+                                feedData = dataPref
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun enqueueTextMessage(message: FeedMessage) {
+        if (message.feedType != MessageType.TextMessage) return
+        feedMessageProto.updateData { pref ->
+            pref.copy {
+                this.feedMessageId = message.messageId
+                this.uri = message.uri
+                this.feedMessageType = ComposeFeedMessageTypeProto.Text
+
+                feedDataProto.updateData { dataPref ->
+                    dataPref.copy {
+                        feedMessages.put(pref.feedMessageId, pref)
+
+                        userPreferences.updateData { userPref ->
+                            userPref.copy {
+                                feedData = dataPref
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 private fun UserPreferencesKt.Dsl.updateShouldHideOnboardingIfNecessary() {
     if (likedFeeds.isEmpty() && assignedFeeds.isEmpty()) {
         shouldHideOnboarding = false
     }
+}
+
+
+fun ComposeFeedDataProto.toData(): FeedData {
+    val keys = this.feedMessagesMap.keys
+    val messageMap = hashMapOf<Long, FeedMessage>()
+    keys.map {
+        messageMap.put(it, this.feedMessagesMap[it]?.toData() ?: FeedMessage.Default)
+    }
+    return FeedData(messages = messageMap)
+}
+
+
+fun ComposeFeedMessageProto.toData(): FeedMessage =
+    FeedMessage(
+        messageId = feedMessageId,
+        uri = uri,
+        feedType = feedMessageType.toData()
+    )
+
+fun ComposeFeedMessageTypeProto.toData() = when (this) {
+    ComposeFeedMessageTypeProto.UNRECOGNIZED,
+    ComposeFeedMessageTypeProto.Unspecified
+    -> MessageType.Unknown
+
+    ComposeFeedMessageTypeProto.Audio -> MessageType.AudioMessage
+    ComposeFeedMessageTypeProto.Video -> MessageType.VideoMessage
+    ComposeFeedMessageTypeProto.Text -> MessageType.TextMessage
+    ComposeFeedMessageTypeProto.Image -> MessageType.ImageMessage
+    ComposeFeedMessageTypeProto.Doc -> MessageType.FileMessage
+}
+
+
+fun MessageType.toProto() = when (this) {
+    MessageType.Unknown -> ComposeFeedMessageTypeProto.Unspecified
+    MessageType.FileMessage -> ComposeFeedMessageTypeProto.Doc
+    MessageType.ImageMessage -> ComposeFeedMessageTypeProto.Image
+    MessageType.AudioMessage -> ComposeFeedMessageTypeProto.Audio
+    MessageType.VideoMessage -> ComposeFeedMessageTypeProto.Video
+    MessageType.TextMessage -> ComposeFeedMessageTypeProto.Text
 }

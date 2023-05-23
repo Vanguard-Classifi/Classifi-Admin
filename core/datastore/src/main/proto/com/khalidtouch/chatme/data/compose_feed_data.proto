@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_package = "com.khalidtouch.chatme.datastore";
+option java_multiple_files = true;
+
+
+message ComposeFeedDataProto {
+   map<int64, ComposeFeedMessageProto> feed_messages  = 1;
+}
+
+
+message ComposeFeedMessageProto {
+    int64 feed_message_id = 1;
+    string uri = 2;
+    ComposeFeedMessageTypeProto feed_message_type = 3;
+}
+
+
+enum ComposeFeedMessageTypeProto {
+    Unspecified = 0;
+    Image = 1;
+    Audio = 2;
+    Video = 3;
+    Doc = 4;
+    Text = 5;
+}
+

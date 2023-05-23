@@ -1,21 +1,31 @@
 package com.khalidtouch.classifiadmin.feeds.compose
 
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
+import com.khalidtouch.classifiadmin.model.MessageType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
-class ComposeFeedViewModel @Inject constructor() : ViewModel() {
+class ComposeFeedViewModel @Inject constructor(
+    private val prefDataSource: ClassifiPreferencesDataSource,
+) : ViewModel() {
+    val TAG = "ComposeFeed"
     private val _feedTitle = MutableStateFlow<String>("")
     val feedTitle: StateFlow<String> = _feedTitle
 
@@ -47,6 +57,37 @@ class ComposeFeedViewModel @Inject constructor() : ViewModel() {
                 started = SharingStarted.WhileSubscribed(2_000),
                 initialValue = false
             )
+
+    private val emptyImageUri: Uri = Uri.parse("file://dev/null")
+    private val _imageUri = MutableStateFlow<Uri>(emptyImageUri)
+    val imageUri: StateFlow<Uri> = _imageUri
+
+    val hasNoSavedImage: StateFlow<Boolean> =
+        combine(
+            _imageUri,
+            flowOf(emptyImageUri)
+        ) { image, emptyImage ->
+            image == emptyImage
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(2_000),
+            initialValue = false,
+        )
+
+    fun updatePhotoUri() = viewModelScope.launch {
+        try {
+            prefDataSource.userData.collect {
+               val message = it.feedData.messages.entries
+                   .find { entry -> entry.value.feedType == MessageType.ImageMessage }
+                Log.e(TAG, "updatePhotoUri: the id is ${message?.key}" )
+                _imageUri.value = Uri.parse(message?.value?.uri)
+            }
+        } catch (e: NullPointerException) {
+            e.printStackTrace()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     fun onTitleValueChange(newTitle: String) {
         _feedTitle.value = newTitle

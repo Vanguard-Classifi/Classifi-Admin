@@ -3,6 +3,7 @@ package com.khalidtouch.classifiadmin.feeds.takephoto
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -15,14 +16,18 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.common.util.concurrent.ListenableFuture
+import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
 import com.khalidtouch.classifiadmin.feeds.takephoto.usecase.CameraPreviewUseCase
 import com.khalidtouch.classifiadmin.feeds.takephoto.usecase.ImageCaptureUseCase
+import com.khalidtouch.classifiadmin.model.FeedMessage
+import com.khalidtouch.classifiadmin.model.MessageType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -43,8 +48,10 @@ import kotlin.coroutines.suspendCoroutine
 class TakePhotoViewModel @Inject constructor(
     imageCaptureUseCase: ImageCaptureUseCase,
     cameraPreviewUseCase: CameraPreviewUseCase,
+    private val prefDataSource: ClassifiPreferencesDataSource,
     @SuppressLint("StaticFieldLeak") @ApplicationContext private val context: Context,
 ) : ViewModel() {
+    val TAG = "TakePhoto"
     private var _cameraSelector = MutableStateFlow(CameraSelector.DEFAULT_BACK_CAMERA)
     val cameraSelector: StateFlow<CameraSelector> = _cameraSelector
 
@@ -62,7 +69,7 @@ class TakePhotoViewModel @Inject constructor(
     private val _cameraUseState = MutableStateFlow<CameraUseState>(CameraUseState.Photo)
     val cameraUseState: StateFlow<CameraUseState> = _cameraUseState
 
-    val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     @SuppressLint("StaticFieldLeak")
     val preview: PreviewView = PreviewView(context).apply {
@@ -88,7 +95,7 @@ class TakePhotoViewModel @Inject constructor(
             image == emptyImage
         }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_0000),
+            started = SharingStarted.WhileSubscribed(2_000),
             initialValue = false,
         )
 
@@ -96,8 +103,25 @@ class TakePhotoViewModel @Inject constructor(
         _imageUri.value = newUri
     }
 
-    fun onSavePhotoFile(file: File) {
+    fun onSavePhotoFile(file: File) = viewModelScope.launch {
         _imageUri.value = file.toUri()
+        if (_imageUri.value != emptyImageUri) {
+            try {
+                prefDataSource.userData.collect {
+                    val id = it.feedData.messages.size.toLong().inc()
+                    Log.e(TAG, "onSavePhotoFile: the id is $id")
+                    prefDataSource.enqueueNonTextMessage(
+                        FeedMessage(
+                            messageId = id,
+                            uri = _imageUri.value.toString(),
+                            feedType = MessageType.ImageMessage
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     fun cancelPhotoCapture() {

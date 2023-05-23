@@ -1,11 +1,14 @@
 package com.khalidtouch.classifiadmin.feeds.compose
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +39,7 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -48,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -58,7 +64,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.khalidtouch.classifiadmin.feeds.R
+import com.khalidtouch.classifiadmin.feeds.takephoto.TakePhotoViewModel
 import com.khalidtouch.core.designsystem.components.ClassifiButton
 import com.khalidtouch.core.designsystem.components.ClassifiComposeFeedBottomBar
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
@@ -73,12 +81,25 @@ fun ComposeFeedRoute(
     onCloseComposeFeedScreen: () -> Unit,
     onTakePhoto: () -> Unit,
 ) {
+    val TAG = "ComposeFeed"
     val feedTitle by composeFeedViewModel.feedTitle.collectAsStateWithLifecycle()
     val feedContent by composeFeedViewModel.feedContent.collectAsStateWithLifecycle()
     val isFeedPostable by composeFeedViewModel.isFeedPostable.collectAsStateWithLifecycle()
     val isBottomSheetShown by composeFeedViewModel.isBottomSheetShown.collectAsStateWithLifecycle()
     val currentBottomSheetSelection
             by composeFeedViewModel.currentComposeFeedBottomSheetSelection.collectAsStateWithLifecycle()
+
+    val imageUri by composeFeedViewModel.imageUri.collectAsStateWithLifecycle()
+    val hasNoSavedImage by composeFeedViewModel.hasNoSavedImage.collectAsStateWithLifecycle()
+
+
+    Log.e(TAG, "ComposeFeedRoute: hasNoSavedImage is currently $hasNoSavedImage")
+    Log.e(TAG, "ComposeFeedRoute: imageUri is currently ${imageUri.toString()}")
+
+    LaunchedEffect(Unit) {
+        Log.e(TAG, "ComposeFeedRoute: LaunchedEffect has been called")
+        composeFeedViewModel.updatePhotoUri()
+    }
 
     ComposeFeedScreen(
         onCloseComposeFeedScreen = onCloseComposeFeedScreen,
@@ -89,6 +110,8 @@ fun ComposeFeedRoute(
         schoolName = "Future Leaders International School",
         currentTitle = feedTitle,
         currentContent = feedContent,
+        hasNoSavedImage = hasNoSavedImage,
+        imageUri = imageUri,
         isBottomSheetShown = isBottomSheetShown,
         onTitleValueChange = composeFeedViewModel::onTitleValueChange,
         onContentValueChange = composeFeedViewModel::onContentValueChange,
@@ -110,6 +133,8 @@ private fun ComposeFeedScreen(
     onCloseComposeFeedScreen: () -> Unit,
     onPostFeed: () -> Unit,
     isFeedPostable: Boolean,
+    hasNoSavedImage: Boolean,
+    imageUri: Uri,
     feedScope: String,
     authorName: String,
     schoolName: String,
@@ -232,9 +257,11 @@ private fun ComposeFeedScreen(
                                         ComposeFeedBottomBarActions.More -> {
                                             openAttachmentsBottomSheet()
                                         }
+
                                         ComposeFeedBottomBarActions.Camera -> {
                                             onTakePhoto()
                                         }
+
                                         ComposeFeedBottomBarActions.Video -> {
 
                                         }
@@ -270,6 +297,8 @@ private fun ComposeFeedScreen(
                 currentContent = currentContent,
                 onTitleValueChange = onTitleValueChange,
                 onContentValueChange = onContentValueChange,
+                hasNoSavedImage = hasNoSavedImage,
+                imageUri = imageUri,
             )
         }
     )
@@ -310,23 +339,27 @@ private fun ComposeFeedScreen(
                             },
                             onClick = {
                                 scope.launch {
-                                    when(it) {
+                                    sheetState.hide()
+                                    showModalBottomSheet = false
+                                    clearBottomSheetSelection()
+
+                                    when (it) {
                                         ComposeFeedMainActions.TakePhoto -> {
                                             onTakePhoto()
                                         }
+
                                         ComposeFeedMainActions.RecordVideo -> {
 
                                         }
+
                                         ComposeFeedMainActions.ImportPhoto -> {
 
                                         }
+
                                         ComposeFeedMainActions.AddDocument -> {
 
                                         }
                                     }
-                                    sheetState.hide()
-                                    showModalBottomSheet = false
-                                    clearBottomSheetSelection()
                                 }
                             }
                         )
@@ -334,7 +367,7 @@ private fun ComposeFeedScreen(
                 }
 
                 else -> {
-
+                    /*TODO()*/
                 }
             }
 
@@ -374,6 +407,8 @@ private fun ComposeFeedBody(
     schoolName: String,
     currentTitle: String,
     currentContent: String,
+    hasNoSavedImage: Boolean,
+    imageUri: Uri,
     onTitleValueChange: (String) -> Unit,
     onContentValueChange: (String) -> Unit,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
@@ -384,11 +419,12 @@ private fun ComposeFeedBody(
         cursorColor = MaterialTheme.colorScheme.onBackground,
     ),
 ) {
-
+    val TAG = "ComposeFeed"
     val catImage = "https://www.petsworld.in/blog/wp-content/uploads/2014/09/funny-cat.jpg"
 
     ComposeFeedBody(
         modifier = modifier,
+        hasNoSavedImage = hasNoSavedImage,
         profileImage = {
             Box(
                 modifier = Modifier
@@ -464,7 +500,27 @@ private fun ComposeFeedBody(
                     imeAction = ImeAction.Done
                 )
             )
-        }
+        },
+        images = {
+            Log.e(TAG, "ComposeFeedBody: current image uri ${imageUri.toString()}")
+            Box {
+                AsyncImage(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = 16.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 16.dp,
+                        )
+                        .height(500.dp),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUri).build(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit
+                )
+            }
+        },
     )
 }
 
@@ -476,46 +532,75 @@ private fun ComposeFeedBody(
     author: @Composable () -> Unit,
     title: @Composable () -> Unit,
     text: @Composable () -> Unit,
+    images: @Composable () -> Unit,
+    hasNoSavedImage: Boolean,
 ) {
-    Column {
+    val TAG = "ComposeFeed"
 
-        Row(
-            Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(modifier.padding(8.dp)) {
-                profileImage()
+    LazyColumn {
+        item {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = Color.Black
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(modifier.padding(8.dp)) {
+                    profileImage()
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    author()
+                }
+            }
+            /* title textfield */
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = Color.Black
+                    )
+            ) { title() }
+
+            /*divider */
+            Divider(Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(12.dp))
+            /*content textfield */
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = Color.Black
+                    )
+            ) {
+                text()
             }
 
-            Box(modifier = Modifier.weight(1f)) {
-                author()
+            Log.e(TAG, "ComposeFeedBody: has image now")
+            if (!hasNoSavedImage) {
+                Box(
+                    Modifier.border(
+                        width = 1.dp,
+                        color = Color.Black
+                    )
+                ) {
+                    images()
+                }
             }
+
+            /*todo -> images section if any */
+            /*todo -> videos section if any */
+            /*todo -> docs section if any */
+            /*todo -> audio section if any */
+
         }
-
-        /* title textfield */
-
-        Spacer(modifier = Modifier.height(12.dp))
-        Box(Modifier.fillMaxWidth()) { title() }
-
-        /*divider */
-        Divider(Modifier.fillMaxWidth())
-
-        Spacer(modifier = Modifier.height(12.dp))
-        /*content textfield */
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            text()
-        }
-
-        /*todo -> images section if any */
-        /*todo -> videos section if any */
-        /*todo -> docs section if any */
-        /*todo -> audio section if any */
-
 
     }
 }
@@ -557,6 +642,10 @@ private fun ComposeFeedBodyPreview() {
             Text(
                 "The Main Text", style = MaterialTheme.typography.headlineLarge
             )
+        },
+        hasNoSavedImage = false,
+        images = {
+
         }
     )
 }
@@ -571,5 +660,7 @@ private fun ComposeFeedBodyPreview2() {
         currentContent = "I'm happy to announce the launch of the new exam time table",
         onContentValueChange = {},
         onTitleValueChange = {},
+        hasNoSavedImage = false,
+        imageUri = Uri.parse("")
     )
 }

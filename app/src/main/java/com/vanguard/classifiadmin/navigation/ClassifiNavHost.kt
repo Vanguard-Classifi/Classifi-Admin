@@ -52,6 +52,7 @@ fun ClassifiNavHost(
             onDismissDialog = { appState.navController.navigateUp() },
             onClose = { appState.navController.navigateUp() },
             onNext = { appState.navController.navigateToComposeFeed() },
+            onViewAlbum = {/*TODO()*/ }
         )
     }
 }

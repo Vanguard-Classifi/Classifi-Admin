@@ -6,5 +6,6 @@ data class UserData(
     val darkThemeConfig: DarkThemeConfig,
     val themeBrand: ThemeBrand,
     val likedFeeds: Set<Long>,
-    val assignedFeeds: Set<Long>
+    val assignedFeeds: Set<Long>,
+    val feedData: FeedData,
 )

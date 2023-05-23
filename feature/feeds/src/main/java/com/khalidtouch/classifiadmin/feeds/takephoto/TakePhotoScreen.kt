@@ -1,6 +1,7 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.AnimatedVisibility
@@ -55,8 +56,11 @@ fun TakePhotoRoute(
     onViewAlbum: () -> Unit,
     takePhotoViewModel: TakePhotoViewModel = hiltViewModel<TakePhotoViewModel>(),
 ) {
+    val TAG = "TakePhoto"
     val hasNoSavedImage by takePhotoViewModel.hasNoSavedImage.collectAsStateWithLifecycle()
     val imageUri by takePhotoViewModel.imageUri.collectAsStateWithLifecycle()
+
+    Log.e(TAG, "TakePhotoRoute: imageUri is currently ${imageUri.toString()}" )
 
     if (hasNoSavedImage)
         TakePhotoScreen(
