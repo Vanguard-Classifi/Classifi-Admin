@@ -1,5 +1,5 @@
 package com.khalidtouch.classifiadmin.model
 
 data class FeedData(
-    val messages: HashMap<Long, FeedMessage>,
+    val messages: List<FeedMessage>,
 )

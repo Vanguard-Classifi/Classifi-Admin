@@ -166,7 +166,8 @@ class ClassifiPreferencesDataSource @Inject constructor(
 
                 feedDataProto.updateData { dataPref ->
                     dataPref.copy {
-                        feedMessages.put(pref.feedMessageId, pref)
+                        if (feedMessages.size <= 5)
+                            feedMessages.add(pref)
 
                         userPreferences.updateData { userPref ->
                             userPref.copy {
@@ -175,6 +176,7 @@ class ClassifiPreferencesDataSource @Inject constructor(
                         }
                     }
                 }
+
             }
         }
     }
@@ -189,13 +191,28 @@ class ClassifiPreferencesDataSource @Inject constructor(
 
                 feedDataProto.updateData { dataPref ->
                     dataPref.copy {
-                        feedMessages.put(pref.feedMessageId, pref)
+                        feedMessages.add(pref)
 
                         userPreferences.updateData { userPref ->
                             userPref.copy {
                                 feedData = dataPref
                             }
                         }
+                    }
+                }
+
+            }
+        }
+    }
+
+    suspend fun clearAllMessages() {
+        feedDataProto.updateData { dataPref ->
+            dataPref.copy {
+                feedMessages.clear()
+
+                userPreferences.updateData { userPref ->
+                    userPref.copy {
+                        feedData = dataPref
                     }
                 }
             }
@@ -211,12 +228,9 @@ private fun UserPreferencesKt.Dsl.updateShouldHideOnboardingIfNecessary() {
 
 
 fun ComposeFeedDataProto.toData(): FeedData {
-    val keys = this.feedMessagesMap.keys
-    val messageMap = hashMapOf<Long, FeedMessage>()
-    keys.map {
-        messageMap.put(it, this.feedMessagesMap[it]?.toData() ?: FeedMessage.Default)
-    }
-    return FeedData(messages = messageMap)
+    return FeedData(
+        messages = this.feedMessagesList.map { it.toData() },
+    )
 }
 
 
@@ -237,14 +251,4 @@ fun ComposeFeedMessageTypeProto.toData() = when (this) {
     ComposeFeedMessageTypeProto.Text -> MessageType.TextMessage
     ComposeFeedMessageTypeProto.Image -> MessageType.ImageMessage
     ComposeFeedMessageTypeProto.Doc -> MessageType.FileMessage
-}
-
-
-fun MessageType.toProto() = when (this) {
-    MessageType.Unknown -> ComposeFeedMessageTypeProto.Unspecified
-    MessageType.FileMessage -> ComposeFeedMessageTypeProto.Doc
-    MessageType.ImageMessage -> ComposeFeedMessageTypeProto.Image
-    MessageType.AudioMessage -> ComposeFeedMessageTypeProto.Audio
-    MessageType.VideoMessage -> ComposeFeedMessageTypeProto.Video
-    MessageType.TextMessage -> ComposeFeedMessageTypeProto.Text
 }

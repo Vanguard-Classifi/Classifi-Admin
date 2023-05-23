@@ -77,12 +77,12 @@ class ComposeFeedViewModel @Inject constructor(
     fun updatePhotoUri() = viewModelScope.launch {
         try {
             prefDataSource.userData.collect {
-               val message = it.feedData.messages.entries
-                   .find { entry -> entry.value.feedType == MessageType.ImageMessage }
-                Log.e(TAG, "updatePhotoUri: the id is ${message?.key}" )
-                _imageUri.value = Uri.parse(message?.value?.uri)
+                val lastMessage = it.feedData.messages.last()
+                _imageUri.value = Uri.parse(lastMessage.uri)
             }
         } catch (e: NullPointerException) {
+            e.printStackTrace()
+        } catch (e: NoSuchElementException) {
             e.printStackTrace()
         } catch (e: Exception) {
             e.printStackTrace()

@@ -108,11 +108,11 @@ class TakePhotoViewModel @Inject constructor(
         if (_imageUri.value != emptyImageUri) {
             try {
                 prefDataSource.userData.collect {
-                    val id = it.feedData.messages.size.toLong().inc()
+                    val id = it.feedData.messages.size.toLong()
                     Log.e(TAG, "onSavePhotoFile: the id is $id")
                     prefDataSource.enqueueNonTextMessage(
                         FeedMessage(
-                            messageId = id,
+                            messageId = id + 1,
                             uri = _imageUri.value.toString(),
                             feedType = MessageType.ImageMessage
                         )
