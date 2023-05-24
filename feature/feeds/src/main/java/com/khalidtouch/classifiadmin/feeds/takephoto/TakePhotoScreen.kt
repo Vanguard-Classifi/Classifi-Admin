@@ -1,40 +1,14 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
-import android.net.Uri
-import android.util.Log
-import android.view.ViewGroup
 import androidx.camera.view.PreviewView
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,7 +16,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 import java.io.File
 
@@ -57,40 +30,29 @@ fun TakePhotoRoute(
     takePhotoViewModel: TakePhotoViewModel = hiltViewModel<TakePhotoViewModel>(),
 ) {
     val TAG = "TakePhoto"
-    val hasNoSavedImage by takePhotoViewModel.hasNoSavedImage.collectAsStateWithLifecycle()
-    val imageUri by takePhotoViewModel.imageUri.collectAsStateWithLifecycle()
+    val uiState by takePhotoViewModel.uiState.collectAsStateWithLifecycle()
 
-    Log.e(TAG, "TakePhotoRoute: imageUri is currently ${imageUri.toString()}" )
 
-    if (hasNoSavedImage)
-        TakePhotoScreen(
-            onDismissDialog = onDismissDialog,
-            onViewAlbum = onViewAlbum,
-            onCloseCameraPreview = onClose,
-            onSavePhotoFile = takePhotoViewModel::onSavePhotoFile
-        )
+    TakePhotoScreen(
+        uiState = uiState,
+        onDismissDialog = onDismissDialog,
+        onViewAlbum = onViewAlbum,
+        onCloseCameraPreview = onClose,
+        onSavePhotoFile = takePhotoViewModel::onSavePhotoFile
+    )
 
-    AnimatedVisibility(
-        visible = !hasNoSavedImage,
-        enter = slideInHorizontally(
-            initialOffsetX = { fullHeight -> -fullHeight },
-        ) + fadeIn(),
-        exit = slideOutHorizontally(
-            targetOffsetX = { fullHeight -> -fullHeight },
-        ) + fadeOut(),
-    ) {
-        PhotoCaptureScreen(
-            onNext = onNext,
-            onCancel = takePhotoViewModel::cancelPhotoCapture,
-            imageUri = imageUri,
-        )
-    }
+    PhotoCaptureScreen(
+        onNext = onNext,
+        onCancel = takePhotoViewModel::cancelPhotoCapture,
+        uiState = uiState
+    )
 }
 
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun TakePhotoScreen(
+    uiState: TakePhotoUiState,
     takePhotoViewModel: TakePhotoViewModel = hiltViewModel<TakePhotoViewModel>(),
     cameraPermissionState: PermissionState = rememberPermissionState(
         android.Manifest.permission.CAMERA
@@ -100,14 +62,9 @@ private fun TakePhotoScreen(
     onCloseCameraPreview: () -> Unit,
     onSavePhotoFile: (File) -> Unit,
 ) {
-    val flashlightState by takePhotoViewModel.flashlightState.collectAsStateWithLifecycle()
-    val cameraFlipState by takePhotoViewModel.cameraFlipState.collectAsStateWithLifecycle()
-    val cameraUseState by takePhotoViewModel.cameraUseState.collectAsStateWithLifecycle()
 
     TakePhotoScreen(
-        flashlightState = flashlightState,
-        cameraFlipState = cameraFlipState,
-        cameraUseState = cameraUseState,
+        uiState = uiState,
         cameraPermissionState = cameraPermissionState,
         onToggleFlashlight = takePhotoViewModel::onToggleFlashlight,
         onToggleCameraUseState = takePhotoViewModel::onToggleCameraUseState,
@@ -119,13 +76,18 @@ private fun TakePhotoScreen(
         previewView = takePhotoViewModel.preview,
         onInitializeCamera = takePhotoViewModel::onInitializeCamera,
         onEngageCamera = {
-            when (cameraUseState) {
-                CameraUseState.Photo -> {
-                    takePhotoViewModel.onTakeSnapshot(onSavePhotoFile)
-                }
+            when (uiState) {
+                is TakePhotoUiState.Loading -> Unit
+                is TakePhotoUiState.Loaded -> {
+                    when (uiState.data.cameraState.cameraUseState) {
+                        CameraUseState.Photo -> {
+                            takePhotoViewModel.onTakeSnapshot(onSavePhotoFile)
+                        }
 
-                CameraUseState.Video -> {
-                    /*todo -- video capture */
+                        CameraUseState.Video -> {
+                            /*todo -- video capture */
+                        }
+                    }
                 }
             }
         }
@@ -136,9 +98,7 @@ private fun TakePhotoScreen(
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun TakePhotoScreen(
-    flashlightState: Boolean,
-    cameraFlipState: Boolean,
-    cameraUseState: CameraUseState,
+    uiState: TakePhotoUiState,
     previewView: PreviewView,
     cameraPermissionState: PermissionState,
     onRequestCameraPermission: () -> Unit,
@@ -156,10 +116,14 @@ private fun TakePhotoScreen(
             onDismissDialog = onDismissDialog
         )
     },
-    content: @Composable () -> Unit = {
+    content: @Composable (
+        flashlightState: Boolean,
+        isRearCameraActive: Boolean,
+        cameraUseState: CameraUseState,
+    ) -> Unit = { flashlight, rearCamera, cameraUseState ->
         CameraPreviewContent(
-            flashlightState = flashlightState,
-            cameraFlipState = cameraFlipState,
+            flashlightState = flashlight,
+            isRearCameraActive = rearCamera,
             onEngageCamera = onEngageCamera,
             onToggleCamera = onToggleCamera,
             onCloseCameraPreview = onCloseCameraPreview,
@@ -172,20 +136,30 @@ private fun TakePhotoScreen(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(flashlightState) {
+    LaunchedEffect(uiState) {
         onInitializeCamera(lifecycleOwner)
     }
 
-    BoxWithConstraints {
-        AndroidView(
-            factory = { previewView },
-            modifier = Modifier.fillMaxSize()
-        )
+    when (uiState) {
+        is TakePhotoUiState.Loading -> Unit
+        is TakePhotoUiState.Loaded -> {
+            if (uiState.data.hasNoSavedMedia)
+                BoxWithConstraints {
+                    AndroidView(
+                        factory = { previewView },
+                        modifier = Modifier.fillMaxSize()
+                    )
 
-        if (!cameraPermissionState.status.isGranted) {
-            noPermissionScreen()
-        } else {
-            content()
+                    if (!cameraPermissionState.status.isGranted) {
+                        noPermissionScreen()
+                    } else {
+                        content(
+                            flashlightState = uiState.data.cameraState.isFlashlightOn,
+                            isRearCameraActive = uiState.data.cameraState.isRearCameraActive,
+                            cameraUseState = uiState.data.cameraState.cameraUseState,
+                        )
+                    }
+                }
         }
     }
 }
@@ -200,7 +174,3 @@ enum class CameraToggleFeature(
 }
 
 
-sealed interface CameraUseState {
-    object Photo : CameraUseState
-    object Video : CameraUseState
-}

@@ -500,6 +500,7 @@ private fun ComposeFeedBody(
 
     LazyColumn {
         item {
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -531,7 +532,7 @@ private fun ComposeFeedBody(
 
             /*divider */
             Divider(Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             /*content textfield */
             Box(
                 Modifier
@@ -547,6 +548,9 @@ private fun ComposeFeedBody(
         }
 
         mediaItem()
+        item {
+            Spacer(modifier = Modifier.height(48.dp))
+        }
     }
 }
 

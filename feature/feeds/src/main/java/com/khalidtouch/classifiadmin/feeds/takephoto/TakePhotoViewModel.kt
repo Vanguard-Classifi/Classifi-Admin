@@ -3,7 +3,6 @@ package com.khalidtouch.classifiadmin.feeds.takephoto
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -19,8 +18,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
 import com.khalidtouch.classifiadmin.feeds.takephoto.usecase.CameraPreviewUseCase
 import com.khalidtouch.classifiadmin.feeds.takephoto.usecase.ImageCaptureUseCase
-import com.khalidtouch.classifiadmin.model.FeedMessage
-import com.khalidtouch.classifiadmin.model.MessageType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +25,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,23 +46,10 @@ class TakePhotoViewModel @Inject constructor(
     @SuppressLint("StaticFieldLeak") @ApplicationContext private val context: Context,
 ) : ViewModel() {
     val TAG = "TakePhoto"
+
     private var _cameraSelector = MutableStateFlow(CameraSelector.DEFAULT_BACK_CAMERA)
-    val cameraSelector: StateFlow<CameraSelector> = _cameraSelector
-
-    val cameraFlipState: StateFlow<Boolean> = _cameraSelector.map {
-        it == CameraSelector.DEFAULT_BACK_CAMERA
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = true,
-    )
-
     private val _flashlightState = MutableStateFlow<Boolean>(false)
-    val flashlightState: StateFlow<Boolean> = _flashlightState
-
     private val _cameraUseState = MutableStateFlow<CameraUseState>(CameraUseState.Photo)
-    val cameraUseState: StateFlow<CameraUseState> = _cameraUseState
-
     private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     @SuppressLint("StaticFieldLeak")
@@ -83,56 +65,58 @@ class TakePhotoViewModel @Inject constructor(
     private val cameraPreviewUseCase = cameraPreviewUseCase(preview)
 
     private val emptyImageUri: Uri = Uri.parse("file://dev/null")
-    private val _imageUri = MutableStateFlow<Uri>(emptyImageUri)
-    val imageUri: StateFlow<Uri> = _imageUri
-
-    val hasNoSavedImage: StateFlow<Boolean> =
+    private val _mediaUri = MutableStateFlow<Uri>(emptyImageUri)
+    private val _cameraState: StateFlow<CameraState> =
         combine(
-            _imageUri,
-            flowOf(emptyImageUri)
-        ) { image, emptyImage ->
-            image == emptyImage
+            _cameraSelector,
+            _flashlightState,
+            _cameraUseState
+        ) { cameraSelector, flashlightState, cameraUseState ->
+            CameraState(
+                type = cameraSelector,
+                isRearCameraActive = cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA,
+                isFlashlightOn = flashlightState,
+                cameraUseState = cameraUseState,
+            )
         }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(2_000),
-            initialValue = false,
+            started = SharingStarted.WhileSubscribed(2000),
+            initialValue = CameraState.Default
         )
 
-    fun onSavePhotoFile(newUri: Uri) {
-        _imageUri.value = newUri
-    }
+    val uiState: StateFlow<TakePhotoUiState> =
+        combine(
+            _cameraState,
+            _mediaUri,
+        ) { cameraState, mediaUri ->
+            TakePhotoUiState.Loaded(
+                data = TakePhotoData(
+                    cameraState = cameraState,
+                    mediaUri = mediaUri,
+                    hasNoSavedMedia = mediaUri == emptyImageUri
+                )
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(2000),
+            initialValue = TakePhotoUiState.Loading
+        )
+
 
     fun onSavePhotoFile(file: File) = viewModelScope.launch {
-        _imageUri.value = file.toUri()
-        if (_imageUri.value != emptyImageUri) {
-            try {
-                prefDataSource.userData.collect {
-                    val id = it.feedData.messages.size.toLong()
-                    Log.e(TAG, "onSavePhotoFile: the id is $id")
-                    prefDataSource.enqueueMediaMessage(
-                        FeedMessage(
-                            messageId = id + 1,
-                            uri = _imageUri.value.toString(),
-                            feedType = MessageType.ImageMessage
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        _mediaUri.value = file.toUri()
     }
 
     fun cancelPhotoCapture() {
-        _imageUri.value = emptyImageUri
+        _mediaUri.value = emptyImageUri
     }
 
-    fun onToggleFlashlight(flashlightState: Boolean) {
-        _flashlightState.value = !flashlightState
+    fun onToggleFlashlight(currentFlashlightState: Boolean) {
+        _flashlightState.value = !currentFlashlightState
     }
 
-    fun onToggleCamera(cameraFlipState: Boolean) {
-        val selector = when (cameraFlipState) {
+    fun onToggleCamera(isRearCameraActive: Boolean) {
+        val selector = when (isRearCameraActive) {
             true -> CameraSelector.DEFAULT_FRONT_CAMERA
             false -> CameraSelector.DEFAULT_BACK_CAMERA
         }

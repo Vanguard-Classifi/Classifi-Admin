@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
-import com.khalidtouch.core.designsystem.components.ClassifiIconButtonDefaults
 import com.khalidtouch.core.designsystem.components.ClassifiTakeSnapshotButton
 import com.khalidtouch.core.designsystem.components.ClassifiToggleButton
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
@@ -31,7 +30,7 @@ fun CameraPreviewContent(
     onCloseCameraPreview: () -> Unit,
     onToggleCamera: (Boolean) -> Unit,
     onToggleFlashlight: (Boolean) -> Unit,
-    cameraFlipState: Boolean,
+    isRearCameraActive: Boolean,
     flashlightState: Boolean,
     onEngageCamera: () -> Unit,
     onViewAlbum: () -> Unit,
@@ -75,7 +74,7 @@ fun CameraPreviewContent(
                             }
 
                             CameraToggleFeature.FlipCamera -> {
-                                cameraFlipState
+                                isRearCameraActive
                             }
                         },
                         onCheckedChange = {

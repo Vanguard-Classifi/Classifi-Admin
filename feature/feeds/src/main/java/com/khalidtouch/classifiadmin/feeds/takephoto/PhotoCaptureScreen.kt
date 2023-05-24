@@ -1,6 +1,11 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,61 +33,76 @@ import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 
 @Composable
 fun PhotoCaptureScreen(
+    uiState: TakePhotoUiState,
     onNext: () -> Unit,
     onCancel: () -> Unit,
-    imageUri: Uri,
 ) {
-    BoxWithConstraints {
+    when(uiState) {
+        is TakePhotoUiState.Loading -> Unit
+        is TakePhotoUiState.Loaded -> {
+            AnimatedVisibility(
+                visible = !uiState.data.hasNoSavedMedia,
+                enter = slideInHorizontally(
+                    initialOffsetX = { fullHeight -> -fullHeight },
+                ) + fadeIn(),
+                exit = slideOutHorizontally(
+                    targetOffsetX = { fullHeight -> -fullHeight },
+                ) + fadeOut(),
+            ) {
+                BoxWithConstraints {
 
-        AsyncImage(
-            modifier = Modifier.fillMaxSize(),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUri).build(),
-            contentDescription = stringResource(id = R.string.saved_image)
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = ClassifiCameraDefaults.edgePadding.times(3f),
-                    start = ClassifiCameraDefaults.edgePadding,
-                    end = ClassifiCameraDefaults.edgePadding,
-                )
-        ) {
-            PhotoCaptureTopButtons(
-                closeButton = {
-                    ClassifiButton(
-                        onClick = onCancel,
-                        enabled = true,
-                        text = {
-                            Text(
-                                text = stringResource(id = R.string.cancel),
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.background,
-                        )
+                    AsyncImage(
+                        modifier = Modifier.fillMaxSize(),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(uiState.data.mediaUri).build(),
+                        contentDescription = stringResource(id = R.string.saved_image)
                     )
-                },
-                nextButton = {
-                    ClassifiButton(
-                        onClick = onNext,
-                        enabled = true,
-                        text = {
-                            Text(
-                                text = stringResource(id = R.string.next),
-                                style = MaterialTheme.typography.labelLarge,
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = ClassifiCameraDefaults.edgePadding.times(3f),
+                                start = ClassifiCameraDefaults.edgePadding,
+                                end = ClassifiCameraDefaults.edgePadding,
                             )
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.onBackground,
+                    ) {
+                        PhotoCaptureTopButtons(
+                            closeButton = {
+                                ClassifiButton(
+                                    onClick = onCancel,
+                                    enabled = true,
+                                    text = {
+                                        Text(
+                                            text = stringResource(id = R.string.cancel),
+                                            style = MaterialTheme.typography.labelLarge,
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Transparent,
+                                        contentColor = MaterialTheme.colorScheme.background,
+                                    )
+                                )
+                            },
+                            nextButton = {
+                                ClassifiButton(
+                                    onClick = onNext,
+                                    enabled = true,
+                                    text = {
+                                        Text(
+                                            text = stringResource(id = R.string.next),
+                                            style = MaterialTheme.typography.labelLarge,
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.background,
+                                        contentColor = MaterialTheme.colorScheme.onBackground,
+                                    )
+                                )
+                            }
                         )
-                    )
+                    }
                 }
-            )
+            }
         }
     }
 }

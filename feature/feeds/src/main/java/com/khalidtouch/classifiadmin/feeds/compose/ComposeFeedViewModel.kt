@@ -47,12 +47,24 @@ class ComposeFeedViewModel @Inject constructor(
         MutableStateFlow<ComposeFeedBottomSheetSelection>(ComposeFeedBottomSheetSelection.None)
     private val _hasPostRequest = MutableStateFlow<Boolean>(false)
     private val _hasAbortRequest = MutableStateFlow<Boolean>(false)
-    private val _request = MutableStateFlow<ComposeFeedRequest>(
-        ComposeFeedRequest(
-            postRequest = _hasPostRequest.value,
-            abortRequest = _hasAbortRequest.value
+    private val _request: StateFlow<ComposeFeedRequest> =
+        combine(
+            _hasPostRequest,
+            _hasAbortRequest
+        ) { hasPostRequest, hasAbortRequest ->
+            ComposeFeedRequest(
+                postRequest = hasPostRequest,
+                abortRequest = hasAbortRequest
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ComposeFeedRequest(
+                postRequest = false,
+                abortRequest = false
+            )
         )
-    )
+
     private val emptyImageUri: Uri = Uri.parse("file://dev/null")
 
     val uiState: StateFlow<ComposeFeedUiState> =
