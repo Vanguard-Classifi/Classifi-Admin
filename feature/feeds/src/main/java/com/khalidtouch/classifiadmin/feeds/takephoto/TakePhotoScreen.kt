@@ -1,9 +1,11 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
+import android.util.Log
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -135,10 +137,12 @@ private fun TakePhotoScreen(
     },
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val TAG = "TakePhoto"
 
     LaunchedEffect(uiState) {
         onInitializeCamera(lifecycleOwner)
     }
+
 
     when (uiState) {
         is TakePhotoUiState.Loading -> Unit
@@ -169,7 +173,7 @@ enum class CameraToggleFeature(
     val uncheckedIcon: Int,
     val checkedIcon: Int
 ) {
-    Flashlight(ClassifiIcons.FlashOn, ClassifiIcons.FlashOff),
+    Flashlight(ClassifiIcons.FlashOff, ClassifiIcons.FlashOn),
     FlipCamera(ClassifiIcons.FlipCamera, ClassifiIcons.FlipCamera),
 }
 

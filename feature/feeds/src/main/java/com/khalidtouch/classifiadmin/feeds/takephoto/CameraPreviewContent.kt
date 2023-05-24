@@ -1,5 +1,6 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +40,7 @@ fun CameraPreviewContent(
     cameraUseState: CameraUseState,
     onToggleCameraUseState: (CameraUseState) -> Unit,
 ) {
+    val TAG = "CameraPreview"
     Box(
         Modifier
             .fillMaxSize()
@@ -69,24 +73,12 @@ fun CameraPreviewContent(
                             checkedContentColor = MaterialTheme.colorScheme.onPrimary,
                         ),
                         checked = when (feature) {
-                            CameraToggleFeature.Flashlight -> {
-                                flashlightState
-                            }
-
-                            CameraToggleFeature.FlipCamera -> {
-                                isRearCameraActive
-                            }
+                            CameraToggleFeature.Flashlight -> flashlightState
+                            CameraToggleFeature.FlipCamera -> isRearCameraActive
                         },
-                        onCheckedChange = {
-                            when (feature) {
-                                CameraToggleFeature.FlipCamera -> {
-                                    onToggleCamera(it)
-                                }
-
-                                CameraToggleFeature.Flashlight -> {
-                                    onToggleFlashlight(it)
-                                }
-                            }
+                        onCheckedChange = when (feature) {
+                            CameraToggleFeature.Flashlight -> onToggleFlashlight
+                            CameraToggleFeature.FlipCamera -> onToggleCamera
                         },
                         checkedIcon = {
                             Icon(
@@ -127,6 +119,7 @@ fun CameraPreviewContent(
                         CameraUseState.Video -> {
                             MaterialTheme.colorScheme.error
                         }
+
                         CameraUseState.Photo -> {
                             MaterialTheme.colorScheme.tertiary
                         }

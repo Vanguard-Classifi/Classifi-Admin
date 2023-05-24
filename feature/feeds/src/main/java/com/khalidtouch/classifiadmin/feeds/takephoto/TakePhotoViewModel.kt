@@ -3,6 +3,7 @@ package com.khalidtouch.classifiadmin.feeds.takephoto
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -111,14 +112,14 @@ class TakePhotoViewModel @Inject constructor(
         _mediaUri.value = emptyImageUri
     }
 
-    fun onToggleFlashlight(currentFlashlightState: Boolean) {
-        _flashlightState.value = !currentFlashlightState
+    fun onToggleFlashlight(newFlashlightState: Boolean) {
+        _flashlightState.value = newFlashlightState
     }
 
     fun onToggleCamera(isRearCameraActive: Boolean) {
         val selector = when (isRearCameraActive) {
-            true -> CameraSelector.DEFAULT_FRONT_CAMERA
-            false -> CameraSelector.DEFAULT_BACK_CAMERA
+            false -> CameraSelector.DEFAULT_FRONT_CAMERA
+            true -> CameraSelector.DEFAULT_BACK_CAMERA
         }
         _cameraSelector.value = selector
     }
