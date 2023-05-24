@@ -8,6 +8,7 @@ import com.khalidtouch.classifiadmin.model.FeedMessage
 import com.khalidtouch.classifiadmin.model.MessageType
 import com.khalidtouch.classifiadmin.model.ThemeBrand
 import com.khalidtouch.classifiadmin.model.UserData
+import com.khalidtouch.classifiadmin.model.UserRole
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
@@ -54,7 +55,22 @@ class ClassifiPreferencesDataSource @Inject constructor(
                 },
                 likedFeeds = it.likedFeedsMap.keys,
                 assignedFeeds = it.assignedFeedsMap.keys,
-                feedData = it.feedData.toData()
+                feedData = it.feedData.toData(),
+                userId = it.userId,
+                userName = it.userName,
+                profileImage = it.profileImage,
+                role = when (it.role) {
+                    UserRoleProto.UNRECOGNIZED,
+                    UserRoleProto.USER_ROLE_UNSPECIFIED,
+                    UserRoleProto.USER_ROLE_GUEST ->
+                        UserRole.Guest
+
+                    UserRoleProto.USER_ROLE_SUPER_ADMIN -> UserRole.SuperAdmin
+                    UserRoleProto.USER_ROLE_ADMIN -> UserRole.Admin
+                    UserRoleProto.USER_ROLE_PARENT -> UserRole.Parent
+                    UserRoleProto.USER_ROLE_TEACHER -> UserRole.Teacher
+                    UserRoleProto.USER_ROLE_STUDENT -> UserRole.Student
+                }
             )
         }
 
@@ -149,7 +165,7 @@ class ClassifiPreferencesDataSource @Inject constructor(
         }
     }
 
-    suspend fun enqueueNonTextMessage(message: FeedMessage) {
+    suspend fun enqueueMediaMessage(message: FeedMessage) {
         if (message.feedType == MessageType.TextMessage) return
         feedMessageProto.updateData { pref ->
             pref.copy {
@@ -218,6 +234,46 @@ class ClassifiPreferencesDataSource @Inject constructor(
             }
         }
     }
+
+
+    suspend fun setUserId(id: Long) {
+        userPreferences.updateData { userPref ->
+            userPref.copy {
+                userId = id
+            }
+        }
+    }
+
+    suspend fun setUsername(name: String) {
+        userPreferences.updateData { userPref ->
+            userPref.copy {
+                userName = name
+            }
+        }
+    }
+
+    suspend fun setUserProfileImage(imageUrl: String) {
+        userPreferences.updateData { userPref ->
+            userPref.copy {
+                profileImage = imageUrl
+            }
+        }
+    }
+
+    suspend fun setUserRole(userRole: UserRole) {
+        userPreferences.updateData { userPref ->
+            userPref.copy {
+                role = when (userRole) {
+                    UserRole.Guest -> UserRoleProto.USER_ROLE_GUEST
+                    UserRole.SuperAdmin -> UserRoleProto.USER_ROLE_SUPER_ADMIN
+                    UserRole.Admin -> UserRoleProto.USER_ROLE_ADMIN
+                    UserRole.Parent -> UserRoleProto.USER_ROLE_PARENT
+                    UserRole.Student -> UserRoleProto.USER_ROLE_STUDENT
+                    UserRole.Teacher -> UserRoleProto.USER_ROLE_TEACHER
+                }
+            }
+        }
+    }
 }
 
 private fun UserPreferencesKt.Dsl.updateShouldHideOnboardingIfNecessary() {
@@ -239,6 +295,7 @@ fun ComposeFeedMessageProto.toData(): FeedMessage =
         messageId = feedMessageId,
         uri = uri,
         feedType = feedMessageType.toData()
+
     )
 
 fun ComposeFeedMessageTypeProto.toData() = when (this) {

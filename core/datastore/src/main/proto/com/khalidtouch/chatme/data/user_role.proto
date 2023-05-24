@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_package = "com.khalidtouch.chatme.datastore";
+option java_multiple_files = true;
+
+
+enum UserRoleProto {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_SUPER_ADMIN = 1;
+  USER_ROLE_ADMIN = 2;
+  USER_ROLE_PARENT = 3;
+  USER_ROLE_TEACHER = 4;
+  USER_ROLE_STUDENT = 5;
+  USER_ROLE_GUEST = 6;
+}

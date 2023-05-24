@@ -1,0 +1,651 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "a408c774391b3b3d191d4dc07d3c2aaf",
+    "entities": [
+      {
+        "tableName": "ClassifiUserEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `dateCreated` TEXT, `username` TEXT, `email` TEXT, `userRole` TEXT, `profileImage` TEXT, `phone` TEXT, `bio` TEXT, `dob` TEXT, `address` TEXT, `country` TEXT, `stateOfCountry` TEXT, `city` TEXT, `postalCode` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "account.username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "account.email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "account.userRole",
+            "columnName": "userRole",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.profileImage",
+            "columnName": "profileImage",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.phone",
+            "columnName": "phone",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.bio",
+            "columnName": "bio",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.dob",
+            "columnName": "dob",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.contact.address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.contact.country",
+            "columnName": "country",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.contact.stateOfCountry",
+            "columnName": "stateOfCountry",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.contact.city",
+            "columnName": "city",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.contact.postalCode",
+            "columnName": "postalCode",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "userId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ClassifiSchoolEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`schoolId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `schoolName` TEXT, `address` TEXT, `description` TEXT, `bannerImage` TEXT, `dateCreated` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "schoolId",
+            "columnName": "schoolId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "schoolName",
+            "columnName": "schoolName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bannerImage",
+            "columnName": "bannerImage",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "schoolId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ClassifiMessageEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`messageId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `feedId` INTEGER NOT NULL, `commentId` INTEGER NOT NULL, `type` TEXT, `message` TEXT, `truncatedMessage` TEXT, `dateCreated` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "messageId",
+            "columnName": "messageId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "feedId",
+            "columnName": "feedId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "commentId",
+            "columnName": "commentId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "message",
+            "columnName": "message",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "truncatedMessage",
+            "columnName": "truncatedMessage",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "messageId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ClassifiLikeEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`likeId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `feedId` INTEGER, `commentId` INTEGER, `userId` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "likeId",
+            "columnName": "likeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "feedId",
+            "columnName": "feedId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "commentId",
+            "columnName": "commentId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "likeId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ClassifiFeedEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`feedId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `creatorId` INTEGER, `creatorName` TEXT, `creatorImage` TEXT, `dateCreated` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "feedId",
+            "columnName": "feedId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "creatorId",
+            "columnName": "creatorId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "creatorName",
+            "columnName": "creatorName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "creatorImage",
+            "columnName": "creatorImage",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "feedId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ClassifiCommentEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`commentId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `feedId` INTEGER NOT NULL, `userId` INTEGER, `dateCreated` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "commentId",
+            "columnName": "commentId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "feedId",
+            "columnName": "feedId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "commentId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ClassifiClassEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`classId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `schoolId` INTEGER NOT NULL, `className` TEXT, `classCode` TEXT, `dateCreated` TEXT, `formTeacherId` INTEGER, `prefectId` INTEGER, `creatorId` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "classId",
+            "columnName": "classId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "schoolId",
+            "columnName": "schoolId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "className",
+            "columnName": "className",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "classCode",
+            "columnName": "classCode",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "formTeacherId",
+            "columnName": "formTeacherId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "prefectId",
+            "columnName": "prefectId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "creatorId",
+            "columnName": "creatorId",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "classId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ClassifiAcademicSessionEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sessionId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `schoolId` INTEGER NOT NULL, `sessionName` TEXT, `startDate` TEXT, `endDate` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "sessionId",
+            "columnName": "sessionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "schoolId",
+            "columnName": "schoolId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sessionName",
+            "columnName": "sessionName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "sessionId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "UsersWithSchoolsCrossRef",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `schoolId` INTEGER NOT NULL, PRIMARY KEY(`userId`, `schoolId`), FOREIGN KEY(`userId`) REFERENCES `ClassifiUserEntity`(`userId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`schoolId`) REFERENCES `ClassifiSchoolEntity`(`schoolId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "schoolId",
+            "columnName": "schoolId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "schoolId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_UsersWithSchoolsCrossRef_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_UsersWithSchoolsCrossRef_userId` ON `${TABLE_NAME}` (`userId`)"
+          },
+          {
+            "name": "index_UsersWithSchoolsCrossRef_schoolId",
+            "unique": false,
+            "columnNames": [
+              "schoolId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_UsersWithSchoolsCrossRef_schoolId` ON `${TABLE_NAME}` (`schoolId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "ClassifiUserEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "userId"
+            ],
+            "referencedColumns": [
+              "userId"
+            ]
+          },
+          {
+            "table": "ClassifiSchoolEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "schoolId"
+            ],
+            "referencedColumns": [
+              "schoolId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "UsersWithClassesCrossRef",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `classId` INTEGER NOT NULL, PRIMARY KEY(`userId`, `classId`), FOREIGN KEY(`userId`) REFERENCES `ClassifiUserEntity`(`userId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`classId`) REFERENCES `ClassifiClassEntity`(`classId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "classId",
+            "columnName": "classId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "classId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_UsersWithClassesCrossRef_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_UsersWithClassesCrossRef_userId` ON `${TABLE_NAME}` (`userId`)"
+          },
+          {
+            "name": "index_UsersWithClassesCrossRef_classId",
+            "unique": false,
+            "columnNames": [
+              "classId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_UsersWithClassesCrossRef_classId` ON `${TABLE_NAME}` (`classId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "ClassifiUserEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "userId"
+            ],
+            "referencedColumns": [
+              "userId"
+            ]
+          },
+          {
+            "table": "ClassifiClassEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "classId"
+            ],
+            "referencedColumns": [
+              "classId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "FeedsWithClassesCrossRef",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`feedId` INTEGER NOT NULL, `classId` INTEGER NOT NULL, PRIMARY KEY(`feedId`, `classId`), FOREIGN KEY(`feedId`) REFERENCES `ClassifiFeedEntity`(`feedId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`classId`) REFERENCES `ClassifiClassEntity`(`classId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "feedId",
+            "columnName": "feedId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "classId",
+            "columnName": "classId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "feedId",
+            "classId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_FeedsWithClassesCrossRef_feedId",
+            "unique": false,
+            "columnNames": [
+              "feedId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_FeedsWithClassesCrossRef_feedId` ON `${TABLE_NAME}` (`feedId`)"
+          },
+          {
+            "name": "index_FeedsWithClassesCrossRef_classId",
+            "unique": false,
+            "columnNames": [
+              "classId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_FeedsWithClassesCrossRef_classId` ON `${TABLE_NAME}` (`classId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "ClassifiFeedEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "feedId"
+            ],
+            "referencedColumns": [
+              "feedId"
+            ]
+          },
+          {
+            "table": "ClassifiClassEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "classId"
+            ],
+            "referencedColumns": [
+              "classId"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a408c774391b3b3d191d4dc07d3c2aaf')"
+    ]
+  }
+}

@@ -3,8 +3,10 @@ package com.khalidtouch.classifiadmin.data.repository
 import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
+import com.khalidtouch.classifiadmin.model.FeedMessage
 import com.khalidtouch.classifiadmin.model.ThemeBrand
 import com.khalidtouch.classifiadmin.model.UserData
+import com.khalidtouch.classifiadmin.model.UserRole
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -41,5 +43,33 @@ class OfflineFirstUserDataRepository @Inject constructor(
 
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) {
         classifiPreferenceDataSource.setShouldHideOnboarding(shouldHideOnboarding)
+    }
+
+    override suspend fun enqueueMediaMessage(message: FeedMessage) {
+        classifiPreferenceDataSource.enqueueMediaMessage(message)
+    }
+
+    override suspend fun enqueueTextMessage(message: FeedMessage) {
+        classifiPreferenceDataSource.enqueueTextMessage(message)
+    }
+
+    override suspend fun clearAllMessages() {
+        classifiPreferenceDataSource.clearAllMessages()
+    }
+
+    override suspend fun setUserId(id: Long) {
+        classifiPreferenceDataSource.setUserId(id)
+    }
+
+    override suspend fun setUsername(name: String) {
+      classifiPreferenceDataSource.setUsername(name)
+    }
+
+    override suspend fun setUserProfileImage(imageUrl: String) {
+       classifiPreferenceDataSource.setUserProfileImage(imageUrl)
+    }
+
+    override suspend fun setUserRole(userRole: UserRole) {
+       classifiPreferenceDataSource.setUserRole(userRole)
     }
 }

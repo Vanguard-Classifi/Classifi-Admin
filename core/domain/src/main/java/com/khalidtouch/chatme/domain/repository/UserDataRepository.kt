@@ -1,8 +1,10 @@
 package com.khalidtouch.chatme.domain.repository
 
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
+import com.khalidtouch.classifiadmin.model.FeedMessage
 import com.khalidtouch.classifiadmin.model.ThemeBrand
 import com.khalidtouch.classifiadmin.model.UserData
+import com.khalidtouch.classifiadmin.model.UserRole
 import kotlinx.coroutines.flow.Flow
 
 interface UserDataRepository {
@@ -22,4 +24,17 @@ interface UserDataRepository {
 
     suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean)
 
+    suspend fun enqueueMediaMessage(message: FeedMessage)
+
+    suspend fun enqueueTextMessage(message: FeedMessage)
+
+    suspend fun clearAllMessages()
+
+    suspend fun setUserId(id: Long)
+
+    suspend fun setUsername(name: String)
+
+    suspend fun setUserProfileImage(imageUrl: String)
+
+    suspend fun setUserRole(userRole: UserRole)
 }

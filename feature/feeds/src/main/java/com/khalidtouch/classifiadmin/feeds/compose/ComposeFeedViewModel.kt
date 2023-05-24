@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.classifiadmin.model.MessageType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,71 +24,70 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ComposeFeedViewModel @Inject constructor(
-    private val prefDataSource: ClassifiPreferencesDataSource,
+    private val userDataRepository: UserDataRepository,
 ) : ViewModel() {
     val TAG = "ComposeFeed"
     private val _feedTitle = MutableStateFlow<String>("")
-    val feedTitle: StateFlow<String> = _feedTitle
-
     private val _feedContent = MutableStateFlow<String>("")
-    val feedContent: StateFlow<String> = _feedContent
+    private val _feedTextEntry: StateFlow<FeedTextEntry> = combine(
+        _feedTitle,
+        _feedContent,
+    ) { title, content ->
+        FeedTextEntry(
+            title = title,
+            content = content,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(2000),
+        initialValue = FeedTextEntry("", "")
+    )
 
     private val _currentComposeFeedBottomSheetSelection =
         MutableStateFlow<ComposeFeedBottomSheetSelection>(ComposeFeedBottomSheetSelection.None)
-    val currentComposeFeedBottomSheetSelection: StateFlow<ComposeFeedBottomSheetSelection> =
-        _currentComposeFeedBottomSheetSelection
-
-
-    val isFeedPostable: StateFlow<Boolean> =
-        combine(
-            _feedTitle,
-            _feedContent
-        ) { title, content ->
-            title.isNotBlank() || content.isNotBlank()
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(2_000),
-            initialValue = false
+    private val _hasPostRequest = MutableStateFlow<Boolean>(false)
+    private val _hasAbortRequest = MutableStateFlow<Boolean>(false)
+    private val _request = MutableStateFlow<ComposeFeedRequest>(
+        ComposeFeedRequest(
+            postRequest = _hasPostRequest.value,
+            abortRequest = _hasAbortRequest.value
         )
+    )
+    private val emptyImageUri: Uri = Uri.parse("file://dev/null")
 
-    val isBottomSheetShown: StateFlow<Boolean> =
-        _currentComposeFeedBottomSheetSelection.map { it !is ComposeFeedBottomSheetSelection.None }
+    val uiState: StateFlow<ComposeFeedUiState> =
+        combine(
+            userDataRepository.userData,
+            _currentComposeFeedBottomSheetSelection,
+            _feedTextEntry,
+            _request,
+        ) { data, bottomSheetState, textEntry, request ->
+            val uris = data.feedData.messages
+                .filterNot { it.feedType == MessageType.TextMessage || it.feedType == MessageType.Unknown }
+                .map { Uri.parse(it.uri) }
+
+            ComposeFeedUiState.Success(
+                data = ComposeFeedData(
+                    userId = data.userId,
+                    username = data.userName,
+                    profileImage = Uri.parse(data.profileImage),
+                    feedTextEntry = textEntry,
+                    bottomSheetState = bottomSheetState,
+                    request = request,
+                    isBottomSheetShown = bottomSheetState !is ComposeFeedBottomSheetSelection.None,
+                    isFeedPostable = textEntry.title.isNotBlank() || textEntry.content.isNotBlank() ||
+                            uris.isNotEmpty(),
+                    mediaUris = uris,
+                    hasNoSavedMedia = uris.isEmpty(),
+                )
+            )
+        }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(2_000),
-                initialValue = false
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = ComposeFeedUiState.Loading
             )
 
-    private val emptyImageUri: Uri = Uri.parse("file://dev/null")
-    private val _imageUri = MutableStateFlow<Uri>(emptyImageUri)
-    val imageUri: StateFlow<Uri> = _imageUri
-
-    val hasNoSavedImage: StateFlow<Boolean> =
-        combine(
-            _imageUri,
-            flowOf(emptyImageUri)
-        ) { image, emptyImage ->
-            image == emptyImage
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(2_000),
-            initialValue = false,
-        )
-
-    fun updatePhotoUri() = viewModelScope.launch {
-        try {
-            prefDataSource.userData.collect {
-                val lastMessage = it.feedData.messages.last()
-                _imageUri.value = Uri.parse(lastMessage.uri)
-            }
-        } catch (e: NullPointerException) {
-            e.printStackTrace()
-        } catch (e: NoSuchElementException) {
-            e.printStackTrace()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
     fun onTitleValueChange(newTitle: String) {
         _feedTitle.value = newTitle
@@ -107,7 +107,6 @@ class ComposeFeedViewModel @Inject constructor(
 }
 
 sealed interface ComposeFeedBottomSheetSelection {
-
     object None : ComposeFeedBottomSheetSelection
     object Attachments : ComposeFeedBottomSheetSelection
     object Classes : ComposeFeedBottomSheetSelection

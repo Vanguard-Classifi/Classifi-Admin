@@ -6,6 +6,7 @@ option java_multiple_files = true;
 
 message ComposeFeedDataProto {
    repeated ComposeFeedMessageProto feed_messages  = 1;
+  // map<int64, bool> assigned_classes = 2;
 }
 
 

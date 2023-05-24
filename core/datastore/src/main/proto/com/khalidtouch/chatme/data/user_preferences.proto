@@ -3,6 +3,7 @@ syntax = "proto3";
 import "com/khalidtouch/chatme/data/dark_theme_config.proto";
 import "com/khalidtouch/chatme/data/theme_brand.proto";
 import "com/khalidtouch/chatme/data/compose_feed_data.proto";
+import "com/khalidtouch/chatme/data/user_role.proto";
 
 option java_package = "com.khalidtouch.chatme.datastore";
 option java_multiple_files = true;
@@ -22,4 +23,12 @@ message UserPreferences {
     map<int64, bool> assigned_feeds = 6;
     
     ComposeFeedDataProto feed_data = 7;
+
+    int64 user_id = 8;
+
+    string user_name = 9;
+
+    string profile_image = 10;
+
+    UserRoleProto role = 11;
 }

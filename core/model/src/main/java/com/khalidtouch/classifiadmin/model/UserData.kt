@@ -8,4 +8,8 @@ data class UserData(
     val likedFeeds: Set<Long>,
     val assignedFeeds: Set<Long>,
     val feedData: FeedData,
+    val userId: Long,
+    val userName: String,
+    val profileImage: String,
+    val role: UserRole,
 )

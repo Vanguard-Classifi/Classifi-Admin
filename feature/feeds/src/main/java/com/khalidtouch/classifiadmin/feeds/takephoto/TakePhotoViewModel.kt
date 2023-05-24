@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -110,7 +109,7 @@ class TakePhotoViewModel @Inject constructor(
                 prefDataSource.userData.collect {
                     val id = it.feedData.messages.size.toLong()
                     Log.e(TAG, "onSavePhotoFile: the id is $id")
-                    prefDataSource.enqueueNonTextMessage(
+                    prefDataSource.enqueueMediaMessage(
                         FeedMessage(
                             messageId = id + 1,
                             uri = _imageUri.value.toString(),

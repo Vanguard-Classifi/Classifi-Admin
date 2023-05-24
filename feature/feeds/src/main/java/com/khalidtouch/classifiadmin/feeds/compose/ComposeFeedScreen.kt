@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -82,41 +84,17 @@ fun ComposeFeedRoute(
     onTakePhoto: () -> Unit,
 ) {
     val TAG = "ComposeFeed"
-    val feedTitle by composeFeedViewModel.feedTitle.collectAsStateWithLifecycle()
-    val feedContent by composeFeedViewModel.feedContent.collectAsStateWithLifecycle()
-    val isFeedPostable by composeFeedViewModel.isFeedPostable.collectAsStateWithLifecycle()
-    val isBottomSheetShown by composeFeedViewModel.isBottomSheetShown.collectAsStateWithLifecycle()
-    val currentBottomSheetSelection
-            by composeFeedViewModel.currentComposeFeedBottomSheetSelection.collectAsStateWithLifecycle()
-
-    val imageUri by composeFeedViewModel.imageUri.collectAsStateWithLifecycle()
-    val hasNoSavedImage by composeFeedViewModel.hasNoSavedImage.collectAsStateWithLifecycle()
-
-
-    Log.e(TAG, "ComposeFeedRoute: hasNoSavedImage is currently $hasNoSavedImage")
-    Log.e(TAG, "ComposeFeedRoute: imageUri is currently ${imageUri.toString()}")
-
-    LaunchedEffect(Unit) {
-        Log.e(TAG, "ComposeFeedRoute: LaunchedEffect has been called")
-        composeFeedViewModel.updatePhotoUri()
-    }
+    val uiState by composeFeedViewModel.uiState.collectAsStateWithLifecycle()
 
     ComposeFeedScreen(
+        uiState = uiState,
         onCloseComposeFeedScreen = onCloseComposeFeedScreen,
         onPostFeed = { /*TODO*/ },
-        isFeedPostable = isFeedPostable,
         feedScope = "All classes",
-        authorName = "Muhammed Bilal",
         schoolName = "Future Leaders International School",
-        currentTitle = feedTitle,
-        currentContent = feedContent,
-        hasNoSavedImage = hasNoSavedImage,
-        imageUri = imageUri,
-        isBottomSheetShown = isBottomSheetShown,
         onTitleValueChange = composeFeedViewModel::onTitleValueChange,
         onContentValueChange = composeFeedViewModel::onContentValueChange,
         clearBottomSheetSelection = composeFeedViewModel::clearBottomSheetSelection,
-        currentBottomSheetSelection = currentBottomSheetSelection,
         openAttachmentsBottomSheet = {
             composeFeedViewModel.onComposeFeedBottomSheetSelectionChange(
                 ComposeFeedBottomSheetSelection.Attachments
@@ -132,19 +110,12 @@ fun ComposeFeedRoute(
 private fun ComposeFeedScreen(
     onCloseComposeFeedScreen: () -> Unit,
     onPostFeed: () -> Unit,
-    isFeedPostable: Boolean,
-    hasNoSavedImage: Boolean,
-    imageUri: Uri,
+    uiState: ComposeFeedUiState,
     feedScope: String,
-    authorName: String,
     schoolName: String,
-    currentTitle: String,
-    currentContent: String,
-    isBottomSheetShown: Boolean,
     onTitleValueChange: (String) -> Unit,
     onContentValueChange: (String) -> Unit,
     clearBottomSheetSelection: () -> Unit,
-    currentBottomSheetSelection: ComposeFeedBottomSheetSelection,
     openAttachmentsBottomSheet: () -> Unit,
     onTakePhoto: () -> Unit,
 ) {
@@ -156,10 +127,15 @@ private fun ComposeFeedScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(isBottomSheetShown) {
-        if (isBottomSheetShown) {
-            sheetState.show()
-            showModalBottomSheet = true
+    LaunchedEffect(uiState) {
+        if (uiState is ComposeFeedUiState.Success) {
+            showModalBottomSheet = if (uiState.data.isBottomSheetShown) {
+                sheetState.show()
+                true
+            } else {
+                sheetState.hide()
+                false
+            }
         }
     }
 
@@ -185,7 +161,12 @@ private fun ComposeFeedScreen(
                     Box(modifier = Modifier.padding(end = 8.dp)) {
                         ClassifiButton(
                             onClick = onPostFeed,
-                            enabled = isFeedPostable,
+                            enabled = when (uiState) {
+                                is ComposeFeedUiState.Loading -> false
+                                is ComposeFeedUiState.Success -> {
+                                    uiState.data.isFeedPostable
+                                }
+                            },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
                                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -194,11 +175,18 @@ private fun ComposeFeedScreen(
                             ),
                             border = BorderStroke(
                                 width = 1.dp,
-                                color =
-                                if (isFeedPostable) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onPrimary.copy(0.2f)
+                                color = when (uiState) {
+                                    is ComposeFeedUiState.Loading -> MaterialTheme.colorScheme.onPrimary.copy(
+                                        0.2f
+                                    )
+
+                                    is ComposeFeedUiState.Success -> {
+                                        if (uiState.data.isFeedPostable) {
+                                            MaterialTheme.colorScheme.onPrimary
+                                        } else {
+                                            MaterialTheme.colorScheme.onPrimary.copy(0.2f)
+                                        }
+                                    }
                                 },
                             ),
                             text = {
@@ -269,10 +257,6 @@ private fun ComposeFeedScreen(
                                         ComposeFeedBottomBarActions.Photo -> {
 
                                         }
-
-                                        else -> {
-
-                                        }
                                     }
                                 },
                                 colors = composeFeedButtonColors,
@@ -291,14 +275,10 @@ private fun ComposeFeedScreen(
         content = {
             ComposeFeedBody(
                 modifier = Modifier.padding(it),
+                uiState = uiState,
                 schoolName = schoolName,
-                authorName = authorName,
-                currentTitle = currentTitle,
-                currentContent = currentContent,
                 onTitleValueChange = onTitleValueChange,
                 onContentValueChange = onContentValueChange,
-                hasNoSavedImage = hasNoSavedImage,
-                imageUri = imageUri,
             )
         }
     )
@@ -306,11 +286,7 @@ private fun ComposeFeedScreen(
     if (showModalBottomSheet)
         ModalBottomSheet(
             onDismissRequest = {
-                scope.launch {
-                    sheetState.hide()
-                    showModalBottomSheet = false
-                    clearBottomSheetSelection()
-                }
+                clearBottomSheetSelection()
             },
             sheetState = sheetState,
             containerColor = MaterialTheme.colorScheme.surface,
@@ -321,54 +297,58 @@ private fun ComposeFeedScreen(
             ),
             tonalElevation = 2.dp,
         ) {
-            when (currentBottomSheetSelection) {
-                is ComposeFeedBottomSheetSelection.Attachments -> {
-                    ComposeFeedMainActions.values().map {
-                        ActionListItem(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = it.icon),
-                                    contentDescription = it.title
-                                )
-                            },
-                            text = {
-                                Text(
-                                    it.title,
-                                    style = MaterialTheme.typography.titleSmall,
-                                )
-                            },
-                            onClick = {
-                                scope.launch {
-                                    sheetState.hide()
-                                    showModalBottomSheet = false
-                                    clearBottomSheetSelection()
+            when (uiState) {
+                is ComposeFeedUiState.Loading -> Unit
+                is ComposeFeedUiState.Success -> {
+                    when (uiState.data.bottomSheetState) {
+                        is ComposeFeedBottomSheetSelection.Attachments -> {
+                            ComposeFeedMainActions.values().map {
+                                ActionListItem(
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(id = it.icon),
+                                            contentDescription = it.title
+                                        )
+                                    },
+                                    text = {
+                                        Text(
+                                            it.title,
+                                            style = MaterialTheme.typography.titleSmall,
+                                        )
+                                    },
+                                    onClick = {
+                                        scope.launch {
+                                            clearBottomSheetSelection()
 
-                                    when (it) {
-                                        ComposeFeedMainActions.TakePhoto -> {
-                                            onTakePhoto()
-                                        }
+                                            when (it) {
+                                                ComposeFeedMainActions.TakePhoto -> {
+                                                    onTakePhoto()
+                                                }
 
-                                        ComposeFeedMainActions.RecordVideo -> {
+                                                ComposeFeedMainActions.RecordVideo -> {
 
-                                        }
+                                                }
 
-                                        ComposeFeedMainActions.ImportPhoto -> {
+                                                ComposeFeedMainActions.ImportPhoto -> {
 
-                                        }
+                                                }
 
-                                        ComposeFeedMainActions.AddDocument -> {
+                                                ComposeFeedMainActions.AddDocument -> {
 
+                                                }
+                                            }
                                         }
                                     }
-                                }
+                                )
                             }
-                        )
+                        }
+
+                        else -> {
+                            /*TODO()*/
+                        }
                     }
                 }
 
-                else -> {
-                    /*TODO()*/
-                }
             }
 
         }
@@ -403,12 +383,8 @@ fun ActionListItem(
 @Composable
 private fun ComposeFeedBody(
     modifier: Modifier = Modifier,
-    authorName: String,
+    uiState: ComposeFeedUiState,
     schoolName: String,
-    currentTitle: String,
-    currentContent: String,
-    hasNoSavedImage: Boolean,
-    imageUri: Uri,
     onTitleValueChange: (String) -> Unit,
     onContentValueChange: (String) -> Unit,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
@@ -421,107 +397,93 @@ private fun ComposeFeedBody(
 ) {
     val TAG = "ComposeFeed"
     val catImage = "https://www.petsworld.in/blog/wp-content/uploads/2014/09/funny-cat.jpg"
-
-    ComposeFeedBody(
-        modifier = modifier,
-        hasNoSavedImage = hasNoSavedImage,
-        profileImage = {
-            Box(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.5f),
-                        shape = CircleShape,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                AsyncImage(
-                    placeholder = painterResource(id = ClassifiIcons.Profile),
-                    model = catImage,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(58.dp)
-                        .clip(CircleShape)
-                )
-            }
-        },
-        author = {
-            Column(modifier = modifier.padding(end = 32.dp)) {
-                Text(
-                    text = authorName,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-
-                Text(
-                    text = schoolName,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        },
-        title = {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = currentTitle,
-                onValueChange = onTitleValueChange,
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                },
-                textStyle = MaterialTheme.typography.titleMedium,
-                colors = textFieldColors,
-                maxLines = 1,
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
-                )
-            )
-
-        },
-        text = {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = currentContent,
-                onValueChange = onContentValueChange,
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.what_you_write_about),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                },
-                colors = textFieldColors,
-                textStyle = MaterialTheme.typography.bodyLarge,
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done
-                )
-            )
-        },
-        images = {
-            Log.e(TAG, "ComposeFeedBody: current image uri ${imageUri.toString()}")
-            Box {
-                AsyncImage(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            top = 16.dp,
-                            start = 8.dp,
-                            end = 8.dp,
-                            bottom = 16.dp,
+    when (uiState) {
+        is ComposeFeedUiState.Loading -> Unit
+        is ComposeFeedUiState.Success -> {
+            ComposeFeedBody(
+                modifier = modifier,
+                profileImage = {
+                    Box(
+                        modifier = Modifier
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                                shape = CircleShape,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        AsyncImage(
+                            placeholder = painterResource(id = ClassifiIcons.Profile),
+                            model = catImage,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(58.dp)
+                                .clip(CircleShape)
                         )
-                        .height(500.dp),
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUri).build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit
-                )
-            }
-        },
-    )
+                    }
+                },
+                author = {
+                    Column(modifier = modifier.padding(end = 32.dp)) {
+                        Text(
+                            text = uiState.data.username,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+
+                        Text(
+                            text = schoolName,
+                            style = MaterialTheme.typography.titleSmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                },
+                title = {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = uiState.data.feedTextEntry.title,
+                        onValueChange = onTitleValueChange,
+                        placeholder = {
+                            Text(
+                                text = stringResource(id = R.string.title),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.titleMedium,
+                        colors = textFieldColors,
+                        maxLines = 1,
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next
+                        )
+                    )
+
+                },
+                text = {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = uiState.data.feedTextEntry.content,
+                        onValueChange = onContentValueChange,
+                        placeholder = {
+                            Text(
+                                text = stringResource(id = R.string.what_you_write_about),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        },
+                        colors = textFieldColors,
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                },
+                mediaItem = {
+                    mediaItem(uiState.data.mediaUris)
+                }
+            )
+        }
+    }
 }
 
 
@@ -532,8 +494,7 @@ private fun ComposeFeedBody(
     author: @Composable () -> Unit,
     title: @Composable () -> Unit,
     text: @Composable () -> Unit,
-    images: @Composable () -> Unit,
-    hasNoSavedImage: Boolean,
+    mediaItem: LazyListScope.() -> Unit,
 ) {
     val TAG = "ComposeFeed"
 
@@ -583,25 +544,36 @@ private fun ComposeFeedBody(
                 text()
             }
 
-            Log.e(TAG, "ComposeFeedBody: has image now")
-            if (!hasNoSavedImage) {
-                Box(
-                    Modifier.border(
-                        width = 1.dp,
-                        color = Color.Black
-                    )
-                ) {
-                    images()
-                }
-            }
-
-            /*todo -> images section if any */
-            /*todo -> videos section if any */
-            /*todo -> docs section if any */
-            /*todo -> audio section if any */
-
         }
 
+        mediaItem()
+    }
+}
+
+
+fun LazyListScope.mediaItem(
+    uris: List<Uri>,
+) {
+    item {
+        uris.map { uri ->
+            Box {
+                AsyncImage(
+                    modifier = androidx.compose.ui.Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = 16.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 16.dp,
+                        )
+                        .wrapContentHeight(),
+                    model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                        .data(uri).build(),
+                    contentDescription = null,
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                )
+            }
+        }
     }
 }
 
@@ -617,50 +589,4 @@ enum class ComposeFeedMainActions(val title: String, val icon: Int) {
     TakePhoto("Take a photo", ClassifiIcons.Camera),
     AddDocument("Add a document", ClassifiIcons.Doc),
     RecordVideo("Record a video", ClassifiIcons.VideoCamera)
-}
-
-@Composable
-@Preview
-private fun ComposeFeedBodyPreview() {
-    ComposeFeedBody(
-        profileImage = {
-            Text(
-                "The Main Text", style = MaterialTheme.typography.headlineLarge
-            )
-        },
-        author = {
-            Text(
-                "The Main Text", style = MaterialTheme.typography.headlineLarge
-            )
-        },
-        title = {
-            Text(
-                "The Main Text", style = MaterialTheme.typography.headlineLarge
-            )
-        },
-        text = {
-            Text(
-                "The Main Text", style = MaterialTheme.typography.headlineLarge
-            )
-        },
-        hasNoSavedImage = false,
-        images = {
-
-        }
-    )
-}
-
-@Composable
-@Preview
-private fun ComposeFeedBodyPreview2() {
-    ComposeFeedBody(
-        authorName = "Khalid Isah",
-        schoolName = "Future Leaders International School",
-        currentTitle = "Exam Timetable",
-        currentContent = "I'm happy to announce the launch of the new exam time table",
-        onContentValueChange = {},
-        onTitleValueChange = {},
-        hasNoSavedImage = false,
-        imageUri = Uri.parse("")
-    )
 }
