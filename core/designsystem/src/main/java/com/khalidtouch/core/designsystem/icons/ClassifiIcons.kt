@@ -58,7 +58,7 @@ object ClassifiIcons {
     val Homework = R.drawable.icon_homework
     val Image = R.drawable.icon_image
     val Import = R.drawable.icon_import
-    val Info =R.drawable.icon_info
+    val Info = R.drawable.icon_info
     val JpgFile = R.drawable.icon_jpg_file
     val LikeOutline = R.drawable.icon_like_outline
     val LikeSolid = R.drawable.icon_like_solid
@@ -67,16 +67,18 @@ object ClassifiIcons {
     val OptionsHorizontal = R.drawable.icon_options_horizontal
     val OptionsVertical = R.drawable.icon_options_vertical
     val Parent = R.drawable.icon_parent
+    val Pause = R.drawable.icon_pause
     val PdfFile = R.drawable.icon_pdf_file
     val Personal = R.drawable.icon_personal
     val Phone = R.drawable.icon_phone
     val PngFile = R.drawable.icon_png_file
+    val Play = R.drawable.icon_play
     val Portrait = R.drawable.icon_portrait
     val Postal = R.drawable.icon_postal
-    val PptFile= R.drawable.icon_ppt_file
+    val PptFile = R.drawable.icon_ppt_file
     val Preference = R.drawable.icon_preference
     val Preview = R.drawable.icon_preview
-    val Profile= R.drawable.icon_profile
+    val Profile = R.drawable.icon_profile
     val Question = R.drawable.icon_question
     val Quiz = R.drawable.icon_quiz
     val Repeat = R.drawable.icon_repeat
@@ -89,6 +91,7 @@ object ClassifiIcons {
     val Share = R.drawable.icon_share
     val Snapshot = R.drawable.icon_snapshot
     val Spreadsheet = R.drawable.icon_spreadsheet
+    val Stop = R.drawable.icon_stop
     val StudentCap = R.drawable.icon_student_cap
     val Students = R.drawable.icon_students
     val StudentsOutline = R.drawable.icon_students_outline

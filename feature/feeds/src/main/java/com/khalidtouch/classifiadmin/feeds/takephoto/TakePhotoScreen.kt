@@ -1,6 +1,6 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
-import android.util.Log
+import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +9,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,7 +41,6 @@ fun TakePhotoRoute(
         onDismissDialog = onDismissDialog,
         onViewAlbum = onViewAlbum,
         onCloseCameraPreview = onClose,
-        onSavePhotoFile = takePhotoViewModel::onSavePhotoFile
     )
 
     PhotoCaptureScreen(
@@ -62,8 +62,8 @@ private fun TakePhotoScreen(
     onDismissDialog: () -> Unit,
     onViewAlbum: () -> Unit,
     onCloseCameraPreview: () -> Unit,
-    onSavePhotoFile: (File) -> Unit,
 ) {
+    val context = LocalContext.current
 
     TakePhotoScreen(
         uiState = uiState,
@@ -77,22 +77,7 @@ private fun TakePhotoScreen(
         onViewAlbum = onViewAlbum,
         previewView = takePhotoViewModel.preview,
         onInitializeCamera = takePhotoViewModel::onInitializeCamera,
-        onEngageCamera = {
-            when (uiState) {
-                is TakePhotoUiState.Loading -> Unit
-                is TakePhotoUiState.Loaded -> {
-                    when (uiState.data.cameraState.cameraUseState) {
-                        CameraUseState.Photo -> {
-                            takePhotoViewModel.onTakeSnapshot(onSavePhotoFile)
-                        }
-
-                        CameraUseState.Video -> {
-                            /*todo -- video capture */
-                        }
-                    }
-                }
-            }
-        }
+        onPrepareSnapshot = takePhotoViewModel::onPrepareSnapshot,
     )
 }
 
@@ -109,7 +94,7 @@ private fun TakePhotoScreen(
     onCloseCameraPreview: () -> Unit,
     onToggleFlashlight: (Boolean) -> Unit,
     onToggleCamera: (Boolean) -> Unit,
-    onEngageCamera: () -> Unit,
+    onPrepareSnapshot: () -> Unit,
     onToggleCameraUseState: (CameraUseState) -> Unit,
     onInitializeCamera: (LifecycleOwner) -> Unit,
     noPermissionScreen: @Composable () -> Unit = {
@@ -126,7 +111,7 @@ private fun TakePhotoScreen(
         CameraPreviewContent(
             flashlightState = flashlight,
             isRearCameraActive = rearCamera,
-            onEngageCamera = onEngageCamera,
+            onPrepareSnapshot = onPrepareSnapshot,
             onToggleCamera = onToggleCamera,
             onCloseCameraPreview = onCloseCameraPreview,
             onViewAlbum = onViewAlbum,

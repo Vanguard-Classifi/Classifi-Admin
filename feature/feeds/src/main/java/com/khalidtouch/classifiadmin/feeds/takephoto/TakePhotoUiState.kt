@@ -20,20 +20,27 @@ data class CameraState(
     val type: CameraSelector,
     val isRearCameraActive: Boolean,
     val isFlashlightOn: Boolean,
-    val cameraUseState: CameraUseState
+    val cameraUseState: CameraUseState,
 ) {
     companion object {
         val Default = CameraState(
             type = CameraSelector.DEFAULT_BACK_CAMERA,
             isRearCameraActive = true,
             isFlashlightOn = false,
-            cameraUseState = CameraUseState.Photo
+            cameraUseState = CameraUseState.PhotoIdle,
         )
     }
 }
 
 
 sealed interface CameraUseState {
-    object Photo : CameraUseState
-    object Video : CameraUseState
+    object PhotoIdle : CameraUseState
+    object PhotoTakeSnapshot : CameraUseState
+    object PhotoSaved : CameraUseState
+    object VideoIdle : CameraUseState
+    object VideoRecording : CameraUseState
+    object VideoPaused : CameraUseState
+    object VideoResumed : CameraUseState
+    object VideoRecordingStopped : CameraUseState
+
 }

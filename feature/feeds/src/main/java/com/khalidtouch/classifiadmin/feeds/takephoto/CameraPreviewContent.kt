@@ -1,6 +1,5 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,8 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +32,7 @@ fun CameraPreviewContent(
     onToggleFlashlight: (Boolean) -> Unit,
     isRearCameraActive: Boolean,
     flashlightState: Boolean,
-    onEngageCamera: () -> Unit,
+    onPrepareSnapshot: () -> Unit,
     onViewAlbum: () -> Unit,
     cameraUseState: CameraUseState,
     onToggleCameraUseState: (CameraUseState) -> Unit,
@@ -109,18 +106,22 @@ fun CameraPreviewContent(
         CameraBottomButtons(
             snapshotButton = {
                 ClassifiTakeSnapshotButton(
-                    onClick = onEngageCamera,
+                    onClick = onPrepareSnapshot,
                     buttonSize = 72.dp,
                     border = BorderStroke(
                         width = 2.dp,
                         color = MaterialTheme.colorScheme.background.copy(0.5f),
                     ),
                     color = when (cameraUseState) {
-                        CameraUseState.Video -> {
+                        CameraUseState.PhotoIdle -> {
+                            MaterialTheme.colorScheme.tertiary
+                        }
+
+                        CameraUseState.VideoIdle -> {
                             MaterialTheme.colorScheme.error
                         }
 
-                        CameraUseState.Photo -> {
+                        else -> {
                             MaterialTheme.colorScheme.tertiary
                         }
                     },
@@ -128,12 +129,16 @@ fun CameraPreviewContent(
                         Icon(
                             painterResource(
                                 id = when (cameraUseState) {
-                                    is CameraUseState.Photo -> {
+                                    is CameraUseState.PhotoIdle -> {
                                         ClassifiIcons.Snapshot
                                     }
 
-                                    is CameraUseState.Video -> {
+                                    is CameraUseState.VideoIdle -> {
                                         ClassifiIcons.VideoCamera
+                                    }
+
+                                    else -> {
+                                        ClassifiIcons.Snapshot
                                     }
                                 }
                             ),
@@ -152,11 +157,15 @@ fun CameraPreviewContent(
                             painterResource(
                                 id =
                                 when (cameraUseState) {
-                                    is CameraUseState.Photo -> {
+                                    is CameraUseState.PhotoIdle -> {
                                         ClassifiIcons.VideoCamera
                                     }
 
-                                    is CameraUseState.Video -> {
+                                    is CameraUseState.VideoIdle -> {
+                                        ClassifiIcons.Snapshot
+                                    }
+
+                                    else -> {
                                         ClassifiIcons.Snapshot
                                     }
                                 }
