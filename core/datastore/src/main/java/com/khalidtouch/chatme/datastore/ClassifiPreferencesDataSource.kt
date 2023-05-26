@@ -182,9 +182,9 @@ class ClassifiPreferencesDataSource @Inject constructor(
 
                 feedDataProto.updateData { dataPref ->
                     dataPref.copy {
-                        if (feedMessages.size <= 5)
+                        if (feedMessages.size <= 20)
                             feedMessages.add(pref)
-
+                        Log.e(TAG, "enqueueMediaMessage: on Adding media message")
                         userPreferences.updateData { userPref ->
                             userPref.copy {
                                 feedData = dataPref
@@ -274,6 +274,21 @@ class ClassifiPreferencesDataSource @Inject constructor(
             }
         }
     }
+
+    suspend fun deleteMessageById(messageId: Long) {
+        feedDataProto.updateData { dataPref ->
+            dataPref.copy {
+                this.feedMessages
+
+                userPreferences.updateData { userPref ->
+                    userPref.copy {
+                        feedData = dataPref
+                    }
+                }
+            }
+        }
+
+    }
 }
 
 private fun UserPreferencesKt.Dsl.updateShouldHideOnboardingIfNecessary() {
@@ -292,10 +307,9 @@ fun ComposeFeedDataProto.toData(): FeedData {
 
 fun ComposeFeedMessageProto.toData(): FeedMessage =
     FeedMessage(
-        messageId = feedMessageId,
+        messageId = this.feedMessageId,
         uri = uri,
         feedType = feedMessageType.toData()
-
     )
 
 fun ComposeFeedMessageTypeProto.toData() = when (this) {

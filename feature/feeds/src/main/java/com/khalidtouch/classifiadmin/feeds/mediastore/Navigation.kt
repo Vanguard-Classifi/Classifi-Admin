@@ -1,4 +1,4 @@
-package com.khalidtouch.classifiadmin.feeds.compose
+package com.khalidtouch.classifiadmin.feeds.mediastore
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -7,21 +7,22 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
-const val composeFeedNavigationRoute = "compose_feed_navigation_route"
+const val imageGalleryNavigationRoute = "image_gallery_navigation_route"
 
-fun NavController.navigateToComposeFeed(navOptions: NavOptions? = null) {
-    this.navigate(composeFeedNavigationRoute, navOptions)
+fun NavController.navigateToImageGallery(navOptions: NavOptions? = null) {
+    this.navigate(imageGalleryNavigationRoute, navOptions)
 }
 
-@OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.composeFeedScreen(
-    onCloseComposeFeedScreen: () -> Unit,
-    onTakePhoto: () -> Unit,
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalPermissionsApi::class)
+fun NavGraphBuilder.imageGalleryScreen(
+    onBackPressed: () -> Unit,
+    onDismissDialog: () -> Unit,
     onChooseImage: () -> Unit,
 ) {
-    composable(
-        route = composeFeedNavigationRoute,
+    composable(route = imageGalleryNavigationRoute,
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -33,11 +34,10 @@ fun NavGraphBuilder.composeFeedScreen(
                 AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween(200)
             )
-        }
-    ) {
-        ComposeFeedRoute(
-            onCloseComposeFeedScreen = onCloseComposeFeedScreen,
-            onTakePhoto = onTakePhoto,
+        }) {
+        GalleryRoute(
+            onBackPressed = onBackPressed,
+            onDismissDialog = onDismissDialog,
             onChooseImage = onChooseImage,
         )
     }

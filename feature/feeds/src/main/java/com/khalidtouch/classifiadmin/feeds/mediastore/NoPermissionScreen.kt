@@ -1,4 +1,4 @@
-package com.khalidtouch.classifiadmin.feeds.takephoto
+package com.khalidtouch.classifiadmin.feeds.mediastore
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.widthIn
@@ -21,18 +21,17 @@ import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun NoPermissionScreen(
-    onRequestCameraPermission: () -> Unit,
-    onRequestAudioPermission: () -> Unit,
-    cameraPermissionState: PermissionState,
-    audioPermissionState: PermissionState,
+fun GalleryNoPermissionScreen(
+    onRequestReadExternalStoragePermission: () -> Unit,
+    onRequestWriteExternalStoragePermission: () -> Unit,
+    writeExternalStoragePermissionState: PermissionState,
+    readExternalStoragePermissionState: PermissionState,
     onDismissDialog: () -> Unit,
 ) {
     val configuration = LocalConfiguration.current
 
-
     Box {
-        if(!audioPermissionState.status.isGranted) {
+        if(!writeExternalStoragePermissionState.status.isGranted) {
             AlertDialog(
                 properties = DialogProperties(usePlatformDefaultWidth = false),
                 modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
@@ -41,19 +40,19 @@ fun NoPermissionScreen(
                 },
                 title = {
                     Text(
-                        text = stringResource(id = R.string.audio_permission),
+                        text = stringResource(id = R.string.write_external_storage),
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
                 text = {
                     Text(
-                        text = stringResource(id = R.string.proceed_to_use_audio),
+                        text = stringResource(id = R.string.proceed_to_write_external_storage),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 },
                 confirmButton = {
                     ClassifiTextButton(
-                        onClick = { onRequestAudioPermission() },
+                        onClick = { onRequestWriteExternalStoragePermission() },
                         enabled = true,
                         content = {
                             Text(
@@ -80,7 +79,7 @@ fun NoPermissionScreen(
             )
         }
 
-        if(!cameraPermissionState.status.isGranted) {
+        if(!readExternalStoragePermissionState.status.isGranted) {
             Box {
                 AlertDialog(
                     properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -90,19 +89,19 @@ fun NoPermissionScreen(
                     },
                     title = {
                         Text(
-                            text = stringResource(id = R.string.camera_permission),
+                            text = stringResource(id = R.string.read_external_storage),
                             style = MaterialTheme.typography.titleLarge,
                         )
                     },
                     text = {
                         Text(
-                            text = stringResource(id = R.string.proceed_to_use_camera),
+                            text = stringResource(id = R.string.proceed_to_read_external_storage),
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     },
                     confirmButton = {
                         ClassifiTextButton(
-                            onClick = { onRequestCameraPermission() },
+                            onClick = { onRequestReadExternalStoragePermission() },
                             enabled = true,
                             content = {
                                 Text(
@@ -130,5 +129,4 @@ fun NoPermissionScreen(
             }
         }
     }
-
 }

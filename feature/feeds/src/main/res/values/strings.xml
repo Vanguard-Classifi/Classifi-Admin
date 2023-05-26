@@ -12,4 +12,11 @@
     <string name="cancel">Cancel</string>
     <string name="next">Next</string>
     <string name="saved_image">Saved Image</string>
+    <string name="audio_permission">Audio Permission</string>
+    <string name="proceed_to_use_audio">Click Proceed to request permission to record audio</string>
+    <string name="add">Add</string>
+    <string name="read_external_storage">Read External Storage</string>
+    <string name="proceed_to_read_external_storage">Click Proceed to request to read external storage</string>
+    <string name="proceed_to_write_external_storage">Click Proceed to request to write external storage</string>
+    <string name="write_external_storage">Write external storage</string>
 </resources>

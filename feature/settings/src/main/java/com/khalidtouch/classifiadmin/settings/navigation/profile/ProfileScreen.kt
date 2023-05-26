@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +34,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khalidtouch.classifiadmin.settings.R
 import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingItemClicked
 import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingsViewModel
@@ -45,8 +48,10 @@ import com.khalidtouch.core.designsystem.icons.ClassifiImages
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenWrapper(
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
+    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
+    profileViewModel: ProfileViewModel = hiltViewModel<ProfileViewModel>(),
 ) {
+
     Surface(
         modifier = Modifier
             .fillMaxSize()

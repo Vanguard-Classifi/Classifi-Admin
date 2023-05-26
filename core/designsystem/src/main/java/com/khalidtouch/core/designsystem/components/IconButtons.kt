@@ -105,6 +105,7 @@ fun ClassifiToggleButton(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    buttonSize: Dp = ClassifiIconButtonDefaults.smallButtonSize,
     enabled: Boolean = true,
     icon: @Composable () -> Unit,
     checkedIcon: @Composable () -> Unit = icon,
@@ -125,7 +126,7 @@ fun ClassifiToggleButton(
     FilledIconToggleButton(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        modifier = modifier,
+        modifier = modifier.size(buttonSize),
         enabled = enabled,
         colors = colors,
     ) {
@@ -135,6 +136,7 @@ fun ClassifiToggleButton(
 
 object ClassifiIconButtonDefaults {
     const val DisabledIconButtonContainerAlpha = 0.12f
+    val smallButtonSize = 42.dp
     val defaultButtonSize = 48.dp
     val bigButtonSize = 96.dp
     val tonalElevationDefaults = 2.dp

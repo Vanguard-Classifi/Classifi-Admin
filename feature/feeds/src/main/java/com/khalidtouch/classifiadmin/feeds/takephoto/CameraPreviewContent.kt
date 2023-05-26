@@ -32,7 +32,7 @@ fun CameraPreviewContent(
     onToggleFlashlight: (Boolean) -> Unit,
     isRearCameraActive: Boolean,
     flashlightState: Boolean,
-    onPrepareSnapshot: () -> Unit,
+    onPrepareCamera: () -> Unit,
     onViewAlbum: () -> Unit,
     cameraUseState: CameraUseState,
     onToggleCameraUseState: (CameraUseState) -> Unit,
@@ -106,7 +106,7 @@ fun CameraPreviewContent(
         CameraBottomButtons(
             snapshotButton = {
                 ClassifiTakeSnapshotButton(
-                    onClick = onPrepareSnapshot,
+                    onClick = onPrepareCamera,
                     buttonSize = 72.dp,
                     border = BorderStroke(
                         width = 2.dp,

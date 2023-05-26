@@ -1,5 +1,6 @@
 package com.khalidtouch.classifiadmin.data.repository
 
+import android.util.Log
 import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
@@ -13,6 +14,7 @@ import javax.inject.Inject
 class OfflineFirstUserDataRepository @Inject constructor(
     private val classifiPreferenceDataSource: ClassifiPreferencesDataSource,
 ) : UserDataRepository {
+    val TAG = "UserData"
     override val userData: Flow<UserData>
         get() = classifiPreferenceDataSource.userData
 
@@ -47,10 +49,15 @@ class OfflineFirstUserDataRepository @Inject constructor(
 
     override suspend fun enqueueMediaMessage(message: FeedMessage) {
         classifiPreferenceDataSource.enqueueMediaMessage(message)
+        Log.e(TAG, "enqueueMediaMessage: onEnqueue media message")
     }
 
     override suspend fun enqueueTextMessage(message: FeedMessage) {
         classifiPreferenceDataSource.enqueueTextMessage(message)
+    }
+
+    override suspend fun deleteMessageById(messageId: Long) {
+        classifiPreferenceDataSource.deleteMessageById(messageId)
     }
 
     override suspend fun clearAllMessages() {

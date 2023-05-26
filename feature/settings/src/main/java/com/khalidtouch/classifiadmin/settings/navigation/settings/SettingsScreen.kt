@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khalidtouch.classifiadmin.settings.R
 import com.khalidtouch.classifiadmin.settings.navigation.account.AccountScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.administration.AdministrationScreenWrapper
@@ -101,9 +102,12 @@ internal fun SettingsScreen(
         unfocusedContainerColor = Color.Transparent,
         focusedLabelColor = Color.Black,
         cursorColor = Color.Black,
+        focusedIndicatorColor = Color.Black,
+        unfocusedIndicatorColor = Color.Black,
     ),
 ) {
     val TAG = "SettingsScreen"
+    val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
     ClassifiBackground {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -252,111 +256,118 @@ internal fun SettingsScreen(
             )
 
             if (showModalBottomSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = {
-                        scope.launch {
-                            sheetState.hide()
-                            showModalBottomSheet = false
-                            settingsViewModel.cancelSettingItemClicked()
-                        }
-                    },
-                    sheetState = sheetState,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(
-                        topStartPercent = 5,
-                        topEndPercent = 5
-                    ),
-                    tonalElevation = 2.dp,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    content = {
-                        val headerStyle = MaterialTheme.typography.titleMedium
+                when (uiState) {
+                    is SettingsUiState.Loading -> Unit
+                    is SettingsUiState.Success -> {
+                        ModalBottomSheet(
+                            onDismissRequest = {
+                                scope.launch {
+                                    sheetState.hide()
+                                    showModalBottomSheet = false
+                                    settingsViewModel.cancelSettingItemClicked()
+                                }
+                            },
+                            sheetState = sheetState,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(
+                                topStartPercent = 5,
+                                topEndPercent = 5
+                            ),
+                            tonalElevation = 2.dp,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            content = {
+                                val headerStyle = MaterialTheme.typography.titleMedium
 
-                        when (currentSettingItemClicked!!) {
-                            is SettingItemClicked.Name -> {
-                                SettingsTextFieldBox(
-                                    textField = {
-                                        OutlinedTextField(
-                                            value = "",
-                                            onValueChange = {},
-                                            enabled = true,
-                                            keyboardOptions = KeyboardOptions(),
-                                            colors = textFieldColors,
-                                            maxLines = 1,
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                    },
-                                    header = {
-                                        ProvideTextStyle(headerStyle) {
-                                            Text(stringResource(id = R.string.enter_your_name))
-                                        }
-                                    },
-                                    responseButtons = {
-                                        ClassifiTextButton(
-                                            onClick = { /*TODO* on Cancel */ },
-                                            text = {
-                                                Text(
-                                                    stringResource(id = R.string.cancel),
-                                                    modifier = Modifier.padding(
-                                                        horizontal = ClassifiSettingDefaults.textPadding
-                                                    )
+                                when (currentSettingItemClicked!!) {
+                                    is SettingItemClicked.Name -> {
+                                        SettingsTextFieldBox(
+                                            textField = {
+                                                OutlinedTextField(
+                                                    value = (uiState as SettingsUiState.Success)
+                                                        .data.profileData?.personalData?.username.orEmpty(),
+                                                    onValueChange = settingsViewModel::onUsernameChanged,
+                                                    enabled = true,
+                                                    keyboardOptions = KeyboardOptions(),
+                                                    colors = textFieldColors,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    modifier = Modifier.fillMaxWidth()
                                                 )
+                                            },
+                                            header = {
+                                                ProvideTextStyle(headerStyle) {
+                                                    Text(stringResource(id = R.string.enter_your_name))
+                                                }
+                                            },
+                                            responseButtons = {
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Cancel */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.cancel),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Save */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.save),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
                                             }
                                         )
+                                    }
 
-                                        ClassifiTextButton(
-                                            onClick = { /*TODO* on Save */ },
-                                            text = {
-                                                Text(
-                                                    stringResource(id = R.string.save),
-                                                    modifier = Modifier.padding(
-                                                        horizontal = ClassifiSettingDefaults.textPadding
-                                                    )
-                                                )
-                                            }
-                                        )
+                                    is SettingItemClicked.Phone -> {
 
                                     }
-                                )
+
+                                    is SettingItemClicked.Bio -> {
+
+                                    }
+
+                                    is SettingItemClicked.Dob -> {
+
+                                    }
+
+                                    is SettingItemClicked.Address -> {
+
+                                    }
+
+                                    is SettingItemClicked.Country -> {
+
+                                    }
+
+                                    is SettingItemClicked.StateOfCountry -> {
+
+                                    }
+
+                                    is SettingItemClicked.City -> {
+
+                                    }
+
+                                    is SettingItemClicked.PostalCode -> {
+
+                                    }
+
+                                    else -> {
+
+                                    }
+                                }
                             }
-
-                            is SettingItemClicked.Phone -> {
-
-                            }
-
-                            is SettingItemClicked.Bio -> {
-
-                            }
-
-                            is SettingItemClicked.Dob -> {
-
-                            }
-
-                            is SettingItemClicked.Address -> {
-
-                            }
-
-                            is SettingItemClicked.Country -> {
-
-                            }
-
-                            is SettingItemClicked.StateOfCountry -> {
-
-                            }
-
-                            is SettingItemClicked.City -> {
-
-                            }
-
-                            is SettingItemClicked.PostalCode -> {
-
-                            }
-
-                            else -> {
-
-                            }
-                        }
+                        )
                     }
-                )
+                }
             }
         }
 

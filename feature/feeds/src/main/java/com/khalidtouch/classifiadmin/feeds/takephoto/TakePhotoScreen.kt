@@ -1,6 +1,7 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
-import androidx.camera.video.VideoRecordEvent
+import android.content.Context
+import android.util.Log
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,7 +21,6 @@ import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
-import java.io.File
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -44,7 +44,10 @@ fun TakePhotoRoute(
     )
 
     PhotoCaptureScreen(
-        onNext = onNext,
+        onNext = {
+            onNext().let { takePhotoViewModel.enqueuePhotoFileForPosting() }
+            Log.e(TAG, "TakePhotoRoute: enqueuePhotoFileForPosting")
+        },
         onCancel = takePhotoViewModel::cancelPhotoCapture,
         uiState = uiState
     )
@@ -59,25 +62,35 @@ private fun TakePhotoScreen(
     cameraPermissionState: PermissionState = rememberPermissionState(
         android.Manifest.permission.CAMERA
     ),
+    audioPermissionState: PermissionState = rememberPermissionState(
+        android.Manifest.permission.RECORD_AUDIO
+    ),
     onDismissDialog: () -> Unit,
     onViewAlbum: () -> Unit,
     onCloseCameraPreview: () -> Unit,
 ) {
-    val context = LocalContext.current
-
     TakePhotoScreen(
         uiState = uiState,
         cameraPermissionState = cameraPermissionState,
+        audioPermissionState = audioPermissionState,
         onToggleFlashlight = takePhotoViewModel::onToggleFlashlight,
         onToggleCameraUseState = takePhotoViewModel::onToggleCameraUseState,
         onToggleCamera = takePhotoViewModel::onToggleCamera,
         onDismissDialog = onDismissDialog,
         onRequestCameraPermission = cameraPermissionState::launchPermissionRequest,
+        onRequestAudioPermission = audioPermissionState::launchPermissionRequest,
         onCloseCameraPreview = onCloseCameraPreview,
         onViewAlbum = onViewAlbum,
         previewView = takePhotoViewModel.preview,
         onInitializeCamera = takePhotoViewModel::onInitializeCamera,
         onPrepareSnapshot = takePhotoViewModel::onPrepareSnapshot,
+        onPrepareVideoRecord = takePhotoViewModel::onPrepareVideoRecord,
+        switchToCameraMode = takePhotoViewModel::switchToCameraMode,
+        onStopVideoRecording = takePhotoViewModel::onStopVideoRecording,
+        onToggleVideoPauseState = takePhotoViewModel::onToggleVideoPauseState,
+        onPauseVideo = takePhotoViewModel::onPauseVideo,
+        onResumeVideo = takePhotoViewModel::onResumeVideo,
+        onSaveVideoRecording = takePhotoViewModel::onSaveVideoRecording
     )
 }
 
@@ -87,23 +100,36 @@ private fun TakePhotoScreen(
 private fun TakePhotoScreen(
     uiState: TakePhotoUiState,
     previewView: PreviewView,
+    context: Context = LocalContext.current,
     cameraPermissionState: PermissionState,
+    audioPermissionState: PermissionState,
     onRequestCameraPermission: () -> Unit,
+    onRequestAudioPermission: () -> Unit,
     onDismissDialog: () -> Unit,
     onViewAlbum: () -> Unit,
+    switchToCameraMode: () -> Unit,
+    onToggleVideoPauseState: (Boolean) -> Unit,
+    onStopVideoRecording: () -> Unit,
     onCloseCameraPreview: () -> Unit,
     onToggleFlashlight: (Boolean) -> Unit,
     onToggleCamera: (Boolean) -> Unit,
     onPrepareSnapshot: () -> Unit,
+    onPauseVideo: () -> Unit,
+    onResumeVideo: () -> Unit,
+    onSaveVideoRecording: () -> Unit,
+    onPrepareVideoRecord: (Context) -> Unit,
     onToggleCameraUseState: (CameraUseState) -> Unit,
     onInitializeCamera: (LifecycleOwner) -> Unit,
     noPermissionScreen: @Composable () -> Unit = {
         NoPermissionScreen(
             onRequestCameraPermission = onRequestCameraPermission,
-            onDismissDialog = onDismissDialog
+            onDismissDialog = onDismissDialog,
+            onRequestAudioPermission = onRequestAudioPermission,
+            cameraPermissionState = cameraPermissionState,
+            audioPermissionState = audioPermissionState,
         )
     },
-    content: @Composable (
+    photoContent: @Composable (
         flashlightState: Boolean,
         isRearCameraActive: Boolean,
         cameraUseState: CameraUseState,
@@ -111,13 +137,44 @@ private fun TakePhotoScreen(
         CameraPreviewContent(
             flashlightState = flashlight,
             isRearCameraActive = rearCamera,
-            onPrepareSnapshot = onPrepareSnapshot,
+            onPrepareCamera = {
+                when (uiState) {
+                    is TakePhotoUiState.Loading -> Unit
+                    is TakePhotoUiState.Loaded -> {
+                        when (uiState.data.cameraState.cameraUseState) {
+                            CameraUseState.PhotoIdle -> {
+                                onPrepareSnapshot()
+                            }
+
+                            CameraUseState.VideoIdle -> {
+                                onPrepareVideoRecord(context)
+                            }
+
+                            else -> Unit
+                        }
+                    }
+                }
+            },
             onToggleCamera = onToggleCamera,
             onCloseCameraPreview = onCloseCameraPreview,
             onViewAlbum = onViewAlbum,
             onToggleCameraUseState = onToggleCameraUseState,
             onToggleFlashlight = onToggleFlashlight,
             cameraUseState = cameraUseState,
+        )
+    },
+    videoContent: @Composable () -> Unit = {
+        VideoRecordContent(
+            isVideoRecordPaused = when (uiState) {
+                is TakePhotoUiState.Loading -> false
+                is TakePhotoUiState.Loaded -> {
+                    uiState.data.cameraState.cameraUseState ==
+                            CameraUseState.VideoPaused
+                }
+            },
+            switchToCameraMode = switchToCameraMode,
+            onToggleVideoPauseState = onToggleVideoPauseState,
+            onStopVideoRecording = onStopVideoRecording,
         )
     },
 ) {
@@ -128,27 +185,69 @@ private fun TakePhotoScreen(
         onInitializeCamera(lifecycleOwner)
     }
 
+    DisposableEffect(uiState) {
+        when (uiState) {
+            is TakePhotoUiState.Loading -> Unit
+            is TakePhotoUiState.Loaded -> {
+                when (uiState.data.cameraState.cameraUseState) {
+                    CameraUseState.VideoPaused -> {
+                        onPauseVideo()
+                    }
+
+                    CameraUseState.VideoResumed -> {
+                        onResumeVideo()
+                    }
+
+                    CameraUseState.VideoRecordingStopped -> {
+                        onSaveVideoRecording()
+                    }
+
+                    else -> Unit
+                }
+            }
+        }
+        onDispose { }
+    }
+
 
     when (uiState) {
         is TakePhotoUiState.Loading -> Unit
         is TakePhotoUiState.Loaded -> {
-            if (uiState.data.hasNoSavedMedia)
+            if (uiState.data.hasNoSavedMedia) {
                 BoxWithConstraints {
                     AndroidView(
                         factory = { previewView },
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    if (!cameraPermissionState.status.isGranted) {
+                    if (
+                        !cameraPermissionState.status.isGranted ||
+                        !audioPermissionState.status.isGranted
+                    ) {
                         noPermissionScreen()
                     } else {
-                        content(
-                            flashlightState = uiState.data.cameraState.isFlashlightOn,
-                            isRearCameraActive = uiState.data.cameraState.isRearCameraActive,
-                            cameraUseState = uiState.data.cameraState.cameraUseState,
-                        )
+                        when (uiState.data.cameraState.cameraUseState) {
+                            CameraUseState.PhotoIdle,
+                            CameraUseState.VideoIdle,
+                            CameraUseState.PhotoTakeSnapshot -> {
+                                photoContent(
+                                    flashlightState = uiState.data.cameraState.isFlashlightOn,
+                                    isRearCameraActive = uiState.data.cameraState.isRearCameraActive,
+                                    cameraUseState = uiState.data.cameraState.cameraUseState,
+                                )
+                            }
+
+                            CameraUseState.VideoRecording,
+                            CameraUseState.VideoResumed,
+                            CameraUseState.VideoPaused -> {
+                                videoContent()
+                            }
+
+                            else -> Unit
+                        }
                     }
                 }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.khalidtouch.classifiadmin.feeds.compose
 
 import android.net.Uri
+import com.khalidtouch.classifiadmin.model.FeedMessage
 
 sealed interface ComposeFeedUiState {
     object Loading : ComposeFeedUiState
@@ -15,7 +16,7 @@ data class ComposeFeedData(
     val bottomSheetState: ComposeFeedBottomSheetSelection,
     val isBottomSheetShown: Boolean,
     val isFeedPostable: Boolean,
-    val mediaUris: List<Uri>,
+    val mediaMessages: List<FeedMessage>,
     val hasNoSavedMedia: Boolean,
     val request: ComposeFeedRequest,
 )

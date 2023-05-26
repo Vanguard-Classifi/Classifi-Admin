@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
+import com.khalidtouch.classifiadmin.model.FeedMessage
 import com.khalidtouch.classifiadmin.model.MessageType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,9 +75,8 @@ class ComposeFeedViewModel @Inject constructor(
             _feedTextEntry,
             _request,
         ) { data, bottomSheetState, textEntry, request ->
-            val uris = data.feedData.messages
+            val mediaMessages  = data.feedData.messages
                 .filterNot { it.feedType == MessageType.TextMessage || it.feedType == MessageType.Unknown }
-                .map { Uri.parse(it.uri) }
 
             ComposeFeedUiState.Success(
                 data = ComposeFeedData(
@@ -88,15 +88,15 @@ class ComposeFeedViewModel @Inject constructor(
                     request = request,
                     isBottomSheetShown = bottomSheetState !is ComposeFeedBottomSheetSelection.None,
                     isFeedPostable = textEntry.title.isNotBlank() || textEntry.content.isNotBlank() ||
-                            uris.isNotEmpty(),
-                    mediaUris = uris,
-                    hasNoSavedMedia = uris.isEmpty(),
+                            mediaMessages.isNotEmpty(),
+                    mediaMessages = mediaMessages,
+                    hasNoSavedMedia = mediaMessages.isEmpty(),
                 )
             )
         }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.WhileSubscribed(2000),
                 initialValue = ComposeFeedUiState.Loading
             )
 
@@ -115,6 +115,29 @@ class ComposeFeedViewModel @Inject constructor(
 
     fun clearBottomSheetSelection() {
         _currentComposeFeedBottomSheetSelection.value = ComposeFeedBottomSheetSelection.None
+    }
+
+    fun enqueueMediaMessage() {
+        viewModelScope.launch {
+            userDataRepository.userData.map {
+                val id = it.feedData.messages.size.toLong()
+
+                userDataRepository.enqueueMediaMessage(
+                    FeedMessage(
+                        messageId = id,
+                        uri = "https://www.petsworld.in/blog/wp-content/uploads/2014/09/funny-cat.jpg",
+                        feedType = MessageType.ImageMessage,
+                    )
+                )
+            }
+        }
+    }
+
+    fun onDeleteMediaMessage(message: FeedMessage) {
+        viewModelScope.launch {
+            userDataRepository.deleteMessageById(message.messageId)
+            Log.e(TAG, "onDeleteMediaMessage: called of messageId ${message.messageId}")
+        }
     }
 }
 

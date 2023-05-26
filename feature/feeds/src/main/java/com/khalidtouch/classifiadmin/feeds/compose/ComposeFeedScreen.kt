@@ -5,26 +5,24 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,7 +42,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,20 +52,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.rememberPermissionState
 import com.khalidtouch.classifiadmin.feeds.R
-import com.khalidtouch.classifiadmin.feeds.takephoto.TakePhotoViewModel
+import com.khalidtouch.classifiadmin.model.FeedMessage
+import com.khalidtouch.classifiadmin.model.MessageType
 import com.khalidtouch.core.designsystem.components.ClassifiButton
 import com.khalidtouch.core.designsystem.components.ClassifiComposeFeedBottomBar
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
@@ -77,11 +75,13 @@ import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ComposeFeedRoute(
     composeFeedViewModel: ComposeFeedViewModel = hiltViewModel<ComposeFeedViewModel>(),
     onCloseComposeFeedScreen: () -> Unit,
     onTakePhoto: () -> Unit,
+    onChooseImage: () -> Unit,
 ) {
     val TAG = "ComposeFeed"
     val uiState by composeFeedViewModel.uiState.collectAsStateWithLifecycle()
@@ -90,6 +90,7 @@ fun ComposeFeedRoute(
         uiState = uiState,
         onCloseComposeFeedScreen = onCloseComposeFeedScreen,
         onPostFeed = { /*TODO*/ },
+        onChooseImage = onChooseImage,
         feedScope = "All classes",
         schoolName = "Future Leaders International School",
         onTitleValueChange = composeFeedViewModel::onTitleValueChange,
@@ -101,25 +102,31 @@ fun ComposeFeedRoute(
             )
         },
         onTakePhoto = onTakePhoto,
+        onDeleteMediaMessage = composeFeedViewModel::onDeleteMediaMessage,
+        enqueueMediaMessage = composeFeedViewModel::enqueueMediaMessage
     )
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 private fun ComposeFeedScreen(
     onCloseComposeFeedScreen: () -> Unit,
     onPostFeed: () -> Unit,
+    onChooseImage: () -> Unit,
     uiState: ComposeFeedUiState,
     feedScope: String,
     schoolName: String,
     onTitleValueChange: (String) -> Unit,
     onContentValueChange: (String) -> Unit,
     clearBottomSheetSelection: () -> Unit,
+    onDeleteMediaMessage: (FeedMessage) -> Unit,
     openAttachmentsBottomSheet: () -> Unit,
     onTakePhoto: () -> Unit,
+    enqueueMediaMessage: () -> Unit,
 ) {
 
+    val TAG = "ComposeFeed"
     var showModalBottomSheet by rememberSaveable {
         mutableStateOf(false)
     }
@@ -128,7 +135,9 @@ private fun ComposeFeedScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState) {
+        Log.e(TAG, "ComposeFeedScreen: has been called")
         if (uiState is ComposeFeedUiState.Success) {
+            Log.e(TAG, "ComposeFeedScreen: size of messages ${uiState.data.mediaMessages.size}")
             showModalBottomSheet = if (uiState.data.isBottomSheetShown) {
                 sheetState.show()
                 true
@@ -138,6 +147,7 @@ private fun ComposeFeedScreen(
             }
         }
     }
+
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -255,7 +265,7 @@ private fun ComposeFeedScreen(
                                         }
 
                                         ComposeFeedBottomBarActions.Photo -> {
-
+                                            onChooseImage()
                                         }
                                     }
                                 },
@@ -279,6 +289,7 @@ private fun ComposeFeedScreen(
                 schoolName = schoolName,
                 onTitleValueChange = onTitleValueChange,
                 onContentValueChange = onContentValueChange,
+                onDeleteMediaMessage = onDeleteMediaMessage,
             )
         }
     )
@@ -330,7 +341,7 @@ private fun ComposeFeedScreen(
                                                 }
 
                                                 ComposeFeedMainActions.ImportPhoto -> {
-
+                                                    onChooseImage()
                                                 }
 
                                                 ComposeFeedMainActions.AddDocument -> {
@@ -386,6 +397,7 @@ private fun ComposeFeedBody(
     uiState: ComposeFeedUiState,
     schoolName: String,
     onTitleValueChange: (String) -> Unit,
+    onDeleteMediaMessage: (FeedMessage) -> Unit,
     onContentValueChange: (String) -> Unit,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
         focusedContainerColor = Color.Transparent,
@@ -479,7 +491,10 @@ private fun ComposeFeedBody(
                     )
                 },
                 mediaItem = {
-                    mediaItem(uiState.data.mediaUris)
+                    mediaItem(
+                        uiState.data.mediaMessages,
+                        onDeleteMediaMessage = onDeleteMediaMessage,
+                    )
                 }
             )
         }
@@ -549,37 +564,80 @@ private fun ComposeFeedBody(
 
         mediaItem()
         item {
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(98.dp))
         }
     }
 }
 
 
 fun LazyListScope.mediaItem(
-    uris: List<Uri>,
+    mediaMessages: List<FeedMessage>,
+    onDeleteMediaMessage: (FeedMessage) -> Unit,
 ) {
     item {
-        uris.map { uri ->
-            Box {
-                AsyncImage(
-                    modifier = androidx.compose.ui.Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            top = 16.dp,
-                            start = 8.dp,
-                            end = 8.dp,
-                            bottom = 16.dp,
+        mediaMessages.map { message ->
+            MediaItemCard(
+                mediaMessage = message,
+                onDeleteMediaMessage = onDeleteMediaMessage,
+            )
+        }
+    }
+}
+
+@Composable
+fun MediaItemCard(
+    mediaMessage: FeedMessage,
+    onDeleteMediaMessage: (FeedMessage) -> Unit,
+) {
+    val uri = Uri.parse(mediaMessage.uri)
+    Card(
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(
+                top = 16.dp,
+                start = 8.dp,
+                end = 8.dp,
+                bottom = 16.dp,
+            ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
+    ) {
+        Box {
+            AsyncImage(
+                modifier = androidx.compose.ui.Modifier
+                    .fillMaxWidth(),
+                model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                    .data(uri).build(),
+                contentDescription = null,
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit
+            )
+
+            Box(
+                modifier = Modifier
+                    .padding(
+                        top = 16.dp,
+                        end = 16.dp,
+                    )
+                    .matchParentSize(), contentAlignment = Alignment.TopEnd
+            ) {
+                ClassifiIconButton(
+                    onClick = { onDeleteMediaMessage(mediaMessage) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = ClassifiIcons.Close),
+                            contentDescription = null,
                         )
-                        .wrapContentHeight(),
-                    model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                        .data(uri).build(),
-                    contentDescription = null,
-                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Black.copy(0.8f),
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 )
             }
         }
     }
 }
+
 
 enum class ComposeFeedBottomBarActions(val icon: Int) {
     Camera(ClassifiIcons.Camera),

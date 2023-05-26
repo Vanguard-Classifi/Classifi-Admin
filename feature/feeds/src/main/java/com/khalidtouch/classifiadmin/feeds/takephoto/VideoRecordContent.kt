@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
+import com.khalidtouch.core.designsystem.components.ClassifiIconButtonDefaults
 import com.khalidtouch.core.designsystem.components.ClassifiTakeSnapshotButton
 import com.khalidtouch.core.designsystem.components.ClassifiToggleButton
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
@@ -48,6 +50,7 @@ fun VideoRecordContent(
         VideoRecordBottomButtons(
             recordStopButton = {
                 ClassifiTakeSnapshotButton(
+                    buttonSize = 72.dp,
                     icon = {
                         Icon(
                             painterResource(id = ClassifiIcons.Stop),
@@ -57,7 +60,7 @@ fun VideoRecordContent(
                     },
                     onClick = onStopVideoRecording,
                     border = BorderStroke(
-                        width = 2.dp,
+                        width = 1.dp,
                         color = MaterialTheme.colorScheme.error,
                     ),
                     color = Color.Transparent,
@@ -65,6 +68,7 @@ fun VideoRecordContent(
             },
             pauseResumeButton = {
                 ClassifiToggleButton(
+                    buttonSize = ClassifiIconButtonDefaults.defaultButtonSize,
                     checked = isVideoRecordPaused,
                     onCheckedChange = onToggleVideoPauseState,
                     enabled = true,
@@ -80,6 +84,13 @@ fun VideoRecordContent(
                             contentDescription = null
                         )
                     },
+                    colors = IconButtonDefaults.filledIconToggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedContainerColor = MaterialTheme.colorScheme.primary,
+                        checkedContentColor = MaterialTheme.colorScheme.onPrimary,
+                    )
+
                 )
             },
             cameraButton = {

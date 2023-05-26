@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.khalidtouch.classifiadmin.feeds.compose.composeFeedScreen
 import com.khalidtouch.classifiadmin.feeds.compose.navigateToComposeFeed
+import com.khalidtouch.classifiadmin.feeds.mediastore.imageGalleryScreen
+import com.khalidtouch.classifiadmin.feeds.mediastore.navigateToImageGallery
 import com.khalidtouch.classifiadmin.feeds.takephoto.navigation.navigateToTakePhoto
 import com.khalidtouch.classifiadmin.feeds.takephoto.navigation.takePhotoScreen
 import com.khalidtouch.classifiadmin.settings.navigation.navigateToSettings
@@ -40,19 +42,26 @@ fun ClassifiNavHost(
 
         settingsScreen(
             windowSizeClass = windowSizeClass,
-            onBack = { appState.navController.navigateUp() }
+            onBack = { appState.navController.navigateToHome() }
         )
 
         composeFeedScreen(
-            onCloseComposeFeedScreen = { appState.navController.navigateUp() },
-            onTakePhoto = { appState.navController.navigateToTakePhoto() }
+            onCloseComposeFeedScreen = { appState.navController.navigateToHome() },
+            onTakePhoto = { appState.navController.navigateToTakePhoto() },
+            onChooseImage = { appState.navController.navigateToImageGallery() }
         )
 
         takePhotoScreen(
-            onDismissDialog = { appState.navController.navigateUp() },
-            onClose = { appState.navController.navigateUp() },
+            onDismissDialog = { appState.navController.navigateToComposeFeed() },
+            onClose = { appState.navController.navigateToComposeFeed() },
             onNext = { appState.navController.navigateToComposeFeed() },
             onViewAlbum = {/*TODO()*/ }
+        )
+
+        imageGalleryScreen(
+            onBackPressed = { appState.navController.navigateToComposeFeed() },
+            onDismissDialog = { appState.navController.navigateToComposeFeed() },
+            onChooseImage = { appState.navController.navigateToComposeFeed() }
         )
     }
 }

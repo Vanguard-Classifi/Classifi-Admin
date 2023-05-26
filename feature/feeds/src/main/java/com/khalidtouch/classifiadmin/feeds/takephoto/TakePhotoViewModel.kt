@@ -1,9 +1,12 @@
 package com.khalidtouch.classifiadmin.feeds.takephoto
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
@@ -11,7 +14,9 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FileOutputOptions
+import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
@@ -23,9 +28,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.common.util.concurrent.ListenableFuture
 import com.khalidtouch.chatme.datastore.ClassifiPreferencesDataSource
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.classifiadmin.feeds.takephoto.usecase.CameraPreviewUseCase
 import com.khalidtouch.classifiadmin.feeds.takephoto.usecase.ImageCaptureUseCase
 import com.khalidtouch.classifiadmin.feeds.takephoto.usecase.VideoRecordUseCase
+import com.khalidtouch.classifiadmin.model.FeedMessage
+import com.khalidtouch.classifiadmin.model.MessageType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +42,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,7 +61,7 @@ class TakePhotoViewModel @Inject constructor(
     imageCaptureUseCase: ImageCaptureUseCase,
     cameraPreviewUseCase: CameraPreviewUseCase,
     videoRecordUseCase: VideoRecordUseCase,
-    private val prefDataSource: ClassifiPreferencesDataSource,
+    private val userDataRepository: UserDataRepository,
     @SuppressLint("StaticFieldLeak") @ApplicationContext private val context: Context,
 ) : ViewModel() {
     val TAG = "TakePhoto"
@@ -77,6 +86,7 @@ class TakePhotoViewModel @Inject constructor(
     private val videoRecordUseCase = videoRecordUseCase()
     private var videoRecorderJob: Job? = null
     private var photoEnqueueJob: Job? = null
+    private var videoRecording: Recording? = null
 
     private val emptyImageUri: Uri = Uri.parse("file://dev/null")
     private val _mediaUri = MutableStateFlow<Uri>(emptyImageUri)
@@ -118,10 +128,27 @@ class TakePhotoViewModel @Inject constructor(
 
     fun enqueuePhotoFileForPosting() {
         if (photoEnqueueJob != null) return
-        if(_cameraUseState.value != CameraUseState.PhotoSaved) return
+        if (_cameraUseState.value != CameraUseState.PhotoSaved) return
         try {
-            photoEnqueueJob = viewModelScope.launch {
-                /*todo enqueue photo to DataStore -> */
+            if (_mediaUri.value != emptyImageUri) {
+                photoEnqueueJob = viewModelScope.launch {
+                    userDataRepository.userData.map {
+                        val id = it.feedData.messages.size.toLong()
+
+                        userDataRepository.enqueueMediaMessage(
+                            FeedMessage(
+                                messageId = id,
+                                uri = "https://www.petsworld.in/blog/wp-content/uploads/2014/09/funny-cat.jpg",
+                                feedType = MessageType.ImageMessage,
+                            )
+                        )
+                    }
+                }
+                Log.e(
+                    TAG,
+                    "enqueuePhotoFileForPosting: save uri is ${_mediaUri.value.toString()}"
+                )
+                Log.e(TAG, "enqueuePhotoFileForPosting: enqueuing photo")
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -157,25 +184,8 @@ class TakePhotoViewModel @Inject constructor(
         _cameraUseState.value = newState
     }
 
-    fun onToggleVideoPauseState(state: Boolean) {
-        val videoState = when (state) {
-            false -> CameraUseState.VideoPaused
-            true -> CameraUseState.VideoResumed
-        }
-        _cameraUseState.value = videoState
-    }
-
-    fun onSaveSnappedPhoto() {
-        _cameraUseState.value = CameraUseState.PhotoSaved
-    }
-
-
     fun switchToCameraMode() {
         _cameraUseState.value = CameraUseState.PhotoIdle
-    }
-
-    fun onStopVideoRecording() {
-        _cameraUseState.value = CameraUseState.VideoRecordingStopped
     }
 
     fun onInitializeCamera(lifecycleOwner: LifecycleOwner) {
@@ -188,6 +198,7 @@ class TakePhotoViewModel @Inject constructor(
                     _cameraSelector.value,
                     cameraPreviewUseCase,
                     imageCaptureUseCase,
+                    videoRecordUseCase,
                 )
 
                 val cameraControl = camera.cameraControl
@@ -226,26 +237,89 @@ class TakePhotoViewModel @Inject constructor(
     }
 
     private fun onVideoRecordEvent(event: VideoRecordEvent) {
+        val duration = event.recordingStats.recordedDurationNanos
+        Log.e(TAG, "onVideoRecordEvent: current duration $duration")
+        when (event) {
+            is VideoRecordEvent.Start -> {
+                Log.e(TAG, "onVideoRecordEvent: recording has started")
+            }
 
+            is VideoRecordEvent.Resume -> {
+                Log.e(TAG, "onVideoRecordEvent: recording has resumed")
+            }
+
+            is VideoRecordEvent.Pause -> {
+                Log.e(TAG, "onVideoRecordEvent: recording has paused")
+            }
+
+            is VideoRecordEvent.Finalize -> {
+                Log.e(TAG, "onVideoRecordEvent: ${event.recordingStats.recordedDurationNanos}")
+                Log.e(TAG, "onVideoRecordEvent: recording has finalized")
+                if (event.hasError()) {
+                    Log.e(TAG, "onVideoRecordEvent: ${event.error} and the cause is ${event.cause}")
+                }
+            }
+        }
     }
 
     fun onPrepareVideoRecord(context: Context) {
-        if(_cameraUseState.value != CameraUseState.VideoIdle) return
+        if (_cameraUseState.value != CameraUseState.VideoIdle) return
         onRecordVideo(context, this::onVideoRecordEvent)
-     }
+    }
 
     private fun onRecordVideo(context: Context, onVideoRecordEvent: (VideoRecordEvent) -> Unit) {
-        if (videoRecorderJob != null) return
         try {
+            Log.e(TAG, "onRecordVideo: trying to record video")
             videoRecorderJob = viewModelScope.launch {
-                videoRecordUseCase.recordVideo(context, videoRecorderExecutor, onVideoRecordEvent)
+                videoRecording = videoRecordUseCase.recordVideo(
+                    context,
+                    videoRecorderExecutor,
+                    onVideoRecordEvent
+                )
+                _cameraUseState.value = CameraUseState.VideoRecording
             }
         } catch (e: Exception) {
             e.printStackTrace()
-        } finally {
-            videoRecorderJob = null
         }
     }
+
+    fun onToggleVideoPauseState(state: Boolean) {
+        if (videoRecording == null) return
+        val videoState = when (state) {
+            true -> CameraUseState.VideoPaused
+            false -> CameraUseState.VideoResumed
+        }
+        _cameraUseState.value = videoState
+    }
+
+
+    fun onPauseVideo() {
+        Log.e(TAG, "onPauseVideo: checking for null recorder")
+        if (videoRecording == null) return
+        if (_cameraUseState.value == CameraUseState.VideoPaused)
+            videoRecording?.pause()
+        Log.e(TAG, "onPauseVideo: called")
+    }
+
+    fun onResumeVideo() {
+        Log.e(TAG, "onResumeVideo: checking for null recorder")
+        if (videoRecording == null) return
+        if (_cameraUseState.value == CameraUseState.VideoResumed)
+            videoRecording?.resume()
+        Log.e(TAG, "onResumeVideo: called")
+    }
+
+    fun onSaveVideoRecording() {
+        if (videoRecording == null) return
+        if (_cameraUseState.value == CameraUseState.VideoRecordingStopped)
+            videoRecording?.stop()
+        Log.e(TAG, "onSaveVideoRecording: called")
+    }
+
+    fun onStopVideoRecording() {
+        _cameraUseState.value = CameraUseState.VideoRecordingStopped
+    }
+
 }
 
 val Context.executor: Executor
@@ -289,7 +363,7 @@ suspend fun VideoCapture<Recorder>.recordVideo(
     context: Context,
     executor: Executor,
     onVideoRecordEvent: (VideoRecordEvent) -> Unit,
-) {
+): Recording {
     val location = File(
         context.getExternalFilesDir(Environment.DIRECTORY_DCIM).toString() +
                 File.separator + "Classifi"
@@ -299,7 +373,23 @@ suspend fun VideoCapture<Recorder>.recordVideo(
         File.createTempFile("video", ".mp4", location)
     }
     val fileOutputOptions = FileOutputOptions.Builder(video).build()
-    val recording = this.output.prepareRecording(context, fileOutputOptions)
+
+    //using MediaStore
+    val contentValues = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, System.currentTimeMillis().toString())
+        put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/Classifi")
+        }
+    }
+
+    val mediaStoreOutputOptions = MediaStoreOutputOptions.Builder(
+        context.contentResolver,
+        MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+    ).setContentValues(contentValues)
+        .build()
+
+    return this.output.prepareRecording(context, mediaStoreOutputOptions)
         .apply {
             if (PermissionChecker.checkSelfPermission(
                     context,

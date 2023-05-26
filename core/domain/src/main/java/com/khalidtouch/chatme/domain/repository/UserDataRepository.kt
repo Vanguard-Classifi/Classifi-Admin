@@ -27,6 +27,7 @@ interface UserDataRepository {
     suspend fun enqueueMediaMessage(message: FeedMessage)
 
     suspend fun enqueueTextMessage(message: FeedMessage)
+    suspend fun deleteMessageById(messageId: Long)
 
     suspend fun clearAllMessages()
 
