@@ -19,4 +19,9 @@
     <string name="enter_your_name">Enter your name</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="enter_your_bio">Enter your bio</string>
+    <string name="enter_your_address">Enter your address</string>
+    <string name="enter_your_state">Enter your state</string>
+    <string name="enter_your_city">Enter your city</string>
+    <string name="enter_postal_code">Enter postal code</string>
 </resources>

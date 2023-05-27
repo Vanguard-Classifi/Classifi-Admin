@@ -3,6 +3,12 @@ package com.khalidtouch.classifiadmin.settings.navigation.settings
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -18,6 +24,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,17 +61,28 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemsIndexed
+import com.khalidtouch.classifiadmin.model.Country
+import com.khalidtouch.classifiadmin.model.PagedCountry
 import com.khalidtouch.classifiadmin.settings.R
 import com.khalidtouch.classifiadmin.settings.navigation.account.AccountScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.administration.AdministrationScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.components.SettingsTextFieldBox
 import com.khalidtouch.classifiadmin.settings.navigation.preferences.PreferencesScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.profile.ProfileScreenWrapper
+import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
 import com.khalidtouch.core.designsystem.components.ClassifiScrollableTabRow
 import com.khalidtouch.core.designsystem.components.ClassifiSettingDefaults
@@ -118,6 +138,7 @@ internal fun SettingsScreen(
             mutableStateOf(false)
         }
         val currentSettingItemClicked by settingsViewModel.currentSettingItemClicked.observeAsState()
+        val countries = settingsViewModel.countryPagingSource.collectAsLazyPagingItems()
 
         LaunchedEffect(currentSettingItemClicked!!) {
             if (currentSettingItemClicked !is SettingItemClicked.None) {
@@ -313,7 +334,7 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save */ },
+                                                    onClick = { /*TODO* on Save name */ },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -329,40 +350,312 @@ internal fun SettingsScreen(
                                     }
 
                                     is SettingItemClicked.Phone -> {
+                                        SettingsTextFieldBox(
+                                            textField = {
+                                                OutlinedTextField(
+                                                    value = (uiState as SettingsUiState.Success)
+                                                        .data.profileData?.personalData?.phone.orEmpty(),
+                                                    onValueChange = settingsViewModel::onPhoneChanged,
+                                                    enabled = true,
+                                                    keyboardOptions = KeyboardOptions(
+                                                        keyboardType = KeyboardType.Phone
+                                                    ),
+                                                    colors = textFieldColors,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            },
+                                            header = {
+                                                ProvideTextStyle(headerStyle) {
+                                                    Text(stringResource(id = R.string.phone))
+                                                }
+                                            },
+                                            responseButtons = {
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Cancel */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.cancel),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
 
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Save phone */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.save),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
+                                            }
+                                        )
                                     }
 
                                     is SettingItemClicked.Bio -> {
+                                        SettingsTextFieldBox(
+                                            textField = {
+                                                OutlinedTextField(
+                                                    value = (uiState as SettingsUiState.Success)
+                                                        .data.profileData?.personalData?.bio.orEmpty(),
+                                                    onValueChange = settingsViewModel::onBioChanged,
+                                                    enabled = true,
+                                                    keyboardOptions = KeyboardOptions(),
+                                                    colors = textFieldColors,
+                                                    singleLine = false,
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            },
+                                            header = {
+                                                ProvideTextStyle(headerStyle) {
+                                                    Text(stringResource(id = R.string.enter_your_bio))
+                                                }
+                                            },
+                                            responseButtons = {
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Cancel */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.cancel),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
 
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Save bio */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.save),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
+                                            }
+                                        )
                                     }
 
                                     is SettingItemClicked.Dob -> {
-
+                                        /* todo-> DOB */
                                     }
 
                                     is SettingItemClicked.Address -> {
+                                        SettingsTextFieldBox(
+                                            textField = {
+                                                OutlinedTextField(
+                                                    value = (uiState as SettingsUiState.Success)
+                                                        .data.profileData?.locationData?.address.orEmpty(),
+                                                    onValueChange = settingsViewModel::onAddressChanged,
+                                                    enabled = true,
+                                                    keyboardOptions = KeyboardOptions(),
+                                                    colors = textFieldColors,
+                                                    singleLine = false,
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            },
+                                            header = {
+                                                ProvideTextStyle(headerStyle) {
+                                                    Text(stringResource(id = R.string.enter_your_address))
+                                                }
+                                            },
+                                            responseButtons = {
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Cancel */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.cancel),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
 
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Save address */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.save),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
+                                            }
+                                        )
                                     }
 
                                     is SettingItemClicked.Country -> {
-
+                                        PagedCountries(
+                                            countries = countries
+                                        )
                                     }
 
                                     is SettingItemClicked.StateOfCountry -> {
+                                        SettingsTextFieldBox(
+                                            textField = {
+                                                OutlinedTextField(
+                                                    value = (uiState as SettingsUiState.Success)
+                                                        .data.profileData?.locationData?.stateOfCountry.orEmpty(),
+                                                    onValueChange = settingsViewModel::onStateOfCountryChanged,
+                                                    enabled = true,
+                                                    keyboardOptions = KeyboardOptions(),
+                                                    colors = textFieldColors,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            },
+                                            header = {
+                                                ProvideTextStyle(headerStyle) {
+                                                    Text(stringResource(id = R.string.enter_your_state))
+                                                }
+                                            },
+                                            responseButtons = {
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Cancel */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.cancel),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
 
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Save state */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.save),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
+                                            }
+                                        )
                                     }
 
                                     is SettingItemClicked.City -> {
+                                        SettingsTextFieldBox(
+                                            textField = {
+                                                OutlinedTextField(
+                                                    value = (uiState as SettingsUiState.Success)
+                                                        .data.profileData?.locationData?.city.orEmpty(),
+                                                    onValueChange = settingsViewModel::onCityChanged,
+                                                    enabled = true,
+                                                    keyboardOptions = KeyboardOptions(),
+                                                    colors = textFieldColors,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            },
+                                            header = {
+                                                ProvideTextStyle(headerStyle) {
+                                                    Text(stringResource(id = R.string.enter_your_city))
+                                                }
+                                            },
+                                            responseButtons = {
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Cancel */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.cancel),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
 
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Save city */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.save),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
+                                            }
+                                        )
                                     }
 
                                     is SettingItemClicked.PostalCode -> {
+                                        SettingsTextFieldBox(
+                                            textField = {
+                                                OutlinedTextField(
+                                                    value = (uiState as SettingsUiState.Success)
+                                                        .data.profileData?.locationData?.postalCode.orEmpty(),
+                                                    onValueChange = settingsViewModel::onPostalCodeChanged,
+                                                    enabled = true,
+                                                    keyboardOptions = KeyboardOptions(
+                                                        keyboardType = KeyboardType.Number
+                                                    ),
+                                                    colors = textFieldColors,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            },
+                                            header = {
+                                                ProvideTextStyle(headerStyle) {
+                                                    Text(stringResource(id = R.string.enter_postal_code))
+                                                }
+                                            },
+                                            responseButtons = {
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Cancel */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.cancel),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
 
+                                                ClassifiTextButton(
+                                                    onClick = { /*TODO* on Save postal code */ },
+                                                    text = {
+                                                        Text(
+                                                            stringResource(id = R.string.save),
+                                                            modifier = Modifier.padding(
+                                                                horizontal = ClassifiSettingDefaults.textPadding
+                                                            )
+                                                        )
+                                                    }
+                                                )
+
+                                            }
+                                        )
                                     }
 
-                                    else -> {
-
-                                    }
+                                    else -> Unit
                                 }
                             }
                         )
@@ -374,6 +667,78 @@ internal fun SettingsScreen(
     }
 }
 
+@Composable
+fun PagedCountries(
+    countries: LazyPagingItems<Country>,
+) {
+    when (countries.loadState.refresh) {
+        is LoadState.Loading -> {
+            AnimatedVisibility(
+                visible = true,
+                enter = slideInVertically(
+                    initialOffsetY = { fullHeight -> -fullHeight },
+                ) + fadeIn(),
+                exit = slideOutVertically(
+                    targetOffsetY = { fullHeight -> -fullHeight },
+                ) + fadeOut(),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .background(Color.Transparent),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ClassifiLoadingWheel()
+                }
+            }
+
+        }
+
+        is LoadState.Error -> {
+            //refresh
+        }
+
+        else -> {
+            LazyColumn {
+                itemsIndexed(countries) { _, country ->
+                    country?.let {
+                        CountryItem(country = it)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CountryItem(country: Country) {
+    Row(
+        modifier = Modifier.padding(bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = country.code.orEmpty(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                )
+            )
+        }
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
+        ) {
+            Text(
+                text = country.name.orEmpty(),
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
 
 enum class Settings(
     @DrawableRes val iconRes: Int,
@@ -413,4 +778,15 @@ sealed interface SettingItemClicked {
     object StateOfCountry : SettingItemClicked
     object City : SettingItemClicked
     object PostalCode : SettingItemClicked
+}
+
+@Composable
+@Preview
+fun CountryItemPreview() {
+    CountryItem(
+        country = Country(
+            name = "Nigeria",
+            code = "NG"
+        ),
+    )
 }

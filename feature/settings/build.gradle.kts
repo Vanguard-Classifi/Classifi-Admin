@@ -19,4 +19,7 @@ dependencies {
     implementation(libs.androidx.compose.runtime.livedata)
     implementation(libs.coil.kt.compose)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.paging.common)
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
 }

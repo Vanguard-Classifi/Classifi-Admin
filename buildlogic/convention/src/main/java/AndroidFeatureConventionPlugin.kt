@@ -54,6 +54,9 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", libs.findLibrary("kotlinx.coroutines.android").get())
                 add("implementation", libs.findLibrary("coil.kt").get())
                 add("implementation", libs.findLibrary("coil.kt.compose").get())
+                add("implementation", libs.findLibrary("androidx.paging.common").get())
+                add("implementation", libs.findLibrary("androidx.paging.compose").get())
+                add("implementation", libs.findLibrary("androidx.paging.runtime").get())
 
             }
         }

@@ -5,6 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import com.khalidtouch.classifiadmin.data.util.ReadCountriesPagingSource
 import com.khalidtouch.classifiadmin.settings.navigation.profile.LocationData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.PersonalData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.ProfileData
@@ -18,7 +21,9 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor() : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    readCountriesPagingSource: ReadCountriesPagingSource,
+) : ViewModel() {
 
     private val _selectedTabIndex: MutableLiveData<Int> = MutableLiveData(0)
     val selectedTabIndex: LiveData<Int> = _selectedTabIndex
@@ -27,6 +32,10 @@ class SettingsViewModel @Inject constructor() : ViewModel() {
     private val draggableState = DraggableState {
         isSwipeLeft = it > 0
     }
+
+    val countryPagingSource = Pager(PagingConfig(pageSize = 20)) {
+        readCountriesPagingSource
+    }.flow
 
     private val _currentSettingItemClicked: MutableLiveData<SettingItemClicked> =
         MutableLiveData(SettingItemClicked.None)

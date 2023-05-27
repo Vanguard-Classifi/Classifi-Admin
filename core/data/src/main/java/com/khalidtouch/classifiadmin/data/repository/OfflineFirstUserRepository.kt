@@ -1,19 +1,25 @@
 package com.khalidtouch.classifiadmin.data.repository
 
+import android.content.Context
 import com.khalidtouch.chatme.database.dao.UserDao
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
 import com.khalidtouch.classifiadmin.data.mapper.toModel
+import com.khalidtouch.classifiadmin.data.util.ReadCountriesUseCase
+import com.khalidtouch.classifiadmin.model.PagedCountry
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class OfflineFirstUserRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val userDao: UserDao,
     private val modelMapper: ModelEntityMapper,
+    private val readCountriesUseCase: ReadCountriesUseCase,
 ) : UserRepository {
     override suspend fun saveUser(user: ClassifiUser) {
         userDao.saveUserOrIgnore(modelMapper.userModelToEntity(user)!!)
@@ -73,7 +79,8 @@ class OfflineFirstUserRepository @Inject constructor(
             account = userWithSchools?.user?.account?.toModel(),
             profile = userWithSchools?.user?.profile?.toModel(),
             dateCreated = userWithSchools?.user?.dateCreated,
-            joinedSchools = userWithSchools?.schools?.map { modelMapper.schoolEntityToModel(it)!! } ?: emptyList(),
+            joinedSchools = userWithSchools?.schools?.map { modelMapper.schoolEntityToModel(it)!! }
+                ?: emptyList(),
         )
 
     }
@@ -88,5 +95,15 @@ class OfflineFirstUserRepository @Inject constructor(
             joinedClasses = userWithClasses?.classes?.map { modelMapper.classEntityToModel(it)!! }
                 ?: emptyList(),
         )
+    }
+
+    override suspend fun getCountriesFromJson(page: Int, limit: Int): PagedCountry {
+        return readCountriesUseCase(context, page, limit)
+//        val result = mutableListOf<PagedCountry>()
+//        for (p in page..limit) {
+//            val item = readCountriesUseCase(context).find { it.page == p } ?: break
+//            result.add(item)
+//        }
+//        return result
     }
 }
