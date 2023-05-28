@@ -24,4 +24,21 @@
     <string name="enter_your_state">Enter your state</string>
     <string name="enter_your_city">Enter your city</string>
     <string name="enter_postal_code">Enter postal code</string>
+    <string name="profile_updated_successfully">Profile updated successfully</string>
+    <string name="my_schools">My Schools</string>
+    <string name="my_classes">My Classes</string>
+    <string name="my_students">My Students</string>
+    <string name="my_subjects">My Subjects</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="manage_school">Manage School</string>
+    <string name="manage_teachers">Manage Teachers</string>
+    <string name="manage_admins">Manage Admins</string>
+    <string name="manage_parents">Manage Parents</string>
+    <string name="manage_students">Manage Students</string>
+    <string name="manage_classes">Manage Classes</string>
+    <string name="manage_subjects">Manage Subjects</string>
+    <string name="dark_mode_settings">Dark Mode Settings</string>
+    <string name="dark_mode_config_follow_system">Dark Mode Config:  Follow System</string>
+    <string name="dark_mode_config_dark">Dark Mode Config: Dark</string>
+    <string name="dark_mode_config_light">Dark Mode Config: Light</string>
 </resources>

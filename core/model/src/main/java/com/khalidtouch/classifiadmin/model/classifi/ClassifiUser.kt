@@ -13,6 +13,7 @@ data class ClassifiUser(
     var joinedSchools: List<ClassifiSchool> = emptyList(),
     var joinedClasses: List<ClassifiClass> = emptyList(),
 ) {
+
     val hasAdminPrivilege: Boolean
         get() = account?.userRole == UserRole.Admin || account?.userRole == UserRole.SuperAdmin
 

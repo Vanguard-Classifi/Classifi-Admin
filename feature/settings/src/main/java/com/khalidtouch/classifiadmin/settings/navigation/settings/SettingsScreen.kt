@@ -9,12 +9,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -23,11 +25,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,12 +45,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -57,8 +70,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
@@ -68,6 +84,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -75,6 +92,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import com.khalidtouch.classifiadmin.model.Country
+import com.khalidtouch.classifiadmin.model.DarkThemeConfig
 import com.khalidtouch.classifiadmin.model.PagedCountry
 import com.khalidtouch.classifiadmin.settings.R
 import com.khalidtouch.classifiadmin.settings.navigation.account.AccountScreenWrapper
@@ -91,8 +109,12 @@ import com.khalidtouch.core.designsystem.components.ClassifiSimpleTopAppBar
 import com.khalidtouch.core.designsystem.components.ClassifiTab
 import com.khalidtouch.core.designsystem.components.ClassifiTabSidePane
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
+import com.khalidtouch.core.designsystem.extensions.selectableGroup
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
+import com.khalidtouch.core.designsystem.ui.ClassifiDatePicker
+import com.khalidtouch.core.designsystem.ui.ClassifiDatePickerDialog
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @Composable
 fun SettingsRoute(
@@ -130,6 +152,8 @@ internal fun SettingsScreen(
     val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
     ClassifiBackground {
+        val context = LocalContext.current
+        val configuration = LocalConfiguration.current
         val snackbarHostState = remember { SnackbarHostState() }
         val selectedTabIndex by settingsViewModel.selectedTabIndex.observeAsState()
         val scope = rememberCoroutineScope()
@@ -139,11 +163,43 @@ internal fun SettingsScreen(
         }
         val currentSettingItemClicked by settingsViewModel.currentSettingItemClicked.observeAsState()
         val countries = settingsViewModel.countryPagingSource.collectAsLazyPagingItems()
+        val datePickerState = rememberDatePickerState(
+            initialDisplayMode = DisplayMode.Input,
+            selectableDates = object : SelectableDates {
+                override fun isSelectableYear(year: Int): Boolean {
+                    return LocalDate.now().year > year
+                }
+            }
+        )
 
-        LaunchedEffect(currentSettingItemClicked!!) {
-            if (currentSettingItemClicked !is SettingItemClicked.None) {
+        var pickerDialogState by rememberSaveable { mutableStateOf(false) }
+        val darkThemeConfigDialogState by settingsViewModel.darkThemeConfigDialog.collectAsStateWithLifecycle()
+
+        LaunchedEffect(currentSettingItemClicked!!, pickerDialogState) {
+            if (
+                currentSettingItemClicked !is SettingItemClicked.None &&
+                currentSettingItemClicked !is SettingItemClicked.Dob
+            ) {
                 sheetState.show()
                 showModalBottomSheet = true
+                pickerDialogState = false
+            }
+
+            if (currentSettingItemClicked is SettingItemClicked.Dob) {
+                pickerDialogState = true
+            }
+        }
+
+        LaunchedEffect(uiState) {
+            when (uiState) {
+                is SettingsUiState.Loading -> Unit
+                is SettingsUiState.Success -> {
+                    if ((uiState as SettingsUiState.Success).data.hasUserProfileUpdated) {
+                        snackbarHostState.showSnackbar(
+                            message = context.getString(R.string.profile_updated_successfully),
+                        )
+                    }
+                }
             }
         }
 
@@ -322,7 +378,14 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */ },
+                                                    onClick = { /*TODO* on Cancel */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.cancel),
@@ -334,7 +397,14 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save name */ },
+                                                    onClick = { /*TODO* on Save name */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -373,7 +443,14 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */ },
+                                                    onClick = { /*TODO* on Cancel */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.cancel),
@@ -385,7 +462,14 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save phone */ },
+                                                    onClick = { /*TODO* on Save phone */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -421,7 +505,13 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */ },
+                                                    onClick = { /*TODO* on Cancel */
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.cancel),
@@ -433,7 +523,14 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save bio */ },
+                                                    onClick = { /*TODO* on Save bio */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -446,10 +543,6 @@ internal fun SettingsScreen(
 
                                             }
                                         )
-                                    }
-
-                                    is SettingItemClicked.Dob -> {
-                                        /* todo-> DOB */
                                     }
 
                                     is SettingItemClicked.Address -> {
@@ -473,7 +566,14 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */ },
+                                                    onClick = { /*TODO* on Cancel */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.cancel),
@@ -485,7 +585,14 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save address */ },
+                                                    onClick = { /*TODO* on Save address */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -502,7 +609,16 @@ internal fun SettingsScreen(
 
                                     is SettingItemClicked.Country -> {
                                         PagedCountries(
-                                            countries = countries
+                                            countries = countries,
+                                            onClick = {
+                                                /*todo save country */
+
+                                                scope.launch {
+                                                    sheetState.hide()
+                                                    showModalBottomSheet = false
+                                                    settingsViewModel.cancelSettingItemClicked()
+                                                }
+                                            },
                                         )
                                     }
 
@@ -528,7 +644,14 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */ },
+                                                    onClick = { /*TODO* on Cancel */
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.cancel),
@@ -540,7 +663,14 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save state */ },
+                                                    onClick = { /*TODO* on Save state */
+
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -577,7 +707,13 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */ },
+                                                    onClick = { /*TODO* on Cancel */
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.cancel),
@@ -589,7 +725,13 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save city */ },
+                                                    onClick = { /*TODO* on Save city */
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -628,7 +770,14 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */ },
+                                                    onClick = {
+                                                        /*TODO* on Cancel */
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.cancel),
@@ -640,7 +789,13 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save postal code */ },
+                                                    onClick = { /*TODO* on Save postal code */
+                                                        scope.launch {
+                                                            sheetState.hide()
+                                                            showModalBottomSheet = false
+                                                            settingsViewModel.cancelSettingItemClicked()
+                                                        }
+                                                    },
                                                     text = {
                                                         Text(
                                                             stringResource(id = R.string.save),
@@ -656,20 +811,200 @@ internal fun SettingsScreen(
                                     }
 
                                     else -> Unit
+
                                 }
                             }
                         )
                     }
                 }
             }
+
+            //date picker
+            if (pickerDialogState) {
+                ClassifiDatePickerDialog(
+                    onDismiss = {
+                        pickerDialogState = false
+                        settingsViewModel.cancelSettingItemClicked()
+                    },
+                    confirmButton = {
+                        ClassifiTextButton(onClick = {
+                            /*todo on save date */
+                        },
+                            text = {
+                                Box(Modifier.padding(horizontal = 16.dp)) {
+                                    Text(
+                                        text = stringResource(id = R.string.save),
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    dismissButton = {
+                        ClassifiTextButton(onClick = {
+                            pickerDialogState = false
+                            settingsViewModel.cancelSettingItemClicked()
+                        },
+                            text = {
+                                Box(Modifier.padding(horizontal = 16.dp)) {
+                                    Text(
+                                        text = stringResource(id = R.string.cancel),
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                }
+                            }
+                        )
+                    }) {
+                    ClassifiDatePicker(
+                        state = datePickerState,
+                    )
+                }
+            }
+
+            if (darkThemeConfigDialogState) {
+                AlertDialog(
+                    onDismissRequest = {
+                        settingsViewModel.onDarkThemeConfigDialogStateChange(false)
+                    },
+                    confirmButton = {
+                        ClassifiTextButton(
+                            onClick = {
+                                /*todo on save */
+                                settingsViewModel.onDarkThemeConfigDialogStateChange(false)
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(id = R.string.save),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        )
+                    },
+                    dismissButton = {
+                        ClassifiTextButton(
+                            onClick = {
+                                settingsViewModel.onDarkThemeConfigDialogStateChange(false)
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(id = R.string.cancel),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        )
+                    },
+                    title = {
+                        Text(
+                            text = stringResource(id = R.string.dark_mode_settings),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    properties = DialogProperties(usePlatformDefaultWidth = false),
+                    modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
+                    tonalElevation = 2.dp,
+                    text = {
+                        Divider()
+                        Column(Modifier.verticalScroll(rememberScrollState())) {
+                            when (uiState) {
+                                is SettingsUiState.Loading -> {
+                                    AnimatedVisibility(
+                                        visible = uiState is SettingsUiState.Loading,
+                                        enter = slideInVertically(
+                                            initialOffsetY = { fullHeight -> -fullHeight },
+                                        ) + fadeIn(),
+                                        exit = slideOutVertically(
+                                            targetOffsetY = { fullHeight -> -fullHeight },
+                                        ) + fadeOut(),
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 16.dp)
+                                                .background(Color.Transparent),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            ClassifiLoadingWheel()
+                                        }
+                                    }
+                                }
+
+                                is SettingsUiState.Success -> {
+                                    DarkModeConfigSettingsPane(
+                                        onDarkThemeConfigChanged = settingsViewModel::onDarkThemeChanged,
+                                        settings = (uiState as SettingsUiState.Success).data.darkThemeSettings
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+
         }
 
     }
 }
 
 @Composable
+fun DarkModeConfigSettingsPane(
+    settings: DarkThemeConfigSettings,
+    onDarkThemeConfigChanged: (DarkThemeConfig) -> Unit,
+) {
+    Column(Modifier.selectableGroup()) {
+        DarkModeConfigRowChoose(
+            onClick = { onDarkThemeConfigChanged(DarkThemeConfig.FOLLOW_SYSTEM) },
+            selected = settings.darkThemeConfig == DarkThemeConfig.FOLLOW_SYSTEM,
+            text = stringResource(id = R.string.dark_mode_config_follow_system)
+        )
+        DarkModeConfigRowChoose(
+            onClick = { onDarkThemeConfigChanged(DarkThemeConfig.DARK) },
+            selected = settings.darkThemeConfig == DarkThemeConfig.DARK,
+            text = stringResource(id = R.string.dark_mode_config_dark)
+        )
+        DarkModeConfigRowChoose(
+            onClick = { onDarkThemeConfigChanged(DarkThemeConfig.LIGHT) },
+            selected = settings.darkThemeConfig == DarkThemeConfig.LIGHT,
+            text = stringResource(id = R.string.dark_mode_config_light)
+        )
+    }
+}
+
+@Composable
+fun DarkModeConfigRowChoose(
+    onClick: () -> Unit,
+    selected: Boolean,
+    text: String,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .selectable(
+                role = Role.RadioButton,
+                onClick = onClick,
+                selected = selected,
+            )
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            modifier = Modifier.padding(16.dp)
+        )
+        Spacer(Modifier.width(16.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+        )
+    }
+}
+
+
+@Composable
 fun PagedCountries(
     countries: LazyPagingItems<Country>,
+    onClick: (Country) -> Unit,
 ) {
     when (countries.loadState.refresh) {
         is LoadState.Loading -> {
@@ -703,7 +1038,7 @@ fun PagedCountries(
             LazyColumn {
                 itemsIndexed(countries) { _, country ->
                     country?.let {
-                        CountryItem(country = it)
+                        CountryItem(country = it, onClick = onClick)
                     }
                 }
             }
@@ -712,9 +1047,15 @@ fun PagedCountries(
 }
 
 @Composable
-fun CountryItem(country: Country) {
+fun CountryItem(country: Country, onClick: (Country) -> Unit) {
     Row(
-        modifier = Modifier.padding(bottom = 16.dp),
+        modifier = Modifier
+            .padding(bottom = 16.dp)
+            .clickable(
+                enabled = true,
+                onClick = { onClick(country) },
+                role = Role.Button,
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.padding(16.dp)) {
@@ -788,5 +1129,6 @@ fun CountryItemPreview() {
             name = "Nigeria",
             code = "NG"
         ),
+        onClick = {}
     )
 }

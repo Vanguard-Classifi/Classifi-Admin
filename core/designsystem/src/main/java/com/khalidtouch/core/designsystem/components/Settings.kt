@@ -35,7 +35,7 @@ fun SettingItem(
         ) {
             Box(
                 modifier = modifier.padding(ClassifiSettingDefaults.iconPadding),
-                contentAlignment = Alignment.TopCenter
+                contentAlignment = Alignment.Center
             ) {
                 icon()
             }

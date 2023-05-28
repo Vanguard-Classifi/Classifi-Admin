@@ -7,22 +7,30 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
+import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.data.util.ReadCountriesPagingSource
+import com.khalidtouch.classifiadmin.model.DarkThemeConfig
+import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import com.khalidtouch.classifiadmin.settings.navigation.profile.LocationData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.PersonalData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.ProfileData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     readCountriesPagingSource: ReadCountriesPagingSource,
+    private val userRepository: UserRepository,
+    private val userDataRepository: UserDataRepository,
 ) : ViewModel() {
 
     private val _selectedTabIndex: MutableLiveData<Int> = MutableLiveData(0)
@@ -53,6 +61,11 @@ class SettingsViewModel @Inject constructor(
     private val _stateOfCountry = MutableStateFlow<String>("")
     private val _city = MutableStateFlow<String>("")
     private val _postalCode = MutableStateFlow<String>("")
+    private val _hasUserProfileUpdated = MutableStateFlow<Boolean>(false)
+    private val _darkThemeConfigDialog = MutableStateFlow<Boolean>(false)
+    val darkThemeConfigDialog = _darkThemeConfigDialog
+
+    private var updateUserJob: Job? = null
 
     private val locationData: StateFlow<LocationData> =
         combine(
@@ -110,17 +123,30 @@ class SettingsViewModel @Inject constructor(
         )
 
 
-    val uiState: StateFlow<SettingsUiState> = profileData.map {
-        SettingsUiState.Success(
-            data = SettingsData(
-                profileData = it,
+    val uiState: StateFlow<SettingsUiState> =
+        combine(
+            userDataRepository.userData,
+            profileData,
+            _hasUserProfileUpdated,
+        ) { userData, profileData, hasUserProfileUpdated ->
+            SettingsUiState.Success(
+                data = SettingsData(
+                    profileData = profileData,
+                    userId = userData.userId,
+                    hasUserProfileUpdated = hasUserProfileUpdated,
+                    darkThemeSettings = DarkThemeConfigSettings(
+                        brand = userData.themeBrand,
+                        useDynamicColor = userData.useDynamicColor,
+                        darkThemeConfig = userData.darkThemeConfig,
+                    ),
+                )
             )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(2000),
+            initialValue = SettingsUiState.Loading
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(2000),
-        initialValue = SettingsUiState.Loading
-    )
+
 
     fun updateTabIndexBasedOnSwipe() {
         _selectedTabIndex.value = when (isSwipeLeft) {
@@ -176,4 +202,52 @@ class SettingsViewModel @Inject constructor(
     fun onPostalCodeChanged(code: String) {
         _postalCode.value = code
     }
+
+    fun updateUserProfile() {
+        if (updateUserJob != null) return
+        var isUpdateSuccessful = false
+        try {
+            updateUserJob = viewModelScope.launch {
+                isUpdateSuccessful = userRepository.updateUserProfile(
+                    (uiState as SettingsUiState.Success).data.userId,
+                    (uiState as SettingsUiState.Success).data.profileData ?: ProfileData(
+                        null,
+                        null
+                    ),
+                )
+                _hasUserProfileUpdated.value = isUpdateSuccessful
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            updateUserJob = null
+        }
+    }
+
+    fun onDarkThemeConfigDialogStateChange(state: Boolean) {
+        _darkThemeConfigDialog.value = state
+    }
+
+    fun onDarkThemeChanged(theme: DarkThemeConfig) = viewModelScope.launch {
+        userDataRepository.setDarkThemeConfig(theme)
+    }
+
+}
+
+suspend fun UserRepository.updateUserProfile(userId: Long, profileData: ProfileData): Boolean {
+    val currentUser = this.fetchUserById(userId) ?: return false
+    profileData.let { data ->
+        currentUser.let { user ->
+            user.profile?.bio = data.personalData?.bio
+            user.profile?.dob = data.personalData?.dob
+            user.profile?.phone = data.personalData?.phone
+            user.profile?.contact?.address = data.locationData?.address
+            user.profile?.contact?.city = data.locationData?.city
+            user.profile?.contact?.country = data.locationData?.country
+            user.profile?.contact?.postalCode = data.locationData?.postalCode
+            user.profile?.contact?.stateOfCountry = data.locationData?.stateOfCountry
+        }
+    }
+    this.updateUser(currentUser)
+    return true
 }

@@ -35,6 +35,7 @@ object ClassifiIcons {
     val Copyright = R.drawable.icon_copyright
     val Country = R.drawable.icon_country
     val Customize = R.drawable.icon_customize
+    val Dark = R.drawable.icon_dark
     val Delete = R.drawable.icon_delete
     val Discussion = R.drawable.icon_discussion
     val Doc = R.drawable.icon_doc
@@ -62,6 +63,7 @@ object ClassifiIcons {
     val JpgFile = R.drawable.icon_jpg_file
     val LikeOutline = R.drawable.icon_like_outline
     val LikeSolid = R.drawable.icon_like_solid
+    val Light = R.drawable.icon_light
     val Lock = R.drawable.icon_lock
     val Mark = R.drawable.icon_mark
     val OptionsHorizontal = R.drawable.icon_options_horizontal
