@@ -50,11 +50,10 @@ internal fun FeedsRoute(
     onComposeFeed: () -> Unit,
     feedsViewModel: FeedsViewModel = hiltViewModel<FeedsViewModel>()
 ) {
-    val onboardingUiState by feedsViewModel.onboardingUiState.collectAsStateWithLifecycle()
     val feedState by feedsViewModel.feedState.collectAsStateWithLifecycle()
 
-
     Scaffold(
+        containerColor = Color.Transparent,
         modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
             ClassifiFab(
@@ -71,7 +70,6 @@ internal fun FeedsRoute(
             FeedsScreen(
                 modifier = Modifier.padding(padding),
                 isSyncing = false,
-                onboardingUiState = onboardingUiState,
                 feedUiState = feedState,
                 onStartComment = { /*TODO*/ },
                 onLikeCheckedChanged = { feedId, state ->
@@ -93,7 +91,6 @@ internal fun FeedsRoute(
 internal fun FeedsScreen(
     modifier: Modifier = Modifier,
     isSyncing: Boolean,
-    onboardingUiState: OnboardingUiState,
     feedUiState: NewsFeedUiState,
     onStartComment: () -> Unit,
     onLikeCheckedChanged: (Long, Boolean) -> Unit,
@@ -101,10 +98,9 @@ internal fun FeedsScreen(
     onViewDetails: () -> Unit,
     onViewAuthor: () -> Unit,
 ) {
-    val isOnboardingLoading = onboardingUiState is OnboardingUiState.Loading
     val isFeedLoading = feedUiState is NewsFeedUiState.Loading
 
-    ReportDrawnWhen { !isFeedLoading || !isOnboardingLoading }
+    ReportDrawnWhen { !isFeedLoading }
     val state = rememberLazyListState()
 
     LazyColumn(
@@ -133,10 +129,8 @@ internal fun FeedsScreen(
         }
     }
 
-    /*TODO -> show onboarding screen */
-
     AnimatedVisibility(
-        visible = isFeedLoading || isOnboardingLoading,
+        visible = isFeedLoading,
         enter = slideInVertically(
             initialOffsetY = { fullHeight -> -fullHeight },
         ) + fadeIn(),

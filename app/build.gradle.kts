@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:common"))
+    implementation(project(":core:domain"))
     implementation(project(":feature:feeds"))
     implementation(project(":feature:students"))
     implementation(project(":feature:assessment"))

@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
 import com.khalidtouch.classifiadmin.model.ThemeBrand
@@ -23,6 +24,7 @@ import com.khalidtouch.core.designsystem.theme.ClassifiTheme
 import com.vanguard.classifiadmin.ui.ClassifiApp
 import com.vanguard.classifiadmin.viewmodel.MainActivityUiState
 import com.vanguard.classifiadmin.viewmodel.MainActivityUiState.*
+import com.vanguard.classifiadmin.viewmodel.MainActivityViewModel
 import com.vanguard.classifiadmin.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -31,21 +33,19 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     val TAG = "MainActivity"
     private lateinit var viewModel: MainViewModel
+    private lateinit var mainActivityViewModel: MainActivityViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        var uiState: MainActivityUiState by mutableStateOf(Loading)
-
-        //update the uistate
-        /*todo: */
-
 
         // Turn off the decor fitting system windows, which allows us to handle insets,
         // including IME animations
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
+            mainActivityViewModel = hiltViewModel<MainActivityViewModel>()
+            val uiState by mainActivityViewModel.uiState.collectAsStateWithLifecycle()
+
             val systemUiController = rememberSystemUiController()
             val darkTheme = shouldUseDarkTheme(uiState = uiState)
 

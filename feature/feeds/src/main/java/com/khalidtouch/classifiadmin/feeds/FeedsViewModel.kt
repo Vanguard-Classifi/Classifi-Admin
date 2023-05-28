@@ -29,8 +29,6 @@ class FeedsViewModel @Inject constructor(
     getUserNewsResource: GetUserNewsResourcesUseCase,
     getLikedUserNewsResource: GetLikedUserNewsResourcesUseCase,
 ) : ViewModel() {
-    private val shouldShowOnboarding: Flow<Boolean> =
-        userDataRepository.userData.map { !it.shouldHideOnboarding }
 
     val feedState: StateFlow<NewsFeedUiState> =
         userDataRepository.getAssignedUserNewsResources(getUserNewsResource)
@@ -39,21 +37,6 @@ class FeedsViewModel @Inject constructor(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = NewsFeedUiState.Loading,
-            )
-
-
-    val onboardingUiState: StateFlow<OnboardingUiState> =
-        shouldShowOnboarding.map {
-            if (it) {
-                OnboardingUiState.Shown
-            } else {
-                OnboardingUiState.NotShown
-            }
-        }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = OnboardingUiState.Loading
             )
 
 

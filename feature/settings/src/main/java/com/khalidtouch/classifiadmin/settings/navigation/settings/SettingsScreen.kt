@@ -901,7 +901,7 @@ internal fun SettingsScreen(
                     },
                     shape = RoundedCornerShape(16.dp),
                     properties = DialogProperties(usePlatformDefaultWidth = false),
-                    modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
+                    modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 16.dp),
                     tonalElevation = 2.dp,
                     text = {
                         Divider()

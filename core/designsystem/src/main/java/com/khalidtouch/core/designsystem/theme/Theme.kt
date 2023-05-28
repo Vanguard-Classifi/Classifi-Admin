@@ -51,7 +51,7 @@ val LightDefaultColorScheme = lightColorScheme(
     onSurfaceVariant = PurpleGray30,
     inverseSurface = DarkPurpleGray20,
     inverseOnSurface = DarkPurpleGray95,
-    outline = PurpleGray50,
+    outline = Color.Black,
 )
 
 /**
@@ -82,7 +82,7 @@ val DarkDefaultColorScheme = darkColorScheme(
     onSurfaceVariant = PurpleGray80,
     inverseSurface = DarkPurpleGray90,
     inverseOnSurface = DarkPurpleGray10,
-    outline = PurpleGray60,
+    outline = Color.White,
 )
 
 
@@ -114,7 +114,7 @@ val LightAndroidColorScheme = lightColorScheme(
     onSurfaceVariant = GreenGray30,
     inverseSurface = DarkGreenGray20,
     inverseOnSurface = DarkGreenGray95,
-    outline = GreenGray50,
+    outline = Color.Black,
 )
 
 
@@ -147,7 +147,7 @@ val DarkAndroidColorScheme = darkColorScheme(
     onSurfaceVariant = GreenGray80,
     inverseSurface = DarkGreenGray90,
     inverseOnSurface = DarkGreenGray10,
-    outline = GreenGray60,
+    outline = Color.White,
 )
 
 
