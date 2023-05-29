@@ -77,6 +77,7 @@ class CreateAccountForSuperAdminUseCase @Inject constructor(
                         scope.launch {
                             userRepository.saveUser(
                                 ClassifiUser(
+                                    userId = System.currentTimeMillis() + data.email.hashCode(),
                                     account = UserAccount(
                                         email = data.email,
                                         userRole = UserRole.SuperAdmin,

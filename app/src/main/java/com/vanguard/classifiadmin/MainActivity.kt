@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity() {
 
             viewModel = hiltViewModel<MainViewModel>()
 
+
             ClassifiTheme(
                 darkTheme = darkTheme,
                 androidTheme = shouldUseAndroidTheme(uiState = uiState),

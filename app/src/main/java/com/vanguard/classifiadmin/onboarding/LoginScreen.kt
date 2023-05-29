@@ -20,8 +20,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +43,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -43,6 +56,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import com.google.accompanist.navigation.animation.composable
 import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
+import com.khalidtouch.core.designsystem.components.ClassifiIconButton
 import com.vanguard.classifiadmin.R
 import com.vanguard.classifiadmin.onboarding.usecase.OnLoginState
 
@@ -120,6 +134,78 @@ fun LoginScreen(
     }
 }
 
+
+private fun LazyListScope.passwordItem(
+    placeholder: String? = null,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean = false,
+    isPasswordVisible: Boolean = true,
+    onTogglePasswordVisibility: (Boolean) -> Unit = {},
+) {
+    item {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = value,
+            onValueChange = onValueChange,
+            enabled = true,
+            textStyle = MaterialTheme.typography.bodyLarge,
+            placeholder = {
+                Text(
+                    text = placeholder.orEmpty(),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.outline.copy(0.5f)
+                    )
+                )
+            },
+            shape = RoundedCornerShape(16.dp),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done,
+            ),
+            singleLine = true,
+            maxLines = 1,
+            isError = isError,
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.outline,
+                unfocusedTextColor = MaterialTheme.colorScheme.outline,
+                focusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                unfocusedContainerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                cursorColor = MaterialTheme.colorScheme.outline,
+            ),
+            visualTransformation = if (isPasswordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            trailingIcon = {
+                val image = if (isPasswordVisible) Icons.Rounded.Visibility else
+                    Icons.Rounded.VisibilityOff
+
+                val description =
+                    if (isPasswordVisible) stringResource(id = R.string.hide_password)
+                    else stringResource(id = R.string.show_password)
+
+                ClassifiIconButton(
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.outline.copy(0.5f),
+                    ),
+                    onClick = { onTogglePasswordVisibility(isPasswordVisible) },
+                    icon = {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = description
+                        )
+                    }
+                )
+            }
+        )
+        Spacer(Modifier.height(16.dp))
+    }
+}
 
 fun LazyListScope.createAccountInstead(
     onCreateAccount: () -> Unit,

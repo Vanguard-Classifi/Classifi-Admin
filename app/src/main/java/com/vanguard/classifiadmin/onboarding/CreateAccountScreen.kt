@@ -174,7 +174,7 @@ fun LazyListScope.alreadyHaveAnAccountItem(
     }
 }
 
-fun LazyListScope.confirmPasswordItem(
+private fun LazyListScope.confirmPasswordItem(
     placeholder: String? = null,
     value: String,
     onValueChange: (String) -> Unit,
@@ -246,7 +246,7 @@ fun LazyListScope.confirmPasswordItem(
     }
 }
 
-fun LazyListScope.passwordItem(
+private fun LazyListScope.passwordItem(
     placeholder: String? = null,
     value: String,
     onValueChange: (String) -> Unit,
