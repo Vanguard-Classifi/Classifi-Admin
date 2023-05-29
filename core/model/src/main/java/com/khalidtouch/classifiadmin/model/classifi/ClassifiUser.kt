@@ -6,7 +6,7 @@ import com.khalidtouch.classifiadmin.model.UserRole
 import java.time.LocalDateTime
 
 data class ClassifiUser(
-    val userId: Long,
+    val userId: Long? = null,
     var account: UserAccount? = null,
     var profile: UserProfile? = null,
     var dateCreated: LocalDateTime? = null,

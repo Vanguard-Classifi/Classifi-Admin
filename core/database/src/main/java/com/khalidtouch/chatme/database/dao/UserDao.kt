@@ -30,6 +30,9 @@ interface UserDao {
     @Delete
     suspend fun deleteUser(user: ClassifiUserEntity)
 
+    @Query("delete from ClassifiUserEntity")
+    suspend fun deleteAllUsers()
+
     @Query(
         value = "delete from ClassifiUserEntity where userId in (:ids)"
     )

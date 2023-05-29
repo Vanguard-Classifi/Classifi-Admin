@@ -17,6 +17,8 @@ interface UserRepository {
 
     suspend fun deleteUsers(ids: List<Long>)
 
+    suspend fun deleteAllUsers()
+
     suspend fun fetchUserById(userId: Long): ClassifiUser?
 
     suspend fun fetchUserByEmail(email: String): ClassifiUser?

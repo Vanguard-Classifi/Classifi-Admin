@@ -66,11 +66,14 @@ fun WelcomeScreen() {
 
 const val welcomeScreenNavigationRoute = "welcome_screen_navigation_route"
 
-fun NavController.navigateToWelcomeScreen() {
+fun NavController.navigateToWelcomeScreen(
+    onboardingViewModel: OnboardingViewModel,
+) {
     this.navigate(welcomeScreenNavigationRoute) {
         launchSingleTop = true
         popUpTo(welcomeScreenNavigationRoute)
     }
+    onboardingViewModel.updateCurrentDestination(OnboardingDestination.WELCOME)
 }
 
 

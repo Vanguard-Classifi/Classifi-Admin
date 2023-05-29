@@ -252,5 +252,13 @@
     <string name="help_and_support">Help and Support</string>
     <string name="my_account">My Account</string>
     <string name="back">Back</string>
-    <string name="more_efficiency_in_your_classroom">"...more efficiency in your classroom "</string>
+    <string name="more_efficiency_in_your_classroom">"…more efficiency in your classroom "</string>
+    <string name="join_classifi_as_a_school_owner">Join Classifi as a school owner</string>
+    <string name="log_in_insteadL">Log in instead</string>
+    <string name="log_in_instead">Log in instead</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="click_here">Click here</string>
+    <string name="successfully_added">Successfully added</string>
+    <string name="finish">Finish</string>
+    <string name="create_account_instead">Create account instead</string>
 </resources>

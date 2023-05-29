@@ -29,7 +29,7 @@ data class OnboardingState(
 }
 
 enum class OnboardingDestination {
-    WELCOME, CREATE_ACCOUNT, LOGIN
+    WELCOME, CREATE_ACCOUNT, LOGIN, SUCCESS
 }
 
 @OptIn(ExperimentalAnimationApi::class)

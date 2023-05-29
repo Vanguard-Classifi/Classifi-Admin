@@ -53,6 +53,10 @@ class OfflineFirstUserRepository @Inject constructor(
         userDao.deleteUsers(ids)
     }
 
+    override suspend fun deleteAllUsers() {
+        userDao.deleteAllUsers()
+    }
+
     override suspend fun fetchUserById(userId: Long): ClassifiUser? {
         return modelMapper.userEntityToModel(userDao.fetchUserById(userId))
     }

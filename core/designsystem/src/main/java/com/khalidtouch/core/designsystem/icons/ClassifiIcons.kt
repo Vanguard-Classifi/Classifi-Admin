@@ -81,6 +81,7 @@ object ClassifiIcons {
     val Preference = R.drawable.icon_preference
     val Preview = R.drawable.icon_preview
     val Profile = R.drawable.icon_profile
+    val Success = R.drawable.icon_success
     val Question = R.drawable.icon_question
     val Quiz = R.drawable.icon_quiz
     val Repeat = R.drawable.icon_repeat

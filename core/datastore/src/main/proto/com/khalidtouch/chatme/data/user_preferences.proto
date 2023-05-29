@@ -31,4 +31,10 @@ message UserPreferences {
     string profile_image = 10;
 
     UserRoleProto role = 11;
+
+    string text_field_email = 12;
+
+    string text_field_password = 13;
+    
+    string text_field_confirm_password = 14;
 }
