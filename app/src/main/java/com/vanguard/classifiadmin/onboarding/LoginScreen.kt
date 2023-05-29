@@ -57,9 +57,6 @@ fun LoginScreen(
     var isPasswordVisible by remember { mutableStateOf(false) }
     val uiState by loginViewModel.loginUiState.collectAsStateWithLifecycle()
 
-    Log.e(TAG, "LoginScreen: email is ${(uiState as LoginUiState.Success).data.email} ")
-    Log.e(TAG, "LoginScreen: password is ${(uiState as LoginUiState.Success).data.password}")
-
     LazyColumn {
         when (uiState) {
             is LoginUiState.Loading -> Unit

@@ -76,6 +76,8 @@ fun CreateAccountScreen(
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false)}
 
+
+
     LazyColumn {
         when(uiState){
             is CreateAccountUiState.Loading -> Unit

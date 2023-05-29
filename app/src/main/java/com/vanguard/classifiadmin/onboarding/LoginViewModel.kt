@@ -53,10 +53,10 @@ class LoginViewModel @Inject constructor(
         callback: (OnLoginState) -> Unit,
     )  = viewModelScope.launch {
         Log.e(TAG, "loginUser: email is ${loginData.email}")
-        loginUseCase(
-            loginData = loginData,
-            callback
-        )
+//        loginUseCase(
+//            loginData = loginData,
+//            callback
+//        )
     }
 
     fun finishLogin() = viewModelScope.launch {
