@@ -141,6 +141,14 @@ fun OnboardingScreen(
                                 ) {
                                     Log.e(TAG, "OnboardingScreen: login has been called")
                                     when(it) {
+                                        is OnLoginState.Success -> {
+                                            Log.e(TAG, "OnboardingScreen: success")
+                                            onboardingViewModel.finishOnboarding()
+                                        }
+                                        is OnLoginState.Failed -> {
+                                            Log.e(TAG, "OnboardingScreen: failed")
+                                        }
+
                                         is OnLoginState.NetworkProblem -> {
                                             Log.e(TAG, "OnboardingScreen: network issues", )
                                         }
@@ -165,14 +173,6 @@ fun OnboardingScreen(
                                                 "OnboardingScreen: empty email or password"
                                             )
                                         }
-                                        is OnLoginState.Success -> {
-                                            Log.e(TAG, "OnboardingScreen: success")
-                                            loginViewModel.finishLogin()
-                                        }
-                                        is OnLoginState.Failed -> {
-                                            Log.e(TAG, "OnboardingScreen: failed")
-                                        }
-
                                     }
                                 }
                             }

@@ -2,6 +2,8 @@ package com.vanguard.classifiadmin.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.model.UserData
@@ -37,6 +39,11 @@ class MainActivityViewModel @Inject constructor(
 
     fun forceClearUsers() = viewModelScope.launch {
         userRepository.deleteAllUsers()
+    }
+
+    fun forceLogout() = viewModelScope.launch {
+        val auth = Firebase.auth
+        auth.signOut()
     }
 }
 

@@ -36,7 +36,7 @@ class LoginUseCase @Inject constructor(
     @Dispatcher(ClassifiDispatcher.IO) private val ioDispatcher: CoroutineDispatcher
 ) {
     val TAG = "Login"
-    val authentication: FirebaseAuth = Firebase.auth
+    private val authentication: FirebaseAuth = Firebase.auth
     private val fireStore: FirebaseFirestore = Firebase.firestore
     val scope = CoroutineScope(ioDispatcher + SupervisorJob())
 
@@ -58,29 +58,7 @@ class LoginUseCase @Inject constructor(
             authentication.signInWithEmailAndPassword(loginData.email, loginData.password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        //get user info from firebase
-                        fireStore.collection(ClassifiStore.USERS)
-                            .whereEqualTo("email", loginData.email)
-                            .get()
-                            .addOnSuccessListener { users ->
-                                val results = users.toObjects<ClassifiUser>()
-                                if (results.isNotEmpty()) {
-                                    val currentUser = results.first()
-                                    scope.launch {
-                                        userDataRepository.setUserId(currentUser.userId ?: -1)
-                                        userDataRepository.setUsername(currentUser.account?.username.orEmpty())
-                                        userDataRepository.setUserProfileImage(currentUser.profile?.profileImage.orDefaultImageUrl())
-                                        userDataRepository.setUserRole(
-                                            currentUser.account?.userRole ?: UserRole.Guest
-                                        )
-                                    }.invokeOnCompletion {
-                                        postAction {
-                                            callback(OnLoginState.Success)
-                                            return@postAction
-                                        }
-                                    }
-                                }
-                            }.addOnFailureListener { }
+                        callback(OnLoginState.Success)
                     } else {
                         when (task.exception) {
                             is FirebaseAuthWeakPasswordException -> {
@@ -105,6 +83,10 @@ class LoginUseCase @Inject constructor(
 
                             is FirebaseNetworkException -> {
                                 return@addOnCompleteListener callback(OnLoginState.NetworkProblem)
+                            }
+
+                            else -> {
+                                Log.e(TAG, "invoke: something went wrong")
                             }
                         }
                         callback(OnLoginState.Failed)
