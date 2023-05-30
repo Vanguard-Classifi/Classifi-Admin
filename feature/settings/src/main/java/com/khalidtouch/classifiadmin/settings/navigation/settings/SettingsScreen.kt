@@ -96,6 +96,8 @@ import com.khalidtouch.classifiadmin.settings.navigation.administration.Administ
 import com.khalidtouch.classifiadmin.settings.navigation.components.SettingsTextFieldBox
 import com.khalidtouch.classifiadmin.settings.navigation.preferences.PreferencesScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.profile.ProfileScreenWrapper
+import com.khalidtouch.core.common.extensions.asDateString
+import com.khalidtouch.core.common.extensions.asLocalDate
 import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
 import com.khalidtouch.core.designsystem.components.ClassifiScrollableTabRow
@@ -834,7 +836,12 @@ internal fun SettingsScreen(
                     },
                     confirmButton = {
                         ClassifiTextButton(onClick = {
-                            /*todo on save date */
+                            val date = datePickerState.selectedDateMillis
+                                .asLocalDate().asDateString()
+                           settingsViewModel.onDobChanged(date)
+                            settingsViewModel.updateDobToDb(me)
+                            pickerDialogState = false
+                            settingsViewModel.cancelSettingItemClicked()
                         },
                             text = {
                                 Box(Modifier.padding(horizontal = 16.dp)) {
