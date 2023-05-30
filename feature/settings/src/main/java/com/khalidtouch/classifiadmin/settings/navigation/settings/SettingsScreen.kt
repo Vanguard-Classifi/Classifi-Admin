@@ -10,7 +10,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -29,7 +28,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -82,7 +80,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -93,7 +90,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import com.khalidtouch.classifiadmin.model.Country
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
-import com.khalidtouch.classifiadmin.model.PagedCountry
 import com.khalidtouch.classifiadmin.settings.R
 import com.khalidtouch.classifiadmin.settings.navigation.account.AccountScreenWrapper
 import com.khalidtouch.classifiadmin.settings.navigation.administration.AdministrationScreenWrapper
@@ -403,6 +399,7 @@ internal fun SettingsScreen(
                                                 ClassifiTextButton(
                                                     onClick = {
                                                         //save user name to db
+                                                        settingsViewModel.updateUsernameToDb(me)
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -509,7 +506,8 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */
+                                                    onClick = {
+                                                        settingsViewModel.resetBio()
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -527,8 +525,8 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save bio */
-
+                                                    onClick = {
+                                                        settingsViewModel.updateBioToDb(me)
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -570,8 +568,8 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */
-
+                                                    onClick = {
+                                                        settingsViewModel.resetAddress()
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -589,8 +587,8 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save address */
-
+                                                    onClick = {
+                                                        settingsViewModel.updateAddressToDb(me)
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -615,8 +613,8 @@ internal fun SettingsScreen(
                                         PagedCountries(
                                             countries = countries,
                                             onClick = {
-                                                /*todo save country */
-
+                                                settingsViewModel.onCountryChanged(it.name ?: context.getString(R.string.click_to_add_country))
+                                                settingsViewModel.updateCountryToDb(me)
                                                 scope.launch {
                                                     sheetState.hide()
                                                     showModalBottomSheet = false
@@ -648,7 +646,8 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */
+                                                    onClick = {
+                                                        settingsViewModel.resetStateOfCountry()
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -667,8 +666,8 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save state */
-
+                                                    onClick = {
+                                                        settingsViewModel.updateStateOfCountryToDb(me)
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -711,7 +710,8 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */
+                                                    onClick = {
+                                                        settingsViewModel.resetCity()
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -729,7 +729,8 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save city */
+                                                    onClick = {
+                                                        settingsViewModel.updateCityToDb(me)
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -775,7 +776,7 @@ internal fun SettingsScreen(
                                             responseButtons = {
                                                 ClassifiTextButton(
                                                     onClick = {
-                                                        /*TODO* on Cancel */
+                                                        settingsViewModel.resetPostalCode()
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -793,7 +794,8 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save postal code */
+                                                    onClick = {
+                                                        settingsViewModel.updatePostalCodeToDb(me)
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false

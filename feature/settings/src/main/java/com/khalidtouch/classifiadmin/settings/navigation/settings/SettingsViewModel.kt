@@ -1,6 +1,5 @@
 package com.khalidtouch.classifiadmin.settings.navigation.settings
 
-import android.util.Log
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,14 +12,14 @@ import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.chatme.domain.usecases.GetCurrentUserUseCase
 import com.khalidtouch.classifiadmin.data.util.ReadCountriesPagingSource
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
+import com.khalidtouch.classifiadmin.model.UserAccount
+import com.khalidtouch.classifiadmin.model.UserContact
 import com.khalidtouch.classifiadmin.model.UserProfile
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import com.khalidtouch.classifiadmin.settings.navigation.profile.LocationData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.PersonalData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.ProfileData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -193,8 +192,18 @@ class SettingsViewModel @Inject constructor(
     fun updateUsernameToDb(
         me: ClassifiUser?,
     ) = viewModelScope.launch {
-        if(me != null) {
-            me.account?.username = _username.value
+        if (me != null) {
+            when (me.account) {
+                null -> {
+                    me.account = UserAccount(
+                        username = _username.value
+                    )
+                }
+
+                else -> {
+                    me.account?.username = _username.value
+                }
+            }
             userRepository.updateUser(me)
         }
     }
@@ -207,14 +216,15 @@ class SettingsViewModel @Inject constructor(
         _phone.value = ""
     }
 
-    fun updatePhoneToDb(me:ClassifiUser?) = viewModelScope.launch {
-        if(me != null) {
-            when(me.profile) {
+    fun updatePhoneToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
                 null -> {
                     me.profile = UserProfile(
                         phone = _phone.value,
                     )
                 }
+
                 else -> {
                     me.profile?.phone = _phone.value
                 }
@@ -231,16 +241,42 @@ class SettingsViewModel @Inject constructor(
         _bio.value = ""
     }
 
-    fun updateBioToDb() = viewModelScope.launch {
+    fun updateBioToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        bio = _bio.value
+                    )
+                }
 
+                else -> {
+                    me.profile?.bio = _bio.value
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onDobChanged(dob: String) {
         _dob.value = dob
     }
 
-    fun updateDobToDb() = viewModelScope.launch {
+    fun updateDobToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        dob = _dob.value
+                    )
+                }
 
+                else -> {
+                    me.profile?.dob = _dob.value
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onAddressChanged(address: String) {
@@ -251,16 +287,62 @@ class SettingsViewModel @Inject constructor(
         _address.value = ""
     }
 
-    fun updateAddressToDb() = viewModelScope.launch {
+    fun updateAddressToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        contact = UserContact(
+                            address = _address.value
+                        )
+                    )
+                }
 
+                else -> {
+                    when (me.profile?.contact) {
+                        null -> me.profile?.contact = UserContact(
+                            address = _address.value
+                        )
+
+                        else -> {
+                            me.profile?.contact?.address = _address.value
+                        }
+                    }
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onCountryChanged(country: String) {
         _country.value = country
     }
 
-    fun updateCountryToDb() = viewModelScope.launch {
+    fun updateCountryToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        contact = UserContact(
+                            country = _country.value
+                        )
+                    )
+                }
 
+                else -> {
+                    when (me.profile?.contact) {
+                        null -> me.profile?.contact = UserContact(
+                            country = _country.value
+                        )
+
+                        else -> {
+                            me.profile?.contact?.country = _country.value
+                        }
+                    }
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onStateOfCountryChanged(state: String) {
@@ -271,8 +353,31 @@ class SettingsViewModel @Inject constructor(
         _stateOfCountry.value = ""
     }
 
-    fun updateStateOfCountryToDb() = viewModelScope.launch {
+    fun updateStateOfCountryToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        contact = UserContact(
+                            stateOfCountry = _stateOfCountry.value
+                        )
+                    )
+                }
 
+                else -> {
+                    when (me.profile?.contact) {
+                        null -> me.profile?.contact = UserContact(
+                            stateOfCountry = _stateOfCountry.value
+                        )
+
+                        else -> {
+                            me.profile?.contact?.stateOfCountry = _stateOfCountry.value
+                        }
+                    }
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onCityChanged(city: String) {
@@ -283,8 +388,31 @@ class SettingsViewModel @Inject constructor(
         _city.value = ""
     }
 
-    fun updateCityToDb() = viewModelScope.launch {
+    fun updateCityToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        contact = UserContact(
+                            city = _city.value
+                        )
+                    )
+                }
 
+                else -> {
+                    when (me.profile?.contact) {
+                        null -> me.profile?.contact = UserContact(
+                            city = _city.value
+                        )
+
+                        else -> {
+                            me.profile?.contact?.city = _city.value
+                        }
+                    }
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onPostalCodeChanged(code: String) {
@@ -295,8 +423,31 @@ class SettingsViewModel @Inject constructor(
         _postalCode.value = ""
     }
 
-    fun updatePostalToDb() = viewModelScope.launch {
+    fun updatePostalCodeToDb(me: ClassifiUser?) = viewModelScope.launch {
+        if (me != null) {
+            when (me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        contact = UserContact(
+                            postalCode = _postalCode.value
+                        )
+                    )
+                }
 
+                else -> {
+                    when (me.profile?.contact) {
+                        null -> me.profile?.contact = UserContact(
+                            postalCode = _postalCode.value
+                        )
+
+                        else -> {
+                            me.profile?.contact?.postalCode = _postalCode.value
+                        }
+                    }
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onDarkThemeConfigDialogStateChange(state: Boolean) {
@@ -307,22 +458,4 @@ class SettingsViewModel @Inject constructor(
         userDataRepository.setDarkThemeConfig(theme)
     }
 
-}
-
-suspend fun UserRepository.updateUserProfile(userId: Long, profileData: ProfileData): Boolean {
-    val currentUser = this.fetchUserById(userId) ?: return false
-    profileData.let { data ->
-        currentUser.let { user ->
-            user.profile?.bio = data.personalData?.bio
-            user.profile?.dob = data.personalData?.dob
-            user.profile?.phone = data.personalData?.phone
-            user.profile?.contact?.address = data.locationData?.address
-            user.profile?.contact?.city = data.locationData?.city
-            user.profile?.contact?.country = data.locationData?.country
-            user.profile?.contact?.postalCode = data.locationData?.postalCode
-            user.profile?.contact?.stateOfCountry = data.locationData?.stateOfCountry
-        }
-    }
-    this.updateUser(currentUser)
-    return true
 }
