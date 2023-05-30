@@ -53,6 +53,7 @@ dependencies {
     implementation(project(":feature:assessment"))
     implementation(project(":feature:reports"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:admin"))
 
     implementation(composeBom)
 

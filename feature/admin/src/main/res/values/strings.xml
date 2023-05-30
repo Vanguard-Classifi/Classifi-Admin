@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_school">Add school</string>
+    <string name="manage_school">Manage School</string>
+    <string name="go_back">go back</string>
+</resources>

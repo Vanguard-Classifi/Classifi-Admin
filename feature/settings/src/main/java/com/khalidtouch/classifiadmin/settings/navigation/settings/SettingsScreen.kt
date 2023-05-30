@@ -118,10 +118,12 @@ import java.time.LocalDate
 fun SettingsRoute(
     windowSizeClass: WindowSizeClass,
     onBack: () -> Unit,
+    onOpenSchoolAdminPanel: () -> Unit,
 ) {
     SettingsScreen(
         windowSizeClass = windowSizeClass,
         onBack = onBack,
+        onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
     )
 }
 
@@ -133,6 +135,7 @@ fun SettingsRoute(
 @Composable
 internal fun SettingsScreen(
     onBack: () -> Unit = {},
+    onOpenSchoolAdminPanel: () -> Unit,
     windowSizeClass: WindowSizeClass,
     settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
@@ -325,7 +328,9 @@ internal fun SettingsScreen(
                                     0 -> ProfileScreenWrapper(settingsViewModel)
                                     1 -> AccountScreenWrapper()
                                     2 -> PreferencesScreenWrapper()
-                                    3 -> AdministrationScreenWrapper()
+                                    3 -> AdministrationScreenWrapper(
+                                        onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
+                                    )
                                 }
                             }
                         }

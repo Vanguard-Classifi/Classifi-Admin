@@ -57,6 +57,17 @@ class SettingsViewModel @Inject constructor(
     private var _dragState = MutableLiveData<DraggableState>(draggableState)
     val dragState: LiveData<DraggableState> = _dragState
 
+    val observeMe: StateFlow<ClassifiUser?> =
+        userDataRepository.userData.map {
+            val id = it.userId
+            userRepository.fetchUserById(id)
+        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null,
+            )
+
     private val _username = MutableStateFlow<String>("")
     private val _phone = MutableStateFlow<String>("")
     private val _bio = MutableStateFlow<String>("")
@@ -150,17 +161,6 @@ class SettingsViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(2000),
             initialValue = SettingsUiState.Loading
         )
-
-    val observeMe: StateFlow<ClassifiUser?> =
-        userDataRepository.userData.map {
-            val id = it.userId
-            userRepository.fetchUserById(id)
-        }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = null,
-            )
 
     fun updateTabIndexBasedOnSwipe() {
         _selectedTabIndex.value = when (isSwipeLeft) {
