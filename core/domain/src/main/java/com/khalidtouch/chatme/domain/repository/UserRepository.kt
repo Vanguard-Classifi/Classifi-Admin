@@ -21,9 +21,11 @@ interface UserRepository {
 
     suspend fun fetchUserById(userId: Long): ClassifiUser?
 
+    fun observeUserById(userId: Long): Flow<ClassifiUser?>
+
     suspend fun fetchUserByEmail(email: String): ClassifiUser?
 
-    fun fetchAllUsers(): Flow<List<ClassifiUser>>
+    fun observeAllUsers(): Flow<List<ClassifiUser>>
 
     suspend fun fetchAllUsersList(): List<ClassifiUser>
 

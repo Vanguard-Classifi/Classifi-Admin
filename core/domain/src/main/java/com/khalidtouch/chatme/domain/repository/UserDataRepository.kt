@@ -35,6 +35,8 @@ interface UserDataRepository {
 
     suspend fun setUsername(name: String)
 
+    suspend fun setUserEmail(email: String)
+
     suspend fun setUserProfileImage(imageUrl: String)
 
     suspend fun setUserRole(userRole: UserRole)

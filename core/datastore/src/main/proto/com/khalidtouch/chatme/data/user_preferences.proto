@@ -37,4 +37,6 @@ message UserPreferences {
     string text_field_password = 13;
     
     string text_field_confirm_password = 14;
+
+    string user_email = 15;
 }

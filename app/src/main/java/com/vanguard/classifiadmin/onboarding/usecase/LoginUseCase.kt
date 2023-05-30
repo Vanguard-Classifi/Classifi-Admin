@@ -32,12 +32,10 @@ import javax.inject.Inject
 
 
 class LoginUseCase @Inject constructor(
-    private val userDataRepository: UserDataRepository,
     @Dispatcher(ClassifiDispatcher.IO) private val ioDispatcher: CoroutineDispatcher
 ) {
     val TAG = "Login"
     private val authentication: FirebaseAuth = Firebase.auth
-    private val fireStore: FirebaseFirestore = Firebase.firestore
     val scope = CoroutineScope(ioDispatcher + SupervisorJob())
 
     operator fun invoke(loginData: LoginData, callback: (OnLoginState) -> Unit) {

@@ -45,6 +45,12 @@ interface UserDao {
 
 
     @Query(
+        value = "select * from ClassifiUserEntity where userId = :id"
+    )
+    fun observeUserWithId(id: Long): Flow<ClassifiUserEntity?>
+
+
+    @Query(
         value = "select * from ClassifiUserEntity where email = :email"
     )
     suspend fun fetchUserByEmail(email: String): ClassifiUserEntity?
@@ -58,12 +64,12 @@ interface UserDao {
     @Query(
         value = "select * from ClassifiUserEntity order by username asc"
     )
-    fun fetchAllUsers(): Flow<List<ClassifiUserEntity>>
+    fun observeAllUsers(): Flow<List<ClassifiUserEntity>>
 
     @Query(
         value = "select * from ClassifiUserEntity order by username asc"
     )
-    suspend fun fetchAllUsersList(): List<ClassifiUserEntity>
+    suspend fun fetchAllUsers(): List<ClassifiUserEntity>
 
     @Query(
         value = "select * from ClassifiUserEntity where userId = :userId"

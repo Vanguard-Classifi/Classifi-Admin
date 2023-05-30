@@ -9,6 +9,7 @@ import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.model.UserData
 import com.vanguard.classifiadmin.MainActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -23,7 +24,7 @@ class MainActivityViewModel @Inject constructor(
 ) : ViewModel() {
 
     val uiState: StateFlow<MainActivityUiState> =
-        userDataRepository.userData.map {data ->
+        userDataRepository.userData.map { data ->
             MainActivityUiState.Success(
                 userData = data
             )
@@ -37,6 +38,14 @@ class MainActivityViewModel @Inject constructor(
         userDataRepository.setShouldHideOnboarding(false)
     }
 
+    val forceObserveMyId: StateFlow<Long> = userDataRepository.userData.map {
+        it.userId
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = -1,
+    )
+
     fun forceClearUsers() = viewModelScope.launch {
         userRepository.deleteAllUsers()
     }
@@ -48,9 +57,7 @@ class MainActivityViewModel @Inject constructor(
 }
 
 
-
-
 sealed interface MainActivityUiState {
-    object Loading: MainActivityUiState
-    data class Success(val userData: UserData): MainActivityUiState
+    object Loading : MainActivityUiState
+    data class Success(val userData: UserData) : MainActivityUiState
 }

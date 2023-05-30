@@ -34,7 +34,6 @@ import javax.inject.Inject
 
 class CreateAccountForSuperAdminUseCase @Inject constructor(
     private val userRepository: UserRepository,
-    private val userDataRepository: UserDataRepository,
     @Dispatcher(ClassifiDispatcher.IO) private val ioDispatcher: CoroutineDispatcher
 ) {
     val TAG = "CreateAccount"
@@ -46,6 +45,7 @@ class CreateAccountForSuperAdminUseCase @Inject constructor(
         data: CreateAccountData,
         callback: (OnCreateAccountState) -> Unit,
     ) {
+        callback(OnCreateAccountState.Starting)
         if (data.email.isBlank()) {
             return callback(OnCreateAccountState.EmptyEmailOrPassword)
         }
@@ -105,12 +105,6 @@ class CreateAccountForSuperAdminUseCase @Inject constructor(
                                         }
 
                                     Log.e(TAG, "invoke: saved user to firestore")
-
-                                    //cache preferences to protobuf
-                                    userDataRepository.setUserRole(
-                                        UserRole.SuperAdmin
-                                    )
-                                    userDataRepository.setUserId(currentUser.userId ?: -1)
                                 }
                                 Log.e(TAG, "invoke: set user id on protobuf")
                                 callback(OnCreateAccountState.Success)
@@ -160,6 +154,7 @@ class CreateAccountForSuperAdminUseCase @Inject constructor(
 
 
 sealed interface OnCreateAccountState {
+    object Starting: OnCreateAccountState
     object Success : OnCreateAccountState
     object Failed : OnCreateAccountState
     object EmptyEmailOrPassword : OnCreateAccountState

@@ -72,6 +72,9 @@ fun OnboardingScreen(
                                             )
                                         ) {
                                             when (it) {
+                                                OnCreateAccountState.Starting -> {
+                                                    //todo start loading bar
+                                                }
                                                 OnCreateAccountState.Success -> {
                                                     Log.e(TAG, "OnboardingScreen: success ")
                                                     navController.navigateToOnboardingSuccessfulScreen(

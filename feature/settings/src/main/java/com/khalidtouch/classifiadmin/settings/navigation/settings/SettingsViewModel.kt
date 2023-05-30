@@ -1,5 +1,6 @@
 package com.khalidtouch.classifiadmin.settings.navigation.settings
 
+import android.util.Log
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,13 +10,16 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
+import com.khalidtouch.chatme.domain.usecases.GetCurrentUserUseCase
 import com.khalidtouch.classifiadmin.data.util.ReadCountriesPagingSource
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
+import com.khalidtouch.classifiadmin.model.UserProfile
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import com.khalidtouch.classifiadmin.settings.navigation.profile.LocationData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.PersonalData
 import com.khalidtouch.classifiadmin.settings.navigation.profile.ProfileData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,8 +35,10 @@ class SettingsViewModel @Inject constructor(
     readCountriesPagingSource: ReadCountriesPagingSource,
     private val userRepository: UserRepository,
     private val userDataRepository: UserDataRepository,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : ViewModel() {
 
+    val TAG = "SettingsVM"
     private val _selectedTabIndex: MutableLiveData<Int> = MutableLiveData(0)
     val selectedTabIndex: LiveData<Int> = _selectedTabIndex
     val tabs = Settings.values().toList()
@@ -64,8 +70,6 @@ class SettingsViewModel @Inject constructor(
     private val _hasUserProfileUpdated = MutableStateFlow<Boolean>(false)
     private val _darkThemeConfigDialog = MutableStateFlow<Boolean>(false)
     val darkThemeConfigDialog = _darkThemeConfigDialog
-
-    private var updateUserJob: Job? = null
 
     private val locationData: StateFlow<LocationData> =
         combine(
@@ -107,6 +111,7 @@ class SettingsViewModel @Inject constructor(
             initialValue = PersonalData.Default,
         )
 
+
     private val profileData: StateFlow<ProfileData> =
         combine(
             personalData,
@@ -147,6 +152,16 @@ class SettingsViewModel @Inject constructor(
             initialValue = SettingsUiState.Loading
         )
 
+    val observeMe: StateFlow<ClassifiUser?> =
+        userDataRepository.userData.map {
+            val id = it.userId
+            userRepository.fetchUserById(id)
+        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null,
+            )
 
     fun updateTabIndexBasedOnSwipe() {
         _selectedTabIndex.value = when (isSwipeLeft) {
@@ -171,57 +186,117 @@ class SettingsViewModel @Inject constructor(
         _username.value = username
     }
 
+    fun resetUsername() {
+        _username.value = ""
+    }
+
+    fun updateUsernameToDb(
+        me: ClassifiUser?,
+    ) = viewModelScope.launch {
+        if(me != null) {
+            me.account?.username = _username.value
+            userRepository.updateUser(me)
+        }
+    }
+
     fun onPhoneChanged(phone: String) {
         _phone.value = phone
+    }
+
+    fun resetPhone() {
+        _phone.value = ""
+    }
+
+    fun updatePhoneToDb(me:ClassifiUser?) = viewModelScope.launch {
+        if(me != null) {
+            when(me.profile) {
+                null -> {
+                    me.profile = UserProfile(
+                        phone = _phone.value,
+                    )
+                }
+                else -> {
+                    me.profile?.phone = _phone.value
+                }
+            }
+            userRepository.updateUser(me)
+        }
     }
 
     fun onBioChanged(bio: String) {
         _bio.value = bio
     }
 
+    fun resetBio() {
+        _bio.value = ""
+    }
+
+    fun updateBioToDb() = viewModelScope.launch {
+
+    }
+
     fun onDobChanged(dob: String) {
         _dob.value = dob
+    }
+
+    fun updateDobToDb() = viewModelScope.launch {
+
     }
 
     fun onAddressChanged(address: String) {
         _address.value = address
     }
 
+    fun resetAddress() {
+        _address.value = ""
+    }
+
+    fun updateAddressToDb() = viewModelScope.launch {
+
+    }
+
     fun onCountryChanged(country: String) {
         _country.value = country
+    }
+
+    fun updateCountryToDb() = viewModelScope.launch {
+
     }
 
     fun onStateOfCountryChanged(state: String) {
         _stateOfCountry.value = state
     }
 
+    fun resetStateOfCountry() {
+        _stateOfCountry.value = ""
+    }
+
+    fun updateStateOfCountryToDb() = viewModelScope.launch {
+
+    }
+
     fun onCityChanged(city: String) {
         _city.value = city
+    }
+
+    fun resetCity() {
+        _city.value = ""
+    }
+
+    fun updateCityToDb() = viewModelScope.launch {
+
     }
 
     fun onPostalCodeChanged(code: String) {
         _postalCode.value = code
     }
 
-    fun updateUserProfile() {
-        if (updateUserJob != null) return
-        var isUpdateSuccessful = false
-        try {
-            updateUserJob = viewModelScope.launch {
-                isUpdateSuccessful = userRepository.updateUserProfile(
-                    (uiState as SettingsUiState.Success).data.userId,
-                    (uiState as SettingsUiState.Success).data.profileData ?: ProfileData(
-                        null,
-                        null
-                    ),
-                )
-                _hasUserProfileUpdated.value = isUpdateSuccessful
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            updateUserJob = null
-        }
+    fun resetPostalCode() {
+        _postalCode.value = ""
+    }
+
+    fun updatePostalToDb() = viewModelScope.launch {
+
     }
 
     fun onDarkThemeConfigDialogStateChange(state: Boolean) {

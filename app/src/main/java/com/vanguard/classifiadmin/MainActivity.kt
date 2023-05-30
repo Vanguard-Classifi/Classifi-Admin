@@ -57,6 +57,13 @@ class MainActivity : ComponentActivity() {
 
             viewModel = hiltViewModel<MainViewModel>()
 
+            LaunchedEffect(Unit) {
+              //  mainActivityViewModel.forceClearUsers()
+            }
+
+            val observeMyId by mainActivityViewModel.forceObserveMyId.collectAsStateWithLifecycle()
+
+            Log.e(TAG, "onCreate: my current id $observeMyId")
 
             ClassifiTheme(
                 darkTheme = darkTheme,

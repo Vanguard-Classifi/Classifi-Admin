@@ -252,6 +252,14 @@ class ClassifiPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setUserEmail(email: String) {
+        userPreferences.updateData { pref ->
+            pref.copy {
+                userEmail = email
+            }
+        }
+    }
+
     suspend fun setUserProfileImage(imageUrl: String) {
         userPreferences.updateData { userPref ->
             userPref.copy {

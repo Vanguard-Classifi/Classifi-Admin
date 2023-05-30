@@ -72,6 +72,10 @@ class OfflineFirstUserDataRepository @Inject constructor(
       classifiPreferenceDataSource.setUsername(name)
     }
 
+    override suspend fun setUserEmail(email: String) {
+        classifiPreferenceDataSource.setUserEmail(email)
+    }
+
     override suspend fun setUserProfileImage(imageUrl: String) {
        classifiPreferenceDataSource.setUserProfileImage(imageUrl)
     }

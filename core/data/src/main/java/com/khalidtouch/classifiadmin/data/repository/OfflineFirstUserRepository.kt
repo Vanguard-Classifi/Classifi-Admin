@@ -2,17 +2,18 @@ package com.khalidtouch.classifiadmin.data.repository
 
 import android.content.Context
 import com.khalidtouch.chatme.database.dao.UserDao
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
 import com.khalidtouch.classifiadmin.data.mapper.toModel
 import com.khalidtouch.classifiadmin.data.util.ReadCountriesUseCase
 import com.khalidtouch.classifiadmin.model.PagedCountry
+import com.khalidtouch.classifiadmin.model.UserRole
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class OfflineFirstUserRepository @Inject constructor(
@@ -20,9 +21,13 @@ class OfflineFirstUserRepository @Inject constructor(
     private val userDao: UserDao,
     private val modelMapper: ModelEntityMapper,
     private val readCountriesUseCase: ReadCountriesUseCase,
+    private val userDataRepository: UserDataRepository,
 ) : UserRepository {
     override suspend fun saveUser(user: ClassifiUser) {
         userDao.saveUserOrIgnore(modelMapper.userModelToEntity(user)!!)
+        userDataRepository.setUserId(user.userId ?: -1)
+        userDataRepository.setUserEmail(user.account?.email.orEmpty())
+        userDataRepository.setUserRole(user.account?.userRole ?: UserRole.Guest)
         /*todo -> then, save to server */
     }
 
@@ -37,6 +42,8 @@ class OfflineFirstUserRepository @Inject constructor(
         userDao.updateUser(
             modelMapper.userModelToEntity(user)!!
         )
+        userDataRepository.setUserId(user.userId ?: -1)
+        userDataRepository.setUserRole(user.account?.userRole ?: UserRole.Guest)
     }
 
     override suspend fun updateUsers(users: List<ClassifiUser>) {
@@ -61,19 +68,25 @@ class OfflineFirstUserRepository @Inject constructor(
         return modelMapper.userEntityToModel(userDao.fetchUserById(userId))
     }
 
+    override fun observeUserById(userId: Long): Flow<ClassifiUser?> {
+        return userDao.observeUserWithId(userId).map {
+            modelMapper.userEntityToModel(it)
+        }
+    }
+
     override suspend fun fetchUserByEmail(email: String): ClassifiUser? {
         return modelMapper.userEntityToModel(userDao.fetchUserByEmail(email))
     }
 
-    override fun fetchAllUsers(): Flow<List<ClassifiUser>> = flow {
-        val flowOfUsers = userDao.fetchAllUsers()
-        flowOfUsers.collect {
-            emit(it.map { user -> modelMapper.userEntityToModel(user)!! })
+    override fun observeAllUsers(): Flow<List<ClassifiUser>> {
+        return userDao.observeAllUsers().map {
+            it.map { user -> modelMapper.userEntityToModel(user)!! }
         }
     }
 
+
     override suspend fun fetchAllUsersList(): List<ClassifiUser> {
-        return userDao.fetchAllUsersList().map { modelMapper.userEntityToModel(it)!! }
+        return userDao.fetchAllUsers().map { modelMapper.userEntityToModel(it)!! }
     }
 
     override suspend fun fetchUserWithSchools(userId: Long): ClassifiUser? {
@@ -103,11 +116,5 @@ class OfflineFirstUserRepository @Inject constructor(
 
     override suspend fun getCountriesFromJson(page: Int, limit: Int): PagedCountry {
         return readCountriesUseCase(context, page, limit)
-//        val result = mutableListOf<PagedCountry>()
-//        for (p in page..limit) {
-//            val item = readCountriesUseCase(context).find { it.page == p } ?: break
-//            result.add(item)
-//        }
-//        return result
     }
 }

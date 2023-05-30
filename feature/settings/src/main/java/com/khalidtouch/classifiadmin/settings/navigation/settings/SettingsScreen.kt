@@ -174,6 +174,9 @@ internal fun SettingsScreen(
 
         var pickerDialogState by rememberSaveable { mutableStateOf(false) }
         val darkThemeConfigDialogState by settingsViewModel.darkThemeConfigDialog.collectAsStateWithLifecycle()
+        val me by settingsViewModel.observeMe.collectAsStateWithLifecycle()
+
+        Log.e(TAG, "SettingsScreen: Me is currently $me")
 
         LaunchedEffect(currentSettingItemClicked!!, pickerDialogState) {
             if (
@@ -321,7 +324,7 @@ internal fun SettingsScreen(
                                      * 2 -> Preferences
                                      * 3 -> Administration
                                      */
-                                    0 -> ProfileScreenWrapper()
+                                    0 -> ProfileScreenWrapper(settingsViewModel)
                                     1 -> AccountScreenWrapper()
                                     2 -> PreferencesScreenWrapper()
                                     3 -> AdministrationScreenWrapper()
@@ -332,6 +335,7 @@ internal fun SettingsScreen(
                 }
             )
 
+            //bottom sheet
             if (showModalBottomSheet) {
                 when (uiState) {
                     is SettingsUiState.Loading -> Unit
@@ -378,8 +382,8 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */
-
+                                                    onClick = {
+                                                        settingsViewModel.resetUsername()
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -397,8 +401,8 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save name */
-
+                                                    onClick = {
+                                                        //save user name to db
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -443,8 +447,8 @@ internal fun SettingsScreen(
                                             },
                                             responseButtons = {
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Cancel */
-
+                                                    onClick = {
+                                                        settingsViewModel.resetPhone()
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
@@ -462,8 +466,8 @@ internal fun SettingsScreen(
                                                 )
 
                                                 ClassifiTextButton(
-                                                    onClick = { /*TODO* on Save phone */
-
+                                                    onClick = {
+                                                        settingsViewModel.updatePhoneToDb(me)
                                                         scope.launch {
                                                             sheetState.hide()
                                                             showModalBottomSheet = false
