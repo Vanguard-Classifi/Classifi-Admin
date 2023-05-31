@@ -70,7 +70,9 @@ class ClassifiPreferencesDataSource @Inject constructor(
                     UserRoleProto.USER_ROLE_PARENT -> UserRole.Parent
                     UserRoleProto.USER_ROLE_TEACHER -> UserRole.Teacher
                     UserRoleProto.USER_ROLE_STUDENT -> UserRole.Student
-                }
+                },
+                userEmail = it.userEmail,
+                schoolId = it.schoolId,
             )
         }
 

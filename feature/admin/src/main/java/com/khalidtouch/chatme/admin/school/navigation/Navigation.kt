@@ -85,6 +85,8 @@ fun SchoolNavHost(
         schoolScreen(
             onBackPressed = onBackPressed,
             windowSizeClass = windowSizeClass,
+            onModifySchool = {/*TODO()*/},
+            onClickItem = {/*TODO()*/}
         )
     }
 }

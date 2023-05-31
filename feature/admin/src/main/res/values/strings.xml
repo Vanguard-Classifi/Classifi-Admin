@@ -12,4 +12,5 @@
     <string name="school_address">School address</string>
     <string name="cancel">Cancel</string>
     <string name="school_name_not_set">[School name not set]</string>
+    <string name="address_not_added">Address not added</string>
 </resources>

@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -25,12 +26,16 @@ class SchoolViewModel @Inject constructor(
     private val schoolRepository: SchoolRepository,
 ) : ViewModel() {
     private val _addSchoolDialogState = MutableStateFlow<Boolean>(false)
+    private val _hasFinishedLoading = MutableStateFlow<Boolean>(false)
 
-    val uiState: StateFlow<SchoolScreenUiState> = _addSchoolDialogState.map {
+    val uiState: StateFlow<SchoolScreenUiState> = combine(
+        _addSchoolDialogState,
+        _hasFinishedLoading,
+    ) { dialogState, finishedLoading ->
         SchoolScreenUiState.Success(
             data = SchoolScreenData(
-                shouldShowAddSchoolDialog = it,
-                currentSchool = null,
+                shouldShowAddSchoolDialog = dialogState,
+                hasFinishedLoading = finishedLoading,
             )
         )
     }.stateIn(
@@ -56,6 +61,10 @@ class SchoolViewModel @Inject constructor(
     fun onHideAddSchoolDialog() {
         _addSchoolDialogState.value = false
     }
+
+    fun onFinishLoadingState() {
+        _hasFinishedLoading.value = true
+    }
 }
 
 
@@ -66,5 +75,5 @@ sealed interface SchoolScreenUiState {
 
 data class SchoolScreenData(
     val shouldShowAddSchoolDialog: Boolean,
-    val currentSchool: ClassifiSchool?,
+    val hasFinishedLoading: Boolean,
 )

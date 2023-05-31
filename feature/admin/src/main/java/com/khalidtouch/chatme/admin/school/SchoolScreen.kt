@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import com.google.accompanist.navigation.animation.composable
@@ -33,12 +34,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +53,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -68,6 +73,7 @@ import com.khalidtouch.core.designsystem.components.ClassifiFab
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
 import com.khalidtouch.core.designsystem.components.ClassifiSimpleTopAppBar
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +82,12 @@ internal fun SchoolRoute(
     schoolViewModel: SchoolViewModel = hiltViewModel<SchoolViewModel>(),
     addSchoolViewModel: AddSchoolViewModel = hiltViewModel<AddSchoolViewModel>(),
     onBackPressed: () -> Unit,
+    onModifySchool: () -> Unit,
+    onClickItem: (SchoolSegment) -> Unit,
 ) {
+    val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
+    val uiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
         containerColor = Color.Transparent,
         modifier = Modifier.fillMaxSize(),
@@ -109,15 +120,24 @@ internal fun SchoolRoute(
             )
         },
         floatingActionButton = {
-            ClassifiFab(
-                onClick = schoolViewModel::onShowAddSchoolDialog,
-                icon = {
-                    Icon(
-                        painter = painterResource(ClassifiIcons.Add),
-                        contentDescription = stringResource(R.string.add_school)
-                    )
+            when(uiState) {
+                is SchoolScreenUiState.Loading -> Unit
+                is SchoolScreenUiState.Success -> {
+                    if ((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading){
+                        if (mySchool == null) {
+                            ClassifiFab(
+                                onClick = schoolViewModel::onShowAddSchoolDialog,
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(ClassifiIcons.Add),
+                                        contentDescription = stringResource(R.string.add_school)
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
-            )
+            }
         },
         content = {
             SchoolScreen(
@@ -125,6 +145,8 @@ internal fun SchoolRoute(
                 schoolViewModel = schoolViewModel,
                 windowSizeClass = windowSizeClass,
                 addSchoolViewModel = addSchoolViewModel,
+                onModifySchool = onModifySchool,
+                onClickItem = onClickItem,
             )
         }
     )
@@ -137,11 +159,18 @@ private fun SchoolScreen(
     schoolViewModel: SchoolViewModel,
     addSchoolViewModel: AddSchoolViewModel,
     windowSizeClass: WindowSizeClass,
+    onModifySchool: () -> Unit,
+    onClickItem: (SchoolSegment) -> Unit,
 ) {
     val uiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
     val state = rememberLazyListState()
     val configuration = LocalConfiguration.current
     val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState) {
+        delay(2_000)
+        schoolViewModel.onFinishLoadingState()
+    }
 
     when (uiState) {
         is SchoolScreenUiState.Loading -> Unit
@@ -151,23 +180,28 @@ private fun SchoolScreen(
                     state = state,
                     modifier = modifier
                         .fillMaxSize()
-                        .testTag("admin:school")
+                        .testTag("admin:school"),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    contentPadding = PaddingValues(16.dp),
                 ) {
                     schoolItem(
                         fullWidth = configuration.screenWidthDp.dp,
-                        school = ,
-                        onModifySchool = ,
-                        onClickItem = ,
+                        school = mySchool!!,
+                        onModifySchool = onModifySchool,
+                        onClickItem = onClickItem,
                     )
                 }
             }
 
-            if (mySchool == null) {
-                ItemNotAvailable(
-                    headerText = stringResource(id = R.string.no_school_added),
-                    labelText = stringResource(id = R.string.click_plus_to_add)
-                )
+            if (((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading)) {
+                if (mySchool == null) {
+                    ItemNotAvailable(
+                        headerText = stringResource(id = R.string.no_school_added),
+                        labelText = stringResource(id = R.string.click_plus_to_add)
+                    )
+                }
             }
+
 
             if ((uiState as SchoolScreenUiState.Success).data.shouldShowAddSchoolDialog) {
                 AddSchoolScreen(
@@ -214,6 +248,8 @@ fun NavController.navigateToSchoolScreen() {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.schoolScreen(
     windowSizeClass: WindowSizeClass,
+    onModifySchool: () -> Unit,
+    onClickItem: (SchoolSegment) -> Unit,
     onBackPressed: () -> Unit,
 ) {
     composable(
@@ -222,6 +258,8 @@ fun NavGraphBuilder.schoolScreen(
         SchoolRoute(
             onBackPressed = onBackPressed,
             windowSizeClass = windowSizeClass,
+            onClickItem = onClickItem,
+            onModifySchool = onModifySchool,
         )
     }
 }
@@ -280,7 +318,7 @@ fun SchoolContent(
             onModifySchool = onModifySchool,
         )
         SchoolBase(
-            school = school ,
+            school = school,
             onClick = onClickItem,
         )
     }
@@ -292,35 +330,41 @@ private fun SchoolBase(
     school: ClassifiSchool,
     onClick: (SchoolSegment) -> Unit,
 ) {
-  Column {
-      FlowRow {
-          SchoolSegment.values().map {
-              val stats = when(it) {
-                  SchoolSegment.Admin -> school.admins.size
-                  SchoolSegment.Parents -> school.parents.size
-                  SchoolSegment.Students -> school.students.size
-                  SchoolSegment.Teachers -> school.teachers.size
-                  SchoolSegment.Classes -> school.classes.size
-              }
-              SchoolBaseItem(
-                  segment = it,
-                  stats = stats,
-                  text = it.text,
-                  icon = it.icon,
-                  onClick = onClick,
-              )
-          }
-      }
-      Spacer(Modifier.height(16.dp))
-      Box(Modifier.padding(16.dp)) {
-          Text(
-              text = school.address.orEmpty(),
-              style = MaterialTheme.typography.labelMedium.copy(
-                  color = MaterialTheme.colorScheme.outline,
-              )
-          )
-      }
-  }
+    Column {
+        FlowRow {
+            SchoolSegment.values().map {
+                val stats = when (it) {
+                    SchoolSegment.Admin -> school.admins.size
+                    SchoolSegment.Parents -> school.parents.size
+                    SchoolSegment.Students -> school.students.size
+                    SchoolSegment.Teachers -> school.teachers.size
+                    SchoolSegment.Classes -> school.classes.size
+                }
+                SchoolBaseItem(
+                    segment = it,
+                    stats = stats,
+                    text = it.text,
+                    icon = it.icon,
+                    onClick = onClick,
+                )
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        Box(Modifier.padding(16.dp)) {
+            val schoolAddress = when(school.address) {
+                null, "" -> stringResource(id = R.string.address_not_added)
+                else -> school.address!!
+            }
+            Text(
+                text = schoolAddress,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = MaterialTheme.colorScheme.outline,
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
 }
 
 
@@ -332,14 +376,23 @@ private fun SchoolBaseItem(
     @DrawableRes icon: Int,
     onClick: (SchoolSegment) -> Unit,
 ) {
-    Row {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.padding(16.dp)) {
             ClassifiIconButton(
                 onClick = { onClick(segment) },
+                colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.outline.copy(
+                        SchoolScreenDefaults.iconTintAlpha
+                    )
+                ),
                 icon = {
                     Icon(
                         painterResource(id = segment.icon),
-                        contentDescription = segment.text
+                        contentDescription = segment.text,
+                        tint = MaterialTheme.colorScheme.outline.copy(
+                            SchoolScreenDefaults.iconTintAlpha
+                        )
                     )
                 }
             )
@@ -347,14 +400,14 @@ private fun SchoolBaseItem(
         Spacer(Modifier.width(8.dp))
         Text(
             text = stats.toString(),
-            style = MaterialTheme.typography.labelLarge.copy(
+            style = MaterialTheme.typography.headlineSmall.copy(
                 color = MaterialTheme.colorScheme.outline,
             )
         )
         Spacer(Modifier.width(8.dp))
         Text(
             text = segment.text,
-            style = MaterialTheme.typography.labelLarge.copy(
+            style = MaterialTheme.typography.headlineSmall.copy(
                 color = MaterialTheme.colorScheme.outline,
             )
         )
@@ -379,7 +432,7 @@ private fun SchoolHeader(
         AsyncImage(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp),
+                .height(200.dp),
             model = ImageRequest.Builder(LocalContext.current)
                 .data(bannerUri).build(),
             contentDescription = null,
@@ -389,14 +442,24 @@ private fun SchoolHeader(
         Box(
             Modifier
                 .matchParentSize()
-                .padding(bottom = 16.dp, start = 16.dp),
+                .padding(
+                    bottom = 16.dp, start = 16.dp,
+                    end = 32.dp,
+                ),
             contentAlignment = Alignment.BottomStart
         ) {
+            val schoolName: String = when(school.schoolName) {
+                null, "" -> stringResource(id = R.string.school_name_not_set)
+                else -> school.schoolName!!
+            }
             Text(
-                text = school.schoolName ?: stringResource(id = R.string.school_name_not_set),
-                style = MaterialTheme.typography.headlineMedium.copy(
+                text = schoolName,
+                style = MaterialTheme.typography.headlineSmall.copy(
                     color = MaterialTheme.colorScheme.outline,
-                )
+                    fontWeight = FontWeight.Bold,
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
         }
 
@@ -407,12 +470,17 @@ private fun SchoolHeader(
             contentAlignment = Alignment.TopEnd
         ) {
             ClassifiIconButton(
+                colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.outline.copy(
+                        SchoolScreenDefaults.iconTintAlpha
+                    )
+                ),
                 onClick = onModifySchool,
                 icon = {
                     Icon(
                         painter = painterResource(id = ClassifiIcons.EditSolid),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.outline
                     )
                 }
             )
@@ -426,4 +494,8 @@ enum class SchoolSegment(val text: String, val icon: Int) {
     Parents("Parents", ClassifiIcons.Parent),
     Admin("Admins", ClassifiIcons.Admin),
     Classes("Classes", ClassifiIcons.Classroom)
+}
+
+object SchoolScreenDefaults {
+    const val iconTintAlpha = 0.7f
 }
