@@ -10,4 +10,6 @@
     <string name="successfully_added">Successfully added</string>
     <string name="enter_school_name">Enter school name</string>
     <string name="school_address">School address</string>
+    <string name="cancel">Cancel</string>
+    <string name="school_name_not_set">[School name not set]</string>
 </resources>

@@ -12,6 +12,7 @@ data class ClassifiSchool(
     var students: List<ClassifiUser> = emptyList(),
     var teachers: List<ClassifiUser> = emptyList(),
     var parents: List<ClassifiUser> = emptyList(),
+    var admins: List<ClassifiUser> = emptyList(),
     var classes: List<ClassifiClass> = emptyList(),
     var sessions: List<ClassifiAcademicSession> = emptyList(),
 ) {

@@ -6,6 +6,9 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.khalidtouch.chatme.domain.repository.SchoolRepository
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
+import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,13 +20,17 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class SchoolViewModel @Inject constructor() : ViewModel() {
+class SchoolViewModel @Inject constructor(
+    private val userDataRepository: UserDataRepository,
+    private val schoolRepository: SchoolRepository,
+) : ViewModel() {
     private val _addSchoolDialogState = MutableStateFlow<Boolean>(false)
 
     val uiState: StateFlow<SchoolScreenUiState> = _addSchoolDialogState.map {
         SchoolScreenUiState.Success(
             data = SchoolScreenData(
-                shouldShowAddSchoolDialog = it
+                shouldShowAddSchoolDialog = it,
+                currentSchool = null,
             )
         )
     }.stateIn(
@@ -31,6 +38,16 @@ class SchoolViewModel @Inject constructor() : ViewModel() {
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = SchoolScreenUiState.Loading
     )
+
+    val observeMySchool: StateFlow<ClassifiSchool?> = userDataRepository.userData.map {
+        val schoolId = it.schoolId
+        schoolRepository.fetchSchoolById(schoolId)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
+        )
 
     fun onShowAddSchoolDialog() {
         _addSchoolDialogState.value = true
@@ -49,4 +66,5 @@ sealed interface SchoolScreenUiState {
 
 data class SchoolScreenData(
     val shouldShowAddSchoolDialog: Boolean,
+    val currentSchool: ClassifiSchool?,
 )

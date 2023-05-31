@@ -43,12 +43,12 @@ fun AddSchoolScreen(
                             AddSchoolDestination.INPUT -> {
                                 addSchoolViewModel.onRegisterSchoolToDb(
                                     info = AddSchoolInfo(
-                                       userId = state.myId,
+                                        userId = state.myId,
                                         name = state.schoolName,
                                         address = state.schoolAddress,
                                     )
                                 ) {
-                                    when(it) {
+                                    when (it) {
                                         is OnRegisterSchoolState.Starting -> Unit
                                         is OnRegisterSchoolState.Success -> {
                                             addSchoolUiState.navController.navigateToInputSchoolSuccessfulScreen(
@@ -56,9 +56,11 @@ fun AddSchoolScreen(
                                             )
                                             addSchoolViewModel.onNavigate(AddSchoolDestination.SUCCESS)
                                         }
+
                                         is OnRegisterSchoolState.NameOrAddressError -> {
 
                                         }
+
                                         else -> Unit
                                     }
                                 }
@@ -83,6 +85,26 @@ fun AddSchoolScreen(
             }
         },
         dismissButton = {
+            when (state.currentDestination) {
+                AddSchoolDestination.INPUT -> {
+                    Box(Modifier.padding(horizontal = 8.dp)) {
+                        ClassifiTextButton(
+                            onClick = {
+                                schoolViewModel.onHideAddSchoolDialog()
+                            },
+                            text = {
+                                val text = stringResource(id = R.string.cancel)
+                                Text(
+                                    text = text,
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        )
+                    }
+                }
+
+                else -> Unit
+            }
         },
         title = {
             Text(

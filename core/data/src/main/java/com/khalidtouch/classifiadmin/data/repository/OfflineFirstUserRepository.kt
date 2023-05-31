@@ -3,8 +3,10 @@ package com.khalidtouch.classifiadmin.data.repository
 import android.content.Context
 import com.khalidtouch.chatme.database.dao.UserDao
 import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
+import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
+import com.khalidtouch.chatme.network.UserNetworkDataSource
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
 import com.khalidtouch.classifiadmin.data.mapper.toModel
@@ -23,24 +25,28 @@ class OfflineFirstUserRepository @Inject constructor(
     private val modelMapper: ModelEntityMapper,
     private val readCountriesUseCase: ReadCountriesUseCase,
     private val userDataRepository: UserDataRepository,
+    private val userNetworkDataSource: UserNetworkDataSource,
 ) : UserRepository {
     override suspend fun saveUser(user: ClassifiUser) {
         userDao.saveUserOrIgnore(modelMapper.userModelToEntity(user)!!)
         userDataRepository.setUserId(user.userId ?: -1)
         userDataRepository.setUserEmail(user.account?.email.orEmpty())
         userDataRepository.setUserRole(user.account?.userRole ?: UserRole.Guest)
-        /*todo -> then, save to server */
+        userNetworkDataSource.saveUser(user)
     }
 
     override suspend fun saveUsers(users: List<ClassifiUser>) {
         userDao.saveUsersOrIgnore(
             users.map { user -> modelMapper.userModelToEntity(user)!! }
         )
-        /*todo -> then, save to server */
+        users.map {
+            userNetworkDataSource.saveUser(it)
+        }
     }
 
-    override suspend fun registerUserWithSchool(userId: Long, schoolId: Long) {
+    override suspend fun registerUserWithSchool(userId: Long, schoolId: Long, schoolName: String) {
         userDao.registerUserWithSchool(UsersWithSchoolsCrossRef(userId, schoolId))
+        userNetworkDataSource.registerUserWithSchool(userId, schoolId, schoolName)
     }
 
     override suspend fun updateUser(user: ClassifiUser) {
@@ -49,12 +55,14 @@ class OfflineFirstUserRepository @Inject constructor(
         )
         userDataRepository.setUserId(user.userId ?: -1)
         userDataRepository.setUserRole(user.account?.userRole ?: UserRole.Guest)
+        userNetworkDataSource.updateUser(user)
     }
 
     override suspend fun updateUsers(users: List<ClassifiUser>) {
         userDao.updateUsers(
             users.map { user -> modelMapper.userModelToEntity(user)!! }
         )
+        users.map { userNetworkDataSource.updateUser(it) }
     }
 
     override suspend fun deleteUser(user: ClassifiUser) {

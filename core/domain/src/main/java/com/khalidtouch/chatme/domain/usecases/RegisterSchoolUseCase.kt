@@ -36,6 +36,7 @@ class RegisterSchoolUseCase @Inject constructor(
         schoolRepository.registerUserWithSchool(
             userId = info.userId,
             schoolId = schoolId,
+            schoolName = info.schoolName,
         )
         callback(OnRegisterSchoolState.Success)
     }

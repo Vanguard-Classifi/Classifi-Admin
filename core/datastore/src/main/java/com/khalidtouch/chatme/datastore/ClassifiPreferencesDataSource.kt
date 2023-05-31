@@ -295,7 +295,15 @@ class ClassifiPreferencesDataSource @Inject constructor(
                 }
             }
         }
+    }
 
+
+    suspend fun setSchoolId(id: Long) {
+        userPreferences.updateData { pref ->
+            pref.copy {
+                schoolId = id
+            }
+        }
     }
 }
 

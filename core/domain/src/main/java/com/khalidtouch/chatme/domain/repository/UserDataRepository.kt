@@ -40,4 +40,6 @@ interface UserDataRepository {
     suspend fun setUserProfileImage(imageUrl: String)
 
     suspend fun setUserRole(userRole: UserRole)
+
+    suspend fun setSchoolId(schoolId: Long)
 }

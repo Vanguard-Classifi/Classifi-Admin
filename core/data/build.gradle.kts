@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:datastore"))
     implementation(project(":core:model"))
+    implementation(project(":core:network"))
     implementation(libs.google.gson)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.common)

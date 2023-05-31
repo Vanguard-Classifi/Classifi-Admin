@@ -48,6 +48,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":core:domain"))
+    implementation(project(":core:network"))
     implementation(project(":feature:feeds"))
     implementation(project(":feature:students"))
     implementation(project(":feature:assessment"))

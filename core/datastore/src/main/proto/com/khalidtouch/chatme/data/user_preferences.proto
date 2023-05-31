@@ -39,4 +39,6 @@ message UserPreferences {
     string text_field_confirm_password = 14;
 
     string user_email = 15;
+
+    int64 school_id = 16;
 }

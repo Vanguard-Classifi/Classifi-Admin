@@ -83,4 +83,8 @@ class OfflineFirstUserDataRepository @Inject constructor(
     override suspend fun setUserRole(userRole: UserRole) {
        classifiPreferenceDataSource.setUserRole(userRole)
     }
+
+    override suspend fun setSchoolId(schoolId: Long) {
+        classifiPreferenceDataSource.setSchoolId(schoolId)
+    }
 }

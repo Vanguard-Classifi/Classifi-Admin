@@ -12,4 +12,6 @@ data class UserData(
     val userName: String,
     val profileImage: String,
     val role: UserRole,
+    val userEmail: String,
+    val schoolId: Long,
 )
