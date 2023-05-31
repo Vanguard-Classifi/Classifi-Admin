@@ -7,6 +7,8 @@ interface SchoolRepository {
 
     suspend fun saveSchools(schools: List<ClassifiSchool>)
 
+    suspend fun registerUserWithSchool(userId: Long, schoolId: Long)
+
     suspend fun updateSchool(school: ClassifiSchool)
 
     suspend fun deleteSchool(school: ClassifiSchool)

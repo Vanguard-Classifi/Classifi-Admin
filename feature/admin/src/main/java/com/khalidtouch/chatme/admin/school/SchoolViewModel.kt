@@ -35,6 +35,10 @@ class SchoolViewModel @Inject constructor() : ViewModel() {
     fun onShowAddSchoolDialog() {
         _addSchoolDialogState.value = true
     }
+
+    fun onHideAddSchoolDialog() {
+        _addSchoolDialogState.value = false
+    }
 }
 
 

@@ -47,6 +47,7 @@ object ClassifiIcons {
     val DropdownClose = R.drawable.icon_dropdown_close
     val Edit = R.drawable.icon_edit
     val EditSolid = R.drawable.icon_edit_solid
+    val EmptyTv = R.drawable.icon_empty_tv
     val Enroll = R.drawable.icon_enroll
     val Error = R.drawable.icon_error
     val Exam = R.drawable.icon_exam

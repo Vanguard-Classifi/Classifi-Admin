@@ -3,4 +3,11 @@
     <string name="add_school">Add school</string>
     <string name="manage_school">Manage School</string>
     <string name="go_back">go back</string>
+    <string name="no_school_added">No school added</string>
+    <string name="click_plus_to_add">Click + to add</string>
+    <string name="save">Save</string>
+    <string name="finish">Finish</string>
+    <string name="successfully_added">Successfully added</string>
+    <string name="enter_school_name">Enter school name</string>
+    <string name="school_address">School address</string>
 </resources>

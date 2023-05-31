@@ -9,6 +9,8 @@ interface UserRepository {
 
     suspend fun saveUsers(users: List<ClassifiUser>)
 
+    suspend fun registerUserWithSchool(userId: Long, schoolId: Long)
+
     suspend fun updateUser(user: ClassifiUser)
 
     suspend fun updateUsers(users: List<ClassifiUser>)

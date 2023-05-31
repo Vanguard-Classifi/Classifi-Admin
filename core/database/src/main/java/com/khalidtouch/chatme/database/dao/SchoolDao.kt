@@ -11,6 +11,7 @@ import com.khalidtouch.chatme.database.models.ClassifiSchoolEntity
 import com.khalidtouch.chatme.database.relations.SchoolWithClasses
 import com.khalidtouch.chatme.database.relations.SchoolWithSessions
 import com.khalidtouch.chatme.database.relations.SchoolWithUsers
+import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 
 @Dao
 interface SchoolDao {
@@ -19,6 +20,10 @@ interface SchoolDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun saveSchoolsOrIgnore(schools: List<ClassifiSchoolEntity>)
+
+    @Insert
+    suspend fun registerUserWithSchool(userWithSchool: UsersWithSchoolsCrossRef)
+
 
     @Update
     suspend fun updateSchool(school: ClassifiSchoolEntity)

@@ -82,9 +82,9 @@ fun SchoolNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        /*todo screens */
         schoolScreen(
             onBackPressed = onBackPressed,
+            windowSizeClass = windowSizeClass,
         )
     }
 }

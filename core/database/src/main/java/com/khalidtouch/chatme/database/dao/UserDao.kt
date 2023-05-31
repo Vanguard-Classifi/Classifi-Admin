@@ -11,6 +11,7 @@ import androidx.room.Upsert
 import com.khalidtouch.chatme.database.models.ClassifiUserEntity
 import com.khalidtouch.chatme.database.relations.UserWithClasses
 import com.khalidtouch.chatme.database.relations.UserWithSchools
+import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,6 +21,9 @@ interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun saveUsersOrIgnore(users: List<ClassifiUserEntity>)
+
+    @Insert
+    suspend fun registerUserWithSchool(userWithSchool: UsersWithSchoolsCrossRef)
 
     @Update
     suspend fun updateUser(user: ClassifiUserEntity)

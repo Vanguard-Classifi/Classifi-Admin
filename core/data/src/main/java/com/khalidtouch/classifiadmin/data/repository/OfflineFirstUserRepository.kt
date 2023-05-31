@@ -2,6 +2,7 @@ package com.khalidtouch.classifiadmin.data.repository
 
 import android.content.Context
 import com.khalidtouch.chatme.database.dao.UserDao
+import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
@@ -36,6 +37,10 @@ class OfflineFirstUserRepository @Inject constructor(
             users.map { user -> modelMapper.userModelToEntity(user)!! }
         )
         /*todo -> then, save to server */
+    }
+
+    override suspend fun registerUserWithSchool(userId: Long, schoolId: Long) {
+        userDao.registerUserWithSchool(UsersWithSchoolsCrossRef(userId, schoolId))
     }
 
     override suspend fun updateUser(user: ClassifiUser) {

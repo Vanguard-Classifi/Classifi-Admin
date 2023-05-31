@@ -1,6 +1,7 @@
 package com.khalidtouch.classifiadmin.data.repository
 
 import com.khalidtouch.chatme.database.dao.SchoolDao
+import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
@@ -19,6 +20,10 @@ class OfflineFirstSchoolRepository @Inject constructor(
 
     override suspend fun saveSchools(schools: List<ClassifiSchool>) {
         schoolDao.saveSchoolsOrIgnore(schools.map { school -> modelMapper.schoolModelToEntity(school)!! })
+    }
+
+    override suspend fun registerUserWithSchool(userId: Long, schoolId: Long) {
+        schoolDao.registerUserWithSchool(UsersWithSchoolsCrossRef(userId, schoolId))
     }
 
     override suspend fun updateSchool(school: ClassifiSchool) {
