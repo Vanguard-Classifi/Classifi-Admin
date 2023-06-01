@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.model.UserData
@@ -21,6 +22,7 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val userRepository: UserRepository,
+    private val schoolRepository: SchoolRepository,
 ) : ViewModel() {
 
     val uiState: StateFlow<MainActivityUiState> =
@@ -53,6 +55,10 @@ class MainActivityViewModel @Inject constructor(
     fun forceLogout() = viewModelScope.launch {
         val auth = Firebase.auth
         auth.signOut()
+    }
+
+    fun forceClearSchools() = viewModelScope.launch {
+        schoolRepository.deleteAllSchools()
     }
 }
 

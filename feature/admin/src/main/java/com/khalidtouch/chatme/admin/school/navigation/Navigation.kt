@@ -8,12 +8,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.khalidtouch.chatme.admin.school.SchoolAppState
+import com.khalidtouch.chatme.admin.school.SchoolViewModel
+import com.khalidtouch.chatme.admin.school.modifyschool.modifySchoolScreen
+import com.khalidtouch.chatme.admin.school.modifyschool.navigateToModifySchool
+import com.khalidtouch.chatme.admin.school.navigateToSchoolScreen
 import com.khalidtouch.chatme.admin.school.rememberSchoolAppState
 import com.khalidtouch.chatme.admin.school.schoolNavigationRoute
 import com.khalidtouch.chatme.admin.school.schoolScreen
@@ -76,6 +81,7 @@ fun SchoolNavHost(
     appState: SchoolAppState = rememberSchoolAppState(windowSizeClass = windowSizeClass),
     startDestination: String = schoolNavigationRoute,
     onBackPressed: () -> Unit,
+    schoolViewModel: SchoolViewModel = hiltViewModel<SchoolViewModel>(),
 ) {
     AnimatedNavHost(
         navController = appState.navController,
@@ -85,8 +91,14 @@ fun SchoolNavHost(
         schoolScreen(
             onBackPressed = onBackPressed,
             windowSizeClass = windowSizeClass,
-            onModifySchool = {/*TODO()*/},
-            onClickItem = {/*TODO()*/}
+            onModifySchool = { appState.navController.navigateToModifySchool() },
+            onClickItem = {/*TODO()*/ },
+            schoolViewModel = schoolViewModel,
+        )
+
+        modifySchoolScreen(
+            onBackPressed = { appState.navController.navigateToSchoolScreen() },
+            schoolViewModel = schoolViewModel,
         )
     }
 }

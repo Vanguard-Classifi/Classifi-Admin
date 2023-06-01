@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(Unit) {
               //  mainActivityViewModel.forceClearUsers()
+               // mainActivityViewModel.forceClearSchools()
             }
 
             val observeMyId by mainActivityViewModel.forceObserveMyId.collectAsStateWithLifecycle()

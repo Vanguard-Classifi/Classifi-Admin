@@ -31,6 +31,9 @@ interface SchoolDao {
     @Delete
     suspend fun deleteSchool(school: ClassifiSchoolEntity)
 
+    @Query("delete from ClassifiSchoolEntity")
+    suspend fun deleteAllSchools()
+
     @Query(
         value = "select * from ClassifiSchoolEntity where schoolId = :id"
     )

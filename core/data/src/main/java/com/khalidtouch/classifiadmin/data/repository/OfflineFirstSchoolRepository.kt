@@ -3,6 +3,7 @@ package com.khalidtouch.classifiadmin.data.repository
 import com.khalidtouch.chatme.database.dao.SchoolDao
 import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.network.SchoolNetworkDataSource
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
@@ -15,10 +16,12 @@ class OfflineFirstSchoolRepository @Inject constructor(
     private val modelMapper: ModelEntityMapper,
     private val schoolDao: SchoolDao,
     private val schoolNetworkDataSource: SchoolNetworkDataSource,
+    private val userDataRepository: UserDataRepository,
 ) : SchoolRepository {
     override suspend fun saveSchool(school: ClassifiSchool) {
         schoolDao.saveSchoolOrIgnore(modelMapper.schoolModelToEntity(school)!!)
         schoolNetworkDataSource.saveSchool(school)
+        userDataRepository.setSchoolId(school.schoolId.orEmpty())
     }
 
     override suspend fun saveSchools(schools: List<ClassifiSchool>) {
@@ -37,6 +40,10 @@ class OfflineFirstSchoolRepository @Inject constructor(
 
     override suspend fun deleteSchool(school: ClassifiSchool) {
         schoolDao.deleteSchool(modelMapper.schoolModelToEntity(school)!!)
+    }
+
+    override suspend fun deleteAllSchools() {
+        schoolDao.deleteAllSchools()
     }
 
     override suspend fun fetchSchoolById(schoolId: Long): ClassifiSchool? {

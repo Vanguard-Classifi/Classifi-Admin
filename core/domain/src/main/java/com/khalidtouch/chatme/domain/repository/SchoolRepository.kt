@@ -13,6 +13,8 @@ interface SchoolRepository {
 
     suspend fun deleteSchool(school: ClassifiSchool)
 
+    suspend fun deleteAllSchools()
+
     suspend fun fetchSchoolById(schoolId: Long): ClassifiSchool?
 
     suspend fun fetchSchoolWithSessions(schoolId: Long): ClassifiSchool?

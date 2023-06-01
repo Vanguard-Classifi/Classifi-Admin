@@ -1,6 +1,7 @@
 package com.khalidtouch.chatme.admin.school
 
 import android.net.Uri
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -45,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -79,12 +81,13 @@ import kotlinx.coroutines.delay
 @Composable
 internal fun SchoolRoute(
     windowSizeClass: WindowSizeClass,
-    schoolViewModel: SchoolViewModel = hiltViewModel<SchoolViewModel>(),
+    schoolViewModel: SchoolViewModel,
     addSchoolViewModel: AddSchoolViewModel = hiltViewModel<AddSchoolViewModel>(),
     onBackPressed: () -> Unit,
     onModifySchool: () -> Unit,
     onClickItem: (SchoolSegment) -> Unit,
 ) {
+    val TAG = "Schoolroute"
     val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
     val uiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -120,11 +123,12 @@ internal fun SchoolRoute(
             )
         },
         floatingActionButton = {
-            when(uiState) {
+            when (uiState) {
                 is SchoolScreenUiState.Loading -> Unit
                 is SchoolScreenUiState.Success -> {
-                    if ((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading){
-                        if (mySchool == null) {
+                    if ((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading) {
+                        Log.e(TAG, "SchoolRoute: mySchool is $mySchool")
+                        if (mySchool == null || mySchool?.schoolId == -1L) {
                             ClassifiFab(
                                 onClick = schoolViewModel::onShowAddSchoolDialog,
                                 icon = {
@@ -166,16 +170,22 @@ private fun SchoolScreen(
     val state = rememberLazyListState()
     val configuration = LocalConfiguration.current
     val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
+    val showLoadingWheel = when (uiState) {
+        is SchoolScreenUiState.Loading -> true
+        is SchoolScreenUiState.Success -> {
+            !(uiState as SchoolScreenUiState.Success).data.hasFinishedLoading
+        }
+    }
 
     LaunchedEffect(uiState) {
-        delay(2_000)
+        delay(1_000)
         schoolViewModel.onFinishLoadingState()
     }
 
     when (uiState) {
         is SchoolScreenUiState.Loading -> Unit
         is SchoolScreenUiState.Success -> {
-            if (mySchool != null) {
+            if (mySchool != null && -1L != mySchool?.schoolId) {
                 LazyColumn(
                     state = state,
                     modifier = modifier
@@ -194,7 +204,7 @@ private fun SchoolScreen(
             }
 
             if (((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading)) {
-                if (mySchool == null) {
+                if (mySchool == null || mySchool?.schoolId == -1L) {
                     ItemNotAvailable(
                         headerText = stringResource(id = R.string.no_school_added),
                         labelText = stringResource(id = R.string.click_plus_to_add)
@@ -215,7 +225,7 @@ private fun SchoolScreen(
 
 
     AnimatedVisibility(
-        visible = uiState is SchoolScreenUiState.Loading,
+        visible = showLoadingWheel,
         enter = slideInVertically(
             initialOffsetY = { fullHeight -> -fullHeight },
         ) + fadeIn(),
@@ -251,6 +261,7 @@ fun NavGraphBuilder.schoolScreen(
     onModifySchool: () -> Unit,
     onClickItem: (SchoolSegment) -> Unit,
     onBackPressed: () -> Unit,
+    schoolViewModel: SchoolViewModel,
 ) {
     composable(
         route = schoolNavigationRoute,
@@ -260,6 +271,7 @@ fun NavGraphBuilder.schoolScreen(
             windowSizeClass = windowSizeClass,
             onClickItem = onClickItem,
             onModifySchool = onModifySchool,
+            schoolViewModel = schoolViewModel,
         )
     }
 }
@@ -351,7 +363,7 @@ private fun SchoolBase(
         }
         Spacer(Modifier.height(16.dp))
         Box(Modifier.padding(16.dp)) {
-            val schoolAddress = when(school.address) {
+            val schoolAddress = when (school.address) {
                 null, "" -> stringResource(id = R.string.address_not_added)
                 else -> school.address!!
             }
@@ -432,12 +444,25 @@ private fun SchoolHeader(
         AsyncImage(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp),
+                .height(280.dp),
             model = ImageRequest.Builder(LocalContext.current)
                 .data(bannerUri).build(),
             contentDescription = null,
-            contentScale = ContentScale.Fit
+            contentScale = ContentScale.FillBounds,
         )
+
+        Box(
+            Modifier
+                .matchParentSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        listOf(Color.White.copy(0.3f), Color.Black.copy(0.3f)),
+                        0.0f,
+                        500.0f,
+                    )
+                )
+        )
+
 
         Box(
             Modifier
@@ -448,14 +473,14 @@ private fun SchoolHeader(
                 ),
             contentAlignment = Alignment.BottomStart
         ) {
-            val schoolName: String = when(school.schoolName) {
+            val schoolName: String = when (school.schoolName) {
                 null, "" -> stringResource(id = R.string.school_name_not_set)
                 else -> school.schoolName!!
             }
             Text(
                 text = schoolName,
                 style = MaterialTheme.typography.headlineSmall.copy(
-                    color = MaterialTheme.colorScheme.outline,
+                    color = Color.White,
                     fontWeight = FontWeight.Bold,
                 ),
                 maxLines = 2,
@@ -466,7 +491,7 @@ private fun SchoolHeader(
         Box(
             Modifier
                 .matchParentSize()
-                .padding(top = 16.dp, end = 16.dp),
+                .padding(top = 8.dp, end = 8.dp),
             contentAlignment = Alignment.TopEnd
         ) {
             ClassifiIconButton(

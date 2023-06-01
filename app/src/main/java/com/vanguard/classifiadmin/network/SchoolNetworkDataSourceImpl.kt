@@ -5,6 +5,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.khalidtouch.chatme.network.SchoolNetworkDataSource
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
+import com.khalidtouch.classifiadmin.model.classifi.ClassifiUserSchoolCrossRef
 import com.khalidtouch.core.common.firestore.ClassifiStore
 import javax.inject.Inject
 
@@ -23,7 +24,7 @@ class SchoolNetworkDataSourceImpl @Inject constructor() : SchoolNetworkDataSourc
             .collection(ClassifiStore.SCHOOL)
             .document(schoolName)
             .collection(ClassifiStore.REGISTRY).document(ClassifiStore.Namespace.UserWithSchool)
-            .set(hashMapOf<Long, Long>(userId to schoolId))
+            .set(ClassifiUserSchoolCrossRef(userId, schoolId))
     }
 
     override fun updateSchool(school: ClassifiSchool) {
