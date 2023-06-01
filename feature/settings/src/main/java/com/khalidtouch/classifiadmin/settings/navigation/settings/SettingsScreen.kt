@@ -119,11 +119,13 @@ fun SettingsRoute(
     windowSizeClass: WindowSizeClass,
     onBack: () -> Unit,
     onOpenSchoolAdminPanel: () -> Unit,
+    onOpenTeacherAdminPanel: () -> Unit,
 ) {
     SettingsScreen(
         windowSizeClass = windowSizeClass,
         onBack = onBack,
         onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
+        onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
     )
 }
 
@@ -136,6 +138,7 @@ fun SettingsRoute(
 internal fun SettingsScreen(
     onBack: () -> Unit = {},
     onOpenSchoolAdminPanel: () -> Unit,
+    onOpenTeacherAdminPanel: () -> Unit,
     windowSizeClass: WindowSizeClass,
     settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
@@ -330,6 +333,7 @@ internal fun SettingsScreen(
                                     2 -> PreferencesScreenWrapper()
                                     3 -> AdministrationScreenWrapper(
                                         onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
+                                        onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
                                     )
                                 }
                             }

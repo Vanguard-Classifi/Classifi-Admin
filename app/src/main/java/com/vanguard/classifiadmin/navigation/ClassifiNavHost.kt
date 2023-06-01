@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.khalidtouch.chatme.admin.school.navigation.navigateToSchoolAdminPanel
 import com.khalidtouch.chatme.admin.school.navigation.schoolAdminPanel
+import com.khalidtouch.chatme.admin.teachers.navigation.navigateToTeachersAdminPanel
+import com.khalidtouch.chatme.admin.teachers.navigation.teachersAdminPanel
 import com.khalidtouch.classifiadmin.feeds.compose.composeFeedScreen
 import com.khalidtouch.classifiadmin.feeds.compose.navigateToComposeFeed
 import com.khalidtouch.classifiadmin.feeds.mediastore.imageGalleryScreen
@@ -45,7 +47,8 @@ fun ClassifiNavHost(
         settingsScreen(
             windowSizeClass = windowSizeClass,
             onBack = { appState.navController.navigateToHome() },
-            onOpenSchoolAdminPanel = { appState.navController.navigateToSchoolAdminPanel() }
+            onOpenSchoolAdminPanel = { appState.navController.navigateToSchoolAdminPanel() },
+            onOpenTeacherAdminPanel = { appState.navController.navigateToTeachersAdminPanel() }
         )
 
         composeFeedScreen(
@@ -68,6 +71,11 @@ fun ClassifiNavHost(
         )
 
         schoolAdminPanel(
+            windowSizeClass = windowSizeClass,
+            onBackPressed = { appState.navController.navigateToSettings() }
+        )
+
+        teachersAdminPanel(
             windowSizeClass = windowSizeClass,
             onBackPressed = { appState.navController.navigateToSettings() }
         )

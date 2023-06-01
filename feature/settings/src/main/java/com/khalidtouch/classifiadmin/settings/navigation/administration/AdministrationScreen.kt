@@ -35,6 +35,7 @@ import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 fun AdministrationScreenWrapper(
     settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
     onOpenSchoolAdminPanel: () -> Unit,
+    onOpenTeacherAdminPanel: () -> Unit,
 ) {
     Surface(
         modifier = Modifier
@@ -53,6 +54,7 @@ fun AdministrationScreenWrapper(
                 AdministrationScreen(
                     modifier = Modifier.padding(padding),
                     onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
+                    onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
                 )
             }
         )
@@ -61,9 +63,10 @@ fun AdministrationScreenWrapper(
 
 
 @Composable
-internal fun AdministrationScreen(
+private fun AdministrationScreen(
     modifier: Modifier = Modifier,
     onOpenSchoolAdminPanel: () -> Unit,
+    onOpenTeacherAdminPanel: () -> Unit,
 ){
     val headerStyle = MaterialTheme.typography.titleSmall.copy(
         color = Color.Black.copy(0.8f)
@@ -85,6 +88,7 @@ internal fun AdministrationScreen(
         manageTeachers(
             headerStyle = headerStyle,
             textStyle = textStyle,
+            onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
         )
 
         manageParents(
@@ -149,11 +153,11 @@ fun LazyListScope.manageSchool(
 fun LazyListScope.manageTeachers(
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    onOpenTeacherAdminPanel: () -> Unit,
 ) {
     item {
         SettingItem(
-            onClick = {
-            },
+            onClick = onOpenTeacherAdminPanel,
             icon = {
                 Icon(
                     painter = painterResource(id = ClassifiIcons.Profile),

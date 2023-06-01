@@ -20,7 +20,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ModifySchoolViewModel @Inject constructor(
-    private val userDataRepository: UserDataRepository,
     private val schoolRepository: SchoolRepository,
 ) : ViewModel() {
 

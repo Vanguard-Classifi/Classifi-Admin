@@ -25,13 +25,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.khalidtouch.classifiadmin.settings.R
-import com.khalidtouch.classifiadmin.settings.navigation.administration.AdministrationScreen
-import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingItemClicked
 import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingsViewModel
 import com.khalidtouch.core.designsystem.components.SettingItem
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreenWrapper(
     settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()

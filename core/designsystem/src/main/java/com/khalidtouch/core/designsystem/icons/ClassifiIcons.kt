@@ -10,6 +10,9 @@ object ClassifiIcons {
     val Abort = R.drawable.icon_abort
     val About = R.drawable.icon_about
     val Add = R.drawable.icon_add
+    val AddBook = R.drawable.icon_add_book
+    val AddBuilding = R.drawable.icon_add_building
+    val AddPerson = R.drawable.icon_add_person
     val Admin = R.drawable.icon_admin
     val Address = R.drawable.icon_address
     val Album = R.drawable.icon_album

@@ -25,6 +25,40 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
+fun ClassifiStagingIconButton(
+    modifier: Modifier = Modifier,
+    buttonSize: Dp = 45.dp,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+    elevation: Dp = 2.dp,
+    color: Color = MaterialTheme.colorScheme.primary,
+    border: BorderStroke? = null,
+    shadowElevation: Dp = ClassifiIconButtonDefaults.shadowElevationDefaults,
+    icon: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .size(buttonSize)
+            .clip(CircleShape)
+            .clickable(
+                enabled = enabled,
+                onClick = onClick,
+                role = Role.Button,
+            ),
+        shape = CircleShape,
+        tonalElevation = elevation,
+        border = border,
+        color = color,
+        shadowElevation = shadowElevation,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            icon()
+        }
+    }
+}
+
+
+@Composable
 fun ClassifiTakeSnapshotButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -80,6 +114,7 @@ fun ClassifiFab(
 fun ClassifiIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     icon: @Composable () -> Unit,
     buttonSize: Dp = ClassifiIconButtonDefaults.defaultButtonSize,
     colors: IconButtonColors = IconButtonDefaults.iconButtonColors(
@@ -93,7 +128,7 @@ fun ClassifiIconButton(
             .size(buttonSize)
             .clip(CircleShape),
         colors = colors,
-        enabled = true,
+        enabled = enabled,
     ) {
         icon()
     }
@@ -140,5 +175,5 @@ object ClassifiIconButtonDefaults {
     val defaultButtonSize = 48.dp
     val bigButtonSize = 96.dp
     val tonalElevationDefaults = 2.dp
-    val shadowElevationDefaults = 1.dp
+    val shadowElevationDefaults = 0.dp
 }

@@ -67,10 +67,6 @@ fun MyAccountScreenAdmin(
 ) {
     val verticalScroll = rememberScrollState()
 
-//    LaunchedEffect(key1 = Unit, block = {
-//        viewModel.onCurrentPageMyAccountScreenChanged(3)
-//    })
-
     Column(modifier = Modifier.verticalScroll(verticalScroll)) {
 
         Card(
