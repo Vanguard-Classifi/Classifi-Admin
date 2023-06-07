@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
+import com.khalidtouch.chatme.network.SchoolNetworkDataSource
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.core.common.extensions.orDefaultImageUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ModifySchoolViewModel @Inject constructor(
     private val schoolRepository: SchoolRepository,
+    private val schoolNetworkDataSource: SchoolNetworkDataSource
 ) : ViewModel() {
 
     val TAG = "ModifySchool"
@@ -110,6 +112,17 @@ class ModifySchoolViewModel @Inject constructor(
         }
         finally {
             _shouldUploadBannerImage.value = false
+        }
+    }
+
+    fun onUpdateSchoolBannerImage(schoolId: Long, bannerImageUri: Uri?) {
+        if(bannerImageUri == null) return
+        val url = bannerImageUri.toString()
+        viewModelScope.launch {
+            schoolNetworkDataSource.uploadSchoolBannerToCloud(
+                bannerImage = url,
+                schoolId = schoolId
+            )
         }
     }
 }

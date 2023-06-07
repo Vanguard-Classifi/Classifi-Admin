@@ -14,9 +14,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -27,15 +29,21 @@ class SchoolViewModel @Inject constructor(
 ) : ViewModel() {
     private val _addSchoolDialogState = MutableStateFlow<Boolean>(false)
     private val _hasFinishedLoading = MutableStateFlow<Boolean>(false)
+    private val _myCurrentSchool = MutableStateFlow<ClassifiSchool?>(null)
+    private val _myCurrentSchoolId = MutableStateFlow<Long>(-1L)
 
     val uiState: StateFlow<SchoolScreenUiState> = combine(
         _addSchoolDialogState,
         _hasFinishedLoading,
-    ) { dialogState, finishedLoading ->
+        _myCurrentSchool,
+        _myCurrentSchoolId,
+    ) { dialogState, finishedLoading, currentSchool, schoolId ->
         SchoolScreenUiState.Success(
             data = SchoolScreenData(
                 shouldShowAddSchoolDialog = dialogState,
                 hasFinishedLoading = finishedLoading,
+                currentSchool = currentSchool,
+                currentSchoolId = schoolId,
             )
         )
     }.stateIn(
@@ -50,9 +58,26 @@ class SchoolViewModel @Inject constructor(
     }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.Eagerly,
             initialValue = null,
         )
+
+    fun loadSchoolId() {
+        viewModelScope.launch {
+            userDataRepository.userData.collectLatest {
+                val id = it.schoolId
+                _myCurrentSchoolId.value = id
+            }
+        }
+    }
+
+    fun updateCurrentSchool(schoolId: Long) {
+        viewModelScope.launch {
+            schoolRepository.observeSchoolById(schoolId).collectLatest { school ->
+                _myCurrentSchool.value = school
+            }
+        }
+    }
 
     fun onShowAddSchoolDialog() {
         _addSchoolDialogState.value = true
@@ -76,4 +101,6 @@ sealed interface SchoolScreenUiState {
 data class SchoolScreenData(
     val shouldShowAddSchoolDialog: Boolean,
     val hasFinishedLoading: Boolean,
+    val currentSchool: ClassifiSchool?,
+    val currentSchoolId: Long,
 )

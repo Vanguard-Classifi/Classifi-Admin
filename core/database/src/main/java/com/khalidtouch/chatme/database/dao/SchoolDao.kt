@@ -12,6 +12,7 @@ import com.khalidtouch.chatme.database.relations.SchoolWithClasses
 import com.khalidtouch.chatme.database.relations.SchoolWithSessions
 import com.khalidtouch.chatme.database.relations.SchoolWithUsers
 import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SchoolDao {
@@ -38,6 +39,11 @@ interface SchoolDao {
         value = "select * from ClassifiSchoolEntity where schoolId = :id"
     )
     suspend fun fetchSchoolById(id: Long): ClassifiSchoolEntity?
+
+    @Query(
+        value = "select * from ClassifiSchoolEntity where schoolId = :id"
+    )
+    fun observeSchoolById(id: Long): Flow<ClassifiSchoolEntity?>
 
     @Query(
         value = "select * from ClassifiSchoolEntity where schoolId = :schoolId"

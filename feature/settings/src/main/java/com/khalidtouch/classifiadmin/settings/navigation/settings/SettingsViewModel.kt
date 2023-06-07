@@ -3,6 +3,7 @@ package com.khalidtouch.classifiadmin.settings.navigation.settings
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -29,17 +30,24 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+const val KEY_SELECTED_SETTINGS_TAB_INDEX = "selected_settings_tab_index"
+
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     readCountriesPagingSource: ReadCountriesPagingSource,
     private val userRepository: UserRepository,
     private val userDataRepository: UserDataRepository,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     val TAG = "SettingsVM"
-    private val _selectedTabIndex: MutableLiveData<Int> = MutableLiveData(0)
-    val selectedTabIndex: LiveData<Int> = _selectedTabIndex
+
+    //    private val _selectedTabIndex: MutableLiveData<Int> = MutableLiveData(0)
+//    val selectedTabIndex: LiveData<Int> = _selectedTabIndex
+    val selectedTabIndex: StateFlow<Int> = savedStateHandle.getStateFlow(
+        key = KEY_SELECTED_SETTINGS_TAB_INDEX, initialValue = 0,
+    )
     val tabs = Settings.values().toList()
     var isSwipeLeft = false
     private val draggableState = DraggableState {
@@ -163,14 +171,16 @@ class SettingsViewModel @Inject constructor(
         )
 
     fun updateTabIndexBasedOnSwipe() {
-        _selectedTabIndex.value = when (isSwipeLeft) {
-            false -> Math.floorMod(_selectedTabIndex.value!!.plus(1), tabs.size)
-            true -> Math.floorMod(_selectedTabIndex.value!!.minus(1), tabs.size)
+        val currentIndex = selectedTabIndex.value
+       savedStateHandle[KEY_SELECTED_SETTINGS_TAB_INDEX] = when (isSwipeLeft) {
+            false -> Math.floorMod(currentIndex.plus(1), tabs.size)
+            true -> Math.floorMod(currentIndex.minus(1), tabs.size)
         }
     }
 
     fun updateTabIndex(i: Int) {
-        _selectedTabIndex.value = i
+//        _selectedTabIndex.value = i
+        savedStateHandle[KEY_SELECTED_SETTINGS_TAB_INDEX] = i
     }
 
     fun updateCurrentSettingItemClicked(settingItemClicked: SettingItemClicked) {

@@ -143,10 +143,14 @@ private fun ModifySchoolScreen(
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
             if (it == null) return@rememberLauncherForActivityResult
             modifySchoolViewModel.onSchoolBannerImageChanged(it)
-            modifySchoolViewModel.onUpdateSchoolBannerImage(mySchool)
+           // modifySchoolViewModel.onUpdateSchoolBannerImage(mySchool)
+            modifySchoolViewModel.onUpdateSchoolBannerImage(
+                schoolId = mySchool?.schoolId ?: -1L,
+                bannerImageUri = it
+            )
         }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit, mySchool?.bannerImage) {
         Log.e(TAG, "ModifySchoolScreen: LaunchedEffect has been called")
         modifySchoolViewModel.updateFieldsFromDb(mySchool)
     }

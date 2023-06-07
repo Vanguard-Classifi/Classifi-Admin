@@ -159,7 +159,7 @@ internal fun SettingsScreen(
         val context = LocalContext.current
         val configuration = LocalConfiguration.current
         val snackbarHostState = remember { SnackbarHostState() }
-        val selectedTabIndex by settingsViewModel.selectedTabIndex.observeAsState()
+        val selectedTabIndex by settingsViewModel.selectedTabIndex.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState()
         var showModalBottomSheet by rememberSaveable {
@@ -176,11 +176,11 @@ internal fun SettingsScreen(
             }
         )
 
+        Log.e(TAG, "SettingsScreen: selected tab index is currently $selectedTabIndex")
+
         var pickerDialogState by rememberSaveable { mutableStateOf(false) }
         val darkThemeConfigDialogState by settingsViewModel.darkThemeConfigDialog.collectAsStateWithLifecycle()
         val me by settingsViewModel.observeMe.collectAsStateWithLifecycle()
-
-        Log.e(TAG, "SettingsScreen: Me is currently $me")
 
         LaunchedEffect(currentSettingItemClicked!!, pickerDialogState) {
             if (
@@ -321,19 +321,20 @@ internal fun SettingsScreen(
                                 }
 
                                 //screens
-                                when (selectedTabIndex!!) {
+                                when (selectedTabIndex) {
                                     /**
                                      * 0 -> Profile
                                      * 1 -> Account
                                      * 2 -> Preferences
                                      * 3 -> Administration
                                      */
-                                    0 -> ProfileScreenWrapper(settingsViewModel)
-                                    1 -> AccountScreenWrapper()
-                                    2 -> PreferencesScreenWrapper()
+                                    0 -> ProfileScreenWrapper(settingsViewModel = settingsViewModel)
+                                    1 -> AccountScreenWrapper(settingsViewModel = settingsViewModel)
+                                    2 -> PreferencesScreenWrapper(settingsViewModel = settingsViewModel)
                                     3 -> AdministrationScreenWrapper(
                                         onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
                                         onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
+                                        settingsViewModel = settingsViewModel,
                                     )
                                 }
                             }

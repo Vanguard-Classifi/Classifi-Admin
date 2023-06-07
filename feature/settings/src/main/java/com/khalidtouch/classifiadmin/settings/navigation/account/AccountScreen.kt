@@ -31,7 +31,7 @@ import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 
 @Composable
 fun AccountScreenWrapper(
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
+    settingsViewModel: SettingsViewModel,
 ) {
     Surface(
         modifier = Modifier
@@ -60,10 +60,10 @@ fun AccountScreenWrapper(
 internal fun AccountScreen(
     modifier: Modifier = Modifier,
 ){
-    val headerStyle = MaterialTheme.typography.titleSmall.copy(
+    val headerStyle = MaterialTheme.typography.titleMedium.copy(
         color = Color.Black.copy(0.8f)
     )
-    val textStyle = MaterialTheme.typography.bodyMedium
+    val textStyle = MaterialTheme.typography.bodyLarge
 
     LazyColumn(Modifier.fillMaxSize()) {
         schoolItem(

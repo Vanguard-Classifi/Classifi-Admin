@@ -14,4 +14,6 @@ interface SchoolNetworkDataSource {
 
     fun fetchSchoolById(schoolId: Long, callback: (ClassifiSchool?) -> Unit)
 
+    fun uploadSchoolBannerToCloud(bannerImage: String, schoolId: Long)
+
 }

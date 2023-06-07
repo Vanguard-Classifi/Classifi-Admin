@@ -34,7 +34,7 @@ import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PreferencesScreenWrapper(
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
+    settingsViewModel: SettingsViewModel,
 ) {
 
     Surface(
@@ -65,10 +65,10 @@ internal fun PreferencesScreen(
     modifier: Modifier = Modifier,
     settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
 ){
-    val headerStyle = MaterialTheme.typography.titleSmall.copy(
+    val headerStyle = MaterialTheme.typography.titleMedium.copy(
         color = Color.Black.copy(0.8f)
     )
-    val textStyle = MaterialTheme.typography.bodyMedium
+    val textStyle = MaterialTheme.typography.bodyLarge
 
    LazyColumn(Modifier.fillMaxSize()) {
        darkModeItem(

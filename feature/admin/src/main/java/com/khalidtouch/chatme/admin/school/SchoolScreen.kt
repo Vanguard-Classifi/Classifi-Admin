@@ -91,6 +91,7 @@ internal fun SchoolRoute(
     val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
     val uiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
 
+
     Scaffold(
         containerColor = Color.Transparent,
         modifier = Modifier.fillMaxSize(),
@@ -180,6 +181,10 @@ private fun SchoolScreen(
     LaunchedEffect(uiState) {
         delay(1_000)
         schoolViewModel.onFinishLoadingState()
+        schoolViewModel.loadSchoolId()
+        if(uiState is SchoolScreenUiState.Success) {
+            schoolViewModel.updateCurrentSchool((uiState as SchoolScreenUiState.Success).data.currentSchoolId)
+        }
     }
 
     when (uiState) {

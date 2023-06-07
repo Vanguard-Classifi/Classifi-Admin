@@ -1,6 +1,7 @@
 package com.khalidtouch.chatme.domain.repository
 
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
+import kotlinx.coroutines.flow.Flow
 
 interface SchoolRepository {
     suspend fun saveSchool(school: ClassifiSchool)
@@ -16,6 +17,8 @@ interface SchoolRepository {
     suspend fun deleteAllSchools()
 
     suspend fun fetchSchoolById(schoolId: Long): ClassifiSchool?
+
+    fun observeSchoolById(schoolId: Long): Flow<ClassifiSchool?>
 
     suspend fun fetchSchoolWithSessions(schoolId: Long): ClassifiSchool?
 

@@ -89,10 +89,10 @@ internal fun ProfileScreen(
     profileViewModel: ProfileViewModel,
 ) {
     val context = LocalContext.current
-    val headerStyle = MaterialTheme.typography.titleSmall.copy(
+    val headerStyle = MaterialTheme.typography.titleMedium.copy(
         color = Color.Black.copy(0.8f)
     )
-    val textStyle = MaterialTheme.typography.bodyMedium
+    val textStyle = MaterialTheme.typography.bodyLarge
     val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
     val me by settingsViewModel.observeMe.collectAsStateWithLifecycle()
 

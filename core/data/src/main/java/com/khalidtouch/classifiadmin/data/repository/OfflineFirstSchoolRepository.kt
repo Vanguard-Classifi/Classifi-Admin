@@ -8,6 +8,8 @@ import com.khalidtouch.chatme.network.SchoolNetworkDataSource
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -49,6 +51,11 @@ class OfflineFirstSchoolRepository @Inject constructor(
     override suspend fun fetchSchoolById(schoolId: Long): ClassifiSchool? {
         val school = schoolDao.fetchSchoolById(schoolId)
         return modelMapper.schoolEntityToModel(school)
+    }
+
+    override fun observeSchoolById(schoolId: Long): Flow<ClassifiSchool?> {
+        val flowOfSchool = schoolDao.observeSchoolById(schoolId)
+        return flowOfSchool.map { school -> modelMapper.schoolEntityToModel(school) }
     }
 
     override suspend fun fetchSchoolWithSessions(schoolId: Long): ClassifiSchool? {
