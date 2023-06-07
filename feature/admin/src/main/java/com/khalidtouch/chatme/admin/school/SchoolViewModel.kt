@@ -52,16 +52,6 @@ class SchoolViewModel @Inject constructor(
         initialValue = SchoolScreenUiState.Loading
     )
 
-    val observeMySchool: StateFlow<ClassifiSchool?> = userDataRepository.userData.map {
-        val schoolId = it.schoolId
-        schoolRepository.fetchSchoolById(schoolId)
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = null,
-        )
-
     fun loadSchoolId() {
         viewModelScope.launch {
             userDataRepository.userData.collectLatest {

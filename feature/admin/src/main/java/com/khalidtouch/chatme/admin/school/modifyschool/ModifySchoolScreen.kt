@@ -54,6 +54,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.chatme.admin.school.SchoolScreenDefaults
+import com.khalidtouch.chatme.admin.school.SchoolScreenUiState
 import com.khalidtouch.chatme.admin.school.SchoolViewModel
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.core.common.extensions.orDefaultImageUrl
@@ -68,7 +69,7 @@ fun ModifySchoolRoute(
     modifySchoolViewModel: ModifySchoolViewModel = hiltViewModel<ModifySchoolViewModel>(),
     schoolViewModel: SchoolViewModel,
 ) {
-    val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
+    val schoolScreenUiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -103,9 +104,13 @@ fun ModifySchoolRoute(
                     Box(modifier = Modifier) {
                         ClassifiIconButton(
                             onClick = {
-                                modifySchoolViewModel.onUpdateSchoolName(mySchool)
-                                modifySchoolViewModel.onUpdateSchoolAddress(mySchool)
-                                onBackPressed()
+                                if (schoolScreenUiState is SchoolScreenUiState.Success) {
+                                    val school =
+                                        (schoolScreenUiState as SchoolScreenUiState.Success).data.currentSchool
+                                    modifySchoolViewModel.onUpdateSchoolName(school)
+                                    modifySchoolViewModel.onUpdateSchoolAddress(school)
+                                    onBackPressed()
+                                }
                             },
                             icon = {
                                 Icon(
@@ -138,53 +143,63 @@ private fun ModifySchoolScreen(
     val context = LocalContext.current
     val TAG = "ModifySchool"
     val uiState by modifySchoolViewModel.uiState.collectAsStateWithLifecycle()
-    val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
+    val schoolScreenUiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
     val imageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
             if (it == null) return@rememberLauncherForActivityResult
             modifySchoolViewModel.onSchoolBannerImageChanged(it)
-           // modifySchoolViewModel.onUpdateSchoolBannerImage(mySchool)
-            modifySchoolViewModel.onUpdateSchoolBannerImage(
-                schoolId = mySchool?.schoolId ?: -1L,
-                bannerImageUri = it
-            )
+            if (schoolScreenUiState is SchoolScreenUiState.Success) {
+                val school = (schoolScreenUiState as SchoolScreenUiState.Success).data.currentSchool
+                modifySchoolViewModel.onUpdateSchoolBannerImage(
+                    schoolId = school?.schoolId ?: -1L,
+                    bannerImageUri = it
+                )
+            }
         }
 
-    LaunchedEffect(Unit, mySchool?.bannerImage) {
-        Log.e(TAG, "ModifySchoolScreen: LaunchedEffect has been called")
-        modifySchoolViewModel.updateFieldsFromDb(mySchool)
+    LaunchedEffect(schoolScreenUiState) {
+        if (schoolScreenUiState is SchoolScreenUiState.Success) {
+            val school = (schoolScreenUiState as SchoolScreenUiState.Success).data.currentSchool
+            modifySchoolViewModel.updateFieldsFromDb(school)
+        }
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .testTag("admin:modifyschool"),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        bannerItem(
-            school = mySchool,
-            onChangeBannerImage = {
-                imageLauncher.launch(
-                    PickVisualMediaRequest(
-                        mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly,
-                    )
+    when(schoolScreenUiState) {
+        is SchoolScreenUiState.Loading -> Unit
+        is SchoolScreenUiState.Success -> {
+            val school = (schoolScreenUiState as SchoolScreenUiState.Success).data.currentSchool
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxSize()
+                    .testTag("admin:modifyschool"),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                bannerItem(
+                    school = school,
+                    onChangeBannerImage = {
+                        imageLauncher.launch(
+                            PickVisualMediaRequest(
+                                mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly,
+                            )
+                        )
+                    },
                 )
-            },
-        )
 
-        schoolNameItem(
-            placeholder = context.getString(R.string.enter_school_name),
-            value = uiState.schoolName,
-            onValueChange = modifySchoolViewModel::onSchoolNameChanged,
-            isError = false,
-        )
+                schoolNameItem(
+                    placeholder = context.getString(R.string.enter_school_name),
+                    value = uiState.schoolName,
+                    onValueChange = modifySchoolViewModel::onSchoolNameChanged,
+                    isError = false,
+                )
 
-        schoolAddressItem(
-            placeholder = context.getString(R.string.school_address),
-            value = uiState.schoolAddress,
-            onValueChange = modifySchoolViewModel::onSchoolAddressChanged,
-            isError = false,
-        )
+                schoolAddressItem(
+                    placeholder = context.getString(R.string.school_address),
+                    value = uiState.schoolAddress,
+                    onValueChange = modifySchoolViewModel::onSchoolAddressChanged,
+                    isError = false,
+                )
+            }
+        }
     }
 }
 

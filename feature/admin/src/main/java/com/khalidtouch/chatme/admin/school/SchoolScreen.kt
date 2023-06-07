@@ -88,8 +88,16 @@ internal fun SchoolRoute(
     onClickItem: (SchoolSegment) -> Unit,
 ) {
     val TAG = "Schoolroute"
-    val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
     val uiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState) {
+        schoolViewModel.loadSchoolId()
+        if(uiState is SchoolScreenUiState.Success) {
+            schoolViewModel.updateCurrentSchool((uiState as SchoolScreenUiState.Success).data.currentSchoolId)
+        }
+        delay(1_000)
+        schoolViewModel.onFinishLoadingState()
+    }
 
 
     Scaffold(
@@ -128,8 +136,8 @@ internal fun SchoolRoute(
                 is SchoolScreenUiState.Loading -> Unit
                 is SchoolScreenUiState.Success -> {
                     if ((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading) {
-                        Log.e(TAG, "SchoolRoute: mySchool is $mySchool")
-                        if (mySchool == null || mySchool?.schoolId == -1L) {
+                        val school = (uiState as SchoolScreenUiState.Success).data.currentSchool
+                        if (school == null || school.schoolId == -1L) {
                             ClassifiFab(
                                 onClick = schoolViewModel::onShowAddSchoolDialog,
                                 icon = {
@@ -170,7 +178,6 @@ private fun SchoolScreen(
     val uiState by schoolViewModel.uiState.collectAsStateWithLifecycle()
     val state = rememberLazyListState()
     val configuration = LocalConfiguration.current
-    val mySchool by schoolViewModel.observeMySchool.collectAsStateWithLifecycle()
     val showLoadingWheel = when (uiState) {
         is SchoolScreenUiState.Loading -> true
         is SchoolScreenUiState.Success -> {
@@ -178,19 +185,11 @@ private fun SchoolScreen(
         }
     }
 
-    LaunchedEffect(uiState) {
-        delay(1_000)
-        schoolViewModel.onFinishLoadingState()
-        schoolViewModel.loadSchoolId()
-        if(uiState is SchoolScreenUiState.Success) {
-            schoolViewModel.updateCurrentSchool((uiState as SchoolScreenUiState.Success).data.currentSchoolId)
-        }
-    }
-
     when (uiState) {
         is SchoolScreenUiState.Loading -> Unit
         is SchoolScreenUiState.Success -> {
-            if (mySchool != null && -1L != mySchool?.schoolId) {
+            val school = (uiState as SchoolScreenUiState.Success).data.currentSchool
+            if (school != null && -1L != school.schoolId) {
                 LazyColumn(
                     state = state,
                     modifier = modifier
@@ -201,7 +200,7 @@ private fun SchoolScreen(
                 ) {
                     schoolItem(
                         fullWidth = configuration.screenWidthDp.dp,
-                        school = mySchool!!,
+                        school = school,
                         onModifySchool = onModifySchool,
                         onClickItem = onClickItem,
                     )
@@ -209,7 +208,7 @@ private fun SchoolScreen(
             }
 
             if (((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading)) {
-                if (mySchool == null || mySchool?.schoolId == -1L) {
+                if (school == null || school.schoolId == -1L) {
                     ItemNotAvailable(
                         headerText = stringResource(id = R.string.no_school_added),
                         labelText = stringResource(id = R.string.click_plus_to_add)
