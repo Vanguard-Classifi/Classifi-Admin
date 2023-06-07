@@ -4,10 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
+import com.khalidtouch.chatme.network.CreateAccountForTeachers
 import com.khalidtouch.classifiadmin.model.UserAccount
 import com.khalidtouch.classifiadmin.model.UserRole
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
+import com.khalidtouch.classifiadmin.model.utils.CreateAccountData
+import com.khalidtouch.classifiadmin.model.utils.OnCreateBatchAccountResult
+import com.khalidtouch.classifiadmin.model.utils.StageTeacher
 import com.khalidtouch.core.common.extensions.isEmailValid
 import com.khalidtouch.core.common.extensions.isPasswordValid
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +28,7 @@ import javax.inject.Inject
 class AddTeacherViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val schoolRepository: SchoolRepository,
+    private val createAccountForTeachers: CreateAccountForTeachers
 ) : ViewModel() {
 
     private val _email = MutableStateFlow<String>("")
@@ -123,6 +128,13 @@ class AddTeacherViewModel @Inject constructor(
     fun onNavigate(to: AddTeacherPage) {
         _currentPage.value = to
     }
+
+    fun createAccountForTeachers(teachers: List<StageTeacher>, result: OnCreateBatchAccountResult) {
+        createAccountForTeachers.createAccountForTeachers(
+            teachers = teachers,
+            result = result
+        )
+    }
 }
 
 
@@ -147,13 +159,6 @@ data class AddTeacherState(
         )
     }
 }
-
-
-data class StageTeacher(
-    val teacher: ClassifiUser,
-    val password: String,
-    val confirmPassword: String,
-)
 
 
 enum class AddTeacherPage {

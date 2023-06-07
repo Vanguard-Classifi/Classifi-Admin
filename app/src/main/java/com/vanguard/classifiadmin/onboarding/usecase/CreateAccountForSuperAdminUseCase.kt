@@ -19,11 +19,14 @@ import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.model.UserAccount
 import com.khalidtouch.classifiadmin.model.UserRole
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
+import com.khalidtouch.classifiadmin.model.utils.CreateAccountData
+import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
 import com.khalidtouch.core.common.ClassifiDispatcher
 import com.khalidtouch.core.common.Dispatcher
 import com.khalidtouch.core.common.extensions.isEmailValid
 import com.khalidtouch.core.common.extensions.isPasswordValid
 import com.khalidtouch.core.common.firestore.ClassifiStore
+import com.vanguard.classifiadmin.admin.base.UserRegistration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -35,11 +38,9 @@ import javax.inject.Inject
 class CreateAccountForSuperAdminUseCase @Inject constructor(
     private val userRepository: UserRepository,
     @Dispatcher(ClassifiDispatcher.IO) private val ioDispatcher: CoroutineDispatcher
-) {
+): UserRegistration() {
     val TAG = "CreateAccount"
-    private val authentication: FirebaseAuth = Firebase.auth
-    private val fireStore: FirebaseFirestore = Firebase.firestore
-    val scope = CoroutineScope(ioDispatcher + SupervisorJob())
+    private val scope = CoroutineScope(ioDispatcher + SupervisorJob())
 
     operator fun invoke(
         data: CreateAccountData,
@@ -146,29 +147,4 @@ class CreateAccountForSuperAdminUseCase @Inject constructor(
             Log.e(TAG, "invoke: exception is ${e.printStackTrace()}")
         }
     }
-
-    private fun postAction(action: () -> Unit) =
-        Handler(Looper.getMainLooper()).post { action() }
-
 }
-
-
-sealed interface OnCreateAccountState {
-    object Starting: OnCreateAccountState
-    object Success : OnCreateAccountState
-    object Failed : OnCreateAccountState
-    object EmptyEmailOrPassword : OnCreateAccountState
-    object PasswordNotMatched : OnCreateAccountState
-    object InvalidCredentials : OnCreateAccountState
-    object InvalidUser : OnCreateAccountState
-    object UserAlreadyExists : OnCreateAccountState
-    object WeakPassword : OnCreateAccountState
-    object EmailNotFound : OnCreateAccountState
-    object NetworkProblem : OnCreateAccountState
-}
-
-data class CreateAccountData(
-    val email: String,
-    val password: String,
-    val confirmPassword: String,
-)

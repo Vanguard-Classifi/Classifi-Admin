@@ -1,20 +1,16 @@
 package com.vanguard.classifiadmin.onboarding
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vanguard.classifiadmin.onboarding.usecase.CreateAccountData
+import com.khalidtouch.classifiadmin.model.utils.CreateAccountData
+import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
 import com.vanguard.classifiadmin.onboarding.usecase.CreateAccountForSuperAdminUseCase
-import com.vanguard.classifiadmin.onboarding.usecase.OnCreateAccountState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject

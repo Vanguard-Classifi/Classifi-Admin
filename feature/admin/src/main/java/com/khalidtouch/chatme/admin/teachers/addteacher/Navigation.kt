@@ -12,15 +12,16 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 fun AddTeacherNavHost(
     modifier: Modifier = Modifier,
     windowSizeClass: WindowSizeClass,
-    appState: AddTeacherUiState = rememberAddTeacherUiState(windowSize = windowSizeClass),
+    appState: AddTeacherUiState,
     startDestination: String = inputTeacherInfoNavigationRoute,
     addTeacherViewModel: AddTeacherViewModel,
 ) {
     AnimatedNavHost(
-        navController = appState.navController,
+        navController = (appState as AddTeacherUiState.Success).data.navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
         inputTeacherInfo(addTeacherViewModel = addTeacherViewModel)
+        inputTeacherSuccessfulScreen()
     }
 }

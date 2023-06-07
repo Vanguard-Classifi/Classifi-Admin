@@ -8,11 +8,17 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import kotlinx.coroutines.CoroutineScope
 
-data class AddTeacherUiState(
+sealed interface AddTeacherUiState {
+    object Loading : AddTeacherUiState
+    data class Success(val data: AddTeacherData) : AddTeacherUiState
+}
+
+data class AddTeacherData(
     val navController: NavHostController,
     val windowSize: WindowSizeClass,
     val coroutineScope: CoroutineScope
 )
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -21,9 +27,11 @@ fun rememberAddTeacherUiState(
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     windowSize: WindowSizeClass,
 ): AddTeacherUiState {
-    return AddTeacherUiState(
-        navController = navController,
-        coroutineScope = coroutineScope,
-        windowSize = windowSize,
+    return AddTeacherUiState.Success(
+        data = AddTeacherData(
+            navController = navController,
+            coroutineScope = coroutineScope,
+            windowSize = windowSize,
+        )
     )
 }

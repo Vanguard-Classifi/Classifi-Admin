@@ -9,12 +9,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -23,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.khalidtouch.classifiadmin.model.utils.CreateAccountData
+import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 import com.vanguard.classifiadmin.R
-import com.vanguard.classifiadmin.onboarding.usecase.CreateAccountData
 import com.vanguard.classifiadmin.onboarding.usecase.LoginData
-import com.vanguard.classifiadmin.onboarding.usecase.OnCreateAccountState
 import com.vanguard.classifiadmin.onboarding.usecase.OnLoginState
 
 

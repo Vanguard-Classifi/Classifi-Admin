@@ -129,6 +129,8 @@ fun TeachersScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(16.dp),
     ) {
+        //
+        
     }
 
     ItemNotAvailable(

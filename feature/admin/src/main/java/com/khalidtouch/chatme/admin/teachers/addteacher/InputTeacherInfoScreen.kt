@@ -48,6 +48,7 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
+import com.khalidtouch.classifiadmin.model.utils.StageTeacher
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
 import com.khalidtouch.core.designsystem.components.ClassifiStagingIconButton
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
@@ -389,6 +390,7 @@ fun NavController.navigateToInputTeacherInfo(
         launchSingleTop = true
         popUpTo(inputTeacherInfoNavigationRoute)
     }
+    addTeacherViewModel.onNavigate(AddTeacherPage.INPUT)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
