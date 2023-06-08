@@ -1,6 +1,7 @@
 package com.khalidtouch.classifiadmin.data.repository
 
 import android.content.Context
+import androidx.paging.PagingData
 import com.khalidtouch.chatme.database.dao.UserDao
 import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
@@ -10,6 +11,7 @@ import com.khalidtouch.chatme.network.UserNetworkDataSource
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
 import com.khalidtouch.classifiadmin.data.mapper.toModel
+import com.khalidtouch.classifiadmin.data.pagingsources.UserPagingSource
 import com.khalidtouch.classifiadmin.data.util.ReadCountriesUseCase
 import com.khalidtouch.classifiadmin.model.PagedCountry
 import com.khalidtouch.classifiadmin.model.UserRole
@@ -26,6 +28,7 @@ class OfflineFirstUserRepository @Inject constructor(
     private val readCountriesUseCase: ReadCountriesUseCase,
     private val userDataRepository: UserDataRepository,
     private val userNetworkDataSource: UserNetworkDataSource,
+    private val userPagingSource: UserPagingSource,
 ) : UserRepository {
     override suspend fun saveUser(user: ClassifiUser) {
         userDao.saveUserOrIgnore(modelMapper.userModelToEntity(user)!!)
@@ -129,5 +132,9 @@ class OfflineFirstUserRepository @Inject constructor(
 
     override suspend fun getCountriesFromJson(page: Int, limit: Int): PagedCountry {
         return readCountriesUseCase(context, page, limit)
+    }
+
+    override fun observeTeachersFromMySchool(pageSize: Int): Flow<PagingData<ClassifiUser>> {
+        return userPagingSource.observeTeachersFromMySchoolAsPaged(pageSize)
     }
 }

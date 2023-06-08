@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -12,6 +13,7 @@ import com.khalidtouch.chatme.database.models.ClassifiUserEntity
 import com.khalidtouch.chatme.database.relations.UserWithClasses
 import com.khalidtouch.chatme.database.relations.UserWithSchools
 import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
+import com.khalidtouch.classifiadmin.model.UserRole
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -47,7 +49,6 @@ interface UserDao {
     )
     suspend fun fetchUserById(id: Long): ClassifiUserEntity?
 
-
     @Query(
         value = "select * from ClassifiUserEntity where userId = :id"
     )
@@ -74,6 +75,12 @@ interface UserDao {
         value = "select * from ClassifiUserEntity order by username asc"
     )
     suspend fun fetchAllUsers(): List<ClassifiUserEntity>
+
+    @Query(
+        value = "select * from ClassifiUserEntity where userRole like :role order by username asc"
+    )
+    @Transaction
+    fun observeTeachersFromMySchoolAsPaged(role: UserRole = UserRole.Teacher): PagingSource<Int, UserWithSchools>
 
     @Query(
         value = "select * from ClassifiUserEntity where userId = :userId"

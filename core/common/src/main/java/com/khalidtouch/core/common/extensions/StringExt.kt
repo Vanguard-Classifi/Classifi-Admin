@@ -16,6 +16,14 @@ fun String.isEmailValid(): Boolean {
     return emailPattern.matcher(formattedEmail).matches()
 }
 
-fun String?.orDefaultImageUrl() = this ?: "file://dev/null"
+fun String?.orDefaultImageUrl() = when(this) {
+    null -> "file://dev/null"
+    "" -> "file://dev/null"
+    else -> this
+}
 
-
+fun String?.ifNullOrBlank(default: String) = when (this) {
+    null -> default
+    "" -> default
+    else -> this
+}

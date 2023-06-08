@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.domain.repository
 
+import androidx.paging.PagingData
 import com.khalidtouch.classifiadmin.model.PagedCountry
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import kotlinx.coroutines.flow.Flow
@@ -36,4 +37,6 @@ interface UserRepository {
     suspend fun fetchUserWithClasses(userId: Long): ClassifiUser?
 
     suspend fun getCountriesFromJson(page: Int, limit: Int): PagedCountry
+
+    fun observeTeachersFromMySchool(pageSize: Int): Flow<PagingData<ClassifiUser>>
 }

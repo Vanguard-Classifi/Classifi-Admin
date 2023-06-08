@@ -19,6 +19,7 @@ import com.khalidtouch.chatme.admin.teachers.TeachersAppState
 import com.khalidtouch.chatme.admin.teachers.TeachersRoute
 import com.khalidtouch.chatme.admin.teachers.addteacher.AddTeacherViewModel
 import com.khalidtouch.chatme.admin.teachers.rememberTeachersAppState
+import com.khalidtouch.chatme.admin.teachers.teachersScreen
 import com.khalidtouch.chatme.admin.teachers.teachersScreenNavigationRoute
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
 import com.khalidtouch.core.designsystem.components.ClassifiGradientBackground
@@ -90,27 +91,11 @@ private fun TeachersNavHost(
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        composable(
-            route = teachersScreenNavigationRoute,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(200)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(200)
-                )
-            }
-        ) {
-            TeachersRoute(
-                onBackPressed = onBackPressed,
-                teacherScreenViewModel = teacherScreenViewModel,
-                addTeacherViewModel = addTeacherViewModel,
-                windowSizeClass = windowSizeClass,
-            )
-        }
+       teachersScreen(
+           onBackPressed = onBackPressed,
+           teacherScreenViewModel = teacherScreenViewModel,
+           addTeacherViewModel = addTeacherViewModel,
+           windowSizeClass = windowSizeClass,
+       )
     }
 }

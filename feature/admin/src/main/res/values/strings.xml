@@ -24,4 +24,7 @@
     <string name="enter_password">Enter password</string>
     <string name="enter_teacher_email">Enter teacher email</string>
     <string name="submit">Submit</string>
+    <string name="name_not_specified">Name not specified</string>
+    <string name="email_not_added">Email not added</string>
+    <string name="empty_bio"><![CDATA[<bio>]]></string>
 </resources>
