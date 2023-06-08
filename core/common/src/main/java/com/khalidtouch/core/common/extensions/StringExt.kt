@@ -22,6 +22,8 @@ fun String?.orDefaultImageUrl() = when(this) {
     else -> this
 }
 
+fun String.isEqualToDefaultImageUrl() = this == "file://dev/null"
+
 fun String?.ifNullOrBlank(default: String) = when (this) {
     null -> default
     "" -> default

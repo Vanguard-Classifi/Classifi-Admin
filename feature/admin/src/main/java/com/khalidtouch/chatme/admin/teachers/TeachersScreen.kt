@@ -48,6 +48,7 @@ import com.khalidtouch.chatme.admin.teachers.addteacher.AddTeacherScreen
 import com.khalidtouch.chatme.admin.teachers.addteacher.AddTeacherViewModel
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import com.khalidtouch.core.common.extensions.ifNullOrBlank
+import com.khalidtouch.core.common.extensions.isEqualToDefaultImageUrl
 import com.khalidtouch.core.common.extensions.orDefaultImageUrl
 import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.components.ClassifiBackground
@@ -168,8 +169,8 @@ fun TeachersScreen(
                 }
             }
 
-            if(listOfTeachers.itemCount == 0) {
-                if(hasFinishedLoading) {
+            if(hasFinishedLoading) {
+                if(listOfTeachers.itemSnapshotList.items.isEmpty()) {
                     ItemNotAvailable(
                         headerText = stringResource(id = R.string.no_teacher_added),
                         labelText = stringResource(id = R.string.click_plus_to_add)
@@ -228,6 +229,7 @@ fun TeacherItem(
         selected = selected,
         onClick = { onClick(teacher) },
         onLongPress = { onLongPress(teacher) },
+        profileImageIsDefault = teacher.profile?.profileImage?.isEqualToDefaultImageUrl() ?: true
     )
 }
 
