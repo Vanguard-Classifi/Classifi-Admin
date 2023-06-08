@@ -129,10 +129,15 @@ class AddTeacherViewModel @Inject constructor(
         _currentPage.value = to
     }
 
-    fun createAccountForTeachers(teachers: List<StageTeacher>, result: OnCreateBatchAccountResult) {
+    fun createAccountForTeachers(
+        mySchool: ClassifiSchool?,
+        teachers: List<StageTeacher>,
+        result: OnCreateBatchAccountResult
+    ) {
         createAccountForTeachers.createAccountForTeachers(
             teachers = teachers,
-            result = result
+            result = result,
+            mySchool = mySchool
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.admin.teachers
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -135,6 +136,7 @@ fun TeachersScreen(
     addTeacherViewModel: AddTeacherViewModel,
     windowSizeClass: WindowSizeClass,
 ) {
+    val TAG = "TeacherScreen"
     val state = rememberLazyListState()
     val uiState by teacherScreenViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -163,8 +165,12 @@ fun TeachersScreen(
                     TeacherItem(
                         selected = false,
                         teacher = checkNotNull(teacher),
-                        onClick = {},
-                        onLongPress = {},
+                        onClick = {
+                            Log.e(TAG, "TeachersScreen: onclick")
+                        },
+                        onLongPress = {
+                            Log.e(TAG, "TeachersScreen: onlongpress")
+                        },
                     )
                 }
             }

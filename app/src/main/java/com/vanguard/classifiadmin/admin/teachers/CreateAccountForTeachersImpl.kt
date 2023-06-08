@@ -2,6 +2,7 @@ package com.vanguard.classifiadmin.admin.teachers
 
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.chatme.network.CreateAccountForTeachers
+import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
 import com.khalidtouch.classifiadmin.model.utils.OnCreateBatchAccountResult
 import com.khalidtouch.classifiadmin.model.utils.StageTeacher
@@ -23,6 +24,7 @@ class CreateAccountForTeachersImpl @Inject constructor(
     private val scope = CoroutineScope(ioDispatcher + SupervisorJob())
 
     override fun createAccountForTeachers(
+        mySchool: ClassifiSchool?,
         teachers: List<StageTeacher>,
         result: OnCreateBatchAccountResult
     ) {
@@ -37,8 +39,12 @@ class CreateAccountForTeachersImpl @Inject constructor(
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             scope.launch {
-                                val id = System.currentTimeMillis() + email.hashCode()
                                 userRepository.saveUser(data.teacher)
+                                userRepository.registerUserWithSchool(
+                                    userId = checkNotNull(data.teacher.userId),
+                                    schoolId = checkNotNull(mySchool?.schoolId),
+                                    schoolName = checkNotNull(mySchool?.schoolName)
+                                )
                                 fireStore.collection(ClassifiStore.USERS).document(email)
                                     .set(data.teacher).addOnSuccessListener { }
                             }

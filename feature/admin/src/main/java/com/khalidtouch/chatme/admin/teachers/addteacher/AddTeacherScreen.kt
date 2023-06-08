@@ -64,6 +64,7 @@ fun AddTeacherScreen(
                                 }
                                 addTeacherViewModel.createAccountForTeachers(
                                     teachers = state.stagedTeachers,
+                                    mySchool = mySchool,
                                     result = { state, aborted ->
                                         Log.e(
                                             TAG,

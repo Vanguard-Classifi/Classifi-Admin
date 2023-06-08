@@ -86,6 +86,7 @@ class CreateAccountForSuperAdminUseCase @Inject constructor(
                                     dateCreated = LocalDateTime.now(),
                                 )
                             )
+                            //todo() - register user to school
                         }.invokeOnCompletion {
                             postAction {
                                 scope.launch {
