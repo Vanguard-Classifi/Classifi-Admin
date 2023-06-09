@@ -1,4 +1,4 @@
-package com.khalidtouch.chatme.admin.teachers.addteacher
+package com.khalidtouch.chatme.admin.parents.addparent
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
+import com.google.accompanist.navigation.animation.composable
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
-import com.google.accompanist.navigation.animation.composable
 
 @Composable
-fun InputTeacherSuccessfulScreen() {
+fun InputParentSuccessfulScreen() {
     LazyColumn {
         tickItem()
     }
@@ -55,22 +55,22 @@ private fun LazyListScope.tickItem() {
 }
 
 
-const val inputTeacherSuccessfulScreenNavigationRoute =
-    "input_teacher_successful_screen_navigation_route"
+const val inputParentSuccessfulScreenNavigationRoute =
+    "input_parent_successful_screen_navigation_route"
 
-fun NavController.navigateToInputTeacherSuccessfulScreen(
-    addTeacherViewModel: AddTeacherViewModel,
+fun NavController.navigateToInputParentSuccessfulScreen(
+    addParentViewModel: AddParentViewModel,
     navOptions: NavOptions? = null,
 ) {
-    this.navigate(inputTeacherSuccessfulScreenNavigationRoute, navOptions)
-    addTeacherViewModel.onNavigate(AddTeacherPage.SUCCESS)
+    this.navigate(inputParentSuccessfulScreenNavigationRoute, navOptions)
+    addParentViewModel.onNavigate(AddParentPage.SUCCESS)
 }
 
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.inputTeacherSuccessfulScreen() {
+fun NavGraphBuilder.inputParentSuccessfulScreen() {
     composable(
-        route = inputTeacherSuccessfulScreenNavigationRoute,
+        route = inputParentSuccessfulScreenNavigationRoute,
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -84,6 +84,6 @@ fun NavGraphBuilder.inputTeacherSuccessfulScreen() {
             )
         }
     ) {
-        InputTeacherSuccessfulScreen()
+        InputParentSuccessfulScreen()
     }
 }

@@ -135,7 +135,11 @@ class OfflineFirstUserRepository @Inject constructor(
         return readCountriesUseCase(context, page, limit)
     }
 
-    override fun observeTeachersFromMySchool(pageSize: Int): Flow<PagingData<ClassifiUser>> {
-        return userPagingSource.observeTeachersFromMySchoolAsPaged(pageSize)
+    override fun observeTeachersFromMySchool(pageSize: Int, schoolId: Long): Flow<PagingData<ClassifiUser>> {
+        return userPagingSource.observeTeachersFromMySchoolAsPaged(pageSize, schoolId)
+    }
+
+    override fun observeParentsFromMySchool(pageSize: Int, schoolId: Long): Flow<PagingData<ClassifiUser>> {
+        return userPagingSource.observeParentsFromMySchoolAsPaged(pageSize, schoolId)
     }
 }

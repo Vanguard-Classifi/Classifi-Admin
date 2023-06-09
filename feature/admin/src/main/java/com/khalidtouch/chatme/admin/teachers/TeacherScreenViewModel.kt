@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,6 +22,7 @@ const val KEY_TEACHER_FOR_DETAIL_ID = "key_teacher_for_detail_id"
 @HiltViewModel
 class TeacherScreenViewModel @Inject constructor(
     userRepository: UserRepository,
+    userDataRepository: UserDataRepository,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _shouldShowAddTeacherDialog = MutableStateFlow<Boolean>(false)
@@ -37,11 +38,15 @@ class TeacherScreenViewModel @Inject constructor(
         _shouldShowAddTeacherDialog,
         _finishLoadingState,
         _selectedTeachers,
-    ) { showDialog, finishLoading, selectedTeachers ->
+        userDataRepository.userData,
+    ) { showDialog, finishLoading, selectedTeachers, data ->
         TeacherScreenUiState.Success(
             data = TeacherScreenState(
                 shouldShowAddTeacherDialog = showDialog,
-                listOfTeachers = userRepository.observeTeachersFromMySchool(20),
+                listOfTeachers = userRepository.observeTeachersFromMySchool(
+                    pageSize = 20,
+                    schoolId = data.schoolId,
+                ),
                 hasFinishedLoading = finishLoading,
                 hasTeachers = true,
                 selectedTeachers = selectedTeachers,
@@ -54,7 +59,7 @@ class TeacherScreenViewModel @Inject constructor(
         initialValue = TeacherScreenUiState.Loading,
     )
 
-    fun onSetAddTeacherDialogState(state: Boolean) {
+    fun updateAddTeacherDialogState(state: Boolean) {
         _shouldShowAddTeacherDialog.value = state
     }
 

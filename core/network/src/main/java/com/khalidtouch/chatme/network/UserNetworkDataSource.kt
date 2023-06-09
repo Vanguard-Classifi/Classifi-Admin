@@ -1,9 +1,6 @@
 package com.khalidtouch.chatme.network
 
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
-import com.khalidtouch.classifiadmin.model.utils.CreateAccountData
-import com.khalidtouch.classifiadmin.model.utils.OnCreateBatchAccountResult
-import com.khalidtouch.classifiadmin.model.utils.StageTeacher
 
 interface UserNetworkDataSource {
     fun saveUser(user: ClassifiUser)

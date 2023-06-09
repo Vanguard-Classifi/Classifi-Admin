@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
+import com.khalidtouch.core.designsystem.theme.LocalContentAlpha
 
 
 @Composable
@@ -34,20 +35,24 @@ fun ItemNotAvailable(
             painter = painterResource(id = ClassifiIcons.EmptyTv),
             contentDescription = null,
             modifier = Modifier.size(300.dp),
-            tint = MaterialTheme.colorScheme.outline,
+            tint = MaterialTheme.colorScheme.outline.copy(LocalContentAlpha.current.alpha),
         )
 
         Text(
             text = headerText,
             style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.outline
+                color = MaterialTheme.colorScheme.outline.copy(
+                    LocalContentAlpha.current.alpha
+                ),
             ),
         )
 
         Text(
             text = labelText,
             style = MaterialTheme.typography.titleMedium.copy(
-                color = MaterialTheme.colorScheme.outline
+                color = MaterialTheme.colorScheme.outline.copy(
+                    LocalContentAlpha.current.alpha
+                ),
             ),
         )
     }
@@ -57,7 +62,7 @@ fun ItemNotAvailable(
 @Preview
 private fun ItemNotAvailablePreview() {
     ItemNotAvailable(
-      headerText = "School not available",
-      labelText = "Click + to add"
+        headerText = "School not available",
+        labelText = "Click + to add"
     )
 }

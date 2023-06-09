@@ -1,4 +1,4 @@
-package com.khalidtouch.chatme.admin.teachers.addteacher
+package com.khalidtouch.chatme.admin.parents.addparent
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
@@ -18,57 +18,60 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khalidtouch.chatme.admin.R
-import com.khalidtouch.chatme.admin.teachers.TeacherScreenViewModel
+import com.khalidtouch.chatme.admin.parents.ParentScreenViewModel
 import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 
+
 @Composable
-fun AddTeacherScreen(
-    addTeacherViewModel: AddTeacherViewModel,
-    teacherScreenViewModel: TeacherScreenViewModel,
+fun AddParentScreen(
     windowSizeClass: WindowSizeClass,
-    uiState: AddTeacherUiState = rememberAddTeacherUiState(windowSize = windowSizeClass),
+    addParentViewModel: AddParentViewModel,
+    parentScreenViewModel: ParentScreenViewModel,
+    uiState: AddParentUiState = rememberAddParentUiState(windowSizeClass = windowSizeClass)
 ) {
-    val TAG = "AddTeacher"
+
+    val TAG = "AddParent"
     val configuration = LocalConfiguration.current
-    val state by addTeacherViewModel.state.collectAsStateWithLifecycle()
-    val navController = (uiState as AddTeacherUiState.Success).data.navController
-    val mySchool by addTeacherViewModel.observeMySchool.collectAsStateWithLifecycle()
+    val state by addParentViewModel.state.collectAsStateWithLifecycle()
+    val navController = (uiState as AddParentUiState.Success).data.navController
+    val mySchool by addParentViewModel.observeMySchool.collectAsStateWithLifecycle()
+
 
     AlertDialog(
-        onDismissRequest = { },
+        onDismissRequest = {},
         confirmButton = {
             Box(Modifier.padding(horizontal = 8.dp)) {
                 ClassifiTextButton(
-                    enabled = state.canSubmitTeachersInfo,
+                    enabled = state.canSubmitParentsInfo,
                     onClick = {
                         when (state.currentPage) {
-                            AddTeacherPage.SUCCESS -> {
-                                teacherScreenViewModel.updateAddTeacherDialogState(false)
+                            AddParentPage.SUCCESS -> {
+                                parentScreenViewModel.updateAddParentDialogState(false)
                             }
 
-                            AddTeacherPage.INPUT -> {
+                            AddParentPage.INPUT -> {
                                 //stage any trailing data
-                                if(state.canAddMoreTeachers) {
-                                    addTeacherViewModel.onStageTeacher(
+                                if(state.canAddMoreParents) {
+                                    addParentViewModel.onStageParent(
                                         email = state.email,
                                         password = state.password,
                                         confirmPassword = state.confirmPassword,
                                         mySchool = mySchool,
                                     )
                                 }
-                                addTeacherViewModel.createAccountForTeachers(
-                                    teachers = state.stagedTeachers,
+                                addParentViewModel.createAccountForParents(
+                                    parents = state.stagedParents,
                                     mySchool = mySchool,
                                     result = { state, aborted ->
                                         Log.e(
                                             TAG,
-                                            "AddTeacherScreen: ${aborted.size} teachers could not be saved"
+                                            "AddParentScreen: ${aborted.size} Parents could not be saved"
                                         )
                                         when (state) {
                                             OnCreateAccountState.Success -> {
-                                                navController.navigateToInputTeacherSuccessfulScreen(
-                                                    addTeacherViewModel = addTeacherViewModel
+                                                navController.navigateToInputParentSuccessfulScreen(
+                                                    addParentViewModel = addParentViewModel
                                                 )
                                             }
 
@@ -81,8 +84,8 @@ fun AddTeacherScreen(
                     },
                     text = {
                         val text = when (state.currentPage) {
-                            AddTeacherPage.INPUT -> stringResource(id = R.string.submit)
-                            AddTeacherPage.SUCCESS -> stringResource(id = R.string.finish)
+                            AddParentPage.INPUT -> stringResource(id = R.string.submit)
+                            AddParentPage.SUCCESS -> stringResource(id = R.string.finish)
                         }
 
                         Text(
@@ -93,35 +96,13 @@ fun AddTeacherScreen(
                 )
             }
         },
-        dismissButton = {
-            if (state.currentPage == AddTeacherPage.INPUT) {
-                Box(Modifier.padding(horizontal = 8.dp)) {
-                    ClassifiTextButton(
-                        onClick = {
-                            teacherScreenViewModel.updateAddTeacherDialogState(false)
-                        },
-                        text = {
-                            val text = stringResource(id = R.string.cancel)
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                        }
-                    )
-                }
-            }
-        },
-        title = {
-            Text(
-                text = stringResource(id = R.string.add_teachers),
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
+        dismissButton = {},
+        title = {},
         text = {
-            AddTeacherNavHost(
-                appState = uiState,
+            AddParentNavHost(
                 windowSizeClass = windowSizeClass,
-                addTeacherViewModel = addTeacherViewModel,
+                addParentUiState = uiState,
+                addParentViewModel = addParentViewModel
             )
         },
         tonalElevation = 2.dp,

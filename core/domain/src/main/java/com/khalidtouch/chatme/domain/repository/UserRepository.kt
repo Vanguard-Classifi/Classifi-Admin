@@ -38,5 +38,6 @@ interface UserRepository {
 
     suspend fun getCountriesFromJson(page: Int, limit: Int): PagedCountry
 
-    fun observeTeachersFromMySchool(pageSize: Int): Flow<PagingData<ClassifiUser>>
+    fun observeTeachersFromMySchool(pageSize: Int, schoolId: Long): Flow<PagingData<ClassifiUser>>
+    fun observeParentsFromMySchool(pageSize: Int, schoolId: Long): Flow<PagingData<ClassifiUser>>
 }

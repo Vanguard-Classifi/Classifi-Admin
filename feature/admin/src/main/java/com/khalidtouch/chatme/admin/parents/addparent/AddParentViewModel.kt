@@ -1,10 +1,10 @@
-package com.khalidtouch.chatme.admin.teachers.addteacher
+package com.khalidtouch.chatme.admin.parents.addparent
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
-import com.khalidtouch.chatme.network.CreateAccountForTeachers
+import com.khalidtouch.chatme.network.CreateAccountForParents
 import com.khalidtouch.classifiadmin.model.UserAccount
 import com.khalidtouch.classifiadmin.model.UserRole
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
@@ -23,18 +23,19 @@ import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+
 @HiltViewModel
-class AddTeacherViewModel @Inject constructor(
+class AddParentViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val schoolRepository: SchoolRepository,
-    private val createAccountForTeachers: CreateAccountForTeachers
-) : ViewModel() {
+    private val createAccountForParents: CreateAccountForParents
+): ViewModel() {
 
     private val _email = MutableStateFlow<String>("")
     private val _password = MutableStateFlow<String>("")
     private val _confirmPassword = MutableStateFlow<String>("")
-    private val _stagedTeachers = MutableStateFlow<ArrayList<StagedUser>>(arrayListOf())
-    private val _currentPage = MutableStateFlow<AddTeacherPage>(AddTeacherPage.INPUT)
+    private val _stagedParents = MutableStateFlow<ArrayList<StagedUser>>(arrayListOf())
+    private val _currentPage = MutableStateFlow<AddParentPage>(AddParentPage.INPUT)
 
     val observeMySchool: StateFlow<ClassifiSchool?> = userDataRepository.userData.map {
         val schoolId = it.schoolId
@@ -47,31 +48,32 @@ class AddTeacherViewModel @Inject constructor(
         )
 
 
-    val state: StateFlow<AddTeacherState> = combine(
+    val state: StateFlow<AddParentState> = combine(
         _email,
         _password,
         _confirmPassword,
-        _stagedTeachers,
+        _stagedParents,
         _currentPage,
     ) { email, password, confirm, staged, currentPage ->
-        val canAddMoreTeachers = email.isNotBlank() && password.isNotBlank() && confirm.isNotBlank()
+        val canAddMoreParents = email.isNotBlank() && password.isNotBlank() && confirm.isNotBlank()
                 && email.isEmailValid() && password.isPasswordValid() && password == confirm
 
-        AddTeacherState(
+        AddParentState(
             email = email,
             password = password,
             confirmPassword = confirm,
-            stagedTeachers = staged,
-            canAddMoreTeachers = canAddMoreTeachers,
+            stagedParents = staged,
+            canAddMoreParents = canAddMoreParents,
             currentPage = currentPage,
-            canSubmitTeachersInfo = canAddMoreTeachers || staged.isNotEmpty()
+            canSubmitParentsInfo = canAddMoreParents || staged.isNotEmpty()
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = AddTeacherState.Default
+        initialValue = AddParentState.Default
     )
-
+    
+    
     fun onEmailChanged(email: String) {
         _email.value = email
     }
@@ -84,20 +86,20 @@ class AddTeacherViewModel @Inject constructor(
         _confirmPassword.value = confirm
     }
 
-    fun onStageTeacher(
+    fun onStageParent(
         email: String,
         password: String,
         confirmPassword: String,
         mySchool: ClassifiSchool?,
     ) {
-        if (_stagedTeachers.value.find { it.user.account?.email == email } != null) return
-        _stagedTeachers.value.add(
+        if (_stagedParents.value.find { it.user.account?.email == email } != null) return
+        _stagedParents.value.add(
             StagedUser(
                 user = ClassifiUser(
                     userId = System.currentTimeMillis() + email.hashCode(),
                     account = UserAccount(
                         email = email,
-                        userRole = UserRole.Teacher,
+                        userRole = UserRole.Parent,
                     ),
                     dateCreated = LocalDateTime.now(),
                     joinedSchools = if (mySchool == null) {
@@ -115,56 +117,53 @@ class AddTeacherViewModel @Inject constructor(
         _confirmPassword.value = ""
     }
 
-    fun onRemoveTeacher(teacher: StagedUser) {
-        _stagedTeachers.value.remove(teacher)
+    fun onRemoveParent(parent: StagedUser) {
+        _stagedParents.value.remove(parent)
     }
 
 
     fun onClearStage() {
-        _stagedTeachers.value.clear()
+        _stagedParents.value.clear()
     }
 
-    fun onNavigate(to: AddTeacherPage) {
+    fun onNavigate(to: AddParentPage) {
         _currentPage.value = to
     }
 
-    fun createAccountForTeachers(
+    fun createAccountForParents(
         mySchool: ClassifiSchool?,
-        teachers: List<StagedUser>,
+        parents: List<StagedUser>,
         result: OnCreateBatchAccountResult
     ) {
-        createAccountForTeachers.createAccountForTeachers(
-            teachers = teachers,
+        createAccountForParents.createAccountForParents(
+            mySchool = mySchool,
+            parents = parents,
             result = result,
-            mySchool = mySchool
         )
     }
+
 }
 
-
-data class AddTeacherState(
+data class AddParentState(
     val email: String,
     val password: String,
     val confirmPassword: String,
-    val stagedTeachers: List<StagedUser>,
-    val canAddMoreTeachers: Boolean,
-    val currentPage: AddTeacherPage,
-    val canSubmitTeachersInfo: Boolean,
+    val stagedParents: List<StagedUser>,
+    val canAddMoreParents: Boolean,
+    val currentPage: AddParentPage,
+    val canSubmitParentsInfo: Boolean,
 ) {
     companion object {
-        val Default = AddTeacherState(
+        val Default = AddParentState(
             email = "",
             password = "",
             confirmPassword = "",
-            stagedTeachers = listOf(),
-            canAddMoreTeachers = false,
-            currentPage = AddTeacherPage.INPUT,
-            canSubmitTeachersInfo = false,
+            stagedParents = listOf(),
+            canAddMoreParents = false,
+            currentPage = AddParentPage.INPUT,
+            canSubmitParentsInfo = false,
         )
     }
 }
 
-
-enum class AddTeacherPage {
-    INPUT, SUCCESS
-}
+enum class AddParentPage { INPUT, SUCCESS, }

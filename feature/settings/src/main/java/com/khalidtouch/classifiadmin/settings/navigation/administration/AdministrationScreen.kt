@@ -36,6 +36,7 @@ fun AdministrationScreenWrapper(
     settingsViewModel: SettingsViewModel,
     onOpenSchoolAdminPanel: () -> Unit,
     onOpenTeacherAdminPanel: () -> Unit,
+    onOpenParentAdminPanel: () -> Unit,
 ) {
     Surface(
         modifier = Modifier
@@ -55,6 +56,7 @@ fun AdministrationScreenWrapper(
                     modifier = Modifier.padding(padding),
                     onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
                     onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
+                    onOpenParentAdminPanel = onOpenParentAdminPanel,
                 )
             }
         )
@@ -67,6 +69,7 @@ private fun AdministrationScreen(
     modifier: Modifier = Modifier,
     onOpenSchoolAdminPanel: () -> Unit,
     onOpenTeacherAdminPanel: () -> Unit,
+    onOpenParentAdminPanel: () -> Unit,
 ){
     val headerStyle = MaterialTheme.typography.titleMedium.copy(
         color = Color.Black.copy(0.8f)
@@ -94,6 +97,7 @@ private fun AdministrationScreen(
         manageParents(
             headerStyle = headerStyle,
             textStyle = textStyle,
+            onOpenParentAdminPanel = onOpenParentAdminPanel
         )
 
         manageStudents(
@@ -119,7 +123,7 @@ fun LazyListScope.manageSchool(
     onOpenSchoolAdminPanel: () -> Unit,
 ) {
     item {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         SettingItem(
             onClick = onOpenSchoolAdminPanel,
@@ -223,11 +227,11 @@ fun LazyListScope.manageAdmins(
 fun LazyListScope.manageParents(
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    onOpenParentAdminPanel: () -> Unit,
 ) {
     item {
         SettingItem(
-            onClick = {
-            },
+            onClick = onOpenParentAdminPanel,
             icon = {
                 Icon(
                     painter = painterResource(id = ClassifiIcons.Parent),

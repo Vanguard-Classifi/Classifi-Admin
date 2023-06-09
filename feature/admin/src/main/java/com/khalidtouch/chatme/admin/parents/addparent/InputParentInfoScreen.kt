@@ -1,4 +1,4 @@
-package com.khalidtouch.chatme.admin.teachers.addteacher
+package com.khalidtouch.chatme.admin.parents.addparent
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -52,70 +52,64 @@ import com.khalidtouch.core.designsystem.components.ClassifiIconButton
 import com.khalidtouch.core.designsystem.components.ClassifiStagingIconButton
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 
-const val inputTeacherInfoNavigationRoute = "input_teacher_info_navigation_route"
-
 
 @Composable
-fun InputTeacherInfoScreen(
-    addTeacherViewModel: AddTeacherViewModel,
+fun InputParentInfoScreen(
+    addParentViewModel: AddParentViewModel
 ) {
     val context = LocalContext.current
-    val state by addTeacherViewModel.state.collectAsStateWithLifecycle()
-    val mySchool by addTeacherViewModel.observeMySchool.collectAsStateWithLifecycle()
+    val state by addParentViewModel.state.collectAsStateWithLifecycle()
+    val mySchool by addParentViewModel.observeMySchool.collectAsStateWithLifecycle()
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
 
+
     LazyColumn {
-        teacherEmail(
-            placeholder = context.getString(R.string.enter_teacher_email),
+        parentEmail(
+            placeholder = context.getString(R.string.enter_parent_email),
             value = state.email,
-            onValueChange = addTeacherViewModel::onEmailChanged,
+            onValueChange = addParentViewModel::onEmailChanged,
             isError = false,
         )
 
-        teacherPassword(
+        parentPassword(
             placeholder = context.getString(R.string.enter_password),
             value = state.password,
-            onValueChange = addTeacherViewModel::onPasswordChanged,
+            onValueChange = addParentViewModel::onPasswordChanged,
             isError = false,
             isPasswordVisible = isPasswordVisible,
-            onTogglePasswordVisibility = {
-                isPasswordVisible = !it
-            },
+            onTogglePasswordVisibility = { isPasswordVisible = !it },
         )
 
-
-        teacherVerifyPassword(
+        parentVerifyPassword(
             placeholder = context.getString(R.string.confirm_password),
             value = state.confirmPassword,
-            onValueChange = addTeacherViewModel::onConfirmPasswordChanged,
-            isError = false,
+            onValueChange = addParentViewModel::onConfirmPasswordChanged,
             isPasswordVisible = isConfirmPasswordVisible,
-            onTogglePasswordVisibility = {
-                isConfirmPasswordVisible = !it
-            },
+            onTogglePasswordVisibility = { isConfirmPasswordVisible = !it }
         )
 
-        teacherAddMore(
-            onEnrollMoreTeachers = {
-                addTeacherViewModel.onStageTeacher(
+        parentAddMore(
+            onEnrollMoreParents = {
+                addParentViewModel.onStageParent(
                     email = state.email,
                     password = state.password,
                     confirmPassword = state.confirmPassword,
-                    mySchool = mySchool,
+                    mySchool = mySchool
                 )
             },
-            canAddMoreTeachers = state.canAddMoreTeachers,
+            canAddMoreParents = state.canAddMoreParents,
         )
 
-        teacherStagingArea(
-            stagedTeachers = state.stagedTeachers,
-            onClick = {/*TODO -> preview staged teacher*/ },
+        parentStagingArea(
+            stagedParents = state.stagedParents,
+            onClick = {/*TODO() -> preview staged parents */ },
         )
     }
 }
 
-private fun LazyListScope.teacherEmail(
+
+private fun LazyListScope.parentEmail(
     placeholder: String? = null,
     value: String,
     onValueChange: (String) -> Unit,
@@ -157,7 +151,7 @@ private fun LazyListScope.teacherEmail(
     }
 }
 
-private fun LazyListScope.teacherPassword(
+private fun LazyListScope.parentPassword(
     placeholder: String? = null,
     value: String,
     onValueChange: (String) -> Unit,
@@ -230,7 +224,7 @@ private fun LazyListScope.teacherPassword(
 }
 
 
-private fun LazyListScope.teacherVerifyPassword(
+private fun LazyListScope.parentVerifyPassword(
     placeholder: String? = null,
     value: String,
     onValueChange: (String) -> Unit,
@@ -303,9 +297,9 @@ private fun LazyListScope.teacherVerifyPassword(
 }
 
 
-private fun LazyListScope.teacherAddMore(
-    onEnrollMoreTeachers: () -> Unit,
-    canAddMoreTeachers: Boolean,
+private fun LazyListScope.parentAddMore(
+    onEnrollMoreParents: () -> Unit,
+    canAddMoreParents: Boolean,
 ) {
     item {
         Box(
@@ -315,12 +309,12 @@ private fun LazyListScope.teacherAddMore(
             contentAlignment = Alignment.BottomStart,
         ) {
             ClassifiIconButton(
-                enabled = canAddMoreTeachers,
+                enabled = canAddMoreParents,
                 colors = IconButtonDefaults.iconButtonColors(
                     containerColor = Color.Transparent,
                     contentColor = MaterialTheme.colorScheme.outline.copy(0.7f),
                 ),
-                onClick = onEnrollMoreTeachers,
+                onClick = onEnrollMoreParents,
                 icon = {
                     Icon(
                         painterResource(id = ClassifiIcons.AddPerson),
@@ -332,14 +326,15 @@ private fun LazyListScope.teacherAddMore(
     }
 }
 
+
 @OptIn(ExperimentalLayoutApi::class)
-private fun LazyListScope.teacherStagingArea(
-    stagedTeachers: List<StagedUser>,
+private fun LazyListScope.parentStagingArea(
+    stagedParents: List<StagedUser>,
     onClick: (StagedUser) -> Unit,
 ) {
     item {
         FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            stagedTeachers.forEachIndexed { index, teacher ->
+            stagedParents.forEachIndexed { index, parent ->
                 ClassifiStagingIconButton(
                     border = BorderStroke(
                         width = 1.dp,
@@ -348,7 +343,7 @@ private fun LazyListScope.teacherStagingArea(
                         )
                     ),
                     color = Color.Transparent,
-                    onClick = { onClick(teacher) }) {
+                    onClick = { onClick(parent) }) {
                     Box {
                         Icon(
                             painterResource(id = ClassifiIcons.Personal),
@@ -382,22 +377,25 @@ private fun LazyListScope.teacherStagingArea(
 }
 
 
-fun NavController.navigateToInputTeacherInfo(
-    addTeacherViewModel: AddTeacherViewModel,
+const val inputParentInfoNavigationRoute = "input_parent_info_navigation_route"
+
+fun NavController.navigateToInputParentInfo(
+    addParentViewModel: AddParentViewModel,
 ) {
-    this.navigate(inputTeacherInfoNavigationRoute) {
+    this.navigate(inputParentInfoNavigationRoute) {
         launchSingleTop = true
-        popUpTo(inputTeacherInfoNavigationRoute)
+        popUpTo(inputParentInfoNavigationRoute)
     }
-    addTeacherViewModel.onNavigate(AddTeacherPage.INPUT)
+    addParentViewModel.onNavigate(AddParentPage.INPUT)
 }
 
+
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.inputTeacherInfo(
-    addTeacherViewModel: AddTeacherViewModel,
+fun NavGraphBuilder.inputParentInfo(
+    addParentViewModel: AddParentViewModel,
 ) {
     composable(
-        route = inputTeacherInfoNavigationRoute,
+        route = inputParentInfoNavigationRoute,
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -411,6 +409,6 @@ fun NavGraphBuilder.inputTeacherInfo(
             )
         }
     ) {
-        InputTeacherInfoScreen(addTeacherViewModel = addTeacherViewModel)
+        InputParentInfoScreen(addParentViewModel = addParentViewModel)
     }
 }

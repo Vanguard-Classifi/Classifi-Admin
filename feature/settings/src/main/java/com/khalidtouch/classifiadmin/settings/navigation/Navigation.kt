@@ -23,6 +23,7 @@ fun NavGraphBuilder.settingsScreen(
     onBack: () -> Unit,
     onOpenSchoolAdminPanel: () -> Unit,
     onOpenTeacherAdminPanel: () -> Unit,
+    onOpenParentAdminPanel: () -> Unit,
 ) {
     composable(
         route = settingsNavigationRoute,
@@ -44,6 +45,7 @@ fun NavGraphBuilder.settingsScreen(
             onBack = onBack,
             onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
             onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
+            onOpenParentAdminPanel = onOpenParentAdminPanel,
         )
     }
 }

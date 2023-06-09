@@ -200,7 +200,7 @@ fun LazyListScope.schoolItem(
     textStyle: TextStyle,
 ) {
     item {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         SettingItem(
             onClick = {

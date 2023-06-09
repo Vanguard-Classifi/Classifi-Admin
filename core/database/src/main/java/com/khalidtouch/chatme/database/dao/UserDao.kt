@@ -80,7 +80,7 @@ interface UserDao {
         value = "select * from ClassifiUserEntity where userRole like :role order by username asc"
     )
     @Transaction
-    fun observeTeachersFromMySchoolAsPaged(role: UserRole = UserRole.Teacher): PagingSource<Int, UserWithSchools>
+    fun observeUsersFromMySchoolAsPaged(role: UserRole): PagingSource<Int, UserWithSchools>
 
     @Query(
         value = "select * from ClassifiUserEntity where userId = :userId"

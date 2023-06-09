@@ -1,7 +1,7 @@
-package com.vanguard.classifiadmin.admin.teachers
+package com.vanguard.classifiadmin.admin.parents
 
 import com.khalidtouch.chatme.domain.repository.UserRepository
-import com.khalidtouch.chatme.network.CreateAccountForTeachers
+import com.khalidtouch.chatme.network.CreateAccountForParents
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
 import com.khalidtouch.classifiadmin.model.utils.OnCreateBatchAccountResult
@@ -16,22 +16,21 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class CreateAccountForTeachersImpl @Inject constructor(
+class CreateAccountForParentsImpl @Inject constructor(
     private val userRepository: UserRepository,
     @Dispatcher(ClassifiDispatcher.IO) private val ioDispatcher: CoroutineDispatcher
-) : UserRegistration(), CreateAccountForTeachers {
-
+): CreateAccountForParents, UserRegistration() {
     private val scope = CoroutineScope(ioDispatcher + SupervisorJob())
 
-    override fun createAccountForTeachers(
+    override fun createAccountForParents(
         mySchool: ClassifiSchool?,
-        teachers: List<StagedUser>,
+        parents: List<StagedUser>,
         result: OnCreateBatchAccountResult
     ) {
         result(OnCreateAccountState.Starting, listOf())
         val abortedEmails = ArrayList<String>()
         try {
-            teachers.forEach { data ->
+            parents.forEach { data ->
                 val email = checkNotNull(data.user.account?.email)
                 authentication.createUserWithEmailAndPassword(
                     email, data.password

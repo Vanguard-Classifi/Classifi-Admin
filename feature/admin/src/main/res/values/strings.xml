@@ -34,4 +34,8 @@
     <string name="delete_contact">Delete contact</string>
     <string name="delete">Delete</string>
     <string name="type_your_email_to_proceed">Type your email to proceed</string>
+    <string name="manage_parents">Manage Parents</string>
+    <string name="add_parent">Add Parent</string>
+    <string name="no_parent_added">No parent added</string>
+    <string name="enter_parent_email">Enter parent email</string>
 </resources>
