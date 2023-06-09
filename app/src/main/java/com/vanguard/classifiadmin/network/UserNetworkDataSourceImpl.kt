@@ -23,8 +23,6 @@ class UserNetworkDataSourceImpl @Inject constructor(): UserNetworkDataSource {
     override fun updateUser(user: ClassifiUser) {
         fireStore.collection(ClassifiStore.USERS).document(user.account?.email.orEmpty())
             .set(user)
-            .addOnSuccessListener {  }
-            .addOnFailureListener {  }
     }
 
     override fun registerUserWithSchool(userId: Long, schoolId: Long, schoolName: String) {
@@ -36,6 +34,8 @@ class UserNetworkDataSourceImpl @Inject constructor(): UserNetworkDataSource {
     }
 
     override fun deleteUser(user: ClassifiUser) {
+        fireStore.collection(ClassifiStore.USERS).document(user.account?.email.orEmpty())
+            .delete()
     }
 
     override fun fetchUserById(userId: Long, callback: (ClassifiUser?) -> Unit) {

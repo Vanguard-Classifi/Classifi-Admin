@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 const val KEY_TEACHER_FOR_DETAIL_ID = "key_teacher_for_detail_id"
@@ -25,7 +26,7 @@ class TeacherScreenViewModel @Inject constructor(
 ) : ViewModel() {
     private val _shouldShowAddTeacherDialog = MutableStateFlow<Boolean>(false)
     private val _finishLoadingState = MutableStateFlow<Boolean>(false)
-    private val _selectedTeachers = MutableStateFlow<ArrayList<ClassifiUser>>(arrayListOf())
+    private val _selectedTeachers = MutableStateFlow<ArrayList<Long>>(arrayListOf())
     private val _teacherSelectionListener = MutableStateFlow<Int>(0)
     val teacherSelectionListener: StateFlow<Int> = _teacherSelectionListener
     val teacherForDetailId: StateFlow<Long> = savedStateHandle.getStateFlow(
@@ -65,12 +66,13 @@ class TeacherScreenViewModel @Inject constructor(
         _teacherSelectionListener.value.plus(1)
     }
 
-    fun onSelectTeacherOrDeselect(teacher: ClassifiUser) {
-        if (_selectedTeachers.value.contains(teacher)) {
-            _selectedTeachers.value.remove(teacher)
-            return
+    fun onSelectTeacherOrDeselect(teacherId: Long) {
+        viewModelScope.launch {
+            if (_selectedTeachers.value.contains(teacherId)) {
+                _selectedTeachers.value.remove(teacherId)
+            }
+            _selectedTeachers.value.add(teacherId)
         }
-        _selectedTeachers.value.add(teacher)
     }
 
     fun navigateToDetail(newId: Long) {
@@ -88,6 +90,6 @@ data class TeacherScreenState(
     val listOfTeachers: Flow<PagingData<ClassifiUser>>,
     val hasTeachers: Boolean,
     val hasFinishedLoading: Boolean,
-    val selectedTeachers: List<ClassifiUser>,
+    val selectedTeachers: List<Long>,
     val shouldShowExtraFeaturesOnTopBar: Boolean,
 )

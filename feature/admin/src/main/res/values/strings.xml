@@ -29,4 +29,9 @@
     <string name="empty_bio"><![CDATA[<bio>]]></string>
     <string name="see_more">See More</string>
     <string name="class_name_not_set">Class name not set</string>
+    <string name="teacher_detail">Teacher Detail</string>
+    <string name="options">Options</string>
+    <string name="delete_contact">Delete contact</string>
+    <string name="delete">Delete</string>
+    <string name="type_your_email_to_proceed">Type your email to proceed</string>
 </resources>

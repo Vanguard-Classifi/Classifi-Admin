@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.khalidtouch.classifiadmin.feeds.compose.navigateToComposeFeed
 import com.khalidtouch.classifiadmin.settings.navigation.navigateToSettings
 import com.khalidtouch.core.designsystem.components.ClassifiAvatar
@@ -230,129 +233,129 @@ fun ClassifiHomeScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(16.dp)
+                                .padding(16.dp),
+                            contentAlignment = when (windowSizeClass.widthSizeClass) {
+                                WindowWidthSizeClass.Expanded -> Alignment.Center
+                                WindowWidthSizeClass.Medium -> Alignment.Center
+                                WindowWidthSizeClass.Compact -> Alignment.TopCenter
+                                else -> Alignment.TopCenter
+                            }
                         ) {
                             val localModifier = Modifier
-                            Box(
-                                contentAlignment = when (windowSizeClass.widthSizeClass) {
-                                    WindowWidthSizeClass.Expanded -> Alignment.Center
-                                    WindowWidthSizeClass.Medium -> Alignment.Center
-                                    WindowWidthSizeClass.Compact -> Alignment.TopEnd
-                                    else -> Alignment.TopEnd
-                                },
-                            ) {
-                                Popup(
-                                    alignment = Alignment.Center,
-                                    offset = IntOffset(0, 200),
-                                    onDismissRequest = { menuState = false },
-                                ) {
-                                    ClassifiMenu(
-                                        modifier = localModifier,
-                                        header = {
-                                            val textStyle =
-                                                MaterialTheme.typography.labelMedium.copy(
-                                                    textAlign = TextAlign.Center,
-                                                    fontWeight = FontWeight.Bold
-                                                )
+                            val configuration = LocalConfiguration.current
 
-                                            MenuHeader(
-                                                onClick = {
-                                                   onOpenSettings()
-                                                    menuState = false
-                                                },
-                                            ) {
-                                                Row(modifier = Modifier.padding(vertical = 8.dp)) {
-                                                    val nameStyle =
-                                                        MaterialTheme.typography.titleMedium
-                                                    val emailStyle =
-                                                        MaterialTheme.typography.titleSmall
-                                                    Box(modifier = Modifier.padding(16.dp)) {
-                                                        ClassifiAvatar(
-                                                            onClick = { },
-                                                            text = {
-                                                                Box(
-                                                                    modifier = Modifier,
-                                                                    contentAlignment = Alignment.Center
-                                                                ) {
-                                                                    ProvideTextStyle(textStyle) {
-                                                                        Text(
-                                                                            text = "Khalid Isah".getInitials(),
-                                                                        )
-                                                                    }
+                            Popup(
+                                alignment = Alignment.TopCenter,
+                                offset = IntOffset(0, 20),
+                                onDismissRequest = { menuState = false },
+                            ) {
+                                ClassifiMenu(
+                                    modifier = localModifier
+                                        .width(configuration.screenWidthDp.dp - 16.dp),
+                                    header = {
+                                        val textStyle =
+                                            MaterialTheme.typography.labelMedium.copy(
+                                                textAlign = TextAlign.Center,
+                                                fontWeight = FontWeight.Bold
+                                            )
+
+                                        MenuHeader(
+                                            onClick = {
+                                                onOpenSettings()
+                                                menuState = false
+                                            },
+                                        ) {
+                                            Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                                                val nameStyle =
+                                                    MaterialTheme.typography.titleMedium
+                                                val emailStyle =
+                                                    MaterialTheme.typography.titleSmall
+                                                Box(modifier = Modifier.padding(16.dp)) {
+                                                    ClassifiAvatar(
+                                                        onClick = { },
+                                                        text = {
+                                                            Box(
+                                                                modifier = Modifier,
+                                                                contentAlignment = Alignment.Center
+                                                            ) {
+                                                                ProvideTextStyle(textStyle) {
+                                                                    Text(
+                                                                        text = "Khalid Isah".getInitials(),
+                                                                    )
                                                                 }
-                                                            },
+                                                            }
+                                                        },
+                                                    )
+                                                }
+                                                Column(
+                                                    modifier = Modifier.weight(1f),
+                                                    verticalArrangement = Arrangement.SpaceEvenly
+                                                ) {
+                                                    ProvideTextStyle(value = nameStyle) {
+                                                        Text(
+                                                            text = "khalid Isah".uppercase()
                                                         )
                                                     }
-                                                    Column(
-                                                        modifier = Modifier.weight(1f),
-                                                        verticalArrangement = Arrangement.SpaceEvenly
-                                                    ) {
-                                                        ProvideTextStyle(value = nameStyle) {
-                                                            Text(
-                                                                text = "khalid Isah".uppercase()
-                                                            )
-                                                        }
-                                                        ProvideTextStyle(value = emailStyle) {
-                                                            Text(
-                                                                text = "khalid.isah@gmail.com"
-                                                            )
-                                                        }
+                                                    ProvideTextStyle(value = emailStyle) {
+                                                        Text(
+                                                            text = "khalid.isah@gmail.com"
+                                                        )
+                                                    }
 
-                                                        ProvideTextStyle(value = emailStyle) {
-                                                            Text(
-                                                                text = "Click here to view profile"
-                                                            )
-                                                        }
+                                                    ProvideTextStyle(value = emailStyle) {
+                                                        Text(
+                                                            text = "Click here to view profile"
+                                                        )
                                                     }
                                                 }
                                             }
-                                        },
-                                        content = {
-                                            val textStyle = MaterialTheme.typography.labelMedium
-
-                                            MenuItem(
-                                                icon = {
-                                                    Icon(
-                                                        painter = painterResource(id = ClassifiIcons.Support),
-                                                        contentDescription = stringResource(id = R.string.help_and_support)
-                                                    )
-                                                },
-                                                text = {
-                                                    ProvideTextStyle(textStyle) {
-                                                        Text(
-                                                            text = stringResource(id = R.string.help_and_support)
-                                                        )
-                                                    }
-
-                                                },
-                                                onClick = {
-                                                    /*todo; on get support */
-                                                }
-                                            )
-
-                                            MenuItem(
-                                                icon = {
-                                                    Icon(
-                                                        painter = painterResource(id = ClassifiIcons.Settings),
-                                                        contentDescription = stringResource(id = R.string.my_account)
-                                                    )
-                                                },
-                                                text = {
-                                                    ProvideTextStyle(textStyle) {
-                                                        Text(
-                                                            text = stringResource(id = R.string.my_account)
-                                                        )
-                                                    }
-
-                                                },
-                                                onClick = {
-                                                    onOpenSettings()
-                                                    menuState = false
-                                                }
-                                            )
                                         }
-                                    )
-                                }
+                                    },
+                                    content = {
+                                        val textStyle = MaterialTheme.typography.labelMedium
+
+                                        MenuItem(
+                                            icon = {
+                                                Icon(
+                                                    painter = painterResource(id = ClassifiIcons.Support),
+                                                    contentDescription = stringResource(id = R.string.help_and_support)
+                                                )
+                                            },
+                                            text = {
+                                                ProvideTextStyle(textStyle) {
+                                                    Text(
+                                                        text = stringResource(id = R.string.help_and_support)
+                                                    )
+                                                }
+
+                                            },
+                                            onClick = {
+                                                /*todo; on get support */
+                                            }
+                                        )
+
+                                        MenuItem(
+                                            icon = {
+                                                Icon(
+                                                    painter = painterResource(id = ClassifiIcons.Settings),
+                                                    contentDescription = stringResource(id = R.string.my_account)
+                                                )
+                                            },
+                                            text = {
+                                                ProvideTextStyle(textStyle) {
+                                                    Text(
+                                                        text = stringResource(id = R.string.my_account)
+                                                    )
+                                                }
+
+                                            },
+                                            onClick = {
+                                                onOpenSettings()
+                                                menuState = false
+                                            }
+                                        )
+                                    }
+                                )
                             }
                         }
                     }

@@ -70,6 +70,7 @@ class OfflineFirstUserRepository @Inject constructor(
 
     override suspend fun deleteUser(user: ClassifiUser) {
         userDao.deleteUser(modelMapper.userModelToEntity(user)!!)
+        userNetworkDataSource.deleteUser(user)
     }
 
     override suspend fun deleteUsers(ids: List<Long>) {

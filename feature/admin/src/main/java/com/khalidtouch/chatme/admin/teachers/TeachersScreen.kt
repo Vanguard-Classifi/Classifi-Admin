@@ -144,9 +144,6 @@ fun TeachersScreen(
     val uiState by teacherScreenViewModel.uiState.collectAsStateWithLifecycle()
     val teacherSelectionListener by teacherScreenViewModel.teacherSelectionListener.collectAsStateWithLifecycle()
 
-    LaunchedEffect(teacherSelectionListener) {
-        Log.e(TAG, "TeachersScreen: launchedeffect called")
-    }
 
     when (uiState) {
         is TeacherScreenUiState.Loading -> Unit
@@ -161,6 +158,11 @@ fun TeachersScreen(
                 (uiState as TeacherScreenUiState.Success).data.shouldShowExtraFeaturesOnTopBar
 
             Log.e(TAG, "TeachersScreen: number of selected teachers ${selectedTeachers.size}")
+            LaunchedEffect(teacherSelectionListener) {
+                Log.e(TAG, "TeachersScreen: launchedeffect called")
+                listOfTeachers.refresh()
+            }
+
             LazyColumn(
                 state = state,
                 modifier = modifier
@@ -170,20 +172,17 @@ fun TeachersScreen(
             ) {
                 items(listOfTeachers) { teacher ->
                     TeacherItem(
-                        selected = selectedTeachers.contains(teacher),
+                        selected = selectedTeachers.contains(teacher?.userId),
                         teacher = checkNotNull(teacher),
                         onClick = {
-                            if(shouldShowExtraFeaturesOnTopBar) {
-                                teacherScreenViewModel.onSelectTeacherOrDeselect(it)
+                            if (shouldShowExtraFeaturesOnTopBar) {
+                                teacherScreenViewModel.onSelectTeacherOrDeselect(it.userId ?: -1L)
                             } else {
                                 teacherScreenViewModel.navigateToDetail(it.userId ?: -1L)
                                 onOpenTeacherDetail()
                             }
                         },
                         onLongPress = {
-                            Log.e(TAG, "TeachersScreen: long press")
-                            teacherScreenViewModel.onSelectTeacherOrDeselect(it)
-                            teacherScreenViewModel.listenForTeacherSelection()
                         },
                     )
                 }
