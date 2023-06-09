@@ -234,7 +234,8 @@ fun ClassifiTheme(
     CompositionLocalProvider(
         LocalGradientColors provides gradientColors,
         LocalBackgroundTheme provides backgroundTheme,
-        LocalTintTheme provides tintTheme
+        LocalTintTheme provides tintTheme,
+        LocalContentAlpha provides ContentAlpha(0.7f)
     ){
         MaterialTheme(
             colorScheme = colorScheme,

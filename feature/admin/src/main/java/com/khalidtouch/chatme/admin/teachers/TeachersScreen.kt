@@ -68,6 +68,7 @@ internal fun TeachersRoute(
     teacherScreenViewModel: TeacherScreenViewModel,
     addTeacherViewModel: AddTeacherViewModel,
     windowSizeClass: WindowSizeClass,
+    onOpenTeacherDetail: () -> Unit,
 ) {
     ClassifiBackground {
         ClassifiGradientBackground(
@@ -121,6 +122,7 @@ internal fun TeachersRoute(
                         teacherScreenViewModel = teacherScreenViewModel,
                         addTeacherViewModel = addTeacherViewModel,
                         windowSizeClass = windowSizeClass,
+                        onOpenTeacherDetail = onOpenTeacherDetail,
                     )
                 }
             )
@@ -135,14 +137,15 @@ fun TeachersScreen(
     teacherScreenViewModel: TeacherScreenViewModel,
     addTeacherViewModel: AddTeacherViewModel,
     windowSizeClass: WindowSizeClass,
+    onOpenTeacherDetail: () -> Unit,
 ) {
     val TAG = "TeacherScreen"
     val state = rememberLazyListState()
     val uiState by teacherScreenViewModel.uiState.collectAsStateWithLifecycle()
+    val teacherSelectionListener by teacherScreenViewModel.teacherSelectionListener.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState) {
-        delay(5_000)
-        teacherScreenViewModel.finishLoading()
+    LaunchedEffect(teacherSelectionListener) {
+        Log.e(TAG, "TeachersScreen: launchedeffect called")
     }
 
     when (uiState) {
@@ -152,31 +155,42 @@ fun TeachersScreen(
                 (uiState as TeacherScreenUiState.Success).data.listOfTeachers.collectAsLazyPagingItems()
             val hasFinishedLoading =
                 (uiState as TeacherScreenUiState.Success).data.hasFinishedLoading
+            val hasTeachers = (uiState as TeacherScreenUiState.Success).data.hasTeachers
+            val selectedTeachers = (uiState as TeacherScreenUiState.Success).data.selectedTeachers
+            val shouldShowExtraFeaturesOnTopBar =
+                (uiState as TeacherScreenUiState.Success).data.shouldShowExtraFeaturesOnTopBar
 
+            Log.e(TAG, "TeachersScreen: number of selected teachers ${selectedTeachers.size}")
             LazyColumn(
                 state = state,
                 modifier = modifier
                     .fillMaxSize()
                     .testTag("admin:school"),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(16.dp),
             ) {
                 items(listOfTeachers) { teacher ->
                     TeacherItem(
-                        selected = false,
+                        selected = selectedTeachers.contains(teacher),
                         teacher = checkNotNull(teacher),
                         onClick = {
-                            Log.e(TAG, "TeachersScreen: onclick")
+                            if(shouldShowExtraFeaturesOnTopBar) {
+                                teacherScreenViewModel.onSelectTeacherOrDeselect(it)
+                            } else {
+                                teacherScreenViewModel.navigateToDetail(it.userId ?: -1L)
+                                onOpenTeacherDetail()
+                            }
                         },
                         onLongPress = {
-                            Log.e(TAG, "TeachersScreen: onlongpress")
+                            Log.e(TAG, "TeachersScreen: long press")
+                            teacherScreenViewModel.onSelectTeacherOrDeselect(it)
+                            teacherScreenViewModel.listenForTeacherSelection()
                         },
                     )
                 }
             }
 
-            if(hasFinishedLoading) {
-                if(listOfTeachers.itemSnapshotList.items.isEmpty()) {
+            if (hasFinishedLoading) {
+                if (!hasTeachers) {
                     ItemNotAvailable(
                         headerText = stringResource(id = R.string.no_teacher_added),
                         labelText = stringResource(id = R.string.click_plus_to_add)
@@ -254,6 +268,7 @@ fun NavGraphBuilder.teachersScreen(
     teacherScreenViewModel: TeacherScreenViewModel,
     addTeacherViewModel: AddTeacherViewModel,
     windowSizeClass: WindowSizeClass,
+    onOpenTeacherDetail: () -> Unit,
 ) {
     composable(
         route = teachersScreenNavigationRoute,
@@ -275,6 +290,7 @@ fun NavGraphBuilder.teachersScreen(
             teacherScreenViewModel = teacherScreenViewModel,
             addTeacherViewModel = addTeacherViewModel,
             windowSizeClass = windowSizeClass,
+            onOpenTeacherDetail = onOpenTeacherDetail
         )
     }
 }

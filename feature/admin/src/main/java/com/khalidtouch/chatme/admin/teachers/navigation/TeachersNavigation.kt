@@ -18,6 +18,10 @@ import com.khalidtouch.chatme.admin.teachers.TeacherScreenViewModel
 import com.khalidtouch.chatme.admin.teachers.TeachersAppState
 import com.khalidtouch.chatme.admin.teachers.TeachersRoute
 import com.khalidtouch.chatme.admin.teachers.addteacher.AddTeacherViewModel
+import com.khalidtouch.chatme.admin.teachers.details.TeacherDetailViewModel
+import com.khalidtouch.chatme.admin.teachers.details.navigateToTeacherDetail
+import com.khalidtouch.chatme.admin.teachers.details.teacherDetailScreen
+import com.khalidtouch.chatme.admin.teachers.navigateToTeachersScreen
 import com.khalidtouch.chatme.admin.teachers.rememberTeachersAppState
 import com.khalidtouch.chatme.admin.teachers.teachersScreen
 import com.khalidtouch.chatme.admin.teachers.teachersScreenNavigationRoute
@@ -85,17 +89,25 @@ private fun TeachersNavHost(
     onBackPressed: () -> Unit,
     teacherScreenViewModel: TeacherScreenViewModel = hiltViewModel<TeacherScreenViewModel>(),
     addTeacherViewModel: AddTeacherViewModel = hiltViewModel<AddTeacherViewModel>(),
+    teacherDetailViewModel: TeacherDetailViewModel = hiltViewModel<TeacherDetailViewModel>()
 ) {
     AnimatedNavHost(
         navController = appState.navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
-       teachersScreen(
-           onBackPressed = onBackPressed,
-           teacherScreenViewModel = teacherScreenViewModel,
-           addTeacherViewModel = addTeacherViewModel,
-           windowSizeClass = windowSizeClass,
-       )
+        teachersScreen(
+            onBackPressed = onBackPressed,
+            teacherScreenViewModel = teacherScreenViewModel,
+            addTeacherViewModel = addTeacherViewModel,
+            windowSizeClass = windowSizeClass,
+            onOpenTeacherDetail = { appState.navController.navigateToTeacherDetail() }
+        )
+
+        teacherDetailScreen(
+            teacherScreenViewModel = teacherScreenViewModel,
+            teacherDetailViewModel = teacherDetailViewModel,
+            onBackPressed = { appState.navController.navigateToTeachersScreen() }
+        )
     }
 }

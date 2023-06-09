@@ -27,4 +27,6 @@
     <string name="name_not_specified">Name not specified</string>
     <string name="email_not_added">Email not added</string>
     <string name="empty_bio"><![CDATA[<bio>]]></string>
+    <string name="see_more">See More</string>
+    <string name="class_name_not_set">Class name not set</string>
 </resources>

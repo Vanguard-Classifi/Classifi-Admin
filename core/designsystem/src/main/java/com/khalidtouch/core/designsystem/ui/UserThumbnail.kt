@@ -2,6 +2,7 @@ package com.khalidtouch.core.designsystem.ui
 
 import android.net.Uri
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -78,13 +80,20 @@ fun ClassifiUserThumbnail(
                         tapped = false
                     }
                 )
-            }, contentAlignment = Alignment.CenterStart
+            }
+            .background(
+                if(selected) {
+                    MaterialTheme.colorScheme.outline.copy(0.1f)
+                } else Color.Transparent
+            )
+        , contentAlignment = Alignment.CenterStart
     ) {
 
         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha(0.7f)) {
             val imagePadding = remember { mutableStateOf<Int>(0) }
             Box(
                 Modifier
+                    .padding(8.dp)
                     .onGloballyPositioned {
                         imagePadding.value = it.size.width
                     },
@@ -163,6 +172,7 @@ fun ClassifiUserThumbnail(
         }
     }
 }
+
 
 @Composable
 @Preview

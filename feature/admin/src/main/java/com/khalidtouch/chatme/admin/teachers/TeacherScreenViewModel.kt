@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.admin.teachers
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -15,22 +16,35 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+const val KEY_TEACHER_FOR_DETAIL_ID = "key_teacher_for_detail_id"
+
 @HiltViewModel
 class TeacherScreenViewModel @Inject constructor(
     userRepository: UserRepository,
-): ViewModel() {
+    private val savedStateHandle: SavedStateHandle,
+) : ViewModel() {
     private val _shouldShowAddTeacherDialog = MutableStateFlow<Boolean>(false)
     private val _finishLoadingState = MutableStateFlow<Boolean>(false)
+    private val _selectedTeachers = MutableStateFlow<ArrayList<ClassifiUser>>(arrayListOf())
+    private val _teacherSelectionListener = MutableStateFlow<Int>(0)
+    val teacherSelectionListener: StateFlow<Int> = _teacherSelectionListener
+    val teacherForDetailId: StateFlow<Long> = savedStateHandle.getStateFlow(
+        key = KEY_TEACHER_FOR_DETAIL_ID, initialValue = -1L,
+    )
 
-    val uiState : StateFlow<TeacherScreenUiState> = combine(
+    val uiState: StateFlow<TeacherScreenUiState> = combine(
         _shouldShowAddTeacherDialog,
-        _finishLoadingState
-    ) { showDialog, finishLoading ->
+        _finishLoadingState,
+        _selectedTeachers,
+    ) { showDialog, finishLoading, selectedTeachers ->
         TeacherScreenUiState.Success(
             data = TeacherScreenState(
                 shouldShowAddTeacherDialog = showDialog,
                 listOfTeachers = userRepository.observeTeachersFromMySchool(20),
-                hasFinishedLoading  = finishLoading
+                hasFinishedLoading = finishLoading,
+                hasTeachers = true,
+                selectedTeachers = selectedTeachers,
+                shouldShowExtraFeaturesOnTopBar = selectedTeachers.isNotEmpty()
             )
         )
     }.stateIn(
@@ -40,22 +54,40 @@ class TeacherScreenViewModel @Inject constructor(
     )
 
     fun onSetAddTeacherDialogState(state: Boolean) {
-        _shouldShowAddTeacherDialog.value  = state
+        _shouldShowAddTeacherDialog.value = state
     }
 
     fun finishLoading() {
         _finishLoadingState.value = true
     }
+
+    fun listenForTeacherSelection() {
+        _teacherSelectionListener.value.plus(1)
+    }
+
+    fun onSelectTeacherOrDeselect(teacher: ClassifiUser) {
+        if (_selectedTeachers.value.contains(teacher)) {
+            _selectedTeachers.value.remove(teacher)
+            return
+        }
+        _selectedTeachers.value.add(teacher)
+    }
+
+    fun navigateToDetail(newId: Long) {
+        savedStateHandle[KEY_TEACHER_FOR_DETAIL_ID] = newId
+    }
 }
 
 sealed interface TeacherScreenUiState {
-    object Loading: TeacherScreenUiState
-    data class Success(val data: TeacherScreenState): TeacherScreenUiState
+    object Loading : TeacherScreenUiState
+    data class Success(val data: TeacherScreenState) : TeacherScreenUiState
 }
-
 
 data class TeacherScreenState(
     val shouldShowAddTeacherDialog: Boolean,
     val listOfTeachers: Flow<PagingData<ClassifiUser>>,
+    val hasTeachers: Boolean,
     val hasFinishedLoading: Boolean,
+    val selectedTeachers: List<ClassifiUser>,
+    val shouldShowExtraFeaturesOnTopBar: Boolean,
 )
