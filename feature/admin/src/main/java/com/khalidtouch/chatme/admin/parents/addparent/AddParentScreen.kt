@@ -52,7 +52,7 @@ fun AddParentScreen(
 
                             AddParentPage.INPUT -> {
                                 //stage any trailing data
-                                if(state.canAddMoreParents) {
+                                if (state.canAddMoreParents) {
                                     addParentViewModel.onStageParent(
                                         email = state.email,
                                         password = state.password,
@@ -63,11 +63,7 @@ fun AddParentScreen(
                                 addParentViewModel.createAccountForParents(
                                     parents = state.stagedParents,
                                     mySchool = mySchool,
-                                    result = { state, aborted ->
-                                        Log.e(
-                                            TAG,
-                                            "AddParentScreen: ${aborted.size} Parents could not be saved"
-                                        )
+                                    result = { state, _ ->
                                         when (state) {
                                             OnCreateAccountState.Success -> {
                                                 navController.navigateToInputParentSuccessfulScreen(
@@ -96,8 +92,33 @@ fun AddParentScreen(
                 )
             }
         },
-        dismissButton = {},
-        title = {},
+        dismissButton = {
+            Box(Modifier.padding(horizontal = 8.dp)) {
+                if (state.currentPage == AddParentPage.INPUT) {
+                    ClassifiTextButton(
+                        enabled = true,
+                        onClick = {
+                              parentScreenViewModel.updateAddParentDialogState(false)
+                        },
+                        text = {
+                            val text = stringResource(id = R.string.cancel)
+
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+                    )
+                }
+            }
+
+        },
+        title = {
+            Text(
+                text = stringResource(id = R.string.add_parent),
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
         text = {
             AddParentNavHost(
                 windowSizeClass = windowSizeClass,
