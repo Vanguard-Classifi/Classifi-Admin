@@ -73,6 +73,7 @@ class ClassifiPreferencesDataSource @Inject constructor(
                 },
                 userEmail = it.userEmail,
                 schoolId = it.schoolId,
+                shouldReAuthenticate = it.shouldReAuthenticate
             )
         }
 
@@ -304,6 +305,14 @@ class ClassifiPreferencesDataSource @Inject constructor(
         userPreferences.updateData { pref ->
             pref.copy {
                 schoolId = id
+            }
+        }
+    }
+
+    suspend fun updateReAuthenticationState(state: Boolean) {
+        userPreferences.updateData { pref ->
+            pref.copy {
+                shouldReAuthenticate = state
             }
         }
     }

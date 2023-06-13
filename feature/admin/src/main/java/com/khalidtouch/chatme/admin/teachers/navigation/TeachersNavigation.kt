@@ -25,9 +25,6 @@ import com.khalidtouch.chatme.admin.teachers.navigateToTeachersScreen
 import com.khalidtouch.chatme.admin.teachers.rememberTeachersAppState
 import com.khalidtouch.chatme.admin.teachers.teachersScreen
 import com.khalidtouch.chatme.admin.teachers.teachersScreenNavigationRoute
-import com.khalidtouch.core.designsystem.components.ClassifiBackground
-import com.khalidtouch.core.designsystem.components.ClassifiGradientBackground
-import com.khalidtouch.core.designsystem.theme.LocalGradientColors
 
 const val teachersAdminPanelNavigationRoute = "teachers_admin_panel_navigation_route"
 

@@ -1,4 +1,4 @@
-package com.khalidtouch.chatme.admin.teachers.details
+package com.khalidtouch.chatme.admin.parents.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,14 +17,13 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class TeacherDetailViewModel @Inject constructor(
+class ParentDetailViewModel @Inject constructor(
     private val userRepository: UserRepository,
     userDataRepository: UserDataRepository,
 ) : ViewModel() {
-
-    private val _teacherForDetail = MutableStateFlow<ClassifiUser?>(null)
+    private val _parentForDetail = MutableStateFlow<ClassifiUser?>(null)
     private val _shouldShowExpandedImage = MutableStateFlow<Boolean>(false)
-    private val _shouldShowTeacherMenu = MutableStateFlow<Boolean>(false)
+    private val _shouldShowParentMenu = MutableStateFlow<Boolean>(false)
     private val _shouldShowDeleteDialog = MutableStateFlow<Boolean>(false)
     private val _email = MutableStateFlow<String>("")
 
@@ -36,44 +35,42 @@ class TeacherDetailViewModel @Inject constructor(
         initialValue = -1L,
     )
 
-    val uiState: StateFlow<TeacherDetailUiState> = combine(
-        _teacherForDetail,
+    val uiState: StateFlow<ParentDetailUiState> = combine(
+        _parentForDetail,
         _shouldShowExpandedImage,
-        _shouldShowTeacherMenu,
+        _shouldShowParentMenu,
         _shouldShowDeleteDialog,
         _email,
-    ) { teacher, showExpandedImage, showMenu, showDeleteDialog, email ->
-        TeacherDetailUiState.Success(
-            data = TeacherDetailState(
-                teacher = teacher,
+    ) { parent, showExpandedImage, showMenu, showDeleteDialog, email ->
+        ParentDetailUiState.Success(
+            data = ParentDetailState(
+                parent = parent,
                 shouldShowExpandedImage = showExpandedImage,
-                shouldShowTeacherMenu = showMenu,
+                shouldShowParentMenu = showMenu,
                 shouldShowDeleteDialog = showDeleteDialog,
-                canBeDeleted = email == teacher?.account?.email,
+                canBeDeleted = email == parent?.account?.email,
                 email = email,
             )
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = TeacherDetailUiState.Loading,
+        initialValue = ParentDetailUiState.Loading,
     )
 
-
-    fun loadTeacherInfo(id: Long) {
+    fun loadParentInfo(id: Long) {
         viewModelScope.launch {
-            val teacher = userRepository.fetchUserById(id)
-            _teacherForDetail.value = teacher
+            val parent = userRepository.fetchUserById(id)
+            _parentForDetail.value = parent
         }
     }
-
 
     fun updateExpandedImageState(state: Boolean) {
         _shouldShowExpandedImage.value = state
     }
 
-    fun updateTeacherMenuState(state: Boolean) {
-        _shouldShowTeacherMenu.value = state
+    fun updateParentMenuState(state: Boolean) {
+        _shouldShowParentMenu.value = state
     }
 
     fun updateDeleteDialogState(state: Boolean) {
@@ -85,11 +82,11 @@ class TeacherDetailViewModel @Inject constructor(
         _email.value = email
     }
 
-    fun unregisterParentFromSchool(teacherId: Long, schoolId: Long) {
+    fun unregisterParentFromSchool(parentId: Long, schoolId: Long) {
         try {
             viewModelScope.launch {
                 userRepository.unregisterUserFromSchool(
-                    teacherId,
+                    parentId,
                     schoolId,
                 )
             }
@@ -97,17 +94,19 @@ class TeacherDetailViewModel @Inject constructor(
             e.printStackTrace()
         }
     }
+
 }
 
-sealed interface TeacherDetailUiState {
-    object Loading : TeacherDetailUiState
-    data class Success(val data: TeacherDetailState) : TeacherDetailUiState
+
+sealed interface ParentDetailUiState {
+    object Loading : ParentDetailUiState
+    data class Success(val data: ParentDetailState) : ParentDetailUiState
 }
 
-data class TeacherDetailState(
-    val teacher: ClassifiUser?,
+data class ParentDetailState(
+    val parent: ClassifiUser?,
     val shouldShowExpandedImage: Boolean,
-    val shouldShowTeacherMenu: Boolean,
+    val shouldShowParentMenu: Boolean,
     val shouldShowDeleteDialog: Boolean,
     val email: String,
     val canBeDeleted: Boolean,

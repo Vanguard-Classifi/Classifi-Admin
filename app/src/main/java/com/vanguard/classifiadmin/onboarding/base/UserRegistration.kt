@@ -1,4 +1,4 @@
-package com.vanguard.classifiadmin.admin.base
+package com.vanguard.classifiadmin.onboarding.base
 
 import android.os.Handler
 import android.os.Looper

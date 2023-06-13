@@ -23,14 +23,23 @@ fun ClassifiApp(
     val uiState by mainActivityViewModel.uiState.collectAsStateWithLifecycle()
 
     Box {
+        //main app navHost
         ClassifiNavHost(windowSizeClass = windowSizeClass)
         when(uiState) {
             is MainActivityUiState.Loading -> Unit
             is MainActivityUiState.Success -> {
-                if(!(uiState as MainActivityUiState.Success).userData.shouldHideOnboarding) {
+                val shouldHideOnboarding = (uiState as MainActivityUiState.Success).data.userData.shouldHideOnboarding
+                val isCurrentlySignedIn = (uiState as MainActivityUiState.Success).data.isCurrentlySignedIn
+                if(!shouldHideOnboarding) {
                     //onboarding dialog
                     Box(Modifier.fillMaxSize()) {
-                        OnboardingScreen(windowSizeClass = windowSizeClass)
+                        OnboardingScreen(windowSizeClass = windowSizeClass, loginRequiredOnly = false)
+                    }
+                }
+                if(shouldHideOnboarding && !isCurrentlySignedIn) {
+                    //login screen
+                    Box(Modifier.fillMaxSize()) {
+                        OnboardingScreen(windowSizeClass = windowSizeClass, loginRequiredOnly = true)
                     }
                 }
             }

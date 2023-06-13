@@ -1,10 +1,11 @@
 package com.khalidtouch.chatme.admin.teachers.addteacher
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
-import com.khalidtouch.chatme.network.CreateAccountForTeachers
+import com.khalidtouch.chatme.network.CreateAccountForUsers
 import com.khalidtouch.classifiadmin.model.UserAccount
 import com.khalidtouch.classifiadmin.model.UserRole
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
@@ -23,11 +24,15 @@ import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+const val KEY_NUMBER_OF_TEACHERS_REGISTERED = "key_number_of_teachers_registered"
+const val KEY_NUMBER_OF_TEACHERS_FAILED = "key_number_of_teachers_failed"
+
 @HiltViewModel
 class AddTeacherViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val schoolRepository: SchoolRepository,
-    private val createAccountForTeachers: CreateAccountForTeachers
+    private val createAccountForTeachers: CreateAccountForUsers,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val _email = MutableStateFlow<String>("")
@@ -35,6 +40,10 @@ class AddTeacherViewModel @Inject constructor(
     private val _confirmPassword = MutableStateFlow<String>("")
     private val _stagedTeachers = MutableStateFlow<ArrayList<StagedUser>>(arrayListOf())
     private val _currentPage = MutableStateFlow<AddTeacherPage>(AddTeacherPage.INPUT)
+    private val _registeringTeacherProgressBar = MutableStateFlow<Boolean>(false)
+    private val _registeringTeacherSnackBar = MutableStateFlow<Boolean>(false)
+    private val _registeringTeacherMessage = MutableStateFlow<String>("")
+
 
     val observeMySchool: StateFlow<ClassifiSchool?> = userDataRepository.userData.map {
         val schoolId = it.schoolId
@@ -46,6 +55,29 @@ class AddTeacherViewModel @Inject constructor(
             initialValue = null,
         )
 
+    val numberOfTeachersRegistered: StateFlow<Int> = savedStateHandle.getStateFlow(
+        key = KEY_NUMBER_OF_TEACHERS_REGISTERED, initialValue = 0
+    )
+
+    val numberOfTeachersFailed: StateFlow<Int> = savedStateHandle.getStateFlow(
+        key = KEY_NUMBER_OF_TEACHERS_FAILED, initialValue = 0
+    )
+
+    val registeringTeacherState: StateFlow<RegisteringTeacherState> = combine(
+        _registeringTeacherMessage,
+        _registeringTeacherSnackBar,
+        _registeringTeacherProgressBar
+    ) { message, snackbar, progressBar ->
+        RegisteringTeacherState(
+            progressBarState = progressBar,
+            snackbarState = snackbar,
+            message = message,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = RegisteringTeacherState.DEFAULT,
+    )
 
     val state: StateFlow<AddTeacherState> = combine(
         _email,
@@ -133,11 +165,31 @@ class AddTeacherViewModel @Inject constructor(
         teachers: List<StagedUser>,
         result: OnCreateBatchAccountResult
     ) {
-        createAccountForTeachers.createAccountForTeachers(
-            teachers = teachers,
+        createAccountForTeachers.createAccountForUsers(
+            users = teachers,
             result = result,
             mySchool = mySchool
         )
+    }
+
+    fun cacheNumberOfTeachersRegistered(number: Int) {
+        savedStateHandle[KEY_NUMBER_OF_TEACHERS_REGISTERED] = number
+    }
+
+    fun cacheNumberOfTeachersFailed(number: Int) {
+        savedStateHandle[KEY_NUMBER_OF_TEACHERS_FAILED] = number
+    }
+
+    fun updateRegisteringTeachersProgressBarState(state: Boolean) {
+        _registeringTeacherProgressBar.value = state
+    }
+
+    fun updateRegisteringTeachersSnackbarState(state: Boolean) {
+        _registeringTeacherSnackBar.value = state
+    }
+
+    fun updateRegisteringTeacherMessage(message: String) {
+        _registeringTeacherMessage.value = message
     }
 }
 
@@ -168,3 +220,19 @@ data class AddTeacherState(
 enum class AddTeacherPage {
     INPUT, SUCCESS
 }
+
+
+data class RegisteringTeacherState(
+    val progressBarState: Boolean,
+    val snackbarState: Boolean,
+    val message: String,
+) {
+    companion object {
+        val DEFAULT = RegisteringTeacherState(
+            progressBarState = false,
+            snackbarState = false,
+            message = ""
+        )
+    }
+}
+

@@ -1,3 +1,3 @@
 package com.khalidtouch.classifiadmin.model.utils
 
-typealias OnCreateBatchAccountResult = (OnCreateAccountState, List<String>) -> Unit
+typealias OnCreateBatchAccountResult = (OnCreateAccountState, List<StagedUser>) -> Unit

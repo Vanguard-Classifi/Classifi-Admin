@@ -17,6 +17,10 @@ import com.google.accompanist.navigation.animation.composable
 import com.khalidtouch.chatme.admin.parents.ParentAppState
 import com.khalidtouch.chatme.admin.parents.ParentScreenViewModel
 import com.khalidtouch.chatme.admin.parents.addparent.AddParentViewModel
+import com.khalidtouch.chatme.admin.parents.details.ParentDetailViewModel
+import com.khalidtouch.chatme.admin.parents.details.navigateToParentDetail
+import com.khalidtouch.chatme.admin.parents.details.parentDetailScreen
+import com.khalidtouch.chatme.admin.parents.navigateToParentsScreen
 import com.khalidtouch.chatme.admin.parents.parentsScreen
 import com.khalidtouch.chatme.admin.parents.parentsScreenNavigationRoute
 import com.khalidtouch.chatme.admin.parents.rememberParentAppState
@@ -79,17 +83,26 @@ private fun ParentNavHost(
     parentScreenViewModel: ParentScreenViewModel = hiltViewModel<ParentScreenViewModel>(),
     startDestination: String = parentsScreenNavigationRoute,
     appState: ParentAppState = rememberParentAppState(windowSizeClass = windowSizeClass),
+    parentDetailViewModel: ParentDetailViewModel = hiltViewModel<ParentDetailViewModel>(),
 ){
     AnimatedNavHost(
         navController = appState.navController,
         startDestination = startDestination,
         modifier = modifier,
+
     ) {
         parentsScreen(
             windowSizeClass = windowSizeClass,
             onBackPressed = onBackPressed,
             parentScreenViewModel = parentScreenViewModel,
             addParentViewModel = addParentViewModel,
+            onOpenParentDetail = {appState.navController.navigateToParentDetail()},
+        )
+
+        parentDetailScreen(
+            parentDetailViewModel = parentDetailViewModel,
+            parentScreenViewModel = parentScreenViewModel,
+            onBackPressed = { appState.navController.navigateToParentsScreen() },
         )
     }
 }

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.paging.PagingData
 import com.khalidtouch.chatme.database.dao.UserDao
 import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
-import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.khalidtouch.chatme.domain.repository.UserRepository
 import com.khalidtouch.chatme.network.UserNetworkDataSource
@@ -49,7 +48,7 @@ class OfflineFirstUserRepository @Inject constructor(
 
     override suspend fun registerUserWithSchool(userId: Long, schoolId: Long, schoolName: String) {
         userDao.registerUserWithSchool(UsersWithSchoolsCrossRef(userId, schoolId))
-        userNetworkDataSource.registerUserWithSchool(userId, schoolId, schoolName)
+        userNetworkDataSource.registerUserWithSchool(userId, schoolId)
     }
 
     override suspend fun updateUser(user: ClassifiUser) {
@@ -68,9 +67,15 @@ class OfflineFirstUserRepository @Inject constructor(
         users.map { userNetworkDataSource.updateUser(it) }
     }
 
-    override suspend fun deleteUser(user: ClassifiUser) {
-        userDao.deleteUser(modelMapper.userModelToEntity(user)!!)
-        userNetworkDataSource.deleteUser(user)
+    override suspend fun unregisterUserFromSchool(userId: Long, schoolId: Long) {
+        //remove account from school
+        val userWithSchoolCrossRef = userDao.fetchUserWithSchoolRelationship(
+            userId,
+            schoolId = schoolId,
+        ) ?: return
+        userDao.unregisterUserFromSchool(userWithSchoolCrossRef)
+        userNetworkDataSource.unregisterUserWithSchool(userId, schoolId)
+        /*todo -> unregister from class */
     }
 
     override suspend fun deleteUsers(ids: List<Long>) {

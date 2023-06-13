@@ -32,6 +32,7 @@ import com.vanguard.classifiadmin.onboarding.usecase.OnLoginState
 @Composable
 fun OnboardingScreen(
     windowSizeClass: WindowSizeClass,
+    loginRequiredOnly: Boolean,
     uiState: OnboardingUiState = rememberOnboardingUiState(),
     onboardingViewModel: OnboardingViewModel = hiltViewModel<OnboardingViewModel>(),
     createAccountViewModel: CreateAccountViewModel = hiltViewModel<CreateAccountViewModel>(),
@@ -46,7 +47,6 @@ fun OnboardingScreen(
 
     AlertDialog(
         onDismissRequest = {
-
         },
         confirmButton = {
             Box(Modifier.padding(horizontal = 8.dp)) {
@@ -127,6 +127,8 @@ fun OnboardingScreen(
                                                 OnCreateAccountState.NetworkProblem -> {
                                                     Log.e(TAG, "OnboardingScreen: network issue ")
                                                 }
+
+                                                else -> Unit
                                             }
                                         }
                                     }
@@ -212,6 +214,7 @@ fun OnboardingScreen(
                 createAccountViewModel = createAccountViewModel,
                 onboardingViewModel = onboardingViewModel,
                 loginViewModel = loginViewModel,
+                loginRequiredOnly = loginRequiredOnly,
             )
         },
         tonalElevation = 2.dp,

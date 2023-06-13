@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.chatme.admin.common.ItemNotAvailable
 import com.khalidtouch.chatme.admin.parents.addparent.AddParentScreen
@@ -60,6 +62,7 @@ internal fun ParentRoute(
     parentScreenViewModel: ParentScreenViewModel,
     addParentViewModel: AddParentViewModel,
     windowSizeClass: WindowSizeClass,
+    onOpenParentDetail: () -> Unit,
 ) {
     ClassifiBackground {
         ClassifiGradientBackground(
@@ -111,7 +114,8 @@ internal fun ParentRoute(
                         modifier = Modifier.padding(it),
                         parentScreenViewModel = parentScreenViewModel,
                         addParentViewModel = addParentViewModel,
-                        windowSizeClass = windowSizeClass
+                        windowSizeClass = windowSizeClass,
+                        onOpenParentDetail = onOpenParentDetail,
                     )
                 }
             )
@@ -126,6 +130,7 @@ private fun ParentsScreen(
     parentScreenViewModel: ParentScreenViewModel,
     addParentViewModel: AddParentViewModel,
     windowSizeClass: WindowSizeClass,
+    onOpenParentDetail: () -> Unit,
 ) {
     val state = rememberLazyListState()
     val uiState by parentScreenViewModel.uiState.collectAsStateWithLifecycle()
@@ -134,7 +139,8 @@ private fun ParentsScreen(
         is ParentScreenUiState.Loading -> Unit
         is ParentScreenUiState.Success -> {
             val listOfParents =
-                (uiState as ParentScreenUiState.Success).data.listOfParents
+                (uiState as ParentScreenUiState.Success).data.listOfParents.collectAsLazyPagingItems()
+            val hasParents = (uiState as ParentScreenUiState.Success).data.hasParents
 
             LazyColumn(
                 state = state,
@@ -143,13 +149,25 @@ private fun ParentsScreen(
                     .testTag("admin:parent"),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                /*TODO() -> populate parents using paging*/
+                items(listOfParents){ parent ->
+                    ParentItem(
+                        parent = checkNotNull(parent),
+                        selected = false,
+                        onClick = {
+                             parentScreenViewModel.navigateToDetail(parent.userId ?: -1L)
+                            onOpenParentDetail()
+                        },
+                        onLongPress = {},
+                    )
+                }
             }
 
-            ItemNotAvailable(
-                headerText = stringResource(id = R.string.no_parent_added),
-                labelText = stringResource(id = R.string.click_plus_to_add)
-            )
+            if(!hasParents) {
+                ItemNotAvailable(
+                    headerText = stringResource(id = R.string.no_parent_added),
+                    labelText = stringResource(id = R.string.click_plus_to_add)
+                )
+            }
         }
     }
 
@@ -222,6 +240,7 @@ fun NavGraphBuilder.parentsScreen(
     onBackPressed: () -> Unit,
     parentScreenViewModel: ParentScreenViewModel,
     addParentViewModel: AddParentViewModel,
+    onOpenParentDetail: () -> Unit,
 ) {
     composable(
         route = parentsScreenNavigationRoute,
@@ -243,6 +262,7 @@ fun NavGraphBuilder.parentsScreen(
             windowSizeClass = windowSizeClass,
             parentScreenViewModel = parentScreenViewModel,
             addParentViewModel = addParentViewModel,
+            onOpenParentDetail = onOpenParentDetail,
         )
     }
 }

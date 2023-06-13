@@ -7,9 +7,9 @@ interface UserNetworkDataSource {
 
     fun updateUser(user: ClassifiUser)
 
-    fun registerUserWithSchool(userId: Long, schoolId: Long, schoolName: String)
+    fun registerUserWithSchool(userId: Long, schoolId: Long)
 
-    fun deleteUser(user: ClassifiUser)
+    fun unregisterUserWithSchool(userId: Long, schoolId: Long,)
 
     fun fetchUserById(userId: Long, callback: (ClassifiUser?) -> Unit)
 

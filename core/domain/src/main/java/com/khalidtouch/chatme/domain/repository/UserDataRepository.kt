@@ -42,4 +42,6 @@ interface UserDataRepository {
     suspend fun setUserRole(userRole: UserRole)
 
     suspend fun setSchoolId(schoolId: Long)
+
+    suspend fun updateReAuthenticationState(state: Boolean)
 }

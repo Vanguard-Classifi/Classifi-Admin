@@ -1,4 +1,4 @@
-package com.khalidtouch.chatme.admin.teachers.details
+package com.khalidtouch.chatme.admin.parents.details
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -7,8 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,8 +63,7 @@ import androidx.paging.compose.items
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.khalidtouch.chatme.admin.R
-import com.khalidtouch.chatme.admin.teachers.TeacherScreenViewModel
-import com.khalidtouch.classifiadmin.model.classifi.ClassifiClass
+import com.khalidtouch.chatme.admin.parents.ParentScreenViewModel
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import com.khalidtouch.core.common.extensions.ifNullOrBlank
 import com.khalidtouch.core.common.extensions.isEqualToDefaultImageUrl
@@ -81,20 +78,20 @@ import com.khalidtouch.core.designsystem.theme.LocalContentAlpha
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TeacherDetailScreen(
-    teacherDetailViewModel: TeacherDetailViewModel,
-    teacherScreenViewModel: TeacherScreenViewModel,
+fun ParentDetailScreen(
+    parentScreenViewModel: ParentScreenViewModel,
+    parentDetailViewModel: ParentDetailViewModel,
     onBackPressed: () -> Unit,
 ) {
-    val uiState by teacherDetailViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by parentDetailViewModel.uiState.collectAsStateWithLifecycle()
     val configuration = LocalConfiguration.current
-    val mySchoolId by teacherDetailViewModel.mySchoolId.collectAsStateWithLifecycle()
+    val mySchoolId by parentDetailViewModel.mySchoolId.collectAsStateWithLifecycle()
 
 
     when(uiState) {
-        is TeacherDetailUiState.Loading -> Unit
-        is TeacherDetailUiState.Success -> {
-            if (!(uiState as TeacherDetailUiState.Success).data.shouldShowExpandedImage) {
+        is ParentDetailUiState.Loading -> Unit
+        is ParentDetailUiState.Success -> {
+            if(!(uiState as ParentDetailUiState.Success).data.shouldShowExpandedImage) {
                 Scaffold(
                     topBar = {
                         ClassifiSimpleTopAppBar(
@@ -103,7 +100,7 @@ fun TeacherDetailScreen(
                                 Box(Modifier.padding(start = 16.dp)) {
                                     ProvideTextStyle(headerStyle) {
                                         Text(
-                                            text = stringResource(id = R.string.teacher_detail)
+                                            text = stringResource(id = R.string.parent_detail)
                                         )
                                     }
                                 }
@@ -124,7 +121,7 @@ fun TeacherDetailScreen(
                             actions = {
                                 Box(modifier = Modifier) {
                                     IconButton(
-                                        onClick = { teacherDetailViewModel.updateTeacherMenuState(true) },
+                                        onClick = { parentDetailViewModel.updateParentMenuState(true) },
                                         enabled = true,
                                     ) {
                                         Icon(
@@ -137,23 +134,25 @@ fun TeacherDetailScreen(
                         )
                     },
                     content = {
-                        TeacherDetailScreen(
+                        ParentDetailScreen(
                             modifier = Modifier.padding(it),
-                            teacherDetailViewModel = teacherDetailViewModel,
-                            teacherScreenViewModel = teacherScreenViewModel,
+                            parentScreenViewModel = parentScreenViewModel,
+                            parentDetailViewModel = parentDetailViewModel,
                         )
                     }
                 )
+
             }
         }
     }
 
-    when(uiState) {
-        is TeacherDetailUiState.Loading -> Unit
-        is TeacherDetailUiState.Success -> {
-            val teacher = (uiState as TeacherDetailUiState.Success).data.teacher
+    //expanded view
+    when (uiState) {
+        is ParentDetailUiState.Loading -> Unit
+        is ParentDetailUiState.Success -> {
+            val parent = (uiState as ParentDetailUiState.Success).data.parent
 
-            if ((uiState as TeacherDetailUiState.Success).data.shouldShowExpandedImage) {
+            if ((uiState as ParentDetailUiState.Success).data.shouldShowExpandedImage) {
                 BoxWithConstraints(
                     Modifier
                         .fillMaxSize()
@@ -162,7 +161,7 @@ fun TeacherDetailScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     val maxWidth = maxWidth
-                    val profileImage = teacher?.profile?.profileImage
+                    val profileImage = parent?.profile?.profileImage
 
                     when (profileImage?.isEqualToDefaultImageUrl() ?: true) {
                         true -> {
@@ -205,7 +204,7 @@ fun TeacherDetailScreen(
                                 containerColor = Color.Transparent,
                                 contentColor = MaterialTheme.colorScheme.outline.copy(0.7f)
                             ),
-                            onClick = { teacherDetailViewModel.updateExpandedImageState(false) },
+                            onClick = { parentDetailViewModel.updateExpandedImageState(false) },
                             icon = {
                                 Icon(
                                     painterResource(id = ClassifiIcons.Close),
@@ -221,16 +220,16 @@ fun TeacherDetailScreen(
 
     //delete dialog
     when (uiState) {
-        is TeacherDetailUiState.Loading -> Unit
-        is TeacherDetailUiState.Success -> {
+        is ParentDetailUiState.Loading -> Unit
+        is ParentDetailUiState.Success -> {
             val onDismissDeleteDialog: () -> Unit =
-                { teacherDetailViewModel.updateDeleteDialogState(false) }
+                { parentDetailViewModel.updateDeleteDialogState(false) }
             val localModifier = Modifier
-            val email = (uiState as TeacherDetailUiState.Success).data.email
-            val canBeDeleted = (uiState as TeacherDetailUiState.Success).data.canBeDeleted
-            val teacher = (uiState as TeacherDetailUiState.Success).data.teacher
+            val email = (uiState as ParentDetailUiState.Success).data.email
+            val canBeDeleted = (uiState as ParentDetailUiState.Success).data.canBeDeleted
+            val parent = (uiState as ParentDetailUiState.Success).data.parent
             val shouldShowDeleteDialog =
-                (uiState as TeacherDetailUiState.Success).data.shouldShowDeleteDialog
+                (uiState as ParentDetailUiState.Success).data.shouldShowDeleteDialog
 
             if (shouldShowDeleteDialog) {
                 AlertDialog(
@@ -257,10 +256,10 @@ fun TeacherDetailScreen(
                             OutlinedTextField(
                                 modifier = localModifier.fillMaxWidth(),
                                 value = email,
-                                onValueChange = teacherDetailViewModel::onEmailChanged,
+                                onValueChange = parentDetailViewModel::onEmailChanged,
                                 placeholder = {
                                     Text(
-                                        text = teacher?.account?.email.orEmpty(),
+                                        text = parent?.account?.email.orEmpty(),
                                         style = MaterialTheme.typography.bodyLarge.copy(
                                             color = MaterialTheme.colorScheme.outline.copy(
                                                 LocalContentAlpha.current.alpha
@@ -303,13 +302,15 @@ fun TeacherDetailScreen(
                         ClassifiTextButton(
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.error,
-                                disabledContentColor = MaterialTheme.colorScheme.outline.copy(0.5f),
+                                disabledContentColor = MaterialTheme.colorScheme.outline.copy(
+                                    0.5f
+                                ),
                                 containerColor = Color.Transparent,
                                 disabledContainerColor = Color.Transparent,
                             ),
                             onClick = {
-                                teacherDetailViewModel.unregisterParentFromSchool(
-                                    teacherId = teacher?.userId ?: -1L,
+                                parentDetailViewModel.unregisterParentFromSchool(
+                                    parentId = parent?.userId ?: -1L,
                                     schoolId = mySchoolId,
                                 )
                                 onDismissDeleteDialog()
@@ -333,39 +334,39 @@ fun TeacherDetailScreen(
 
     //menu
     when (uiState) {
-        is TeacherDetailUiState.Loading -> Unit
-        is TeacherDetailUiState.Success -> {
-            val shouldShowTeacherMenu =
-                (uiState as TeacherDetailUiState.Success).data.shouldShowTeacherMenu
+        is ParentDetailUiState.Loading -> Unit
+        is ParentDetailUiState.Success -> {
+            val shouldShowParentMenu =
+                (uiState as ParentDetailUiState.Success).data.shouldShowParentMenu
 
-            if (shouldShowTeacherMenu) {
+            if (shouldShowParentMenu) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
                     val localModifier = Modifier
                     Popup(
                         alignment = Alignment.TopCenter,
                         offset = IntOffset(0, 20),
-                        onDismissRequest = { teacherDetailViewModel.updateTeacherMenuState(false) }
+                        onDismissRequest = { parentDetailViewModel.updateParentMenuState(false) }
                     ) {
                         ClassifiMenu(
                             modifier = localModifier.width(configuration.screenWidthDp.dp - 48.dp),
                             content = {
-                                TeacherMenu.values().map { menu ->
+                                ParentMenu.values().map { menu ->
                                     MenuItem(
                                         modifier = localModifier,
                                         onClick = {
                                             when (menu) {
-                                                TeacherMenu.Delete -> {
-                                                    teacherDetailViewModel.updateTeacherMenuState(
+                                                ParentMenu.Delete -> {
+                                                    parentDetailViewModel.updateParentMenuState(
                                                         false
                                                     )
-                                                    teacherDetailViewModel.updateDeleteDialogState(
+                                                    parentDetailViewModel.updateDeleteDialogState(
                                                         true
                                                     )
                                                 }
 
-                                                TeacherMenu.AssignToClass -> {
+                                                ParentMenu.JoinWithWard -> {
                                                     /*todo -> assign to class */
-                                                    teacherDetailViewModel.updateTeacherMenuState(
+                                                    parentDetailViewModel.updateParentMenuState(
                                                         false
                                                     )
                                                 }
@@ -401,14 +402,15 @@ fun TeacherDetailScreen(
         }
     }
 
+
     BackHandler(enabled = true) {
         when (uiState) {
-            is TeacherDetailUiState.Loading -> Unit
-            is TeacherDetailUiState.Success -> {
+            is ParentDetailUiState.Loading -> Unit
+            is ParentDetailUiState.Success -> {
                 val shouldShowExpandedImage =
-                    (uiState as TeacherDetailUiState.Success).data.shouldShowExpandedImage
+                    (uiState as ParentDetailUiState.Success).data.shouldShowExpandedImage
                 if (shouldShowExpandedImage) {
-                    teacherDetailViewModel.updateExpandedImageState(false)
+                    parentDetailViewModel.updateExpandedImageState(false)
                 } else {
                     onBackPressed()
                 }
@@ -419,45 +421,48 @@ fun TeacherDetailScreen(
 
 
 @Composable
-private fun TeacherDetailScreen(
+private fun ParentDetailScreen(
     modifier: Modifier = Modifier,
-    teacherDetailViewModel: TeacherDetailViewModel,
-    teacherScreenViewModel: TeacherScreenViewModel,
+    parentScreenViewModel: ParentScreenViewModel,
+    parentDetailViewModel: ParentDetailViewModel,
 ) {
     val context = LocalContext.current
-    val teacherForDetailId by teacherScreenViewModel.teacherForDetailId.collectAsStateWithLifecycle()
-    val uiState by teacherDetailViewModel.uiState.collectAsStateWithLifecycle()
+    val parentForDetailId by parentScreenViewModel.parentForDetailId.collectAsStateWithLifecycle()
+    val uiState by parentDetailViewModel.uiState.collectAsStateWithLifecycle()
 
-    DisposableEffect(teacherForDetailId) {
-        teacherDetailViewModel.loadTeacherInfo(teacherForDetailId)
+    DisposableEffect(parentForDetailId) {
+        parentDetailViewModel.loadParentInfo(parentForDetailId)
         onDispose {}
     }
 
     when (uiState) {
-        is TeacherDetailUiState.Loading -> Unit
-        is TeacherDetailUiState.Success -> {
-            val teacher = (uiState as TeacherDetailUiState.Success).data.teacher
+        is ParentDetailUiState.Loading -> Unit
+        is ParentDetailUiState.Success -> {
+            val parent = (uiState as ParentDetailUiState.Success).data.parent
 
             LazyColumn(
                 contentPadding = PaddingValues(12.dp),
                 modifier = Modifier.padding(top = 46.dp)
             ) {
                 headerItem(
-                    profileImage = teacher?.profile?.profileImage.orDefaultImageUrl(),
-                    isProfileImageDefault = teacher?.profile?.profileImage?.isEqualToDefaultImageUrl()
+                    profileImage = parent?.profile?.profileImage.orDefaultImageUrl(),
+                    isProfileImageDefault = parent?.profile?.profileImage?.isEqualToDefaultImageUrl()
                         ?: true,
-                    onExpand = { teacherDetailViewModel.updateExpandedImageState(true) },
+                    onExpand = { parentDetailViewModel.updateExpandedImageState(true) },
                 )
 
                 infoItem(
-                    username = teacher?.account?.username.ifNullOrBlank(context.getString(R.string.name_not_specified)),
-                    email = teacher?.account?.email.ifNullOrBlank(context.getString(R.string.email_not_added)),
-                    bio = teacher?.profile?.bio.ifNullOrBlank(context.getString(R.string.empty_bio)),
+                    username = parent?.account?.username.ifNullOrBlank(context.getString(R.string.name_not_specified)),
+                    email = parent?.account?.email.ifNullOrBlank(context.getString(R.string.email_not_added)),
+                    bio = parent?.profile?.bio.ifNullOrBlank(context.getString(R.string.empty_bio)),
                 )
 
-                assignedClassesItem(
-                    assignedClasses = teacher?.joinedClasses ?: listOf(),
-                )
+
+//                assignedStudentsItem(
+//                    students = ,
+//                    onClick = {},
+//                )
+
                 item {
                     Spacer(Modifier.height(32.dp))
                 }
@@ -517,7 +522,7 @@ private fun LazyListScope.headerItem(
 }
 
 
-fun LazyListScope.infoItem(
+private fun LazyListScope.infoItem(
     username: String,
     email: String,
     bio: String,
@@ -549,18 +554,37 @@ fun LazyListScope.infoItem(
 }
 
 
-@OptIn(ExperimentalLayoutApi::class)
-private fun LazyListScope.assignedClassesItem(
-    assignedClasses: List<ClassifiClass>,
+fun LazyListScope.assignedStudentsItem(
+    students: LazyPagingItems<ClassifiUser>,
+    onClick: (String) -> Unit,
 ) {
     item {
-        FlowRow(Modifier.fillMaxWidth()) {
-            assignedClasses.map { item ->
+        var topPadding by remember { mutableStateOf(0) }
+        Box {
+            LazyRow(
+                Modifier.padding(
+                    top = 8.dp + with(LocalDensity.current) {
+                        topPadding.toDp()
+                    },
+                )
+            ) {
+                items(students) { student ->
+                    StudentRowItem(
+                        profileImage = student?.profile?.profileImage.orDefaultImageUrl(),
+                        onClick = onClick,
+                        isProfileImageDefault = student?.profile?.profileImage?.isEqualToDefaultImageUrl()
+                            ?: true,
+                    )
+                }
+            }
+
+            Box(Modifier.matchParentSize(), contentAlignment = Alignment.TopEnd) {
                 Text(
-                    text = item.className.ifNullOrBlank(stringResource(id = R.string.class_name_not_set)),
+                    text = stringResource(id = R.string.see_more),
                     style = MaterialTheme.typography.titleSmall.copy(
                         color = MaterialTheme.colorScheme.outline.copy(LocalContentAlpha.current.alpha)
                     ),
+                    modifier = Modifier.onGloballyPositioned { topPadding = it.size.height }
                 )
             }
         }
@@ -568,7 +592,47 @@ private fun LazyListScope.assignedClassesItem(
 }
 
 
-enum class TeacherMenu(val title: String, val icon: Int) {
-    AssignToClass("Assign class", ClassifiIcons.Classroom),
-    Delete("Delete", ClassifiIcons.Delete),
+@Composable
+private fun StudentRowItem(
+    profileImage: String,
+    onClick: (String) -> Unit,
+    isProfileImageDefault: Boolean,
+) {
+    Box(Modifier.clickable(
+        enabled = true,
+        onClick = { onClick(profileImage) }
+    )) {
+        when (isProfileImageDefault) {
+            true -> {
+                Icon(
+                    painterResource(id = ClassifiIcons.Personal),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .height(42.dp)
+                        .width(42.dp),
+                    tint = MaterialTheme.colorScheme.outline.copy(LocalContentAlpha.current.alpha)
+                )
+            }
+
+            false -> {
+                val profileImageUri = Uri.parse(profileImage)
+                AsyncImage(
+                    modifier = Modifier
+                        .height(42.dp)
+                        .width(42.dp)
+                        .clip(CircleShape),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(profileImageUri).build(),
+                    contentDescription = null,
+                    alpha = LocalContentAlpha.current.alpha,
+                    contentScale = ContentScale.Crop,
+                )
+            }
+        }
+    }
+}
+
+enum class ParentMenu(val title: String, val icon: Int) {
+    JoinWithWard("Join with ward", ClassifiIcons.Personal),
+    Delete("Delete", ClassifiIcons.Delete)
 }

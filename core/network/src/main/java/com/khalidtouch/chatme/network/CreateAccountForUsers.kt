@@ -4,10 +4,10 @@ import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.classifiadmin.model.utils.OnCreateBatchAccountResult
 import com.khalidtouch.classifiadmin.model.utils.StagedUser
 
-interface CreateAccountForParents {
-    fun createAccountForParents(
+interface CreateAccountForUsers {
+    fun createAccountForUsers(
         mySchool: ClassifiSchool?,
-        parents: List<StagedUser>,
+        users: List<StagedUser>,
         result: OnCreateBatchAccountResult
     )
 }

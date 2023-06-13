@@ -38,4 +38,5 @@
     <string name="add_parent">Add Parent</string>
     <string name="no_parent_added">No parent added</string>
     <string name="enter_parent_email">Enter parent email</string>
+    <string name="parent_detail">Parent Detail</string>
 </resources>

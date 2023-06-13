@@ -87,4 +87,8 @@ class OfflineFirstUserDataRepository @Inject constructor(
     override suspend fun setSchoolId(schoolId: Long) {
         classifiPreferenceDataSource.setSchoolId(schoolId)
     }
+
+    override suspend fun updateReAuthenticationState(state: Boolean) {
+        classifiPreferenceDataSource.updateReAuthenticationState(state)
+    }
 }

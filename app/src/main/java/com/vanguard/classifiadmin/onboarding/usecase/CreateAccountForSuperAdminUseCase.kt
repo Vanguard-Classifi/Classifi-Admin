@@ -26,7 +26,7 @@ import com.khalidtouch.core.common.Dispatcher
 import com.khalidtouch.core.common.extensions.isEmailValid
 import com.khalidtouch.core.common.extensions.isPasswordValid
 import com.khalidtouch.core.common.firestore.ClassifiStore
-import com.vanguard.classifiadmin.admin.base.UserRegistration
+import com.vanguard.classifiadmin.onboarding.base.UserRegistration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob

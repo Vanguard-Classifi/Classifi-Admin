@@ -13,4 +13,5 @@ sealed interface OnCreateAccountState {
     object WeakPassword : OnCreateAccountState
     object EmailNotFound : OnCreateAccountState
     object NetworkProblem : OnCreateAccountState
+    object SchoolNotFound: OnCreateAccountState
 }

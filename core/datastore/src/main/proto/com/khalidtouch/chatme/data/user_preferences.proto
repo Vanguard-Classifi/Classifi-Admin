@@ -41,4 +41,6 @@ message UserPreferences {
     string user_email = 15;
 
     int64 school_id = 16;
+
+    bool should_re_authenticate = 17;
 }

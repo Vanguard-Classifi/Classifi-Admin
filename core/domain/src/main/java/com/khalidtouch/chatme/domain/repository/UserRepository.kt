@@ -16,7 +16,7 @@ interface UserRepository {
 
     suspend fun updateUsers(users: List<ClassifiUser>)
 
-    suspend fun deleteUser(user: ClassifiUser)
+    suspend fun unregisterUserFromSchool(userId: Long, schoolId: Long)
 
     suspend fun deleteUsers(ids: List<Long>)
 

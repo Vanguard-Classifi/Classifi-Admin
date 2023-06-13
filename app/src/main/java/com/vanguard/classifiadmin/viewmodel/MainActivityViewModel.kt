@@ -2,6 +2,7 @@ package com.vanguard.classifiadmin.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
@@ -28,7 +29,10 @@ class MainActivityViewModel @Inject constructor(
     val uiState: StateFlow<MainActivityUiState> =
         userDataRepository.userData.map { data ->
             MainActivityUiState.Success(
-                userData = data
+                data = MainActivityData(
+                    userData = data,
+                    isCurrentlySignedIn = !data.shouldReAuthenticate
+                )
             )
         }.stateIn(
             scope = viewModelScope,
@@ -60,10 +64,19 @@ class MainActivityViewModel @Inject constructor(
     fun forceClearSchools() = viewModelScope.launch {
         schoolRepository.deleteAllSchools()
     }
+
+    fun updateReAuthenticationState(state: Boolean) = viewModelScope.launch {
+        userDataRepository.updateReAuthenticationState(state)
+    }
 }
 
 
 sealed interface MainActivityUiState {
     object Loading : MainActivityUiState
-    data class Success(val userData: UserData) : MainActivityUiState
+    data class Success(val data: MainActivityData) : MainActivityUiState
 }
+
+data class MainActivityData(
+    val userData: UserData,
+    val isCurrentlySignedIn: Boolean,
+)

@@ -39,6 +39,12 @@ interface UserDao {
     @Query("delete from ClassifiUserEntity")
     suspend fun deleteAllUsers()
 
+    @Delete
+    suspend fun unregisterUserFromSchool(userWithSchool: UsersWithSchoolsCrossRef)
+
+    @Query("select * from UsersWithSchoolsCrossRef where userId like :userId and schoolId like :schoolId")
+    suspend fun fetchUserWithSchoolRelationship(userId: Long, schoolId: Long): UsersWithSchoolsCrossRef?
+
     @Query(
         value = "delete from ClassifiUserEntity where userId in (:ids)"
     )

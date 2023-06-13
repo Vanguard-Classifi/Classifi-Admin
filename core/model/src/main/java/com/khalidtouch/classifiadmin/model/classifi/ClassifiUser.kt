@@ -12,6 +12,7 @@ data class ClassifiUser(
     var dateCreated: LocalDateTime? = null,
     var joinedSchools: List<ClassifiSchool> = emptyList(),
     var joinedClasses: List<ClassifiClass> = emptyList(),
+    val affiliatedUsers: List<ClassifiUser> = emptyList(),
 ) {
 
     val hasAdminPrivilege: Boolean

@@ -63,6 +63,7 @@ import com.vanguard.classifiadmin.R
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel,
+    loginRequiredOnly: Boolean,
     onCreateAccount: () -> Unit,
     onForgotPassword: () -> Unit,
 ) {
@@ -108,7 +109,10 @@ fun LoginScreen(
                 )
 
                 forgotPasswordItem(onForgotPassword)
-                createAccountInstead(onCreateAccount)
+
+                if(!loginRequiredOnly) {
+                    createAccountInstead(onCreateAccount)
+                }
             }
         }
     }
@@ -273,6 +277,7 @@ fun NavGraphBuilder.loginScreen(
     onForgotPassword: () -> Unit,
     onCreateAccount: () -> Unit,
     loginViewModel: LoginViewModel,
+    loginRequiredOnly: Boolean,
 ) {
     composable(
         route = loginScreenNavigationRoute,
@@ -292,7 +297,8 @@ fun NavGraphBuilder.loginScreen(
         LoginScreen(
             onForgotPassword = onForgotPassword,
             onCreateAccount = onCreateAccount,
-            loginViewModel = loginViewModel
+            loginViewModel = loginViewModel,
+            loginRequiredOnly = loginRequiredOnly,
         )
     }
 }

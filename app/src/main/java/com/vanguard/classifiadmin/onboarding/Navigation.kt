@@ -13,12 +13,13 @@ fun OnboardingNavHost(
     onboardingViewModel: OnboardingViewModel,
     createAccountViewModel: CreateAccountViewModel,
     loginViewModel: LoginViewModel,
+    loginRequiredOnly: Boolean,
     windowSizeClass: WindowSizeClass,
     uiState: OnboardingUiState,
 ) {
     AnimatedNavHost(
         navController = (uiState as OnboardingUiState.Success).data.navController,
-        startDestination = welcomeScreenNavigationRoute
+        startDestination = if(loginRequiredOnly) loginScreenNavigationRoute else  welcomeScreenNavigationRoute
     ) {
         //onboarding screen
         welcomeScreen()
@@ -32,6 +33,7 @@ fun OnboardingNavHost(
             onForgotPassword = {/*TODO: Go to forgot password */},
             onCreateAccount = {uiState.data.navController.navigateToCreateAccount(onboardingViewModel)},
             loginViewModel = loginViewModel,
+            loginRequiredOnly = loginRequiredOnly,
         )
 
         onboardingSuccess()

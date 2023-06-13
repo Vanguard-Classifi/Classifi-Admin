@@ -24,5 +24,7 @@ fun AddParentNavHost(
         inputParentInfo(
             addParentViewModel = addParentViewModel
         )
+
+        inputParentSuccessfulScreen()
     }
 }

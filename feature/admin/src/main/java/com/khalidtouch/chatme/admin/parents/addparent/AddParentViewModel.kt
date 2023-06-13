@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
-import com.khalidtouch.chatme.network.CreateAccountForParents
 import com.khalidtouch.classifiadmin.model.UserAccount
 import com.khalidtouch.classifiadmin.model.UserRole
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
@@ -28,7 +27,6 @@ import javax.inject.Inject
 class AddParentViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val schoolRepository: SchoolRepository,
-    private val createAccountForParents: CreateAccountForParents
 ): ViewModel() {
 
     private val _email = MutableStateFlow<String>("")
@@ -135,11 +133,7 @@ class AddParentViewModel @Inject constructor(
         parents: List<StagedUser>,
         result: OnCreateBatchAccountResult
     ) {
-        createAccountForParents.createAccountForParents(
-            mySchool = mySchool,
-            parents = parents,
-            result = result,
-        )
+      /*todo() */
     }
 
 }
