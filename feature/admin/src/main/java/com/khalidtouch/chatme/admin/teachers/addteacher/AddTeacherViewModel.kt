@@ -43,6 +43,20 @@ class AddTeacherViewModel @Inject constructor(
     private val _registeringTeacherProgressBar = MutableStateFlow<Boolean>(false)
     private val _registeringTeacherSnackBar = MutableStateFlow<Boolean>(false)
     private val _registeringTeacherMessage = MutableStateFlow<String>("")
+    private val _currentStagedUserId = MutableStateFlow<Long>(-1L)
+
+
+    val unStagingEnabled : StateFlow<Boolean> = combine(
+        _stagedTeachers,
+        _currentStagedUserId
+    ) { stagedTeachers, currentUserId ->
+        stagedTeachers.isNotEmpty() && currentUserId != -1L
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = false,
+    )
+
 
 
     val observeMySchool: StateFlow<ClassifiSchool?> = userDataRepository.userData.map {
@@ -66,12 +80,14 @@ class AddTeacherViewModel @Inject constructor(
     val registeringTeacherState: StateFlow<RegisteringTeacherState> = combine(
         _registeringTeacherMessage,
         _registeringTeacherSnackBar,
-        _registeringTeacherProgressBar
-    ) { message, snackbar, progressBar ->
+        _registeringTeacherProgressBar,
+        _currentStagedUserId,
+    ) { message, snackbar, progressBar, userId ->
         RegisteringTeacherState(
             progressBarState = progressBar,
             snackbarState = snackbar,
             message = message,
+            currentStagedUserId = userId,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -147,8 +163,10 @@ class AddTeacherViewModel @Inject constructor(
         _confirmPassword.value = ""
     }
 
-    fun onRemoveTeacher(teacher: StagedUser) {
+    fun onRemoveTeacher(teacherId: Long) {
+        val teacher = _stagedTeachers.value.find { it.user.userId == teacherId } ?: return
         _stagedTeachers.value.remove(teacher)
+        _currentStagedUserId.value = -1L
     }
 
 
@@ -191,6 +209,21 @@ class AddTeacherViewModel @Inject constructor(
     fun updateRegisteringTeacherMessage(message: String) {
         _registeringTeacherMessage.value = message
     }
+
+    fun updateFieldsWithCurrentUser(user: StagedUser) {
+        _email.value = user.user.account?.email.orEmpty()
+        _password.value = user.password
+        _confirmPassword.value = user.confirmPassword
+        updateCurrentStagedUserId(user.user.userId ?: -1L)
+    }
+
+    fun updateCurrentStagedUserId(id: Long) {
+        if(_currentStagedUserId.value == id) {
+            _currentStagedUserId.value = -1L
+            return
+        }
+        _currentStagedUserId.value = id
+    }
 }
 
 
@@ -226,12 +259,14 @@ data class RegisteringTeacherState(
     val progressBarState: Boolean,
     val snackbarState: Boolean,
     val message: String,
+    val currentStagedUserId: Long,
 ) {
     companion object {
         val DEFAULT = RegisteringTeacherState(
             progressBarState = false,
             snackbarState = false,
-            message = ""
+            message = "",
+            currentStagedUserId = -1L,
         )
     }
 }

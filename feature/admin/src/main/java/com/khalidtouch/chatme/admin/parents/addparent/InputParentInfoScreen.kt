@@ -104,6 +104,8 @@ fun InputParentInfoScreen(
         parentStagingArea(
             stagedParents = state.stagedParents,
             onClick = {/*TODO() -> preview staged parents */ },
+            onLongPress = {/*TODO() */},
+            currentStagedUserId = -1L //todo
         )
     }
 }
@@ -331,6 +333,8 @@ private fun LazyListScope.parentAddMore(
 private fun LazyListScope.parentStagingArea(
     stagedParents: List<StagedUser>,
     onClick: (StagedUser) -> Unit,
+    onLongPress: (StagedUser) -> Unit,
+    currentStagedUserId: Long,
 ) {
     item {
         FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -343,7 +347,10 @@ private fun LazyListScope.parentStagingArea(
                         )
                     ),
                     color = Color.Transparent,
-                    onClick = { onClick(parent) }) {
+                    onClick = { onClick(parent) },
+                    onLongPress = { onLongPress(parent) },
+                    selected = currentStagedUserId == parent.user.userId,
+                ) {
                     Box {
                         Icon(
                             painterResource(id = ClassifiIcons.Personal),

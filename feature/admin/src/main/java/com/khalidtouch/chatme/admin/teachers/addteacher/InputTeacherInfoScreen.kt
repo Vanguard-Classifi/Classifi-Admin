@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.admin.teachers.addteacher
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,11 +62,18 @@ const val inputTeacherInfoNavigationRoute = "input_teacher_info_navigation_route
 fun InputTeacherInfoScreen(
     addTeacherViewModel: AddTeacherViewModel,
 ) {
+    val TAG = "InputTeacher"
     val context = LocalContext.current
     val state by addTeacherViewModel.state.collectAsStateWithLifecycle()
     val mySchool by addTeacherViewModel.observeMySchool.collectAsStateWithLifecycle()
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
+    val registeringTeacherState by addTeacherViewModel.registeringTeacherState.collectAsStateWithLifecycle()
+    val unStagingEnabled by addTeacherViewModel.unStagingEnabled.collectAsStateWithLifecycle()
+
+    LaunchedEffect(registeringTeacherState) {
+        Log.e(TAG, "InputTeacherInfoScreen: ${registeringTeacherState.currentStagedUserId}")
+    }
 
     LazyColumn {
         teacherEmail(
@@ -106,14 +116,21 @@ fun InputTeacherInfoScreen(
                 )
             },
             canAddMoreTeachers = state.canAddMoreTeachers,
+            unStageEnabled = unStagingEnabled,
+            unStageTeacher = {addTeacherViewModel.onRemoveTeacher(registeringTeacherState.currentStagedUserId)},
         )
 
         teacherStagingArea(
             stagedTeachers = state.stagedTeachers,
-            onClick = {/*TODO -> preview staged teacher*/ },
+            onClick = { addTeacherViewModel.updateFieldsWithCurrentUser(it) },
+            onLongPress = {
+                addTeacherViewModel.updateCurrentStagedUserId(it.user.userId ?: -1L)
+            },
+            currentTeacherId = registeringTeacherState.currentStagedUserId
         )
     }
 }
+
 
 private fun LazyListScope.teacherEmail(
     placeholder: String? = null,
@@ -306,6 +323,8 @@ private fun LazyListScope.teacherVerifyPassword(
 private fun LazyListScope.teacherAddMore(
     onEnrollMoreTeachers: () -> Unit,
     canAddMoreTeachers: Boolean,
+    unStageTeacher: () -> Unit,
+    unStageEnabled: Boolean = false,
 ) {
     item {
         Box(
@@ -314,20 +333,42 @@ private fun LazyListScope.teacherAddMore(
                 .padding(vertical = 16.dp),
             contentAlignment = Alignment.BottomStart,
         ) {
-            ClassifiIconButton(
-                enabled = canAddMoreTeachers,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.outline.copy(0.7f),
-                ),
-                onClick = onEnrollMoreTeachers,
-                icon = {
-                    Icon(
-                        painterResource(id = ClassifiIcons.AddPerson),
-                        contentDescription = null
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ClassifiIconButton(
+                    enabled = canAddMoreTeachers,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.outline.copy(0.7f),
+                    ),
+                    onClick = onEnrollMoreTeachers,
+                    icon = {
+                        Icon(
+                            painterResource(id = ClassifiIcons.AddPerson),
+                            contentDescription = null
+                        )
+                    }
+                )
+
+
+                if(unStageEnabled) {
+                    ClassifiIconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.outline.copy(0.7f),
+                        ),
+                        onClick = unStageTeacher,
+                        icon = {
+                            Icon(
+                                painterResource(id = ClassifiIcons.Delete),
+                                contentDescription = null
+                            )
+                        }
                     )
                 }
-            )
+            }
         }
     }
 }
@@ -336,19 +377,28 @@ private fun LazyListScope.teacherAddMore(
 private fun LazyListScope.teacherStagingArea(
     stagedTeachers: List<StagedUser>,
     onClick: (StagedUser) -> Unit,
+    onLongPress: (StagedUser) -> Unit,
+    currentTeacherId: Long,
 ) {
     item {
         FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             stagedTeachers.forEachIndexed { index, teacher ->
+                val selected = currentTeacherId == (teacher.user.userId ?: -1L)
+
                 ClassifiStagingIconButton(
                     border = BorderStroke(
-                        width = 1.dp,
+                        width = if(selected) 1.5.dp else 1.dp,
                         color = MaterialTheme.colorScheme.outline.copy(
-                            0.5f
+                            if (selected) 0f else 0.5f
                         )
                     ),
-                    color = Color.Transparent,
-                    onClick = { onClick(teacher) }) {
+                    color = if(selected) MaterialTheme.colorScheme.outline.copy(0.5f) else  Color.Transparent,
+                    onClick = { onClick(teacher) },
+                    onLongPress = {
+                        onLongPress(teacher)
+                    },
+                    selected = selected,
+                ) {
                     Box {
                         Icon(
                             painterResource(id = ClassifiIcons.Personal),
