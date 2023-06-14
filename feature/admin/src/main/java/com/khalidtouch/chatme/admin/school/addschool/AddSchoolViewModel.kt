@@ -49,6 +49,10 @@ class AddSchoolViewModel @Inject constructor(
         _currentDestination.value = to
     }
 
+    fun clearCurrentDestination() {
+        _currentDestination.value = AddSchoolDestination.INPUT
+    }
+
     fun onSchoolNameChanged(name: String) {
         _schoolName.value = name
     }

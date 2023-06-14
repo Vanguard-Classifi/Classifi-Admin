@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.admin.parents.addparent
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,12 +60,18 @@ import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 fun InputParentInfoScreen(
     addParentViewModel: AddParentViewModel
 ) {
+    val TAG = "InputParent"
     val context = LocalContext.current
     val state by addParentViewModel.state.collectAsStateWithLifecycle()
     val mySchool by addParentViewModel.observeMySchool.collectAsStateWithLifecycle()
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
+    val registeringParentState by addParentViewModel.registeringParentState.collectAsStateWithLifecycle()
+    val unStagingEnabled by addParentViewModel.unStagingEnabled.collectAsStateWithLifecycle()
 
+    LaunchedEffect(registeringParentState) {
+        Log.e(TAG, "InputParentInfoScreen: ${registeringParentState.currentStagedUserId}")
+    }
 
     LazyColumn {
         parentEmail(
@@ -99,13 +108,15 @@ fun InputParentInfoScreen(
                 )
             },
             canAddMoreParents = state.canAddMoreParents,
+            unStageEnabled = unStagingEnabled,
+            unStageParent = { addParentViewModel.onRemoveParent(registeringParentState.currentStagedUserId) },
         )
 
         parentStagingArea(
             stagedParents = state.stagedParents,
-            onClick = {/*TODO() -> preview staged parents */ },
-            onLongPress = {/*TODO() */},
-            currentStagedUserId = -1L //todo
+            onClick = { addParentViewModel.updateFieldsWithCurrentUser(it) },
+            onLongPress = { addParentViewModel.updateCurrentStagedUserId(it.user.userId ?: -1L) },
+            currentParentId = registeringParentState.currentStagedUserId
         )
     }
 }
@@ -302,6 +313,8 @@ private fun LazyListScope.parentVerifyPassword(
 private fun LazyListScope.parentAddMore(
     onEnrollMoreParents: () -> Unit,
     canAddMoreParents: Boolean,
+    unStageParent: () -> Unit,
+    unStageEnabled: Boolean = false,
 ) {
     item {
         Box(
@@ -310,20 +323,42 @@ private fun LazyListScope.parentAddMore(
                 .padding(vertical = 16.dp),
             contentAlignment = Alignment.BottomStart,
         ) {
-            ClassifiIconButton(
-                enabled = canAddMoreParents,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.outline.copy(0.7f),
-                ),
-                onClick = onEnrollMoreParents,
-                icon = {
-                    Icon(
-                        painterResource(id = ClassifiIcons.AddPerson),
-                        contentDescription = null
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ClassifiIconButton(
+                    enabled = canAddMoreParents,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.outline.copy(0.7f),
+                    ),
+                    onClick = onEnrollMoreParents,
+                    icon = {
+                        Icon(
+                            painterResource(id = ClassifiIcons.AddPerson),
+                            contentDescription = null
+                        )
+                    }
+                )
+
+
+                if (unStageEnabled) {
+                    ClassifiIconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.outline.copy(0.7f),
+                        ),
+                        onClick = unStageParent,
+                        icon = {
+                            Icon(
+                                painterResource(id = ClassifiIcons.Delete),
+                                contentDescription = null
+                            )
+                        }
                     )
                 }
-            )
+            }
         }
     }
 }
@@ -334,22 +369,24 @@ private fun LazyListScope.parentStagingArea(
     stagedParents: List<StagedUser>,
     onClick: (StagedUser) -> Unit,
     onLongPress: (StagedUser) -> Unit,
-    currentStagedUserId: Long,
+    currentParentId: Long,
 ) {
     item {
         FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             stagedParents.forEachIndexed { index, parent ->
+                val selected = currentParentId == (parent.user.userId ?: -1L)
+
                 ClassifiStagingIconButton(
                     border = BorderStroke(
-                        width = 1.dp,
+                        width = if(selected) 1.5.dp else 1.dp,
                         color = MaterialTheme.colorScheme.outline.copy(
-                            0.5f
+                            if (selected) 0f else 0.5f
                         )
                     ),
-                    color = Color.Transparent,
+                    color = if(selected) MaterialTheme.colorScheme.outline.copy(0.5f) else  Color.Transparent,
                     onClick = { onClick(parent) },
                     onLongPress = { onLongPress(parent) },
-                    selected = currentStagedUserId == parent.user.userId,
+                    selected = selected,
                 ) {
                     Box {
                         Icon(

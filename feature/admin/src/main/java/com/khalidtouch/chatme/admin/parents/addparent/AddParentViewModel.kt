@@ -1,9 +1,11 @@
 package com.khalidtouch.chatme.admin.parents.addparent
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
 import com.khalidtouch.chatme.domain.repository.UserDataRepository
+import com.khalidtouch.chatme.network.CreateAccountForUsers
 import com.khalidtouch.classifiadmin.model.UserAccount
 import com.khalidtouch.classifiadmin.model.UserRole
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
@@ -22,18 +24,40 @@ import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+const val KEY_NUMBER_OF_PARENTS_REGISTERED = "key_number_of_parents_registered"
+const val KEY_NUMBER_OF_PARENTS_FAILED = "key_number_of_parents_failed"
+
 
 @HiltViewModel
 class AddParentViewModel @Inject constructor(
-    private val userDataRepository: UserDataRepository,
+    userDataRepository: UserDataRepository,
     private val schoolRepository: SchoolRepository,
-): ViewModel() {
+    private val savedStateHandle: SavedStateHandle,
+    private val createAccountForParents: CreateAccountForUsers,
+) : ViewModel() {
 
     private val _email = MutableStateFlow<String>("")
     private val _password = MutableStateFlow<String>("")
     private val _confirmPassword = MutableStateFlow<String>("")
     private val _stagedParents = MutableStateFlow<ArrayList<StagedUser>>(arrayListOf())
     private val _currentPage = MutableStateFlow<AddParentPage>(AddParentPage.INPUT)
+    private val _registeringParentProgressBar = MutableStateFlow<Boolean>(false)
+    private val _registeringParentSnackBar = MutableStateFlow<Boolean>(false)
+    private val _registeringParentMessage = MutableStateFlow<String>("")
+    private val _currentStagedUserId = MutableStateFlow<Long>(-1L)
+
+
+    val unStagingEnabled: StateFlow<Boolean> = combine(
+        _stagedParents,
+        _currentStagedUserId
+    ) { stagedParents, currentUserId ->
+        stagedParents.isNotEmpty() && currentUserId != -1L
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = false,
+    )
+
 
     val observeMySchool: StateFlow<ClassifiSchool?> = userDataRepository.userData.map {
         val schoolId = it.schoolId
@@ -70,8 +94,33 @@ class AddParentViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = AddParentState.Default
     )
-    
-    
+
+    val numberOfParentsRegistered: StateFlow<Int> = savedStateHandle.getStateFlow(
+        key = KEY_NUMBER_OF_PARENTS_REGISTERED, initialValue = 0
+    )
+
+    val numberOfParentsFailed: StateFlow<Int> = savedStateHandle.getStateFlow(
+        key = KEY_NUMBER_OF_PARENTS_FAILED, initialValue = 0
+    )
+
+    val registeringParentState: StateFlow<RegisteringParentState> = combine(
+        _registeringParentMessage,
+        _registeringParentSnackBar,
+        _registeringParentProgressBar,
+        _currentStagedUserId,
+    ) { message, snackbar, progressBar, userId ->
+        RegisteringParentState(
+            progressBarState = progressBar,
+            snackbarState = snackbar,
+            message = message,
+            currentStagedUserId = userId,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = RegisteringParentState.DEFAULT,
+    )
+
     fun onEmailChanged(email: String) {
         _email.value = email
     }
@@ -115,8 +164,10 @@ class AddParentViewModel @Inject constructor(
         _confirmPassword.value = ""
     }
 
-    fun onRemoveParent(parent: StagedUser) {
+    fun onRemoveParent(parentId: Long) {
+        val parent = _stagedParents.value.find { it.user.userId == parentId } ?: return
         _stagedParents.value.remove(parent)
+        _currentStagedUserId.value = -1L
     }
 
 
@@ -133,7 +184,46 @@ class AddParentViewModel @Inject constructor(
         parents: List<StagedUser>,
         result: OnCreateBatchAccountResult
     ) {
-      /*todo() */
+        createAccountForParents.createAccountForUsers(
+            mySchool = mySchool,
+            users = parents,
+            result = result
+        )
+    }
+
+    fun cacheNumberOfParentsRegistered(number: Int) {
+        savedStateHandle[KEY_NUMBER_OF_PARENTS_REGISTERED] = number
+    }
+
+    fun cacheNumberOfParentsFailed(number: Int) {
+        savedStateHandle[KEY_NUMBER_OF_PARENTS_FAILED] = number
+    }
+
+    fun updateRegisteringParentsProgressBarState(state: Boolean) {
+        _registeringParentProgressBar.value = state
+    }
+
+    fun updateRegisteringParentsSnackbarState(state: Boolean) {
+        _registeringParentSnackBar.value = state
+    }
+
+    fun updateRegisteringParentMessage(message: String) {
+        _registeringParentMessage.value = message
+    }
+
+    fun updateFieldsWithCurrentUser(user: StagedUser) {
+        _email.value = user.user.account?.email.orEmpty()
+        _password.value = user.password
+        _confirmPassword.value = user.confirmPassword
+        updateCurrentStagedUserId(user.user.userId ?: -1L)
+    }
+
+    fun updateCurrentStagedUserId(id: Long) {
+        if (_currentStagedUserId.value == id) {
+            _currentStagedUserId.value = -1L
+            return
+        }
+        _currentStagedUserId.value = id
     }
 
 }
@@ -161,3 +251,19 @@ data class AddParentState(
 }
 
 enum class AddParentPage { INPUT, SUCCESS, }
+
+data class RegisteringParentState(
+    val progressBarState: Boolean,
+    val snackbarState: Boolean,
+    val message: String,
+    val currentStagedUserId: Long,
+) {
+    companion object {
+        val DEFAULT = RegisteringParentState(
+            progressBarState = false,
+            snackbarState = false,
+            message = "",
+            currentStagedUserId = -1L,
+        )
+    }
+}

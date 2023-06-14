@@ -135,19 +135,16 @@ internal fun SchoolRoute(
             when (uiState) {
                 is SchoolScreenUiState.Loading -> Unit
                 is SchoolScreenUiState.Success -> {
-                    if ((uiState as SchoolScreenUiState.Success).data.hasFinishedLoading) {
-                        val school = (uiState as SchoolScreenUiState.Success).data.currentSchool
-                        if (school == null || school.schoolId == -1L) {
-                            ClassifiFab(
-                                onClick = schoolViewModel::onShowAddSchoolDialog,
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(ClassifiIcons.Add),
-                                        contentDescription = stringResource(R.string.add_school)
-                                    )
-                                }
-                            )
-                        }
+                    if ((uiState as SchoolScreenUiState.Success).data.canAddMoreSchool) {
+                        ClassifiFab(
+                            onClick = schoolViewModel::onShowAddSchoolDialog,
+                            icon = {
+                                Icon(
+                                    painter = painterResource(ClassifiIcons.Add),
+                                    contentDescription = stringResource(R.string.add_school)
+                                )
+                            }
+                        )
                     }
                 }
             }

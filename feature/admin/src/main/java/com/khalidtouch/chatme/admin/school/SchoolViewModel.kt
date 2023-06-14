@@ -44,6 +44,7 @@ class SchoolViewModel @Inject constructor(
                 hasFinishedLoading = finishedLoading,
                 currentSchool = currentSchool,
                 currentSchoolId = schoolId,
+                canAddMoreSchool = schoolId != -1L
             )
         )
     }.stateIn(
@@ -93,4 +94,5 @@ data class SchoolScreenData(
     val hasFinishedLoading: Boolean,
     val currentSchool: ClassifiSchool?,
     val currentSchoolId: Long,
+    val canAddMoreSchool: Boolean,
 )

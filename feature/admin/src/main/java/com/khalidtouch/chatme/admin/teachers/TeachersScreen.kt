@@ -192,13 +192,11 @@ fun TeachersScreen(
                 }
             }
 
-            if (hasFinishedLoading) {
-                if (!hasTeachers) {
-                    ItemNotAvailable(
-                        headerText = stringResource(id = R.string.no_teacher_added),
-                        labelText = stringResource(id = R.string.click_plus_to_add)
-                    )
-                }
+            if (!hasTeachers) {
+                ItemNotAvailable(
+                    headerText = stringResource(id = R.string.no_teacher_added),
+                    labelText = stringResource(id = R.string.click_plus_to_add)
+                )
             }
         }
     }
@@ -217,7 +215,7 @@ fun TeachersScreen(
     }
 
     AnimatedVisibility(
-        visible = true,
+        visible = uiState is TeacherScreenUiState.Success,
         enter = slideInVertically(
             initialOffsetY = { fullHeight -> -fullHeight },
         ) + fadeIn(),
@@ -236,6 +234,7 @@ fun TeachersScreen(
         }
     }
 }
+
 
 @Composable
 private fun TeacherItem(

@@ -29,7 +29,7 @@ const val KEY_NUMBER_OF_TEACHERS_FAILED = "key_number_of_teachers_failed"
 
 @HiltViewModel
 class AddTeacherViewModel @Inject constructor(
-    private val userDataRepository: UserDataRepository,
+    userDataRepository: UserDataRepository,
     private val schoolRepository: SchoolRepository,
     private val createAccountForTeachers: CreateAccountForUsers,
     private val savedStateHandle: SavedStateHandle,
@@ -46,7 +46,7 @@ class AddTeacherViewModel @Inject constructor(
     private val _currentStagedUserId = MutableStateFlow<Long>(-1L)
 
 
-    val unStagingEnabled : StateFlow<Boolean> = combine(
+    val unStagingEnabled: StateFlow<Boolean> = combine(
         _stagedTeachers,
         _currentStagedUserId
     ) { stagedTeachers, currentUserId ->
@@ -56,7 +56,6 @@ class AddTeacherViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = false,
     )
-
 
 
     val observeMySchool: StateFlow<ClassifiSchool?> = userDataRepository.userData.map {
@@ -218,7 +217,7 @@ class AddTeacherViewModel @Inject constructor(
     }
 
     fun updateCurrentStagedUserId(id: Long) {
-        if(_currentStagedUserId.value == id) {
+        if (_currentStagedUserId.value == id) {
             _currentStagedUserId.value = -1L
             return
         }

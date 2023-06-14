@@ -68,6 +68,7 @@ fun AddSchoolScreen(
 
                             AddSchoolDestination.SUCCESS -> {
                                 schoolViewModel.onHideAddSchoolDialog()
+                                addSchoolViewModel.clearCurrentDestination()
                             }
                         }
                     },

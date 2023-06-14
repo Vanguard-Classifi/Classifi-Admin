@@ -40,7 +40,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.chatme.admin.common.ItemNotAvailable
-import com.khalidtouch.chatme.admin.parents.addparent.AddParentScreen
+import com.khalidtouch.chatme.admin.parents.addparent.AddParentDialog
 import com.khalidtouch.chatme.admin.parents.addparent.AddParentViewModel
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import com.khalidtouch.core.common.extensions.ifNullOrBlank
@@ -175,7 +175,7 @@ private fun ParentsScreen(
         is ParentScreenUiState.Loading -> Unit
         is ParentScreenUiState.Success -> {
             if((uiState as ParentScreenUiState.Success).data.shouldShowAddParentDialog) {
-                AddParentScreen(
+                AddParentDialog(
                     addParentViewModel = addParentViewModel,
                     parentScreenViewModel = parentScreenViewModel,
                     windowSizeClass = windowSizeClass,
@@ -205,6 +205,7 @@ private fun ParentsScreen(
         }
     }
 }
+
 
 @Composable
 private fun ParentItem(
