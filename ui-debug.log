@@ -1,0 +1,18 @@
+Web / API server started at 127.0.0.1:4000
+Web / API server started at ::1:4000
+node[8989]: ../src/node.cc:667:void node::ResetStdio(): Assertion `!(err != 0) || (err == -1 && (*__errno_location ()) == 1)' failed.
+ 1: 0xc8e4a0 node::Abort() [node]
+ 2: 0xc8e51e  [node]
+ 3: 0xc45024  [node]
+ 4: 0xc4519c node::SignalExit(int, siginfo_t*, void*) [node]
+ 5: 0x7f472cc3bcf0  [/lib/x86_64-linux-gnu/libc.so.6]
+ 6: 0x7f472cd1e8a6 epoll_pwait [/lib/x86_64-linux-gnu/libc.so.6]
+ 7: 0x1880976  [node]
+ 8: 0x186d8c7 uv_run [node]
+ 9: 0xbabba6 node::SpinEventLoopInternal(node::Environment*) [node]
+10: 0xcdb8c6 node::NodeMainInstance::Run() [node]
+11: 0xc467ef node::LoadSnapshotDataAndRun(node::SnapshotData const**, node::InitializationResultImpl const*) [node]
+12: 0xc49a12 node::Start(int, char**) [node]
+13: 0x7f472cc23510  [/lib/x86_64-linux-gnu/libc.so.6]
+14: 0x7f472cc235c9 __libc_start_main [/lib/x86_64-linux-gnu/libc.so.6]
+15: 0xba9ade _start [node]

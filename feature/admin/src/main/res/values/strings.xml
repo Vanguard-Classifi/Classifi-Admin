@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_school">Add school</string>
+    <string name="manage_school">Manage School</string>
+    <string name="go_back">go back</string>
+    <string name="no_school_added">No school added</string>
+    <string name="click_plus_to_add">Click + to add</string>
+    <string name="save">Save</string>
+    <string name="finish">Finish</string>
+    <string name="successfully_added">Successfully added</string>
+    <string name="enter_school_name">Enter school name</string>
+    <string name="school_address">School address</string>
+    <string name="cancel">Cancel</string>
+    <string name="school_name_not_set">[School name not set]</string>
+    <string name="address_not_added">Address not added</string>
+    <string name="modify_school">Modify School</string>
+    <string name="add_teacher">Add teacher</string>
+    <string name="manage_teachers">Manage Teachers</string>
+    <string name="no_teacher_added">No teacher added</string>
+    <string name="add_teachers">Add teachers</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="enter_password">Enter password</string>
+    <string name="enter_teacher_email">Enter teacher email</string>
+    <string name="submit">Submit</string>
+    <string name="name_not_specified">Name not specified</string>
+    <string name="email_not_added">Email not added</string>
+    <string name="empty_bio"><![CDATA[<bio>]]></string>
+    <string name="see_more">See More</string>
+    <string name="class_name_not_set">Class name not set</string>
+    <string name="teacher_detail">Teacher Detail</string>
+    <string name="options">Options</string>
+    <string name="delete_contact">Delete contact</string>
+    <string name="delete">Delete</string>
+    <string name="type_your_email_to_proceed">Type your email to proceed</string>
+    <string name="manage_parents">Manage Parents</string>
+    <string name="add_parent">Add Parent</string>
+    <string name="no_parent_added">No parent added</string>
+    <string name="enter_parent_email">Enter parent email</string>
+    <string name="parent_detail">Parent Detail</string>
+</resources>

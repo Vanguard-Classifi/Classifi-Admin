@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.domain.repository
 
+import androidx.paging.PagingData
 import com.khalidtouch.classifiadmin.model.PagedCountry
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import kotlinx.coroutines.flow.Flow
@@ -9,11 +10,13 @@ interface UserRepository {
 
     suspend fun saveUsers(users: List<ClassifiUser>)
 
+    suspend fun registerUserWithSchool(userId: Long, schoolId: Long, schoolName: String)
+
     suspend fun updateUser(user: ClassifiUser)
 
     suspend fun updateUsers(users: List<ClassifiUser>)
 
-    suspend fun deleteUser(user: ClassifiUser)
+    suspend fun unregisterUserFromSchool(userId: Long, schoolId: Long)
 
     suspend fun deleteUsers(ids: List<Long>)
 
@@ -21,9 +24,11 @@ interface UserRepository {
 
     suspend fun fetchUserById(userId: Long): ClassifiUser?
 
+    fun observeUserById(userId: Long): Flow<ClassifiUser?>
+
     suspend fun fetchUserByEmail(email: String): ClassifiUser?
 
-    fun fetchAllUsers(): Flow<List<ClassifiUser>>
+    fun observeAllUsers(): Flow<List<ClassifiUser>>
 
     suspend fun fetchAllUsersList(): List<ClassifiUser>
 
@@ -32,4 +37,7 @@ interface UserRepository {
     suspend fun fetchUserWithClasses(userId: Long): ClassifiUser?
 
     suspend fun getCountriesFromJson(page: Int, limit: Int): PagedCountry
+
+    fun observeTeachersFromMySchool(pageSize: Int, schoolId: Long): Flow<PagingData<ClassifiUser>>
+    fun observeParentsFromMySchool(pageSize: Int, schoolId: Long): Flow<PagingData<ClassifiUser>>
 }

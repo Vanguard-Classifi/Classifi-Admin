@@ -25,16 +25,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.khalidtouch.classifiadmin.settings.R
-import com.khalidtouch.classifiadmin.settings.navigation.administration.AdministrationScreen
-import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingItemClicked
 import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingsViewModel
 import com.khalidtouch.core.designsystem.components.SettingItem
 import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreenWrapper(
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
+    settingsViewModel: SettingsViewModel,
 ) {
     Surface(
         modifier = Modifier
@@ -63,10 +60,10 @@ fun AccountScreenWrapper(
 internal fun AccountScreen(
     modifier: Modifier = Modifier,
 ){
-    val headerStyle = MaterialTheme.typography.titleSmall.copy(
+    val headerStyle = MaterialTheme.typography.titleMedium.copy(
         color = Color.Black.copy(0.8f)
     )
-    val textStyle = MaterialTheme.typography.bodyMedium
+    val textStyle = MaterialTheme.typography.bodyLarge
 
     LazyColumn(Modifier.fillMaxSize()) {
         schoolItem(
@@ -203,7 +200,7 @@ fun LazyListScope.schoolItem(
     textStyle: TextStyle,
 ) {
     item {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         SettingItem(
             onClick = {

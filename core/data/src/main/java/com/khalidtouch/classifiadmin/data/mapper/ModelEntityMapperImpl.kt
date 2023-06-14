@@ -11,6 +11,7 @@ import com.khalidtouch.chatme.database.models.ClassifiUserEntity
 import com.khalidtouch.chatme.database.models.RUserAccount
 import com.khalidtouch.chatme.database.models.RUserContact
 import com.khalidtouch.chatme.database.models.RUserProfile
+import com.khalidtouch.chatme.database.relations.UserWithSchools
 import com.khalidtouch.classifiadmin.model.MessageType
 import com.khalidtouch.classifiadmin.model.UserAccount
 import com.khalidtouch.classifiadmin.model.UserContact
@@ -198,12 +199,30 @@ class ModelEntityMapperImpl @Inject constructor() : ModelEntityMapper {
         )
     }
 
+    override fun userEntityToModel2(user: UserWithSchools?): ClassifiUser? {
+        return ClassifiUser(
+            userId = user?.user?.userId,
+            account = user?.user?.account?.toModel(),
+            profile = user?.user?.profile?.toModel(),
+            dateCreated = user?.user?.dateCreated,
+            joinedSchools = user?.schools?.map { schoolEntityToModel(it)!! } ?: listOf(),
+            joinedClasses = listOf()
+        )
+    }
+
     override fun userModelToEntity(user: ClassifiUser?): ClassifiUserEntity? {
         return ClassifiUserEntity(
             userId = user?.userId.orEmpty(),
             account = user?.account?.toRoom(),
             profile = user?.profile?.toRoom(),
             dateCreated = user?.dateCreated ?: LocalDateTime.now(),
+        )
+    }
+
+    override fun userModelToEntity2(user: ClassifiUser?): UserWithSchools? {
+        return UserWithSchools(
+            user = userModelToEntity(user)!!,
+            schools = user?.joinedSchools?.map { schoolModelToEntity(it)!! } ?: listOf()
         )
     }
 }

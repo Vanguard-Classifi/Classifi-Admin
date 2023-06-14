@@ -31,6 +31,7 @@ fun ClassifiMenu(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
+        modifier = modifier,
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = ClassifiMenuDefaults.cardElevation,

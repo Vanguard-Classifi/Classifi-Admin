@@ -5,6 +5,12 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.khalidtouch.chatme.admin.parents.navigation.navigateToParentAdminPanel
+import com.khalidtouch.chatme.admin.parents.navigation.parentAdminPanel
+import com.khalidtouch.chatme.admin.school.navigation.navigateToSchoolAdminPanel
+import com.khalidtouch.chatme.admin.school.navigation.schoolAdminPanel
+import com.khalidtouch.chatme.admin.teachers.navigation.navigateToTeachersAdminPanel
+import com.khalidtouch.chatme.admin.teachers.navigation.teachersAdminPanel
 import com.khalidtouch.classifiadmin.feeds.compose.composeFeedScreen
 import com.khalidtouch.classifiadmin.feeds.compose.navigateToComposeFeed
 import com.khalidtouch.classifiadmin.feeds.mediastore.imageGalleryScreen
@@ -23,9 +29,9 @@ import com.vanguard.classifiadmin.ui.rememberClassifiAppState
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ClassifiNavHost(
+    modifier: Modifier = Modifier,
     windowSizeClass: WindowSizeClass,
     appState: ClassifiAppState = rememberClassifiAppState(windowSizeClass = windowSizeClass),
-    modifier: Modifier = Modifier,
     startDestination: String = homeScreenNavigationRoute,
 ) {
     AnimatedNavHost(
@@ -42,7 +48,10 @@ fun ClassifiNavHost(
 
         settingsScreen(
             windowSizeClass = windowSizeClass,
-            onBack = { appState.navController.navigateToHome() }
+            onBack = { appState.navController.navigateToHome() },
+            onOpenSchoolAdminPanel = { appState.navController.navigateToSchoolAdminPanel() },
+            onOpenTeacherAdminPanel = { appState.navController.navigateToTeachersAdminPanel() },
+            onOpenParentAdminPanel = { appState.navController.navigateToParentAdminPanel() }
         )
 
         composeFeedScreen(
@@ -62,6 +71,21 @@ fun ClassifiNavHost(
             onBackPressed = { appState.navController.navigateToComposeFeed() },
             onDismissDialog = { appState.navController.navigateToComposeFeed() },
             onChooseImage = { appState.navController.navigateToComposeFeed() }
+        )
+
+        schoolAdminPanel(
+            windowSizeClass = windowSizeClass,
+            onBackPressed = { appState.navController.navigateToSettings() }
+        )
+
+        teachersAdminPanel(
+            windowSizeClass = windowSizeClass,
+            onBackPressed = { appState.navController.navigateToSettings() }
+        )
+
+        parentAdminPanel(
+            windowSizeClass = windowSizeClass,
+            onBackPressed = { appState.navController.navigateToSettings() }
         )
     }
 }

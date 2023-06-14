@@ -8,6 +8,7 @@ import com.khalidtouch.chatme.database.models.ClassifiLikeEntity
 import com.khalidtouch.chatme.database.models.ClassifiMessageEntity
 import com.khalidtouch.chatme.database.models.ClassifiSchoolEntity
 import com.khalidtouch.chatme.database.models.ClassifiUserEntity
+import com.khalidtouch.chatme.database.relations.UserWithSchools
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiAcademicSession
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiClass
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiComment
@@ -34,5 +35,7 @@ interface ModelEntityMapper {
     fun schoolEntityToModel(school: ClassifiSchoolEntity?): ClassifiSchool?
     fun schoolModelToEntity(school: ClassifiSchool?): ClassifiSchoolEntity?
     fun userEntityToModel(user: ClassifiUserEntity?): ClassifiUser?
+    fun userEntityToModel2(user: UserWithSchools?): ClassifiUser?
     fun userModelToEntity(user: ClassifiUser?): ClassifiUserEntity?
+    fun userModelToEntity2(user: ClassifiUser?): UserWithSchools?
 }

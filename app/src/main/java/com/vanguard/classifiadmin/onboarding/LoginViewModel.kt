@@ -20,7 +20,6 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val userDataRepository: UserDataRepository,
 ) : ViewModel() {
     val TAG = "LoginVM"
     private val email = MutableStateFlow<String>("")
@@ -59,9 +58,6 @@ class LoginViewModel @Inject constructor(
 //        )
     }
 
-    fun finishLogin() = viewModelScope.launch {
-        userDataRepository.setShouldHideOnboarding(true)
-    }
 }
 
 sealed interface LoginUiState {

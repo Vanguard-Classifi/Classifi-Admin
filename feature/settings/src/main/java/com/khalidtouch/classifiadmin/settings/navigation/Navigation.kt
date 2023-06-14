@@ -21,6 +21,9 @@ fun NavController.navigateToSettings(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.settingsScreen(
     windowSizeClass: WindowSizeClass,
     onBack: () -> Unit,
+    onOpenSchoolAdminPanel: () -> Unit,
+    onOpenTeacherAdminPanel: () -> Unit,
+    onOpenParentAdminPanel: () -> Unit,
 ) {
     composable(
         route = settingsNavigationRoute,
@@ -40,6 +43,9 @@ fun NavGraphBuilder.settingsScreen(
         SettingsRoute(
             windowSizeClass = windowSizeClass,
             onBack = onBack,
+            onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
+            onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
+            onOpenParentAdminPanel = onOpenParentAdminPanel,
         )
     }
 }

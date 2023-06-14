@@ -10,6 +10,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -18,6 +19,8 @@ import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.khalidtouch.classifiadmin.model.DarkThemeConfig
 import com.khalidtouch.classifiadmin.model.ThemeBrand
 import com.khalidtouch.core.designsystem.theme.ClassifiTheme
@@ -54,7 +57,17 @@ class MainActivity : ComponentActivity() {
                 onDispose {  }
             }
 
+            Firebase.auth.addAuthStateListener { auth ->
+                Log.e(TAG, "onCreate: auth listener has been called")
+                mainActivityViewModel.updateReAuthenticationState(auth.currentUser == null )
+            }
+
             viewModel = hiltViewModel<MainViewModel>()
+
+
+            val observeMyId by mainActivityViewModel.forceObserveMyId.collectAsStateWithLifecycle()
+
+            Log.e(TAG, "onCreate: my current id $observeMyId")
 
             ClassifiTheme(
                 darkTheme = darkTheme,
@@ -90,7 +103,7 @@ private fun shouldUseDarkTheme(
     uiState: MainActivityUiState,
 ): Boolean = when (uiState) {
     Loading -> isSystemInDarkTheme()
-    is Success -> when (uiState.userData.darkThemeConfig) {
+    is Success -> when (uiState.data.userData.darkThemeConfig) {
         DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         DarkThemeConfig.LIGHT -> false
         DarkThemeConfig.DARK -> true
@@ -103,7 +116,7 @@ private fun shouldDisableDynamicTheming(
     uiState: MainActivityUiState,
 ): Boolean = when (uiState) {
     Loading -> false
-    is Success -> !uiState.userData.useDynamicColor
+    is Success -> !uiState.data.userData.useDynamicColor
 }
 
 
@@ -112,7 +125,7 @@ private fun shouldUseAndroidTheme(
     uiState: MainActivityUiState,
 ): Boolean = when (uiState) {
     Loading -> false
-    is Success -> when (uiState.userData.themeBrand) {
+    is Success -> when (uiState.data.userData.themeBrand) {
         ThemeBrand.DEFAULT -> false
         ThemeBrand.ANDROID -> true
     }

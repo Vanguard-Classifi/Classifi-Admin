@@ -33,7 +33,10 @@ import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdministrationScreenWrapper(
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>()
+    settingsViewModel: SettingsViewModel,
+    onOpenSchoolAdminPanel: () -> Unit,
+    onOpenTeacherAdminPanel: () -> Unit,
+    onOpenParentAdminPanel: () -> Unit,
 ) {
     Surface(
         modifier = Modifier
@@ -50,7 +53,10 @@ fun AdministrationScreenWrapper(
         Scaffold(
             content = { padding ->
                 AdministrationScreen(
-                    modifier = Modifier.padding(padding)
+                    modifier = Modifier.padding(padding),
+                    onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
+                    onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
+                    onOpenParentAdminPanel = onOpenParentAdminPanel,
                 )
             }
         )
@@ -59,18 +65,22 @@ fun AdministrationScreenWrapper(
 
 
 @Composable
-internal fun AdministrationScreen(
+private fun AdministrationScreen(
     modifier: Modifier = Modifier,
+    onOpenSchoolAdminPanel: () -> Unit,
+    onOpenTeacherAdminPanel: () -> Unit,
+    onOpenParentAdminPanel: () -> Unit,
 ){
-    val headerStyle = MaterialTheme.typography.titleSmall.copy(
+    val headerStyle = MaterialTheme.typography.titleMedium.copy(
         color = Color.Black.copy(0.8f)
     )
-    val textStyle = MaterialTheme.typography.bodyMedium
+    val textStyle = MaterialTheme.typography.bodyLarge
 
     LazyColumn(Modifier.fillMaxSize()) {
         manageSchool(
             headerStyle = headerStyle,
             textStyle = textStyle,
+            onOpenSchoolAdminPanel = onOpenSchoolAdminPanel,
         )
 
         manageAdmins(
@@ -81,11 +91,13 @@ internal fun AdministrationScreen(
         manageTeachers(
             headerStyle = headerStyle,
             textStyle = textStyle,
+            onOpenTeacherAdminPanel = onOpenTeacherAdminPanel,
         )
 
         manageParents(
             headerStyle = headerStyle,
             textStyle = textStyle,
+            onOpenParentAdminPanel = onOpenParentAdminPanel
         )
 
         manageStudents(
@@ -108,13 +120,13 @@ internal fun AdministrationScreen(
 fun LazyListScope.manageSchool(
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    onOpenSchoolAdminPanel: () -> Unit,
 ) {
     item {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         SettingItem(
-            onClick = {
-            },
+            onClick = onOpenSchoolAdminPanel,
             icon = {
                 Icon(
                     painter = painterResource(id = ClassifiIcons.School),
@@ -145,11 +157,11 @@ fun LazyListScope.manageSchool(
 fun LazyListScope.manageTeachers(
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    onOpenTeacherAdminPanel: () -> Unit,
 ) {
     item {
         SettingItem(
-            onClick = {
-            },
+            onClick = onOpenTeacherAdminPanel,
             icon = {
                 Icon(
                     painter = painterResource(id = ClassifiIcons.Profile),
@@ -215,11 +227,11 @@ fun LazyListScope.manageAdmins(
 fun LazyListScope.manageParents(
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    onOpenParentAdminPanel: () -> Unit,
 ) {
     item {
         SettingItem(
-            onClick = {
-            },
+            onClick = onOpenParentAdminPanel,
             icon = {
                 Icon(
                     painter = painterResource(id = ClassifiIcons.Parent),

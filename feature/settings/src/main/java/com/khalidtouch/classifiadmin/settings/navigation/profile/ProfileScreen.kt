@@ -1,6 +1,12 @@
 package com.khalidtouch.classifiadmin.settings.navigation.profile
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Box
@@ -30,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -41,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khalidtouch.classifiadmin.settings.R
 import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingItemClicked
 import com.khalidtouch.classifiadmin.settings.navigation.settings.SettingsViewModel
+import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.components.ClassifiAvatar
 import com.khalidtouch.core.designsystem.components.ClassifiImageAvatar
 import com.khalidtouch.core.designsystem.components.SettingItem
@@ -50,7 +58,7 @@ import com.khalidtouch.core.designsystem.icons.ClassifiImages
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenWrapper(
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
+    settingsViewModel: SettingsViewModel,
     profileViewModel: ProfileViewModel = hiltViewModel<ProfileViewModel>(),
 ) {
 
@@ -66,7 +74,10 @@ fun ProfileScreenWrapper(
                 }
             )
     ) {
-        ProfileScreen()
+        ProfileScreen(
+            settingsViewModel = settingsViewModel,
+            profileViewModel = profileViewModel,
+        )
     }
 }
 
@@ -74,83 +85,126 @@ fun ProfileScreenWrapper(
 @Composable
 internal fun ProfileScreen(
     modifier: Modifier = Modifier,
-    settingsViewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
-    profileViewModel: ProfileViewModel = hiltViewModel<ProfileViewModel>(),
+    settingsViewModel: SettingsViewModel,
+    profileViewModel: ProfileViewModel,
 ) {
-    val headerStyle = MaterialTheme.typography.titleSmall.copy(
+    val context = LocalContext.current
+    val headerStyle = MaterialTheme.typography.titleMedium.copy(
         color = Color.Black.copy(0.8f)
     )
-    val textStyle = MaterialTheme.typography.bodyMedium
+    val textStyle = MaterialTheme.typography.bodyLarge
+    val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
+    val me by settingsViewModel.observeMe.collectAsStateWithLifecycle()
 
     LazyColumn(Modifier.fillMaxSize()) {
-        nameItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
+        when (uiState) {
+            is ProfileScreenUiState.Loading -> Unit
+            is ProfileScreenUiState.Success -> {
+                nameItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    username = me?.account?.username
+                        ?: context.getString(R.string.click_to_add_username)
+                )
 
-        phoneItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
+                phoneItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    phone = me?.profile?.phone ?: context.getString(R.string.click_to_add_phone),
+                )
 
-        bioItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
+                bioItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    bio = me?.profile?.bio ?: context.getString(R.string.click_to_add_bio)
+                )
 
-        dobItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
+                dobItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    dob = me?.profile?.dob ?: context.getString(R.string.click_to_add_dob)
+                )
 
-        item {
-            Spacer(modifier = modifier.height(8.dp))
-            Divider(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-            Spacer(modifier = modifier.height(8.dp))
+                item {
+                    Spacer(modifier = modifier.height(8.dp))
+                    Divider(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+                    Spacer(modifier = modifier.height(8.dp))
+                }
+
+                addressItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    address = me?.profile?.contact?.address
+                        ?: context.getString(R.string.click_to_add_address)
+                )
+
+                countryItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    country = me?.profile?.contact?.country
+                        ?: context.getString(R.string.click_to_add_country)
+                )
+
+                stateItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    stateOfCountry = me?.profile?.contact?.stateOfCountry
+                        ?: context.getString(R.string.click_to_add_state)
+                )
+
+                cityItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    city = me?.profile?.contact?.city ?: context.getString(R.string.click_to_add_city)
+                )
+
+                postalCodeItem(
+                    settingsViewModel = settingsViewModel,
+                    headerStyle = headerStyle,
+                    textStyle = textStyle,
+                    postalCode = me?.profile?.contact?.postalCode
+                        ?: context.getString(R.string.click_to_add_postal_code)
+                )
+
+                item {
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+
+            }
         }
 
-        addressItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
+    }
 
-        countryItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
-
-        stateItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
-
-        cityItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
-
-        postalCodeItem(
-            settingsViewModel = settingsViewModel,
-            headerStyle = headerStyle,
-            textStyle = textStyle,
-        )
-
-        item {
-            Spacer(modifier = Modifier.height(32.dp))
+    AnimatedVisibility(
+        visible = uiState is ProfileScreenUiState.Loading,
+        enter = slideInVertically(
+            initialOffsetY = { fullHeight -> -fullHeight },
+        ) + fadeIn(),
+        exit = slideOutVertically(
+            targetOffsetY = { fullHeight -> -fullHeight },
+        ) + fadeOut(),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .background(Color.Transparent),
+            contentAlignment = Alignment.Center,
+        ) {
+            ClassifiLoadingWheel()
         }
-
     }
 }
 
@@ -159,12 +213,10 @@ fun LazyListScope.nameItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    username: String,
 ) {
     item {
-        /**
-         * Name
-         */
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         SettingItem(
             onClick = {
@@ -188,7 +240,7 @@ fun LazyListScope.nameItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "khalidtouch"
+                            text = username,
                         )
                     }
 
@@ -204,6 +256,7 @@ fun LazyListScope.phoneItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    phone: String,
 ) {
     item {
         /**
@@ -231,7 +284,7 @@ fun LazyListScope.phoneItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "08163429553"
+                            text = phone,
                         )
                     }
 
@@ -246,6 +299,7 @@ fun LazyListScope.bioItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    bio: String,
 ) {
     item {
         /**
@@ -273,7 +327,7 @@ fun LazyListScope.bioItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "I'm a dedicated student of knowledge, I love to learn and I'm curious to understand how things work",
+                            text = bio,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -290,6 +344,7 @@ fun LazyListScope.dobItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    dob: String,
 ) {
     item {
         /**
@@ -317,7 +372,7 @@ fun LazyListScope.dobItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "1993-02-21",
+                            text = dob,
                         )
                     }
 
@@ -333,6 +388,7 @@ fun LazyListScope.addressItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    address: String,
 ) {
     item {
         /**
@@ -360,7 +416,7 @@ fun LazyListScope.addressItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "No 23. Poly road",
+                            text = address,
                         )
                     }
 
@@ -375,6 +431,7 @@ fun LazyListScope.countryItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    country: String,
 ) {
     item {
         /**
@@ -402,7 +459,7 @@ fun LazyListScope.countryItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "Nigeria",
+                            text = country,
                         )
                     }
 
@@ -417,6 +474,7 @@ fun LazyListScope.stateItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    stateOfCountry: String,
 ) {
     item {
         /**
@@ -444,7 +502,7 @@ fun LazyListScope.stateItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "Edo",
+                            text = stateOfCountry,
                         )
                     }
 
@@ -459,6 +517,7 @@ fun LazyListScope.cityItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    city: String,
 ) {
     item {
         /**
@@ -486,7 +545,7 @@ fun LazyListScope.cityItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "Auchi",
+                            text = city,
                         )
                     }
 
@@ -501,6 +560,7 @@ fun LazyListScope.postalCodeItem(
     settingsViewModel: SettingsViewModel,
     headerStyle: TextStyle,
     textStyle: TextStyle,
+    postalCode: String,
 ) {
     item {
         /**
@@ -528,7 +588,7 @@ fun LazyListScope.postalCodeItem(
 
                     ProvideTextStyle(value = textStyle) {
                         Text(
-                            text = "234587",
+                            text = postalCode,
                         )
                     }
 

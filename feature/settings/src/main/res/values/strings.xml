@@ -41,4 +41,13 @@
     <string name="dark_mode_config_follow_system">Dark Mode Config:  Follow System</string>
     <string name="dark_mode_config_dark">Dark Mode Config: Dark</string>
     <string name="dark_mode_config_light">Dark Mode Config: Light</string>
+    <string name="click_to_add_postal_code">Click to add postal code</string>
+    <string name="click_to_add_city">Click to add city</string>
+    <string name="click_to_add_state">Click to add state</string>
+    <string name="click_to_add_country">Click to add country</string>
+    <string name="click_to_add_address">Click to add address</string>
+    <string name="click_to_add_dob">Click to add date of birth</string>
+    <string name="click_to_add_bio">Click to add a bio</string>
+    <string name="click_to_add_phone">Click to add phone</string>
+    <string name="click_to_add_username">Click to add username</string>
 </resources>

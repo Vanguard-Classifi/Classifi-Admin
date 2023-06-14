@@ -1,7 +1,12 @@
 package com.khalidtouch.core.designsystem.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -15,13 +20,74 @@ import androidx.compose.material3.IconToggleButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+
+@Composable
+fun ClassifiStagingIconButton(
+    modifier: Modifier = Modifier,
+    buttonSize: Dp = 45.dp,
+    enabled: Boolean = true,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
+    elevation: Dp = 2.dp,
+    color: Color = MaterialTheme.colorScheme.primary,
+    border: BorderStroke? = null,
+    shadowElevation: Dp = ClassifiIconButtonDefaults.shadowElevationDefaults,
+    icon: @Composable () -> Unit,
+) {
+    var clicked by remember { mutableStateOf(false) }
+    var held by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Surface(
+        modifier = modifier
+            .size(buttonSize)
+            .clip(CircleShape)
+            .indication(interactionSource, LocalIndication.current)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {offset ->
+                        held = true
+                        onLongPress()
+                        val holdState = PressInteraction.Press(offset)
+                        interactionSource.tryEmit(holdState)
+                        interactionSource.tryEmit(PressInteraction.Release(holdState))
+                        held = false
+                    },
+                    onTap = { offset ->
+                        clicked = true
+                        onClick()
+                        val clickState = PressInteraction.Press(offset)
+                        interactionSource.tryEmit(clickState)
+                        interactionSource.tryEmit(PressInteraction.Release(clickState))
+                        clicked = false
+                    }
+                )
+            },
+        shape = CircleShape,
+        tonalElevation = elevation,
+        border = border,
+        color = color,
+        shadowElevation = shadowElevation,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            icon()
+        }
+    }
+}
 
 
 @Composable
@@ -80,6 +146,7 @@ fun ClassifiFab(
 fun ClassifiIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     icon: @Composable () -> Unit,
     buttonSize: Dp = ClassifiIconButtonDefaults.defaultButtonSize,
     colors: IconButtonColors = IconButtonDefaults.iconButtonColors(
@@ -93,7 +160,7 @@ fun ClassifiIconButton(
             .size(buttonSize)
             .clip(CircleShape),
         colors = colors,
-        enabled = true,
+        enabled = enabled,
     ) {
         icon()
     }
@@ -140,5 +207,5 @@ object ClassifiIconButtonDefaults {
     val defaultButtonSize = 48.dp
     val bigButtonSize = 96.dp
     val tonalElevationDefaults = 2.dp
-    val shadowElevationDefaults = 1.dp
+    val shadowElevationDefaults = 0.dp
 }

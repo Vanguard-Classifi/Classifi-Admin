@@ -1,10 +1,15 @@
 package com.khalidtouch.classifiadmin.data.repository
 
 import com.khalidtouch.chatme.database.dao.SchoolDao
+import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
 import com.khalidtouch.chatme.domain.repository.SchoolRepository
+import com.khalidtouch.chatme.domain.repository.UserDataRepository
+import com.khalidtouch.chatme.network.SchoolNetworkDataSource
 import com.khalidtouch.classifiadmin.data.mapper.ModelEntityMapper
 import com.khalidtouch.classifiadmin.data.mapper.orEmpty
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -12,26 +17,45 @@ import javax.inject.Inject
 class OfflineFirstSchoolRepository @Inject constructor(
     private val modelMapper: ModelEntityMapper,
     private val schoolDao: SchoolDao,
+    private val schoolNetworkDataSource: SchoolNetworkDataSource,
+    private val userDataRepository: UserDataRepository,
 ) : SchoolRepository {
     override suspend fun saveSchool(school: ClassifiSchool) {
         schoolDao.saveSchoolOrIgnore(modelMapper.schoolModelToEntity(school)!!)
+        schoolNetworkDataSource.saveSchool(school)
+        userDataRepository.setSchoolId(school.schoolId.orEmpty())
     }
 
     override suspend fun saveSchools(schools: List<ClassifiSchool>) {
         schoolDao.saveSchoolsOrIgnore(schools.map { school -> modelMapper.schoolModelToEntity(school)!! })
     }
 
+    override suspend fun registerUserWithSchool(userId: Long, schoolId: Long, schoolName: String) {
+        schoolDao.registerUserWithSchool(UsersWithSchoolsCrossRef(userId, schoolId))
+        schoolNetworkDataSource.registerUserWithSchool(userId, schoolId, schoolName)
+    }
+
     override suspend fun updateSchool(school: ClassifiSchool) {
         schoolDao.updateSchool(modelMapper.schoolModelToEntity(school)!!)
+        schoolNetworkDataSource.updateSchool(school)
     }
 
     override suspend fun deleteSchool(school: ClassifiSchool) {
         schoolDao.deleteSchool(modelMapper.schoolModelToEntity(school)!!)
     }
 
+    override suspend fun deleteAllSchools() {
+        schoolDao.deleteAllSchools()
+    }
+
     override suspend fun fetchSchoolById(schoolId: Long): ClassifiSchool? {
         val school = schoolDao.fetchSchoolById(schoolId)
         return modelMapper.schoolEntityToModel(school)
+    }
+
+    override fun observeSchoolById(schoolId: Long): Flow<ClassifiSchool?> {
+        val flowOfSchool = schoolDao.observeSchoolById(schoolId)
+        return flowOfSchool.map { school -> modelMapper.schoolEntityToModel(school) }
     }
 
     override suspend fun fetchSchoolWithSessions(schoolId: Long): ClassifiSchool? {

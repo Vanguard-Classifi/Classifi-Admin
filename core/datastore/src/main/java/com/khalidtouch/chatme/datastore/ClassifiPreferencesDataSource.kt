@@ -70,7 +70,10 @@ class ClassifiPreferencesDataSource @Inject constructor(
                     UserRoleProto.USER_ROLE_PARENT -> UserRole.Parent
                     UserRoleProto.USER_ROLE_TEACHER -> UserRole.Teacher
                     UserRoleProto.USER_ROLE_STUDENT -> UserRole.Student
-                }
+                },
+                userEmail = it.userEmail,
+                schoolId = it.schoolId,
+                shouldReAuthenticate = it.shouldReAuthenticate
             )
         }
 
@@ -252,6 +255,14 @@ class ClassifiPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setUserEmail(email: String) {
+        userPreferences.updateData { pref ->
+            pref.copy {
+                userEmail = email
+            }
+        }
+    }
+
     suspend fun setUserProfileImage(imageUrl: String) {
         userPreferences.updateData { userPref ->
             userPref.copy {
@@ -287,7 +298,23 @@ class ClassifiPreferencesDataSource @Inject constructor(
                 }
             }
         }
+    }
 
+
+    suspend fun setSchoolId(id: Long) {
+        userPreferences.updateData { pref ->
+            pref.copy {
+                schoolId = id
+            }
+        }
+    }
+
+    suspend fun updateReAuthenticationState(state: Boolean) {
+        userPreferences.updateData { pref ->
+            pref.copy {
+                shouldReAuthenticate = state
+            }
+        }
     }
 }
 

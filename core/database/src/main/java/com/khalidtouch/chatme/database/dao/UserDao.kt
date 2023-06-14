@@ -1,5 +1,6 @@
 package com.khalidtouch.chatme.database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -11,6 +12,8 @@ import androidx.room.Upsert
 import com.khalidtouch.chatme.database.models.ClassifiUserEntity
 import com.khalidtouch.chatme.database.relations.UserWithClasses
 import com.khalidtouch.chatme.database.relations.UserWithSchools
+import com.khalidtouch.chatme.database.relations.UsersWithSchoolsCrossRef
+import com.khalidtouch.classifiadmin.model.UserRole
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,6 +23,9 @@ interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun saveUsersOrIgnore(users: List<ClassifiUserEntity>)
+
+    @Insert
+    suspend fun registerUserWithSchool(userWithSchool: UsersWithSchoolsCrossRef)
 
     @Update
     suspend fun updateUser(user: ClassifiUserEntity)
@@ -33,6 +39,12 @@ interface UserDao {
     @Query("delete from ClassifiUserEntity")
     suspend fun deleteAllUsers()
 
+    @Delete
+    suspend fun unregisterUserFromSchool(userWithSchool: UsersWithSchoolsCrossRef)
+
+    @Query("select * from UsersWithSchoolsCrossRef where userId like :userId and schoolId like :schoolId")
+    suspend fun fetchUserWithSchoolRelationship(userId: Long, schoolId: Long): UsersWithSchoolsCrossRef?
+
     @Query(
         value = "delete from ClassifiUserEntity where userId in (:ids)"
     )
@@ -42,6 +54,11 @@ interface UserDao {
         value = "select * from ClassifiUserEntity where userId = :id"
     )
     suspend fun fetchUserById(id: Long): ClassifiUserEntity?
+
+    @Query(
+        value = "select * from ClassifiUserEntity where userId = :id"
+    )
+    fun observeUserWithId(id: Long): Flow<ClassifiUserEntity?>
 
 
     @Query(
@@ -58,12 +75,18 @@ interface UserDao {
     @Query(
         value = "select * from ClassifiUserEntity order by username asc"
     )
-    fun fetchAllUsers(): Flow<List<ClassifiUserEntity>>
+    fun observeAllUsers(): Flow<List<ClassifiUserEntity>>
 
     @Query(
         value = "select * from ClassifiUserEntity order by username asc"
     )
-    suspend fun fetchAllUsersList(): List<ClassifiUserEntity>
+    suspend fun fetchAllUsers(): List<ClassifiUserEntity>
+
+    @Query(
+        value = "select * from ClassifiUserEntity where userRole like :role order by username asc"
+    )
+    @Transaction
+    fun observeUsersFromMySchoolAsPaged(role: UserRole): PagingSource<Int, UserWithSchools>
 
     @Query(
         value = "select * from ClassifiUserEntity where userId = :userId"

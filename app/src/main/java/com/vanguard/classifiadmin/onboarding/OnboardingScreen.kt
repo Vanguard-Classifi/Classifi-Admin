@@ -9,12 +9,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -23,17 +21,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.khalidtouch.classifiadmin.model.utils.CreateAccountData
+import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 import com.vanguard.classifiadmin.R
-import com.vanguard.classifiadmin.onboarding.usecase.CreateAccountData
 import com.vanguard.classifiadmin.onboarding.usecase.LoginData
-import com.vanguard.classifiadmin.onboarding.usecase.OnCreateAccountState
 import com.vanguard.classifiadmin.onboarding.usecase.OnLoginState
 
 
 @Composable
 fun OnboardingScreen(
     windowSizeClass: WindowSizeClass,
+    loginRequiredOnly: Boolean,
     uiState: OnboardingUiState = rememberOnboardingUiState(),
     onboardingViewModel: OnboardingViewModel = hiltViewModel<OnboardingViewModel>(),
     createAccountViewModel: CreateAccountViewModel = hiltViewModel<CreateAccountViewModel>(),
@@ -48,7 +47,6 @@ fun OnboardingScreen(
 
     AlertDialog(
         onDismissRequest = {
-
         },
         confirmButton = {
             Box(Modifier.padding(horizontal = 8.dp)) {
@@ -72,6 +70,9 @@ fun OnboardingScreen(
                                             )
                                         ) {
                                             when (it) {
+                                                OnCreateAccountState.Starting -> {
+                                                    //todo start loading bar
+                                                }
                                                 OnCreateAccountState.Success -> {
                                                     Log.e(TAG, "OnboardingScreen: success ")
                                                     navController.navigateToOnboardingSuccessfulScreen(
@@ -126,6 +127,8 @@ fun OnboardingScreen(
                                                 OnCreateAccountState.NetworkProblem -> {
                                                     Log.e(TAG, "OnboardingScreen: network issue ")
                                                 }
+
+                                                else -> Unit
                                             }
                                         }
                                     }
@@ -141,6 +144,14 @@ fun OnboardingScreen(
                                 ) {
                                     Log.e(TAG, "OnboardingScreen: login has been called")
                                     when(it) {
+                                        is OnLoginState.Success -> {
+                                            Log.e(TAG, "OnboardingScreen: success")
+                                            onboardingViewModel.finishOnboarding()
+                                        }
+                                        is OnLoginState.Failed -> {
+                                            Log.e(TAG, "OnboardingScreen: failed")
+                                        }
+
                                         is OnLoginState.NetworkProblem -> {
                                             Log.e(TAG, "OnboardingScreen: network issues", )
                                         }
@@ -165,14 +176,6 @@ fun OnboardingScreen(
                                                 "OnboardingScreen: empty email or password"
                                             )
                                         }
-                                        is OnLoginState.Success -> {
-                                            Log.e(TAG, "OnboardingScreen: success")
-                                            loginViewModel.finishLogin()
-                                        }
-                                        is OnLoginState.Failed -> {
-                                            Log.e(TAG, "OnboardingScreen: failed")
-                                        }
-
                                     }
                                 }
                             }
@@ -211,6 +214,7 @@ fun OnboardingScreen(
                 createAccountViewModel = createAccountViewModel,
                 onboardingViewModel = onboardingViewModel,
                 loginViewModel = loginViewModel,
+                loginRequiredOnly = loginRequiredOnly,
             )
         },
         tonalElevation = 2.dp,

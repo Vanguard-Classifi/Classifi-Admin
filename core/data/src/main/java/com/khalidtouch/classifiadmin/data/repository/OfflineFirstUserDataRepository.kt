@@ -72,11 +72,23 @@ class OfflineFirstUserDataRepository @Inject constructor(
       classifiPreferenceDataSource.setUsername(name)
     }
 
+    override suspend fun setUserEmail(email: String) {
+        classifiPreferenceDataSource.setUserEmail(email)
+    }
+
     override suspend fun setUserProfileImage(imageUrl: String) {
        classifiPreferenceDataSource.setUserProfileImage(imageUrl)
     }
 
     override suspend fun setUserRole(userRole: UserRole) {
        classifiPreferenceDataSource.setUserRole(userRole)
+    }
+
+    override suspend fun setSchoolId(schoolId: Long) {
+        classifiPreferenceDataSource.setSchoolId(schoolId)
+    }
+
+    override suspend fun updateReAuthenticationState(state: Boolean) {
+        classifiPreferenceDataSource.updateReAuthenticationState(state)
     }
 }
