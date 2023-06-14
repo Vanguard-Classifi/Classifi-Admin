@@ -183,8 +183,6 @@ fun OnboardingScreen(
                             OnboardingDestination.SUCCESS -> {
                                 onboardingViewModel.finishOnboarding()
                             }
-
-                            else -> Unit
                         }
                     },
                     text = {

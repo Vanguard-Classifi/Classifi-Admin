@@ -164,7 +164,36 @@ class AddParentViewModel @Inject constructor(
         _confirmPassword.value = ""
     }
 
-    fun onRemoveParent(parentId: Long) {
+    fun onStageParent(
+        addParentState: AddParentState,
+        mySchool: ClassifiSchool?,
+    ) {
+        if (_stagedParents.value.find { it.user.account?.email == addParentState.email } != null) return
+        _stagedParents.value.add(
+            StagedUser(
+                user = ClassifiUser(
+                    userId = System.currentTimeMillis() + addParentState.email.hashCode(),
+                    account = UserAccount(
+                        email = addParentState.email,
+                        userRole = UserRole.Parent,
+                    ),
+                    dateCreated = LocalDateTime.now(),
+                    joinedSchools = if (mySchool == null) {
+                        listOf<ClassifiSchool>()
+                    } else {
+                        listOf(mySchool)
+                    }
+                ),
+                password = addParentState.password,
+                confirmPassword = addParentState.confirmPassword
+            )
+        )
+        _email.value = ""
+        _password.value = ""
+        _confirmPassword.value = ""
+    }
+
+    fun unStageParent(parentId: Long) {
         val parent = _stagedParents.value.find { it.user.userId == parentId } ?: return
         _stagedParents.value.remove(parent)
         _currentStagedUserId.value = -1L

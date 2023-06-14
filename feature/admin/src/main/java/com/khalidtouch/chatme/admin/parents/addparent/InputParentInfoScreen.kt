@@ -50,6 +50,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.khalidtouch.chatme.admin.R
+import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.classifiadmin.model.utils.StagedUser
 import com.khalidtouch.core.designsystem.components.ClassifiIconButton
 import com.khalidtouch.core.designsystem.components.ClassifiStagingIconButton
@@ -58,33 +59,36 @@ import com.khalidtouch.core.designsystem.icons.ClassifiIcons
 
 @Composable
 fun InputParentInfoScreen(
-    addParentViewModel: AddParentViewModel
+    addParentState: AddParentState,
+    mySchool: ClassifiSchool?,
+    currentStagedUserId: Long,
+    unStagingEnabled: Boolean,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onConfirmPasswordChanged: (String) -> Unit,
+    onStageParent: (addParentState: AddParentState, school: ClassifiSchool?) -> Unit,
+    unStageParent: () -> Unit,
+    updateFieldsWithCurrentUser: (StagedUser) -> Unit,
+    updateCurrentStagedUserId: (Long) -> Unit,
 ) {
     val TAG = "InputParent"
     val context = LocalContext.current
-    val state by addParentViewModel.state.collectAsStateWithLifecycle()
-    val mySchool by addParentViewModel.observeMySchool.collectAsStateWithLifecycle()
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
-    val registeringParentState by addParentViewModel.registeringParentState.collectAsStateWithLifecycle()
-    val unStagingEnabled by addParentViewModel.unStagingEnabled.collectAsStateWithLifecycle()
 
-    LaunchedEffect(registeringParentState) {
-        Log.e(TAG, "InputParentInfoScreen: ${registeringParentState.currentStagedUserId}")
-    }
 
     LazyColumn {
         parentEmail(
             placeholder = context.getString(R.string.enter_parent_email),
-            value = state.email,
-            onValueChange = addParentViewModel::onEmailChanged,
+            value = addParentState.email,
+            onValueChange = onEmailChanged,
             isError = false,
         )
 
         parentPassword(
             placeholder = context.getString(R.string.enter_password),
-            value = state.password,
-            onValueChange = addParentViewModel::onPasswordChanged,
+            value = addParentState.password,
+            onValueChange = onPasswordChanged,
             isError = false,
             isPasswordVisible = isPasswordVisible,
             onTogglePasswordVisibility = { isPasswordVisible = !it },
@@ -92,31 +96,26 @@ fun InputParentInfoScreen(
 
         parentVerifyPassword(
             placeholder = context.getString(R.string.confirm_password),
-            value = state.confirmPassword,
-            onValueChange = addParentViewModel::onConfirmPasswordChanged,
+            value = addParentState.confirmPassword,
+            onValueChange = onConfirmPasswordChanged,
             isPasswordVisible = isConfirmPasswordVisible,
             onTogglePasswordVisibility = { isConfirmPasswordVisible = !it }
         )
 
         parentAddMore(
             onEnrollMoreParents = {
-                addParentViewModel.onStageParent(
-                    email = state.email,
-                    password = state.password,
-                    confirmPassword = state.confirmPassword,
-                    mySchool = mySchool
-                )
+                onStageParent(addParentState, mySchool)
             },
-            canAddMoreParents = state.canAddMoreParents,
+            canAddMoreParents = addParentState.canAddMoreParents,
             unStageEnabled = unStagingEnabled,
-            unStageParent = { addParentViewModel.onRemoveParent(registeringParentState.currentStagedUserId) },
+            unStageParent = unStageParent,
         )
 
         parentStagingArea(
-            stagedParents = state.stagedParents,
-            onClick = { addParentViewModel.updateFieldsWithCurrentUser(it) },
-            onLongPress = { addParentViewModel.updateCurrentStagedUserId(it.user.userId ?: -1L) },
-            currentParentId = registeringParentState.currentStagedUserId
+            stagedParents = addParentState.stagedParents,
+            onClick = { updateFieldsWithCurrentUser(it) },
+            onLongPress = { updateCurrentStagedUserId(it.user.userId ?: -1L) },
+            currentParentId = currentStagedUserId
         )
     }
 }
@@ -378,12 +377,12 @@ private fun LazyListScope.parentStagingArea(
 
                 ClassifiStagingIconButton(
                     border = BorderStroke(
-                        width = if(selected) 1.5.dp else 1.dp,
+                        width = if (selected) 1.5.dp else 1.dp,
                         color = MaterialTheme.colorScheme.outline.copy(
                             if (selected) 0f else 0.5f
                         )
                     ),
-                    color = if(selected) MaterialTheme.colorScheme.outline.copy(0.5f) else  Color.Transparent,
+                    color = if (selected) MaterialTheme.colorScheme.outline.copy(0.5f) else Color.Transparent,
                     onClick = { onClick(parent) },
                     onLongPress = { onLongPress(parent) },
                     selected = selected,
@@ -436,7 +435,17 @@ fun NavController.navigateToInputParentInfo(
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.inputParentInfo(
-    addParentViewModel: AddParentViewModel,
+    addParentState: AddParentState,
+    mySchool: ClassifiSchool?,
+    currentStagedUserId: Long,
+    unStagingEnabled: Boolean,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onConfirmPasswordChanged: (String) -> Unit,
+    onStageParent: (addParentState: AddParentState, school: ClassifiSchool?) -> Unit,
+    unStageParent: () -> Unit,
+    updateFieldsWithCurrentUser: (StagedUser) -> Unit,
+    updateCurrentStagedUserId: (Long) -> Unit,
 ) {
     composable(
         route = inputParentInfoNavigationRoute,
@@ -453,6 +462,18 @@ fun NavGraphBuilder.inputParentInfo(
             )
         }
     ) {
-        InputParentInfoScreen(addParentViewModel = addParentViewModel)
+        InputParentInfoScreen(
+            addParentState = addParentState,
+            mySchool = mySchool,
+            currentStagedUserId = currentStagedUserId,
+            unStagingEnabled = unStagingEnabled,
+            onEmailChanged = onEmailChanged,
+            onPasswordChanged = onPasswordChanged,
+            onConfirmPasswordChanged = onConfirmPasswordChanged,
+            onStageParent = onStageParent,
+            unStageParent = unStageParent,
+            updateFieldsWithCurrentUser = updateFieldsWithCurrentUser,
+            updateCurrentStagedUserId = updateCurrentStagedUserId,
+        )
     }
 }

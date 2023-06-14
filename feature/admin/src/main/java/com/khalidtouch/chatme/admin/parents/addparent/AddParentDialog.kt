@@ -24,7 +24,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.chatme.admin.parents.ParentScreenViewModel
+import com.khalidtouch.classifiadmin.model.classifi.ClassifiSchool
 import com.khalidtouch.classifiadmin.model.utils.OnCreateAccountState
+import com.khalidtouch.classifiadmin.model.utils.OnCreateBatchAccountResult
+import com.khalidtouch.classifiadmin.model.utils.StagedUser
 import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 
@@ -34,36 +37,93 @@ fun AddParentDialog(
     windowSizeClass: WindowSizeClass,
     addParentViewModel: AddParentViewModel,
     parentScreenViewModel: ParentScreenViewModel,
-    uiState: AddParentUiState = rememberAddParentUiState(windowSizeClass = windowSizeClass)
+    addParentUiState: AddParentUiState = rememberAddParentUiState(windowSizeClass = windowSizeClass)
 ) {
-    val state by addParentViewModel.state.collectAsStateWithLifecycle()
+    val addParentState by addParentViewModel.state.collectAsStateWithLifecycle()
     val mySchool by addParentViewModel.observeMySchool.collectAsStateWithLifecycle()
     val registeringParentState by addParentViewModel.registeringParentState.collectAsStateWithLifecycle()
     val numberOfParentsRegistered by addParentViewModel.numberOfParentsRegistered.collectAsStateWithLifecycle()
     val numberOfParentsFailed by addParentViewModel.numberOfParentsFailed.collectAsStateWithLifecycle()
+    val navController = (addParentUiState as AddParentUiState.Success).data.navController
+    val unStagingEnabled by addParentViewModel.unStagingEnabled.collectAsStateWithLifecycle()
 
-    AddParentDialog()
+    AddParentDialog(
+        progressBarState = registeringParentState.progressBarState,
+        errorMessage = registeringParentState.message,
+        snackbarState = registeringParentState.snackbarState,
+        addParentState = addParentState,
+        mySchool = mySchool,
+        addParentUiState = addParentUiState,
+        numberOfParentsRegistered = numberOfParentsRegistered,
+        numberOfParentsFailed = numberOfParentsFailed,
+        onCloseAddParentDialog = { parentScreenViewModel.updateAddParentDialogState(false) },
+        onStageParent = addParentViewModel::onStageParent,
+        onCreateAccountForParent = addParentViewModel::createAccountForParents,
+        onShowProgressBar = { addParentViewModel.updateRegisteringParentsProgressBarState(true) },
+        onHideProgressBar = { addParentViewModel.updateRegisteringParentsProgressBarState(false) },
+        onShowSnackbar = { addParentViewModel.updateRegisteringParentsSnackbarState(true) },
+        cacheNumberOfParentsRegistered = addParentViewModel::cacheNumberOfParentsRegistered,
+        cacheNumberOfParentsFailed = addParentViewModel::cacheNumberOfParentsFailed,
+        navigateToInputParentSuccessfulScreen = {
+            navController.navigateToInputParentSuccessfulScreen(
+                addParentViewModel
+            )
+        },
+        onUpdateErrorMessage = addParentViewModel::updateRegisteringParentMessage,
+        onHideAddParentDialog = { parentScreenViewModel.updateAddParentDialogState(false) },
+        onEmailChanged = addParentViewModel::onEmailChanged,
+        onPasswordChanged = addParentViewModel::onPasswordChanged,
+        onConfirmPasswordChanged = addParentViewModel::onConfirmPasswordChanged,
+        currentStagedUserId = registeringParentState.currentStagedUserId,
+        unStagingEnabled = unStagingEnabled,
+        unStageParent = { addParentViewModel.unStageParent(registeringParentState.currentStagedUserId) },
+        updateFieldsWithCurrentUser = addParentViewModel::updateFieldsWithCurrentUser,
+        updateCurrentStagedUserId = addParentViewModel::updateCurrentStagedUserId
+    )
 }
 
 @Composable
 private fun AddParentDialog(
-    windowSizeClass: WindowSizeClass,
     progressBarState: Boolean,
+    errorMessage: String,
+    snackbarState: Boolean,
     addParentState: AddParentState,
+    mySchool: ClassifiSchool?,
     addParentUiState: AddParentUiState,
+    numberOfParentsRegistered: Int,
+    numberOfParentsFailed: Int,
+    onCloseAddParentDialog: () -> Unit,
+    onStageParent: (addParentState: AddParentState, school: ClassifiSchool?) -> Unit,
+    onCreateAccountForParent: (
+        school: ClassifiSchool?,
+        stagedParents: List<StagedUser>,
+        result: OnCreateBatchAccountResult
+    ) -> Unit,
+    onShowProgressBar: () -> Unit,
+    onHideProgressBar: () -> Unit,
+    onShowSnackbar: () -> Unit,
+    cacheNumberOfParentsRegistered: (Int) -> Unit,
+    cacheNumberOfParentsFailed: (Int) -> Unit,
+    navigateToInputParentSuccessfulScreen: () -> Unit,
+    onUpdateErrorMessage: (String) -> Unit,
+    onHideAddParentDialog: () -> Unit,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onConfirmPasswordChanged: (String) -> Unit,
+    currentStagedUserId: Long,
+    unStagingEnabled: Boolean,
+    unStageParent: () -> Unit,
+    updateFieldsWithCurrentUser: (StagedUser) -> Unit,
+    updateCurrentStagedUserId: (Long) -> Unit,
 ) {
     val TAG = "AddParent"
     val configuration = LocalConfiguration.current
-
-    val navController = (addParentUiState as AddParentUiState.Success).data.navController
-
-
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(registeringParentState) {
-        if (registeringParentState.snackbarState) {
+    LaunchedEffect(snackbarState) {
+        if (snackbarState) {
             snackbarHostState.showSnackbar(
-                message = registeringParentState.message,
+                message = errorMessage,
                 withDismissAction = true,
                 duration = SnackbarDuration.Short
             )
@@ -79,86 +139,62 @@ private fun AddParentDialog(
                 confirmButton = {
                     Box(Modifier.padding(horizontal = 8.dp)) {
                         ClassifiTextButton(
-                            enabled = state.canSubmitParentsInfo,
+                            enabled = addParentState.canSubmitParentsInfo,
                             onClick = {
-                                when (state.currentPage) {
+                                when (addParentState.currentPage) {
                                     AddParentPage.SUCCESS -> {
-                                        parentScreenViewModel.updateAddParentDialogState(false)
+                                        onCloseAddParentDialog()
                                     }
 
                                     AddParentPage.INPUT -> {
                                         //stage any trailing data
-                                        if (state.canAddMoreParents) {
-                                            addParentViewModel.onStageParent(
-                                                email = state.email,
-                                                password = state.password,
-                                                confirmPassword = state.confirmPassword,
-                                                mySchool = mySchool,
-                                            )
+                                        if (addParentState.canAddMoreParents) {
+                                            onStageParent(addParentState, mySchool)
                                         }
-                                        addParentViewModel.createAccountForParents(
-                                            parents = state.stagedParents,
-                                            mySchool = mySchool,
-                                            result = { state, users ->
-                                                when (state) {
-                                                    OnCreateAccountState.Starting -> {
-                                                        addParentViewModel.updateRegisteringParentsProgressBarState(
-                                                            true
-                                                        )
-                                                    }
-
-                                                    OnCreateAccountState.Success -> {
-                                                        addParentViewModel.updateRegisteringParentsProgressBarState(
-                                                            false
-                                                        )
-                                                        addParentViewModel.cacheNumberOfParentsRegistered(
-                                                            users.size
-                                                        )
-                                                        navController.navigateToInputParentSuccessfulScreen(
-                                                            addParentViewModel = addParentViewModel
-                                                        )
-                                                    }
-
-                                                    OnCreateAccountState.Failed -> {
-                                                        addParentViewModel.updateRegisteringParentsProgressBarState(
-                                                            false
-                                                        )
-                                                        addParentViewModel.cacheNumberOfParentsFailed(
-                                                            users.size
-                                                        )
-                                                        addParentViewModel.updateRegisteringParentMessage(
-                                                            when (numberOfParentsFailed) {
-                                                                0 -> "An error occurred"
-                                                                1 -> "Sorry, could not register a Parent"
-                                                                else -> "Sorry, could not register $numberOfParentsFailed Parents"
-                                                            }
-                                                        )
-                                                        addParentViewModel.updateRegisteringParentsSnackbarState(
-                                                            true
-                                                        )
-                                                    }
-
-                                                    OnCreateAccountState.SchoolNotFound -> {
-                                                        addParentViewModel.updateRegisteringParentsProgressBarState(
-                                                            false
-                                                        )
-                                                        addParentViewModel.updateRegisteringParentMessage(
-                                                            "A school is needed to proceed with this operation"
-                                                        )
-                                                        addParentViewModel.updateRegisteringParentsSnackbarState(
-                                                            true
-                                                        )
-                                                    }
-
-                                                    else -> Unit
+                                        onCreateAccountForParent(
+                                            mySchool,
+                                            addParentState.stagedParents,
+                                        ) { state, users ->
+                                            when (state) {
+                                                OnCreateAccountState.Starting -> {
+                                                    onShowProgressBar()
                                                 }
-                                            },
-                                        )
+
+                                                OnCreateAccountState.Success -> {
+                                                    onHideProgressBar()
+                                                    cacheNumberOfParentsRegistered(users.size)
+                                                    navigateToInputParentSuccessfulScreen()
+                                                }
+
+                                                OnCreateAccountState.Failed -> {
+                                                    onHideProgressBar()
+                                                    cacheNumberOfParentsFailed(users.size)
+                                                    onUpdateErrorMessage(
+                                                        when (numberOfParentsFailed) {
+                                                            0 -> "An error occurred"
+                                                            1 -> "Sorry, could not register a Parent"
+                                                            else -> "Sorry, could not register $numberOfParentsFailed Parents"
+                                                        }
+                                                    )
+                                                    onShowSnackbar()
+                                                }
+
+                                                OnCreateAccountState.SchoolNotFound -> {
+                                                    onHideProgressBar()
+                                                    onUpdateErrorMessage(
+                                                        "A school is needed to proceed with this operation"
+                                                    )
+                                                    onShowSnackbar()
+                                                }
+
+                                                else -> Unit
+                                            }
+                                        }
                                     }
                                 }
                             },
                             text = {
-                                val text = when (state.currentPage) {
+                                val text = when (addParentState.currentPage) {
                                     AddParentPage.INPUT -> stringResource(id = R.string.submit)
                                     AddParentPage.SUCCESS -> stringResource(id = R.string.finish)
                                 }
@@ -173,11 +209,11 @@ private fun AddParentDialog(
                 },
                 dismissButton = {
                     Box(Modifier.padding(horizontal = 8.dp)) {
-                        if (state.currentPage == AddParentPage.INPUT) {
+                        if (addParentState.currentPage == AddParentPage.INPUT) {
                             ClassifiTextButton(
                                 enabled = true,
                                 onClick = {
-                                    parentScreenViewModel.updateAddParentDialogState(false)
+                                    onHideAddParentDialog()
                                 },
                                 text = {
                                     val text = stringResource(id = R.string.cancel)
@@ -200,9 +236,18 @@ private fun AddParentDialog(
                 },
                 text = {
                     AddParentNavHost(
-                        windowSizeClass = windowSizeClass,
-                        addParentUiState = uiState,
-                        addParentViewModel = addParentViewModel
+                        addParentUiState = addParentUiState,
+                        addParentState = addParentState,
+                        mySchool = mySchool,
+                        currentStagedUserId = currentStagedUserId,
+                        unStagingEnabled = unStagingEnabled,
+                        onEmailChanged = onEmailChanged,
+                        onPasswordChanged = onPasswordChanged,
+                        onConfirmPasswordChanged = onConfirmPasswordChanged,
+                        onStageParent = onStageParent,
+                        unStageParent = unStageParent,
+                        updateCurrentStagedUserId = updateCurrentStagedUserId,
+                        updateFieldsWithCurrentUser = updateFieldsWithCurrentUser,
                     )
                 },
                 tonalElevation = 2.dp,
@@ -219,7 +264,7 @@ private fun AddParentDialog(
         }
     )
 
-    if (registeringParentState.progressBarState) {
+    if (progressBarState) {
         ClassifiLoadingWheel()
     }
 }
