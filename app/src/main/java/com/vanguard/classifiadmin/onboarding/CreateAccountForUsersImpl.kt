@@ -1,5 +1,6 @@
 package com.vanguard.classifiadmin.onboarding
 
+import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.khalidtouch.chatme.domain.repository.UserRepository
@@ -23,6 +24,7 @@ class CreateAccountForUsersImpl @Inject constructor(
     @Dispatcher(ClassifiDispatcher.IO) private val ioDispatcher: CoroutineDispatcher
 ) : UserRegistration(), CreateAccountForUsers {
 
+    private val TAG = "CreateAccount"
     private val scope = CoroutineScope(ioDispatcher + SupervisorJob())
 
     override fun createAccountForUsers(
@@ -49,29 +51,34 @@ class CreateAccountForUsersImpl @Inject constructor(
                         } else {
                             aborted.add(data)
                         }
+
+                        if (success.isEmpty() || aborted.isNotEmpty()) {
+                            result(OnCreateAccountState.Failed, aborted)
+                            Log.e(TAG, "createAccountForUsers: account creation failed")
+                            return@addOnCompleteListener
+                        }
+
+                        success.forEach { user ->
+                            Log.e(TAG, "createAccountForUsers: successfully logged in")
+                            scope.launch {
+                                userRepository.saveUser(user.user)
+                                userRepository.registerUserWithSchool(
+                                    userId = checkNotNull(user.user.userId),
+                                    schoolId = checkNotNull(mySchool.schoolId),
+                                    schoolName = checkNotNull(mySchool.schoolName)
+                                )
+                                fireStore.collection(ClassifiStore.USERS)
+                                    .document(user.user.account?.email.orEmpty())
+                                    .set(user.user).addOnSuccessListener { }
+                            }
+                        }
+                        result(OnCreateAccountState.Success, success)
                     }
             }
-            if (success.isEmpty() || aborted.isNotEmpty()) {
-                result(OnCreateAccountState.Failed, aborted)
-                return
-            }
-            success.forEach { user ->
-                scope.launch {
-                    userRepository.saveUser(user.user)
-                    userRepository.registerUserWithSchool(
-                        userId = checkNotNull(user.user.userId),
-                        schoolId = checkNotNull(mySchool.schoolId),
-                        schoolName = checkNotNull(mySchool.schoolName)
-                    )
-                    fireStore.collection(ClassifiStore.USERS)
-                        .document(user.user.account?.email.orEmpty())
-                        .set(user.user).addOnSuccessListener { }
-                }
-            }
-            result(OnCreateAccountState.Success, success)
         } catch (e: Exception) {
             e.printStackTrace()
             result(OnCreateAccountState.Failed, aborted)
+            Log.e(TAG, "createAccountForUsers: log in failed ")
         }
     }
 }

@@ -62,18 +62,19 @@ import com.vanguard.classifiadmin.R
 
 @Composable
 fun LoginScreen(
-    loginViewModel: LoginViewModel,
     loginRequiredOnly: Boolean,
     onCreateAccount: () -> Unit,
     onForgotPassword: () -> Unit,
+    loginUiState: LoginUiState,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
 ) {
     val TAG = "LoginScreen"
     val context = LocalContext.current
     var isPasswordVisible by remember { mutableStateOf(false) }
-    val uiState by loginViewModel.loginUiState.collectAsStateWithLifecycle()
 
     LazyColumn {
-        when (uiState) {
+        when (loginUiState) {
             is LoginUiState.Loading -> Unit
             is LoginUiState.Success -> {
                 item {
@@ -90,14 +91,14 @@ fun LoginScreen(
                 }
 
                 emailItem(
-                    value = (uiState as LoginUiState.Success).data.email,
-                    onValueChange = loginViewModel::onEmailChanged,
+                    value = (loginUiState as LoginUiState.Success).data.email,
+                    onValueChange = onEmailChanged,
                     placeholder = context.getString(R.string.enter_your_email)
                 )
 
                 passwordItem(
-                    value = (uiState as LoginUiState.Success).data.password,
-                    onValueChange = loginViewModel::onPasswordChanged,
+                    value = (loginUiState as LoginUiState.Success).data.password,
+                    onValueChange = onPasswordChanged,
                     placeholder = context.getString(R.string.password),
                     isPasswordVisible = isPasswordVisible,
                     onTogglePasswordVisibility = {
@@ -115,7 +116,7 @@ fun LoginScreen(
     }
 
     AnimatedVisibility(
-        visible = uiState is LoginUiState.Loading,
+        visible = loginUiState is LoginUiState.Loading,
         enter = slideInVertically(
             initialOffsetY = { fullHeight -> -fullHeight },
         ) + fadeIn(),
@@ -261,11 +262,11 @@ fun LazyListScope.forgotPasswordItem(
 const val loginScreenNavigationRoute = "login_screen_navigation_route"
 
 fun NavController.navigateToLoginScreen(
-    onboardingViewModel: OnboardingViewModel,
-    navOptions: NavOptions? = null
+    navOptions: NavOptions? = null,
+    updateCurrentOnboardingDestination: (destination: OnboardingDestination) -> Unit,
 ) {
     this.navigate(loginScreenNavigationRoute, navOptions)
-    onboardingViewModel.updateCurrentDestination(OnboardingDestination.LOGIN)
+    updateCurrentOnboardingDestination(OnboardingDestination.LOGIN)
 }
 
 
@@ -273,8 +274,10 @@ fun NavController.navigateToLoginScreen(
 fun NavGraphBuilder.loginScreen(
     onForgotPassword: () -> Unit,
     onCreateAccount: () -> Unit,
-    loginViewModel: LoginViewModel,
     loginRequiredOnly: Boolean,
+    loginUiState: LoginUiState,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
 ) {
     composable(
         route = loginScreenNavigationRoute,
@@ -294,8 +297,10 @@ fun NavGraphBuilder.loginScreen(
         LoginScreen(
             onForgotPassword = onForgotPassword,
             onCreateAccount = onCreateAccount,
-            loginViewModel = loginViewModel,
             loginRequiredOnly = loginRequiredOnly,
+            loginUiState = loginUiState,
+            onEmailChanged = onEmailChanged,
+            onPasswordChanged = onPasswordChanged,
         )
     }
 }

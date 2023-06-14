@@ -1,6 +1,7 @@
 package com.khalidtouch.chatme.admin.parents.addparent
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -30,6 +32,7 @@ import com.khalidtouch.classifiadmin.model.utils.OnCreateBatchAccountResult
 import com.khalidtouch.classifiadmin.model.utils.StagedUser
 import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
+import kotlinx.coroutines.delay
 
 
 @Composable
@@ -62,6 +65,7 @@ fun AddParentDialog(
         onShowProgressBar = { addParentViewModel.updateRegisteringParentsProgressBarState(true) },
         onHideProgressBar = { addParentViewModel.updateRegisteringParentsProgressBarState(false) },
         onShowSnackbar = { addParentViewModel.updateRegisteringParentsSnackbarState(true) },
+        onHideSnackbar = { addParentViewModel.updateRegisteringParentsSnackbarState(false) },
         cacheNumberOfParentsRegistered = addParentViewModel::cacheNumberOfParentsRegistered,
         cacheNumberOfParentsFailed = addParentViewModel::cacheNumberOfParentsFailed,
         navigateToInputParentSuccessfulScreen = {
@@ -102,6 +106,7 @@ private fun AddParentDialog(
     onShowProgressBar: () -> Unit,
     onHideProgressBar: () -> Unit,
     onShowSnackbar: () -> Unit,
+    onHideSnackbar: () -> Unit,
     cacheNumberOfParentsRegistered: (Int) -> Unit,
     cacheNumberOfParentsFailed: (Int) -> Unit,
     navigateToInputParentSuccessfulScreen: () -> Unit,
@@ -129,6 +134,8 @@ private fun AddParentDialog(
             )
             /*todo -> clear snackbar state */
         }
+        delay(3_000)
+        onHideSnackbar()
     }
 
     Scaffold(
@@ -265,6 +272,8 @@ private fun AddParentDialog(
     )
 
     if (progressBarState) {
-        ClassifiLoadingWheel()
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+            ClassifiLoadingWheel()
+        }
     }
 }

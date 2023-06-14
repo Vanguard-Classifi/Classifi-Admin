@@ -63,11 +63,11 @@ fun LazyListScope.tickItem() {
 const val onboardingSuccessfulNavigationRoute = "onboarding_successful_navigation_route"
 
 fun NavController.navigateToOnboardingSuccessfulScreen(
-    onboardingViewModel: OnboardingViewModel,
     navOptions: NavOptions? = null,
+    updateCurrentOnboardingDestination: (destination: OnboardingDestination) -> Unit,
 ) {
     this.navigate(onboardingSuccessfulNavigationRoute, navOptions)
-    onboardingViewModel.updateCurrentDestination(OnboardingDestination.SUCCESS)
+    updateCurrentOnboardingDestination(OnboardingDestination.SUCCESS)
 }
 
 @OptIn(ExperimentalAnimationApi::class)

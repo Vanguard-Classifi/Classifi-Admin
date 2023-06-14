@@ -2,12 +2,9 @@ package com.vanguard.classifiadmin.onboarding
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,20 +27,74 @@ import com.vanguard.classifiadmin.onboarding.usecase.OnLoginState
 
 
 @Composable
-fun OnboardingScreen(
+fun OnboardingDialog(
     windowSizeClass: WindowSizeClass,
     loginRequiredOnly: Boolean,
-    uiState: OnboardingUiState = rememberOnboardingUiState(),
+    onboardingUiState: OnboardingUiState = rememberOnboardingUiState(),
     onboardingViewModel: OnboardingViewModel = hiltViewModel<OnboardingViewModel>(),
     createAccountViewModel: CreateAccountViewModel = hiltViewModel<CreateAccountViewModel>(),
     loginViewModel: LoginViewModel = hiltViewModel<LoginViewModel>()
 ) {
     val TAG = "Onboarding"
-    val configuration = LocalConfiguration.current
-    val navController = (uiState as OnboardingUiState.Success).data.navController
-    val state by onboardingViewModel.state.collectAsStateWithLifecycle()
+    val navController = (onboardingUiState as OnboardingUiState.Success).data.navController
+    val onboardingState by onboardingViewModel.state.collectAsStateWithLifecycle()
     val createAccountUiState by createAccountViewModel.createAccountUiState.collectAsStateWithLifecycle()
     val loginUiState by loginViewModel.loginUiState.collectAsStateWithLifecycle()
+
+
+    OnboardingDialog(
+        currentOnboardingDestination = onboardingState.currentDestination,
+        navigateToCreateAccount = {
+            navController.navigateToCreateAccount(
+                updateCurrentOnboardingDestination = onboardingViewModel::updateCurrentDestination
+            )
+        },
+        navigateToOnboardingSuccessfulScreen = {
+            navController.navigateToOnboardingSuccessfulScreen(
+                updateCurrentOnboardingDestination = onboardingViewModel::updateCurrentDestination
+            )
+        },
+        onLogin = loginViewModel::onLogin,
+        onFinishOnboarding = onboardingViewModel::finishOnboarding,
+        onCreateSuperUser = createAccountViewModel::createSuperUser,
+        onEmailChangedWhileLoggingIn = loginViewModel::onEmailChanged,
+        onPasswordChangedWhileLoggingIn = loginViewModel::onPasswordChanged,
+        createAccountUiState = createAccountUiState,
+        loginUiState = loginUiState,
+        onboardingUiState = onboardingUiState,
+        navigateToLoginScreen = {
+            navController.navigateToLoginScreen(
+                updateCurrentOnboardingDestination = onboardingViewModel::updateCurrentDestination
+            )
+        },
+        onEmailChangedWhileCreatingAccount = createAccountViewModel::onEmailChanged,
+        onPasswordChangedWhileCreatingAccount = createAccountViewModel::onPasswordChanged,
+        onConfirmPasswordChangedWhileCreatingAccount = createAccountViewModel::onConfirmPasswordChanged,
+        loginRequiredOnly = loginRequiredOnly,
+    )
+}
+
+@Composable
+private fun OnboardingDialog(
+    loginRequiredOnly: Boolean,
+    currentOnboardingDestination: OnboardingDestination,
+    navigateToCreateAccount: () -> Unit,
+    navigateToOnboardingSuccessfulScreen: () -> Unit,
+    onLogin: (LoginData, callback: (OnLoginState) -> Unit) -> Unit,
+    onFinishOnboarding: () -> Unit,
+    onCreateSuperUser: (data: CreateAccountData, callback: (OnCreateAccountState) -> Unit) -> Unit,
+    onEmailChangedWhileLoggingIn: (String) -> Unit,
+    onPasswordChangedWhileLoggingIn: (String) -> Unit,
+    createAccountUiState: CreateAccountUiState,
+    onEmailChangedWhileCreatingAccount: (String) -> Unit,
+    onPasswordChangedWhileCreatingAccount: (String) -> Unit,
+    onConfirmPasswordChangedWhileCreatingAccount: (String) -> Unit,
+    onboardingUiState: OnboardingUiState,
+    loginUiState: LoginUiState,
+    navigateToLoginScreen: () -> Unit,
+) {
+    val TAG = "Onboarding"
+    val configuration = LocalConfiguration.current
 
     AlertDialog(
         onDismissRequest = {
@@ -52,9 +103,9 @@ fun OnboardingScreen(
             Box(Modifier.padding(horizontal = 8.dp)) {
                 ClassifiTextButton(
                     onClick = {
-                        when (state.currentDestination) {
+                        when (currentOnboardingDestination) {
                             OnboardingDestination.WELCOME -> {
-                                navController.navigateToCreateAccount(onboardingViewModel)
+                                navigateToCreateAccount()
                             }
 
                             OnboardingDestination.CREATE_ACCOUNT -> {
@@ -62,22 +113,20 @@ fun OnboardingScreen(
                                     is CreateAccountUiState.Loading -> Unit
                                     is CreateAccountUiState.Success -> {
                                         Log.e(TAG, "OnboardingScreen: create account")
-                                        createAccountViewModel.createSuperUser(
-                                            createAccountData = CreateAccountData(
+                                        onCreateSuperUser(
+                                            CreateAccountData(
                                                 email = (createAccountUiState as CreateAccountUiState.Success).data.email,
                                                 password = (createAccountUiState as CreateAccountUiState.Success).data.password,
                                                 confirmPassword = (createAccountUiState as CreateAccountUiState.Success).data.confirm,
                                             )
-                                        ) {
-                                            when (it) {
+                                        ) { onCreateAccountState ->
+                                            when (onCreateAccountState) {
                                                 OnCreateAccountState.Starting -> {
                                                     //todo start loading bar
                                                 }
+
                                                 OnCreateAccountState.Success -> {
-                                                    Log.e(TAG, "OnboardingScreen: success ")
-                                                    navController.navigateToOnboardingSuccessfulScreen(
-                                                        onboardingViewModel
-                                                    )
+                                                    navigateToOnboardingSuccessfulScreen()
                                                 }
 
                                                 OnCreateAccountState.Failed -> {
@@ -136,59 +185,80 @@ fun OnboardingScreen(
                             }
 
                             OnboardingDestination.LOGIN -> {
-                                loginViewModel.loginUser(
-                                    loginData = LoginData(
-                                        email = (loginUiState as LoginUiState.Success).data.email,
-                                        password = (loginUiState as LoginUiState.Success).data.password,
-                                    )
-                                ) {
-                                    Log.e(TAG, "OnboardingScreen: login has been called")
-                                    when(it) {
-                                        is OnLoginState.Success -> {
-                                            Log.e(TAG, "OnboardingScreen: success")
-                                            onboardingViewModel.finishOnboarding()
-                                        }
-                                        is OnLoginState.Failed -> {
-                                            Log.e(TAG, "OnboardingScreen: failed")
-                                        }
-
-                                        is OnLoginState.NetworkProblem -> {
-                                            Log.e(TAG, "OnboardingScreen: network issues", )
-                                        }
-                                        is OnLoginState.WeakPassword -> {
-                                            Log.e(TAG, "OnboardingScreen: weak password")
-                                        }
-                                        is OnLoginState.UserAlreadyExists -> {
-                                            Log.e(TAG, "OnboardingScreen: user already exists")
-                                        }
-                                        is OnLoginState.InvalidUser -> {
-                                            Log.e(TAG, "OnboardingScreen: invalid user")
-                                        }
-                                        is OnLoginState.InvalidCredentials -> {
-                                            Log.e(TAG, "OnboardingScreen: invalid credentials")
-                                        }
-                                        is OnLoginState.EmailNotFound -> {
-                                            Log.e(TAG, "OnboardingScreen: email not found")
-                                        }
-                                        is OnLoginState.EmptyEmailOrPassword -> {
-                                            Log.e(
-                                                TAG,
-                                                "OnboardingScreen: empty email or password"
+                                when (loginUiState) {
+                                    is LoginUiState.Loading -> Unit
+                                    is LoginUiState.Success -> {
+                                        onLogin(
+                                            LoginData(
+                                                (loginUiState as LoginUiState.Success).data.email,
+                                                (loginUiState as LoginUiState.Success).data.password,
                                             )
+                                        ) { loginState ->
+                                            when (loginState) {
+                                                is OnLoginState.Success -> {
+                                                    Log.e(TAG, "OnboardingScreen: success")
+                                                    onFinishOnboarding()
+                                                }
+
+                                                is OnLoginState.Failed -> {
+                                                    Log.e(TAG, "OnboardingScreen: failed")
+                                                }
+
+                                                is OnLoginState.NetworkProblem -> {
+                                                    Log.e(TAG, "OnboardingScreen: network issues")
+                                                }
+
+                                                is OnLoginState.WeakPassword -> {
+                                                    Log.e(TAG, "OnboardingScreen: weak password")
+                                                }
+
+                                                is OnLoginState.UserAlreadyExists -> {
+                                                    Log.e(
+                                                        TAG,
+                                                        "OnboardingScreen: user already exists"
+                                                    )
+                                                }
+
+                                                is OnLoginState.InvalidUser -> {
+                                                    Log.e(TAG, "OnboardingScreen: invalid user")
+                                                }
+
+                                                is OnLoginState.InvalidCredentials -> {
+                                                    Log.e(
+                                                        TAG,
+                                                        "OnboardingScreen: invalid credentials"
+                                                    )
+                                                }
+
+                                                is OnLoginState.EmailNotFound -> {
+                                                    Log.e(TAG, "OnboardingScreen: email not found")
+                                                }
+
+                                                is OnLoginState.EmptyEmailOrPassword -> {
+                                                    Log.e(
+                                                        TAG,
+                                                        "OnboardingScreen: empty email or password"
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
 
                             OnboardingDestination.SUCCESS -> {
-                                onboardingViewModel.finishOnboarding()
+                                onFinishOnboarding()
                             }
                         }
                     },
                     text = {
-                        val text = when (state.currentDestination) {
+                        val text = when (currentOnboardingDestination) {
                             OnboardingDestination.SUCCESS -> stringResource(id = R.string.finish)
-                            else -> stringResource(id = R.string.next)
+                            else -> {
+                                if (loginRequiredOnly) {
+                                    stringResource(id = R.string.finish)
+                                } else stringResource(id = R.string.next)
+                            }
                         }
                         Text(
                             text = text,
@@ -207,12 +277,17 @@ fun OnboardingScreen(
         },
         text = {
             OnboardingNavHost(
-                windowSizeClass = windowSizeClass,
-                uiState = uiState,
-                createAccountViewModel = createAccountViewModel,
-                onboardingViewModel = onboardingViewModel,
-                loginViewModel = loginViewModel,
+                onboardingUiState = onboardingUiState,
                 loginRequiredOnly = loginRequiredOnly,
+                loginUiState = loginUiState,
+                createAccountUiState = createAccountUiState,
+                navigateToLoginScreen = navigateToLoginScreen,
+                navigateToCreateAccountScreen = navigateToCreateAccount,
+                onEmailChangedWhileCreatingAccount = onEmailChangedWhileCreatingAccount,
+                onPasswordChangedWhileCreatingAccount = onPasswordChangedWhileCreatingAccount,
+                onConfirmPasswordChangedWhileCreatingAccount = onConfirmPasswordChangedWhileCreatingAccount,
+                onEmailChangedWhileLoggingIn = onEmailChangedWhileLoggingIn,
+                onPasswordChangedWhileLoggingIn = onPasswordChangedWhileLoggingIn,
             )
         },
         tonalElevation = 2.dp,
@@ -224,4 +299,5 @@ fun OnboardingScreen(
         ),
         modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 16.dp),
     )
+
 }

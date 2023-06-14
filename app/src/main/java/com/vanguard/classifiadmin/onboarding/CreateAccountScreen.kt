@@ -67,19 +67,21 @@ import com.vanguard.classifiadmin.R
 
 @Composable
 fun CreateAccountScreen(
-    createAccountViewModel: CreateAccountViewModel,
     onLogin: () -> Unit,
+    createAccountUiState: CreateAccountUiState,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onConfirmPasswordChanged: (String) -> Unit,
 ) {
     val TAG = "CreateAcct"
     val context = LocalContext.current
-    val uiState by createAccountViewModel.createAccountUiState.collectAsStateWithLifecycle()
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false)}
 
 
 
     LazyColumn {
-        when(uiState){
+        when(createAccountUiState){
             is CreateAccountUiState.Loading -> Unit
             is CreateAccountUiState.Success -> {
                 item {
@@ -96,14 +98,14 @@ fun CreateAccountScreen(
                 }
 
                 emailItem(
-                    value = (uiState as CreateAccountUiState.Success).data.email,
-                    onValueChange = createAccountViewModel::onEmailChanged,
+                    value = (createAccountUiState as CreateAccountUiState.Success).data.email,
+                    onValueChange = onEmailChanged,
                     placeholder = context.getString(R.string.enter_your_email)
                 )
 
                 passwordItem(
-                    value = (uiState as CreateAccountUiState.Success).data.password,
-                    onValueChange = createAccountViewModel::onPasswordChanged,
+                    value = (createAccountUiState as CreateAccountUiState.Success).data.password,
+                    onValueChange = onPasswordChanged,
                     placeholder = context.getString(R.string.password),
                     isPasswordVisible = isPasswordVisible,
                     onTogglePasswordVisibility = {
@@ -112,8 +114,8 @@ fun CreateAccountScreen(
                 )
 
                 confirmPasswordItem(
-                    value = (uiState as CreateAccountUiState.Success).data.confirm,
-                    onValueChange = createAccountViewModel::onConfirmPasswordChanged,
+                    value = (createAccountUiState as CreateAccountUiState.Success).data.confirm,
+                    onValueChange = onConfirmPasswordChanged,
                     isPasswordVisible = isConfirmPasswordVisible,
                     placeholder = context.getString(R.string.confirm_password),
                     onTogglePasswordVisibility = {
@@ -129,7 +131,7 @@ fun CreateAccountScreen(
     }
 
     AnimatedVisibility(
-        visible = uiState is CreateAccountUiState.Loading,
+        visible = createAccountUiState is CreateAccountUiState.Loading,
         enter = slideInVertically(
             initialOffsetY = { fullHeight -> -fullHeight },
         ) + fadeIn(),
@@ -366,18 +368,21 @@ fun LazyListScope.emailItem(
 const val createAccountNavigationRoute = "create_account_navigation_route"
 
 fun NavController.navigateToCreateAccount(
-    onboardingViewModel: OnboardingViewModel,
-    navOptions: NavOptions? = null
+    navOptions: NavOptions? = null,
+    updateCurrentOnboardingDestination: (destination: OnboardingDestination) -> Unit,
 ) {
     this.navigate(createAccountNavigationRoute, navOptions)
-    onboardingViewModel.updateCurrentDestination(OnboardingDestination.CREATE_ACCOUNT)
+    updateCurrentOnboardingDestination(OnboardingDestination.CREATE_ACCOUNT)
 }
 
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.createAccountScreen(
     onLogin: () -> Unit,
-    createAccountViewModel: CreateAccountViewModel,
+    createAccountUiState: CreateAccountUiState,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onConfirmPasswordChanged: (String) -> Unit,
 ) {
     composable(
         route = createAccountNavigationRoute,
@@ -396,7 +401,10 @@ fun NavGraphBuilder.createAccountScreen(
     ) {
         CreateAccountScreen(
             onLogin = onLogin,
-            createAccountViewModel = createAccountViewModel
+           createAccountUiState = createAccountUiState,
+            onEmailChanged = onEmailChanged,
+            onPasswordChanged = onPasswordChanged,
+            onConfirmPasswordChanged = onConfirmPasswordChanged,
         )
     }
 }

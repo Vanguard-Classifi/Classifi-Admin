@@ -1,6 +1,5 @@
 package com.khalidtouch.chatme.admin.teachers.addteacher
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -30,7 +29,7 @@ import com.khalidtouch.core.designsystem.ClassifiLoadingWheel
 import com.khalidtouch.core.designsystem.components.ClassifiTextButton
 
 @Composable
-fun AddTeacherScreen(
+fun AddTeacherDialog(
     addTeacherViewModel: AddTeacherViewModel,
     teacherScreenViewModel: TeacherScreenViewModel,
     windowSizeClass: WindowSizeClass,

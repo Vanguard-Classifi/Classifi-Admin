@@ -70,11 +70,10 @@ class CreateAccountViewModel @Inject constructor(
         createAccountData: CreateAccountData,
         callback: (OnCreateAccountState) -> Unit
     ) = viewModelScope.launch {
-        Log.e(TAG, "createSuperUser: hulabalooooooo")
-//        createAccountForSuperAdminUseCase(
-//            data = createAccountData,
-//            callback
-//        )
+        createAccountForSuperAdminUseCase(
+            data = createAccountData,
+            callback
+        )
     }
 }
 

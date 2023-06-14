@@ -1,7 +1,6 @@
 package com.vanguard.classifiadmin.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -10,8 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vanguard.classifiadmin.navigation.ClassifiNavHost
-import com.vanguard.classifiadmin.onboarding.OnboardingNavHost
-import com.vanguard.classifiadmin.onboarding.OnboardingScreen
+import com.vanguard.classifiadmin.onboarding.OnboardingDialog
 import com.vanguard.classifiadmin.viewmodel.MainActivityUiState
 import com.vanguard.classifiadmin.viewmodel.MainActivityViewModel
 
@@ -33,13 +31,13 @@ fun ClassifiApp(
                 if(!shouldHideOnboarding) {
                     //onboarding dialog
                     Box(Modifier.fillMaxSize()) {
-                        OnboardingScreen(windowSizeClass = windowSizeClass, loginRequiredOnly = false)
+                        OnboardingDialog(windowSizeClass = windowSizeClass, loginRequiredOnly = false)
                     }
                 }
                 if(shouldHideOnboarding && !isCurrentlySignedIn) {
                     //login screen
                     Box(Modifier.fillMaxSize()) {
-                        OnboardingScreen(windowSizeClass = windowSizeClass, loginRequiredOnly = true)
+                        OnboardingDialog(windowSizeClass = windowSizeClass, loginRequiredOnly = true)
                     }
                 }
             }

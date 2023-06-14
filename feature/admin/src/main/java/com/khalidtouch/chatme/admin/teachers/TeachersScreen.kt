@@ -22,7 +22,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -46,7 +45,7 @@ import androidx.paging.compose.items
 import com.google.accompanist.navigation.animation.composable
 import com.khalidtouch.chatme.admin.R
 import com.khalidtouch.chatme.admin.common.ItemNotAvailable
-import com.khalidtouch.chatme.admin.teachers.addteacher.AddTeacherScreen
+import com.khalidtouch.chatme.admin.teachers.addteacher.AddTeacherDialog
 import com.khalidtouch.chatme.admin.teachers.addteacher.AddTeacherViewModel
 import com.khalidtouch.classifiadmin.model.classifi.ClassifiUser
 import com.khalidtouch.core.common.extensions.ifNullOrBlank
@@ -205,7 +204,7 @@ fun TeachersScreen(
         is TeacherScreenUiState.Loading -> Unit
         is TeacherScreenUiState.Success -> {
             if ((uiState as TeacherScreenUiState.Success).data.shouldShowAddTeacherDialog) {
-                AddTeacherScreen(
+                AddTeacherDialog(
                     addTeacherViewModel = addTeacherViewModel,
                     teacherScreenViewModel = teacherScreenViewModel,
                     windowSizeClass = windowSizeClass,

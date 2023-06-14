@@ -3,7 +3,6 @@ package com.vanguard.classifiadmin.onboarding
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.khalidtouch.chatme.domain.repository.UserDataRepository
 import com.vanguard.classifiadmin.onboarding.usecase.LoginData
 import com.vanguard.classifiadmin.onboarding.usecase.LoginUseCase
 import com.vanguard.classifiadmin.onboarding.usecase.OnLoginState
@@ -47,15 +46,14 @@ class LoginViewModel @Inject constructor(
         password.value = _password
     }
 
-    fun loginUser(
+    fun onLogin(
         loginData: LoginData,
         callback: (OnLoginState) -> Unit,
     )  = viewModelScope.launch {
-        Log.e(TAG, "loginUser: email is ${loginData.email}")
-//        loginUseCase(
-//            loginData = loginData,
-//            callback
-//        )
+        loginUseCase(
+            loginData = loginData,
+            callback
+        )
     }
 
 }
