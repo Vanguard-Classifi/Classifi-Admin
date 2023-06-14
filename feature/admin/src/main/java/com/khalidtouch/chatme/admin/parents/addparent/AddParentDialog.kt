@@ -36,6 +36,11 @@ fun AddParentDialog(
     parentScreenViewModel: ParentScreenViewModel,
     uiState: AddParentUiState = rememberAddParentUiState(windowSizeClass = windowSizeClass)
 ) {
+    val state by addParentViewModel.state.collectAsStateWithLifecycle()
+    val mySchool by addParentViewModel.observeMySchool.collectAsStateWithLifecycle()
+    val registeringParentState by addParentViewModel.registeringParentState.collectAsStateWithLifecycle()
+    val numberOfParentsRegistered by addParentViewModel.numberOfParentsRegistered.collectAsStateWithLifecycle()
+    val numberOfParentsFailed by addParentViewModel.numberOfParentsFailed.collectAsStateWithLifecycle()
 
     AddParentDialog()
 }
@@ -43,16 +48,16 @@ fun AddParentDialog(
 @Composable
 private fun AddParentDialog(
     windowSizeClass: WindowSizeClass,
-   progressBarState: Boolean,
+    progressBarState: Boolean,
+    addParentState: AddParentState,
+    addParentUiState: AddParentUiState,
 ) {
     val TAG = "AddParent"
     val configuration = LocalConfiguration.current
-    val state by addParentViewModel.state.collectAsStateWithLifecycle()
-    val navController = (uiState as AddParentUiState.Success).data.navController
-    val mySchool by addParentViewModel.observeMySchool.collectAsStateWithLifecycle()
-    val registeringParentState by addParentViewModel.registeringParentState.collectAsStateWithLifecycle()
-    val numberOfParentsRegistered by addParentViewModel.numberOfParentsRegistered.collectAsStateWithLifecycle()
-    val numberOfParentsFailed by addParentViewModel.numberOfParentsFailed.collectAsStateWithLifecycle()
+
+    val navController = (addParentUiState as AddParentUiState.Success).data.navController
+
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(registeringParentState) {
@@ -207,7 +212,8 @@ private fun AddParentDialog(
                     dismissOnBackPress = false,
                     dismissOnClickOutside = false,
                 ),
-                modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 16.dp)
+                modifier = Modifier
+                    .widthIn(max = configuration.screenWidthDp.dp - 16.dp)
                     .padding(it)
             )
         }
